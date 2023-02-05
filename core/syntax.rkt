@@ -150,7 +150,13 @@
   (reverse (read-reversed-atoms $port $src null)))
 
 ; -------------------------------------------------------
+
+(define (read-leo $port ($src #f) ($depth 0))
+  (leo null (read-leo-reverse-syntaxes $port $src $depth null)))
   
+(define (read-leo-list $port ($src #f) ($depth 0))
+  (leo null (read-leo-reverse-list-syntaxes $port $src $depth null)))
+
 (define (read-leo-syntaxes $port ($src #f) ($depth 0))
   (reverse (read-leo-reverse-syntaxes $port $src $depth null)))
 
@@ -353,7 +359,7 @@
       (else (error "newline expected")))))
 
 (define (string->leo-syntaxes $string)
-  (read-leo-syntaxes (open-input-string $string)))
+  (leo-stxs (read-leo (open-input-string $string))))
 
 (define (string->leo-datums $string)
   (map syntax->datum (string->leo-syntaxes $string)))
@@ -444,7 +450,7 @@
 ; -------------------------------------------------------------
 
 (define (string->leo-list-syntaxes $string)
-  (read-leo-list-syntaxes (open-input-string $string)))
+  (leo-stxs (read-leo-list (open-input-string $string))))
 
 (define (string->leo-list-datums $string)
   (map syntax->datum (string->leo-list-syntaxes $string)))
