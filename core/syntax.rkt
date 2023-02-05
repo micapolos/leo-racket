@@ -44,6 +44,13 @@
     (reversed-value-stxs
       (cons $value-stx (leo-reversed-value-stxs $leo)))))
 
+(define (leo-commit $leo) 
+  (leo
+    (append
+      (leo-reversed-value-stxs $leo)
+      (leo-reversed-statement-stxs $leo))
+    null))
+
 ; -------------------------------------------------------
 
 (define (symbol-colon-suffix? $symbol)
@@ -199,6 +206,8 @@
       (let* (($stx (read-atom $port $src))
              ($datum (syntax-e $stx)))
         (cond
+          ((equal? $datum `run)
+            (read-leo-run-rhs $port $src $depth $leo))
           ((equal? $datum `do)
             (read-leo-do-rhs $port $src $depth $leo))
           ((equal? $datum `do:)
@@ -216,6 +225,9 @@
                 (read-leo-symbol-rhs $port $src $depth $leo $stx))))
           (else
             (read-leo-default-line $port $src $depth $leo $stx)))))))
+
+(define (read-leo-run-rhs $port $src $depth $leo)
+  (leo-commit (leo-append $leo (read-leo-rhs $port $src $depth))))
 
 (define (read-leo-do-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs $port $src $depth)))
@@ -388,6 +400,9 @@
 (check-equal? (string->leo-datums "the\n  foo\n  bar\n") `(((bar foo))))
 
 (check-equal? (string->leo-datums "the foo bar zoo\n") `(((foo (bar zoo)))))
+
+(check-equal? (string->leo-datums "run require a\n1\n+ 2\n") `((require a) (+ 1 2)))
+(check-equal? (string->leo-datums "1\nrun 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
 
 ; -------------------------------------------------------------
 
