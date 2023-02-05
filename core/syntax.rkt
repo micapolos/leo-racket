@@ -7,7 +7,31 @@
   racket/string
   (for-syntax racket/base))
 
-(struct reader (port src depth) #:transparent)
+(struct leo (ctxt reversed-statement-stxs reversed-value-stxs) #:transparent)
+
+(define (empty-leo $ctxt) 
+  (leo $ctxt null null))
+
+(define (leo-stxs $leo)
+  (reverse
+    (append
+      (leo-reversed-value-stxs $leo)
+      (leo-reversed-statement-stxs $leo))))
+
+(define (leo-append $lhs $rhs) 
+  (struct-copy leo $lhs
+    (reversed-value-stxs
+      (cond
+        ((null? (leo-reversed-statement-stxs $rhs))
+          (append
+            (leo-reversed-value-stxs $rhs)
+            (leo-reversed-value-stxs $lhs)))
+        (else
+          (cons
+            (datum->syntax
+              (leo-ctxt $lhs)
+              `(begin-values ,@(leo-stxs $rhs)))
+            (leo-reversed-value-stxs $lhs)))))))
 
 ; -------------------------------------------------------
 
@@ -21,16 +45,6 @@
 
 (define (stx-symbol-drop-last-char $stx)
   (datum->syntax $stx (symbol-drop-last-char (syntax-e $stx))))
-
-; -------------------------------------------------------
-
-(define (deeper-reader $reader)
-  (struct-copy reader $reader
-    (depth (+ (reader-depth $reader) 1))))
-
-(define (shallower-reader $reader)
-  (struct-copy reader $reader
-    (depth (- (reader-depth $reader) 1))))
 
 ; -------------------------------------------------------
 
