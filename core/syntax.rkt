@@ -21,24 +21,20 @@
 
 (define empty-leo (leo null null))
 
+(define (leo-reversed-stxs $leo)
+  (append
+    (leo-reversed-value-stxs $leo)
+    (leo-reversed-statement-stxs $leo)))
+
 (define (leo-stxs $leo)
-  (reverse
-    (append
-      (leo-reversed-value-stxs $leo)
-      (leo-reversed-statement-stxs $leo))))
+  (reverse (leo-reversed-stxs $leo)))
 
 (define (leo-append $lhs $rhs) 
   (struct-copy leo $lhs
     (reversed-value-stxs
-      (cond
-        ((null? (leo-reversed-statement-stxs $rhs))
-          (append
-            (leo-reversed-value-stxs $rhs)
-            (leo-reversed-value-stxs $lhs)))
-        (else
-          (cons
-            #`(begin ,@(leo-stxs $rhs))
-            (leo-reversed-value-stxs $lhs)))))))
+      (append
+        (leo-reversed-stxs $rhs)
+        (leo-reversed-value-stxs $lhs)))))
 
 (define (leo-with-value-stx $leo $value-stx) 
   (struct-copy leo $leo
@@ -260,7 +256,7 @@
     (($args
       (reverse
         (append
-          (leo-reversed-value-stxs (read-leo-rhs $port $src $depth))
+          (leo-reversed-stxs (read-leo-rhs $port $src $depth))
           (leo-reversed-value-stxs $leo)))))
     (cond
       ((null? $args) (leo-with-value-stx $leo $symbol))
@@ -271,7 +267,7 @@
     (($args 
       (reverse
         (append
-          (leo-reversed-value-stxs (read-leo-rhs-list $port $src $depth))
+          (leo-reversed-stxs (read-leo-rhs-list $port $src $depth))
           (leo-reversed-value-stxs $leo)))))
     (leo-with-value-stx $leo #`(#,$symbol #,@$args))))
 

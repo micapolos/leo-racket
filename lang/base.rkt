@@ -118,68 +118,68 @@ do
   point
   has: x y
 
-; do
-;   point:
-;     give
-;       1
-;       plus 2
-;     give
-;       3
-;       plus 4
-;   as $point in
-;     do
-;       $point
-;       check-equal? point: 3 7
-;     do
-;       $point
-;       point?
-;       check-equal? true
-;     do
-;       "foo"
-;       point?
-;       check-equal? false
-;     do
-;       $point
-;       point-x
-;       check-equal? 3
-;     do
-;       $point
-;       point-y
-;       check-equal? 7
+do
+  point:
+    give
+      1
+      plus 2
+    give
+      3
+      plus 4
+  as $point in begin
+    do
+      $point
+      check-equal? point: 3 7
+    do
+      $point
+      point?
+      check-equal? true
+    do
+      "foo"
+      point?
+      check-equal? false
+    do
+      $point
+      point-x
+      check-equal? 3
+    do
+      $point
+      point-y
+      check-equal? 7
 
 do
   lhs
   pair-to rhs
   exists
 
-; do
-;   1
-;   plus 2
-;   pair-to
-;     3
-;     plus 4
-;   as $pair in
-;     do
-;       $pair
-;       check-equal?
-;         3
-;         pair-to 7
-;     do
-;       $pair
-;       pair-to?
-;       check-equal? true
-;     do
-;       "foo"
-;       pair-to?
-;       check-equal? false
-;     do
-;       $pair
-;       pair-to-lhs
-;       check-equal? 3
-;     do
-;       $pair
-;       pair-to-rhs
-;       check-equal? 7
+do
+  1
+  plus 2
+  pair-to
+    3
+    plus 4
+  as $pair in begin
+    do
+      $pair
+      check-equal?
+        3
+        pair-to 7
+    do
+      $pair
+      pair-to?
+      check-equal? true
+    do
+      "foo"
+      pair-to?
+      check-equal? false
+    do
+      $pair
+      pair-to-lhs
+      check-equal? 3
+    do
+      $pair
+      pair-to-rhs
+      check-equal? 7
 
 do
   (define-syntax (giving stx)
