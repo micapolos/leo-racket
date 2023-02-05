@@ -279,20 +279,13 @@
       ((null? $args) (leo null (list $symbol)))
       (else (leo null (list #`(#,$symbol #,@$args)))))))
 
-(define (read-leo-rhs-colon-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
-  (let 
-    (($args 
-      (append
-        (reverse $reversed-lhs-stxs)
-        (read-leo-rhs-list-syntaxes $port $src $depth))))
-    (list #`(#,$symbol #,@$args))))
-
 (define (read-leo-symbol-colon-rhs $port $src $depth $leo $symbol)
   (let 
     (($args 
-      (append
-        (reverse (leo-reversed-value-stxs $leo))
-        (read-leo-rhs-list-syntaxes $port $src $depth))))
+      (reverse
+        (append
+          (leo-reversed-value-stxs (read-leo-rhs-list $port $src $depth))
+          (leo-reversed-value-stxs $leo)))))
     (leo null (list #`(#,$symbol #,@$args)))))
 
 (define (read-leo-default-line $port $src $depth $leo $default)
@@ -337,20 +330,20 @@
       (else 
         (error "expected space before rhs atoms")))))
 
-(define (read-leo-rhs-list-syntaxes $port $src $depth)
+(define (read-leo-rhs-list $port $src $depth)
   (let (($char (peek-char $port)))
     (cond
       ((equal? $char #\space)
         (skip-char $port)
-        (read-atoms $port $src))
+        (read-leo-atoms $port $src empty-leo))
       ((equal? $char #\newline)
         (skip-char $port)
         (let (($rhs-depth (+ $depth 1)))
           (cond
             ((peek-exact-depth $port $rhs-depth)
               (skip-depth $port $rhs-depth)
-              (read-leo-list-syntaxes $port $src $rhs-depth))
-            (else null))))
+              (read-leo-list $port $src $rhs-depth empty-leo))
+            (else empty-leo))))
       (else 
         (error "expected space or newline before rhs")))))
 
