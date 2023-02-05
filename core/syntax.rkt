@@ -236,8 +236,7 @@
               (else 
                 (read-leo-symbol-rhs $port $src $depth $leo $stx))))
           (else
-            (leo null
-              (read-leo-default-syntaxes $port $src $depth (leo-reversed-value-stxs $leo) $stx))))))))
+            (read-leo-default-line $port $src $depth $leo $stx)))))))
 
 (define (read-leo-rhs-gather-syntaxes $port $src $depth $reversed-lhs-stxs)
   (cond
@@ -296,13 +295,11 @@
         (read-leo-rhs-list-syntaxes $port $src $depth))))
     (leo null (list #`(#,$symbol #,@$args)))))
 
-(define (read-leo-default-syntaxes $port $src $depth $reversed-lhs-stxs $default)
+(define (read-leo-default-line $port $src $depth $leo $default)
   (cond 
-    ((not (null? $reversed-lhs-stxs))
-      (error "datum allowed only at the beginning"))
     ((equal? (peek-char $port) #\newline)
       (skip-char $port)
-      (list $default))
+      (leo null (list $default)))
     (else (error "expected newline after datum"))))
 
 (define (read-leo-rhs-syntaxes $port $src $depth)
