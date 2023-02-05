@@ -201,11 +201,14 @@
                 (leo-reversed-value-stxs $leo)))))))))
 
 (define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
+  (leo-reversed-value-stxs (read-leo-line $port $src $depth (leo null $reversed-stxs))))
+
+(define (read-leo-line $port $src $depth $leo)
   (cond
     ((equal? (peek-char $port) #\newline)
       (skip-char $port)
-      (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs))
-    ((eof-object? (peek-char $port)) null)
+      (read-leo-line $port $src $depth $leo))
+    ((eof-object? (peek-char $port)) empty-leo)
     ((char-whitespace? (peek-char $port))
       (error "leo can not start with whitespace"))
     (else
@@ -213,26 +216,34 @@
              ($datum (syntax-e $stx)))
         (cond
           ((equal? $datum `do)
-            (read-leo-rhs-do-syntaxes $port $src $depth $reversed-stxs))
+            (leo null
+              (read-leo-rhs-do-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ((equal? $datum `do:)
-            (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-stxs))
+            (leo null
+              (read-leo-rhs-do-colon-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ((equal? $datum `the)
-            (read-leo-rhs-the-syntaxes $port $src $depth $reversed-stxs))
+            (leo null
+              (read-leo-rhs-the-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ((equal? $datum `the:)
-            (read-leo-rhs-the-colon-syntaxes $port $src $depth $reversed-stxs))
+            (leo null
+              (read-leo-rhs-the-colon-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ; TODO racket:
           ((equal? $datum `racket)
-            (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-stxs))
+            (leo null
+              (read-leo-rhs-racket-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ; TODO datum:
           ((symbol? $datum)
             (cond
               ((symbol-colon-suffix? $datum)
-                (read-leo-rhs-colon-symbol-syntaxes $port $src $depth $reversed-stxs 
-                  (stx-symbol-drop-last-char $stx)))
+                (leo null
+                  (read-leo-rhs-colon-symbol-syntaxes $port $src $depth (leo-reversed-value-stxs $leo)
+                    (stx-symbol-drop-last-char $stx))))
               (else 
-                (read-leo-rhs-symbol-syntaxes $port $src $depth $reversed-stxs $stx))))
+                (leo null
+                  (read-leo-rhs-symbol-syntaxes $port $src $depth (leo-reversed-value-stxs $leo) $stx)))))
           (else
-            (read-leo-default-syntaxes $port $src $depth $reversed-stxs $stx)))))))
+            (leo null
+              (read-leo-default-syntaxes $port $src $depth (leo-reversed-value-stxs $leo) $stx))))))))
 
 (define (read-leo-rhs-gather-syntaxes $port $src $depth $reversed-lhs-stxs)
   (cond
