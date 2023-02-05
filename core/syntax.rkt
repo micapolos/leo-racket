@@ -155,33 +155,17 @@
 
 ; -------------------------------------------------------
 
-(define (read-leo-syntaxes $port ($src #f) ($depth 0))
-  (reverse (read-leo-reverse-syntaxes $port $src $depth null)))
-
-(define (read-leo-list-syntaxes $port ($src #f) ($depth 0))
-  (reverse (read-leo-reverse-list-syntaxes $port $src $depth null)))
-
-(define (read-leo-syntaxes-once $port ($src #f) ($depth 0))
-  (reverse (read-leo-reverse-syntaxes-once $port $src $depth null)))
-
-(define (read-leo-reverse-syntaxes $port $src $depth $reversed-stxs)
-  (leo-reversed-value-stxs (read-leo $port $src $depth (leo null $reversed-stxs))))
-
 (define (read-leo $port ($src "") ($depth 0) ($leo empty-leo))
   (cond
     ((peek-eof $port) $leo)
     (else
       (let*
-        (($reversed-combined-stxs
-          (read-leo-reverse-syntaxes-once $port $src $depth (leo-reversed-value-stxs $leo))))
+        (($leo (read-leo-line $port $src $depth $leo)))
         (cond
           ((peek-exact-depth $port $depth)
             (skip-depth $port $depth)
-            (leo null (read-leo-reverse-syntaxes $port $src $depth $reversed-combined-stxs)))
-          (else (leo null $reversed-combined-stxs)))))))
-
-(define (read-leo-reverse-list-syntaxes $port $src $depth $reversed-stxs)
-  (leo-reversed-value-stxs (read-leo-list $port $src $depth (leo null $reversed-stxs))))
+            (read-leo $port $src $depth $leo))
+          (else $leo))))))
 
 (define (read-leo-list $port ($src "") ($depth 0) ($leo empty-leo))
   (cond
@@ -195,9 +179,6 @@
             (read-leo-list $port $src $depth (leo-append $leo $leo-line)))
           (else 
             (leo-append $leo $leo-line)))))))
-
-(define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
-  (leo-reversed-value-stxs (read-leo-line $port $src $depth (leo null $reversed-stxs))))
 
 (define (read-leo-line $port $src $depth $leo)
   (cond
@@ -230,15 +211,6 @@
           (else
             (read-leo-default-line $port $src $depth $leo $stx)))))))
 
-(define (read-leo-rhs-gather-syntaxes $port $src $depth $reversed-lhs-stxs)
-  (cond
-    ((peek-exact-string $port " ")
-      (skip-char $port)
-      (append
-        (read-leo-reverse-syntaxes $port $src (+ $depth 1) null)
-        $reversed-lhs-stxs))
-    (else (error "expected space after -"))))
-
 (define (read-leo-do-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs $port $src $depth)))
 
@@ -248,12 +220,12 @@
 (define (read-leo-the-rhs $port $src $depth $leo)
   (leo-append 
     $leo 
-    (leo null (list #`(#,@(read-leo-rhs-syntaxes $port $src $depth))))))
+    (leo null (list #`(#,@(leo-stxs (read-leo-rhs $port $src $depth)))))))
 
 (define (read-leo-the-colon-rhs $port $src $depth $leo)
   (leo-append
     $leo
-    (leo null (list #`(#,@(reverse (read-rhs-reversed-atoms $port $src)))))))
+    (leo null (list #`(#,@(leo-stxs (read-leo-rhs-atoms $port $src)))))))
 
 (define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
   (let 
@@ -282,9 +254,6 @@
       (leo null (list $default)))
     (else (error "expected newline after datum"))))
 
-(define (read-leo-rhs-syntaxes $port $src $depth)
-  (leo-stxs (read-leo-rhs $port $src $depth)))
-
 (define (read-leo-rhs $port $src $depth)
   (let (($char (peek-char $port)))
     (cond
@@ -301,9 +270,6 @@
             (else empty-leo))))
       (else 
         (error "expected space or newline before rhs")))))
-
-(define (read-rhs-reversed-atoms $port $src)
-  (leo-reversed-value-stxs (read-leo-rhs-atoms $port $src)))
 
 (define (read-leo-rhs-atoms $port $src)
   (let (($char (peek-char $port)))

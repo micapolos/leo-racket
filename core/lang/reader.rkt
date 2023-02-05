@@ -18,4 +18,4 @@
     #`(module leo racket/base
       (provide (all-defined-out))
       (require rackunit (for-syntax racket/base))
-      #,@(read-leo-list-syntaxes port src))))
+      #,@(leo-stxs (read-leo-list port src)))))
