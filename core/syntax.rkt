@@ -220,8 +220,7 @@
              ($datum (syntax-e $stx)))
         (cond
           ((equal? $datum `do)
-            (leo null
-              (read-leo-rhs-do-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
+            (read-leo-do-rhs $port $src $depth $leo))
           ((equal? $datum `do:)
             (leo null
               (read-leo-rhs-do-colon-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
@@ -252,8 +251,8 @@
         $reversed-lhs-stxs))
     (else (error "expected space after -"))))
 
-(define (read-leo-rhs-do-syntaxes $port $src $depth $reversed-lhs-stxs)
-  (append (read-leo-rhs-syntaxes $port $src $depth) $reversed-lhs-stxs))
+(define (read-leo-do-rhs $port $src $depth $leo)
+  (leo-append $leo (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-lhs-stxs)
   (append (read-rhs-reversed-atoms $port $src) $reversed-lhs-stxs))
@@ -325,14 +324,17 @@
         (error "expected space or newline before rhs")))))
 
 (define (read-rhs-reversed-atoms $port $src)
+  (leo-reversed-value-stxs (read-leo-rhs-atoms $port $src)))
+
+(define (read-leo-rhs-atoms $port $src)
   (let (($char (peek-char $port)))
     (cond
       ((equal? $char #\space)
         (skip-char $port)
-        (read-reversed-atoms $port $src null))
+        (read-leo-atoms $port $src empty-leo))
       ((equal? $char #\newline)
         (skip-char $port)
-        null)
+        empty-leo)
       (else 
         (error "expected space before rhs atoms")))))
 
