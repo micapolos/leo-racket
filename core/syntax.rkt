@@ -30,6 +30,15 @@
             #`(begin-values ,@(leo-stxs $rhs))
             (leo-reversed-value-stxs $lhs)))))))
 
+(define (leo-with-value-stx $leo $value-stx) 
+  (struct-copy leo $leo
+    (reversed-value-stxs (list $value-stx))))
+
+(define (leo-append-value-stx $leo $value-stx) 
+  (struct-copy leo $leo
+    (reversed-value-stxs
+      (cons $value-stx (leo-reversed-value-stxs $leo)))))
+
 ; -------------------------------------------------------
 
 (define (symbol-colon-suffix? $symbol)
@@ -136,7 +145,7 @@
   (read-syntax $src $port))
 
 (define (read-leo-atoms $port $src $leo)
-  (let (($leo (leo null (cons (read-atom $port $src) (leo-reversed-value-stxs $leo)))))
+  (let (($leo (leo-append-value-stx $leo (read-atom $port $src))))
     (cond
       ((equal? (peek-char $port) #\space)
         (skip-char $port)
@@ -211,14 +220,14 @@
   (leo-append $leo (read-leo-rhs-atoms $port $src)))
 
 (define (read-leo-the-rhs $port $src $depth $leo)
-  (leo-append 
-    $leo 
-    (leo null (list #`(#,@(leo-stxs (read-leo-rhs $port $src $depth)))))))
+  (leo-append-value-stx
+    $leo
+    #`(#,@(leo-stxs (read-leo-rhs $port $src $depth)))))
 
 (define (read-leo-the-colon-rhs $port $src $depth $leo)
-  (leo-append
+  (leo-append-value-stx
     $leo
-    (leo null (list #`(#,@(leo-stxs (read-leo-rhs-atoms $port $src)))))))
+    #`(#,@(leo-stxs (read-leo-rhs-atoms $port $src)))))
 
 (define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
   (let 
@@ -228,8 +237,8 @@
           (leo-reversed-value-stxs (read-leo-rhs $port $src $depth))
           (leo-reversed-value-stxs $leo)))))
     (cond
-      ((null? $args) (leo null (list $symbol)))
-      (else (leo null (list #`(#,$symbol #,@$args)))))))
+      ((null? $args) (leo-with-value-stx $leo $symbol))
+      (else (leo-with-value-stx $leo #`(#,$symbol #,@$args))))))
 
 (define (read-leo-symbol-colon-rhs $port $src $depth $leo $symbol)
   (let 
@@ -238,13 +247,13 @@
         (append
           (leo-reversed-value-stxs (read-leo-rhs-list $port $src $depth))
           (leo-reversed-value-stxs $leo)))))
-    (leo null (list #`(#,$symbol #,@$args)))))
+    (leo-with-value-stx $leo #`(#,$symbol #,@$args))))
 
 (define (read-leo-default-line $port $src $depth $leo $default)
   (cond 
     ((equal? (peek-char $port) #\newline)
       (skip-char $port)
-      (leo null (list $default)))
+      (leo-with-value-stx $leo $default))
     (else (error "expected newline after datum"))))
 
 (define (read-leo-rhs $port $src $depth)
