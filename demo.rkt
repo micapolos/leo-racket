@@ -1,4 +1,3 @@
 #lang leo
 
-"Hello, "
-string-append "world!"
+do displayln "Hello, world!"
