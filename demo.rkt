@@ -1,6 +1,4 @@
 #lang leo
 
-begin
-  do
-    three
-    gives 3
+"Hello, "
+string-append "world!"
