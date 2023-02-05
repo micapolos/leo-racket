@@ -1,69 +1,77 @@
 #lang leo/core
 
-require:
-  do
-    racket/base
-    rename-in:
-      define racket-define
+do require:
   rackunit
   for-syntax racket/base
 
-(define-syntax (define stx)
-  (syntax-case stx (gives has exists)
-    ((_ (gives params body ...))
-      #`(racket-define params body ...))
-    ((_ (has name fields ...))
-      #`(struct name (fields ...) #:transparent))
-    ((_ (exists (name fields ...)))
-      #`(struct name (fields ...) #:transparent))
-    ((_ (params body ...))
-      #`(racket-define params body ...))))
+do
+  (define-syntax (gives stx)
+    (syntax-case stx ()
+      ((_ params body ...)
+        #`(define params body ...))))
 
-(define-syntax (plus stx)
-  (syntax-case stx ()
-    ((_ lhs rhs)
-      #`(+ lhs rhs))))
+do
+  (define-syntax (has stx)
+    (syntax-case stx ()
+      ((_ name fields ...)
+        #`(struct name (fields ...) #:transparent))))
+
+do
+  (define-syntax (exists stx)
+    (syntax-case stx ()
+      ((_ (name fields ...))
+        #`(struct name (fields ...) #:transparent))))
+
+do
+  (define-syntax (plus stx)
+    (syntax-case stx ()
+      ((_ lhs rhs)
+        #`(+ lhs rhs))))
 
 do
   2
   plus 3
   check-equal? 5
 
-(define-syntax (minus stx)
-  (syntax-case stx ()
-    ((_ lhs rhs)
-      #`(- lhs rhs))))
+do
+  (define-syntax (minus stx)
+    (syntax-case stx ()
+      ((_ lhs rhs)
+        #`(- lhs rhs))))
 
 do
   5
   minus 3
   check-equal? 2
 
-(define-syntax (times stx)
-  (syntax-case stx ()
-    ((_ lhs rhs)
-      #`(* lhs rhs))))
+do
+  (define-syntax (times stx)
+    (syntax-case stx ()
+      ((_ lhs rhs)
+        #`(* lhs rhs))))
 
 do
   2
   times 3
   check-equal? 6
 
-(define-syntax (less-than? stx)
-  (syntax-case stx ()
-    ((_ lhs rhs)
-      #`(< lhs rhs))))
+do
+  (define-syntax (less-than? stx)
+    (syntax-case stx ()
+      ((_ lhs rhs)
+        #`(< lhs rhs))))
 
-(define-syntax (grater-than? stx)
-  (syntax-case stx ()
-    ((_ lhs rhs)
-      #`(> lhs rhs))))
+do
+  (define-syntax (grater-than? stx)
+    (syntax-case stx ()
+      ((_ lhs rhs)
+        #`(> lhs rhs))))
 
-define
+do
   true
   gives #t
 
-define
+do
   false
   gives #f
 
@@ -72,17 +80,17 @@ do
   less-than? 3
   check-equal? true
 
-define
+do
   any? x
   gives #t
 
-define
+do
   true? x
   gives
     x
     equal? #t
 
-define
+do
   false? x
   gives
     x
@@ -92,10 +100,11 @@ do
   any? "jajko"
   check-equal? true
 
-(define-syntax (as stx)
-  (syntax-case stx (in)
-    ((_ lhs (symbol (in body ...)))
-      (quasisyntax (let ((symbol lhs)) body ...)))))
+do
+  (define-syntax (as stx)
+    (syntax-case stx (in)
+      ((_ lhs (symbol (in body ...)))
+        (quasisyntax (let ((symbol lhs)) body ...)))))
 
 do
   3
@@ -105,113 +114,117 @@ do
     plus number
   check-equal? 14
 
-do begin
-  define
-    point
-    has: x y
-  do
-    point:
-      do
-        1
-        plus 2
-      do
-        3
-        plus 4
-    as $point in
-      do
-        $point
-        check-equal? point: 3 7
-      do
-        $point
-        point?
-        check-equal? true
-      do
-        "foo"
-        point?
-        check-equal? false
-      do
-        $point
-        point-x
-        check-equal? 3
-      do
-        $point
-        point-y
-        check-equal? 7
+do
+  point
+  has: x y
 
-do begin
-  define
-    lhs
-    pair-to rhs
-    exists
-  do
-    1
-    plus 2
-    pair-to
-      3
-      plus 4
-    as $pair in
-      do
-        $pair
-        check-equal?
-          3
-          pair-to 7
-      do
-        $pair
-        pair-to?
-        check-equal? true
-      do
-        "foo"
-        pair-to?
-        check-equal? false
-      do
-        $pair
-        pair-to-lhs
-        check-equal? 3
-      do
-        $pair
-        pair-to-rhs
-        check-equal? 7
-
-(define-syntax (giving stx)
-  (syntax-case stx ()
-    ((_ params ... body)
-      #`(lambda (params ...) body))))
-
-(define-syntax (take stx)
-  (syntax-case stx ()
-    ((_ xs ...) 
-      #`(#%app xs ...))))
+; do
+;   point:
+;     give
+;       1
+;       plus 2
+;     give
+;       3
+;       plus 4
+;   as $point in
+;     do
+;       $point
+;       check-equal? point: 3 7
+;     do
+;       $point
+;       point?
+;       check-equal? true
+;     do
+;       "foo"
+;       point?
+;       check-equal? false
+;     do
+;       $point
+;       point-x
+;       check-equal? 3
+;     do
+;       $point
+;       point-y
+;       check-equal? 7
 
 do
-  do: x y
+  lhs
+  pair-to rhs
+  exists
+
+; do
+;   1
+;   plus 2
+;   pair-to
+;     3
+;     plus 4
+;   as $pair in
+;     do
+;       $pair
+;       check-equal?
+;         3
+;         pair-to 7
+;     do
+;       $pair
+;       pair-to?
+;       check-equal? true
+;     do
+;       "foo"
+;       pair-to?
+;       check-equal? false
+;     do
+;       $pair
+;       pair-to-lhs
+;       check-equal? 3
+;     do
+;       $pair
+;       pair-to-rhs
+;       check-equal? 7
+
+do
+  (define-syntax (giving stx)
+    (syntax-case stx ()
+      ((_ params ... body)
+        #`(lambda (params ...) body))))
+
+do
+  (define-syntax (take stx)
+    (syntax-case stx ()
+      ((_ xs ...) 
+        #`(#%app xs ...))))
+
+do
+  give: x y
   giving minus: x y
   take: 5 3
   check-equal? 2
 
-(begin-for-syntax
-  (define (expand-else-stx lhs alternate)
-    (let ((tmp (car (generate-temporaries `(tmp)))))
-      (expand-if-stx
-        lhs
-        tmp
-        (list #`(`else #,alternate)))))
-  (define (expand-if-stx if-stx tmp tail)
-    (syntax-case if-stx (if)
-      ((if expression (predicate consequent))
+do
+  (begin-for-syntax
+    (define (expand-else-stx lhs alternate)
+      (let ((tmp (car (generate-temporaries `(tmp)))))
         (expand-if-stx
-          #`expression
+          lhs
           tmp
-          (cons #`((predicate #,tmp) consequent) tail)))
-      (lhs
-        #`(let ((#,tmp lhs))
-          (cond #,@tail))))))
+          (list #`(`else #,alternate)))))
+    (define (expand-if-stx if-stx tmp tail)
+      (syntax-case if-stx (if)
+        ((if expression (predicate consequent))
+          (expand-if-stx
+            #`expression
+            tmp
+            (cons #`((predicate #,tmp) consequent) tail)))
+        (lhs
+          #`(let ((#,tmp lhs))
+            (cond #,@tail))))))
 
-(define-syntax (else stx)
-  (syntax-case stx (if true?)
-    ((_ (if condition (true? consequent)) alternate)
-      #`(if condition consequent alternate))
-    ((_ lhs alternate)
-      (expand-else-stx #`lhs #`alternate))))
+do
+  (define-syntax (else stx)
+    (syntax-case stx (if true?)
+      ((_ (if condition (true? consequent)) alternate)
+        #`(if condition consequent alternate))
+      ((_ lhs alternate)
+        (expand-else-stx #`lhs #`alternate))))
 
 do
   1
@@ -234,12 +247,13 @@ do
   else "something else"
   check-equal? "something else"
 
-(define-syntax (compile stx)
-  (syntax-case stx ()
-    ((_ body)
-      (let ((anchor (car (generate-temporaries `(anchor)))))
-        #`(begin
-          (define-namespace-anchor #,anchor)
-          (parameterize
-            ((current-namespace (namespace-anchor->namespace #,anchor)))
-            (syntax->datum (expand (datum->syntax #f (quote body))))))))))
+do
+  (define-syntax (compile stx)
+    (syntax-case stx ()
+      ((_ body)
+        (let ((anchor (car (generate-temporaries `(anchor)))))
+          #`(begin
+            (define-namespace-anchor #,anchor)
+            (parameterize
+              ((current-namespace (namespace-anchor->namespace #,anchor)))
+              (syntax->datum (expand (datum->syntax #f (quote body))))))))))

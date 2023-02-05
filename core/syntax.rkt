@@ -1,11 +1,16 @@
 #lang racket/base
 
-(provide read-leo-list-stxs)
+(provide 
+  read-leo-stxs
+  read-leo-list-stxs)
 
 (require 
   rackunit
   racket/string
   (for-syntax racket/base))
+
+(define (read-leo-stxs $port $src)
+  (leo-stxs (read-leo $port $src)))
 
 (define (read-leo-list-stxs $port $src)
   (leo-stxs (read-leo-list $port $src)))
@@ -32,7 +37,7 @@
             (leo-reversed-value-stxs $lhs)))
         (else
           (cons
-            #`(begin-values ,@(leo-stxs $rhs))
+            #`(begin ,@(leo-stxs $rhs))
             (leo-reversed-value-stxs $lhs)))))))
 
 (define (leo-with-value-stx $leo $value-stx) 
@@ -206,12 +211,14 @@
       (let* (($stx (read-atom $port $src))
              ($datum (syntax-e $stx)))
         (cond
-          ((equal? $datum `run)
-            (read-leo-run-rhs $port $src $depth $leo))
           ((equal? $datum `do)
             (read-leo-do-rhs $port $src $depth $leo))
           ((equal? $datum `do:)
             (read-leo-do-colon-rhs $port $src $depth $leo))
+          ((equal? $datum `give)
+            (read-leo-give-rhs $port $src $depth $leo))
+          ((equal? $datum `give:)
+            (read-leo-give-colon-rhs $port $src $depth $leo))
           ((equal? $datum `the)
             (read-leo-the-rhs $port $src $depth $leo))
           ((equal? $datum `the:)
@@ -226,13 +233,16 @@
           (else
             (read-leo-default-line $port $src $depth $leo $stx)))))))
 
-(define (read-leo-run-rhs $port $src $depth $leo)
+(define (read-leo-do-rhs $port $src $depth $leo)
   (leo-commit (leo-append $leo (read-leo-rhs $port $src $depth))))
 
-(define (read-leo-do-rhs $port $src $depth $leo)
+(define (read-leo-do-colon-rhs $port $src $depth $leo)
+  (leo-commit (leo-append $leo (read-leo-rhs-list $port $src $depth))))
+
+(define (read-leo-give-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs $port $src $depth)))
 
-(define (read-leo-do-colon-rhs $port $src $depth $leo)
+(define (read-leo-give-colon-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs-atoms $port $src)))
 
 (define (read-leo-the-rhs $port $src $depth $leo)
@@ -350,17 +360,17 @@
   (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") 
   `((times (plus 1 2) (minus 3 4))))
 
-(check-equal? (string->leo-datums "do\n") `())
-(check-equal? (string->leo-datums "do 1\n") `(1))
-(check-equal? (string->leo-datums "1\ndo\n") `(1))
-(check-equal? (string->leo-datums "1\ndo 2\n") `(1 2))
-(check-equal? (string->leo-datums "do 1\ndo 2\n") `(1 2))
-(check-equal? (string->leo-datums "do 1\n") `(1))
-(check-equal? (string->leo-datums "do\n  1\n  plus 2\ndo\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
+(check-equal? (string->leo-datums "give\n") `())
+(check-equal? (string->leo-datums "give 1\n") `(1))
+(check-equal? (string->leo-datums "1\ngive\n") `(1))
+(check-equal? (string->leo-datums "1\ngive 2\n") `(1 2))
+(check-equal? (string->leo-datums "give 1\ngive 2\n") `(1 2))
+(check-equal? (string->leo-datums "give 1\n") `(1))
+(check-equal? (string->leo-datums "give\n  1\n  plus 2\ngive\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
 
-(check-equal? (string->leo-datums "do:\n") `())
-(check-equal? (string->leo-datums "do: 1\n") `(1))
-(check-equal? (string->leo-datums "do: 1 2\n") `(1 2))
+(check-equal? (string->leo-datums "give:\n") `())
+(check-equal? (string->leo-datums "give: 1\n") `(1))
+(check-equal? (string->leo-datums "give: 1 2\n") `(1 2))
 
 (check-equal? 
   (string->leo-datums "1\nplus 2\ndo\n  3\n  minus 4\n") 
@@ -401,8 +411,8 @@
 
 (check-equal? (string->leo-datums "the foo bar zoo\n") `(((foo (bar zoo)))))
 
-(check-equal? (string->leo-datums "run require a\n1\n+ 2\n") `((require a) (+ 1 2)))
-(check-equal? (string->leo-datums "1\nrun 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
+(check-equal? (string->leo-datums "do require a\n1\n+ 2\n") `((require a) (+ 1 2)))
+(check-equal? (string->leo-datums "1\ndo 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
 
 ; -------------------------------------------------------------
 
@@ -415,4 +425,4 @@
 (check-equal? (string->leo-list-datums "") `())
 (check-equal? (string->leo-list-datums "1\n") `(1))
 (check-equal? (string->leo-list-datums "1\n2\n") `(1 2))
-(check-equal? (string->leo-list-datums "do\n  1\n  + 2\n") `((+ 1 2)))
+(check-equal? (string->leo-list-datums "give\n  1\n  + 2\n") `((+ 1 2)))

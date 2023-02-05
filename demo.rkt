@@ -1,19 +1,22 @@
 #lang leo
 
-require:
+do require:
   racket/class
   racket/draw
   racket/gui/base
 
-define bitmap
-  make-bitmap: 128 128
+do
+  bitmap
+  gives make-bitmap: 128 128
 
-define drawing
-  bitmap-dc%
-  new bitmap bitmap
+do
+  drawing
+  gives
+    bitmap-dc%
+    new bitmap bitmap
 
-send: drawing set-pen "green" 3 'solid
-send: drawing set-brush "blue" 'solid
-send: drawing draw-ellipse 16 16 96 96
+do send: drawing set-pen "green" 3 'solid
+do send: drawing set-brush "blue" 'solid
+do send: drawing draw-ellipse 16 16 96 96
 
-make-object: image-snip% bitmap
+do make-object: image-snip% bitmap
