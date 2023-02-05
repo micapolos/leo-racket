@@ -1,21 +1,19 @@
 #lang leo
 
-define
-  number
-  fibonacci
-  does
-    number
-    less-than? 2
-    if true? number
-    else
-      number
-      minus 2
-      fibonacci
-      plus
-        number
-        minus 1
-        fibonacci
+require:
+  racket/class
+  racket/draw
+  racket/gui/base
 
-do
-  42
-  fibonacci
+define bitmap
+  make-bitmap: 128 128
+
+define drawing
+  bitmap-dc%
+  new bitmap bitmap
+
+send: drawing set-pen "green" 3 'solid
+send: drawing set-brush "blue" 'solid
+send: drawing draw-ellipse 16 16 96 96
+
+make-object: image-snip% bitmap

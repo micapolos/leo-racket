@@ -8,60 +8,56 @@ require:
   rackunit
   for-syntax racket/base
 
-racket
-  (define-syntax (define stx)
-    (syntax-case stx (does has exists)
-      ((_ (does params body ...))
-        #`(racket-define params body ...))
-      ((_ (has name fields ...))
-        #`(struct name (fields ...) #:transparent))
-      ((_ (exists (name fields ...)))
-        #`(struct name (fields ...) #:transparent))))
+(define-syntax (define stx)
+  (syntax-case stx (does has exists)
+    ((_ (does params body ...))
+      #`(racket-define params body ...))
+    ((_ (has name fields ...))
+      #`(struct name (fields ...) #:transparent))
+    ((_ (exists (name fields ...)))
+      #`(struct name (fields ...) #:transparent))
+    ((_ (params body ...))
+      #`(racket-define params body ...))))
 
-racket
-  (define-syntax (plus stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(+ lhs rhs))))
+(define-syntax (plus stx)
+  (syntax-case stx ()
+    ((_ lhs rhs)
+      #`(+ lhs rhs))))
 
 do
   2
   plus 3
   check-equal? 5
 
-racket
-  (define-syntax (minus stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(- lhs rhs))))
+(define-syntax (minus stx)
+  (syntax-case stx ()
+    ((_ lhs rhs)
+      #`(- lhs rhs))))
 
 do
   5
   minus 3
   check-equal? 2
 
-racket
-  (define-syntax (times stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(* lhs rhs))))
+(define-syntax (times stx)
+  (syntax-case stx ()
+    ((_ lhs rhs)
+      #`(* lhs rhs))))
 
 do
   2
   times 3
   check-equal? 6
 
-racket
-  (define-syntax (less-than? stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(< lhs rhs))))
+(define-syntax (less-than? stx)
+  (syntax-case stx ()
+    ((_ lhs rhs)
+      #`(< lhs rhs))))
 
-racket
-  (define-syntax (grater-than? stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(> lhs rhs))))
+(define-syntax (grater-than? stx)
+  (syntax-case stx ()
+    ((_ lhs rhs)
+      #`(> lhs rhs))))
 
 define
   true
@@ -96,11 +92,10 @@ do
   any? "jajko"
   check-equal? true
 
-racket
-  (define-syntax (as stx)
-    (syntax-case stx (in)
-      ((_ lhs (symbol (in body ...)))
-        (quasisyntax (let ((symbol lhs)) body ...)))))
+(define-syntax (as stx)
+  (syntax-case stx (in)
+    ((_ lhs (symbol (in body ...)))
+      (quasisyntax (let ((symbol lhs)) body ...)))))
 
 do
   3
@@ -177,17 +172,15 @@ do begin
         pair-to-rhs
         check-equal? 7
 
-racket
-  (define-syntax (doing stx)
-    (syntax-case stx ()
-      ((_ params ... body)
-        #`(lambda (params ...) body))))
+(define-syntax (doing stx)
+  (syntax-case stx ()
+    ((_ params ... body)
+      #`(lambda (params ...) body))))
 
-racket
-  (define-syntax (apply stx)
-    (syntax-case stx ()
-      ((_ xs ...) 
-        #`(#%app xs ...))))
+(define-syntax (apply stx)
+  (syntax-case stx ()
+    ((_ xs ...) 
+      #`(#%app xs ...))))
 
 do
   do: x y
@@ -195,32 +188,30 @@ do
   apply: 5 3
   check-equal? 2
 
-racket
-  (begin-for-syntax
-    (define (expand-else-stx lhs alternate)
-      (let ((tmp (car (generate-temporaries `(tmp)))))
+(begin-for-syntax
+  (define (expand-else-stx lhs alternate)
+    (let ((tmp (car (generate-temporaries `(tmp)))))
+      (expand-if-stx
+        lhs
+        tmp
+        (list #`(`else #,alternate)))))
+  (define (expand-if-stx if-stx tmp tail)
+    (syntax-case if-stx (if)
+      ((if expression (predicate consequent))
         (expand-if-stx
-          lhs
+          #`expression
           tmp
-          (list #`(`else #,alternate)))))
-    (define (expand-if-stx if-stx tmp tail)
-      (syntax-case if-stx (if)
-        ((if expression (predicate consequent))
-          (expand-if-stx
-            #`expression
-            tmp
-            (cons #`((predicate #,tmp) consequent) tail)))
-        (lhs
-          #`(let ((#,tmp lhs))
-            (cond #,@tail))))))
+          (cons #`((predicate #,tmp) consequent) tail)))
+      (lhs
+        #`(let ((#,tmp lhs))
+          (cond #,@tail))))))
 
-racket
-  (define-syntax (else stx)
-    (syntax-case stx (if true?)
-      ((_ (if condition (true? consequent)) alternate)
-        #`(if condition consequent alternate))
-      ((_ lhs alternate)
-        (expand-else-stx #`lhs #`alternate))))
+(define-syntax (else stx)
+  (syntax-case stx (if true?)
+    ((_ (if condition (true? consequent)) alternate)
+      #`(if condition consequent alternate))
+    ((_ lhs alternate)
+      (expand-else-stx #`lhs #`alternate))))
 
 do
   1

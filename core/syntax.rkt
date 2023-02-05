@@ -122,15 +122,7 @@
 ; -------------------------------------------------------
 
 (define (read-atom $port $src) 
-  (let* (($stx (read-syntax $src $port))
-         ($datum (syntax-e $stx)))
-    (cond
-      ((boolean? $datum) $stx)
-      ((symbol? $datum) $stx)
-      ((number? $datum) $stx)
-      ((string? $datum) $stx)
-      ((char? $datum) $stx)
-      (else (error "invalid atom")))))
+  (read-syntax $src $port))
 
 (define (read-reversed-atoms $port $src $reversed-atoms)
   (let (($reversed-atoms (cons (read-atom $port $src) $reversed-atoms)))
