@@ -227,10 +227,6 @@
           ((equal? $datum `the:)
             (leo null
               (read-leo-rhs-the-colon-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
-          ; TODO racket:
-          ((equal? $datum `racket)
-            (leo null
-              (read-leo-rhs-racket-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
           ; TODO datum:
           ((symbol? $datum)
             (cond
@@ -269,13 +265,6 @@
   (cons 
     #`(#,@(reverse (read-rhs-reversed-atoms $port $src)))
     $reversed-lhs-stxs))
-
-(define (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-lhs-stxs)
-  (read-leo-rhs-syntaxes-fn $port $src $depth
-    (lambda ($port $src $depth)
-      (read-with-newline-fn $port
-        (lambda ($port) 
-          (cons (read-syntax $src $port) $reversed-lhs-stxs))))))
 
 (define (read-leo-rhs-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
   (let 
@@ -402,12 +391,6 @@
 (check-equal? (string->leo-datums "foo 123\n") `((foo 123)))
 (check-equal? (string->leo-datums "1\nplus 2\n") `((plus 1 2)))
 (check-equal? (string->leo-datums "\"foo\"\n") `("foo"))
-
-(check-equal? (string->leo-datums "racket 123\n") `(123))
-(check-equal? (string->leo-datums "racket \"foo\"\n") `("foo"))
-(check-equal? (string->leo-datums "racket (123 pieces of #t)\n") `((123 pieces of #t)))
-(check-equal? (string->leo-datums "racket 123\nracket 124\n") `(123 124))
-(check-equal? (string->leo-datums "racket racket\n") `(racket))
 
 (check-equal? 
   (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") 
