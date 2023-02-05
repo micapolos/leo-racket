@@ -7,6 +7,8 @@
   racket/string
   (for-syntax racket/base))
 
+; ---------------------------------------------------------------
+
 (struct leo (reversed-statement-stxs reversed-value-stxs) #:transparent)
 
 (define empty-leo (leo null null))
@@ -194,6 +196,8 @@
       (let* (($stx (read-atom $port $src))
              ($datum (syntax-e $stx)))
         (cond
+          ((equal? $datum `with)
+            (read-leo-with-rhs $port $src $depth $leo))
           ((equal? $datum `do)
             (read-leo-do-rhs $port $src $depth $leo))
           ((equal? $datum `do:)
@@ -212,6 +216,9 @@
                 (read-leo-symbol-rhs $port $src $depth $leo $stx))))
           (else
             (read-leo-default-line $port $src $depth $leo $stx)))))))
+
+(define (read-leo-with-rhs $port $src $depth $leo)
+  (leo-append $leo (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-do-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs $port $src $depth)))
@@ -384,6 +391,12 @@
 (check-equal? (string->leo-datums "the\n  foo\n  bar\n") `(((bar foo))))
 
 (check-equal? (string->leo-datums "the foo bar zoo\n") `(((foo (bar zoo)))))
+
+(check-equal? (string->leo-datums "foo with\n") `(foo))
+(check-equal? (string->leo-datums "foo with 1\n") `((foo 1)))
+(check-equal? (string->leo-datums "foo with 1 2\n") `((foo 1 2)))
+(check-equal? (string->leo-datums "foo with\n  1\n") `((foo 1)))
+(check-equal? (string->leo-datums "foo with\n  1\n  2\n") `((foo 1 2)))
 
 ; -------------------------------------------------------------
 
