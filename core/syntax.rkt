@@ -294,19 +294,22 @@
     (else (error "expected newline after datum"))))
 
 (define (read-leo-rhs-syntaxes $port $src $depth)
+  (leo-stxs (read-leo-rhs $port $src $depth)))
+
+(define (read-leo-rhs $port $src $depth)
   (let (($char (peek-char $port)))
     (cond
       ((equal? $char #\space)
         (skip-char $port)
-        (read-leo-syntaxes-once $port $src $depth))
+        (read-leo-line $port $src $depth empty-leo))
       ((equal? $char #\newline)
         (skip-char $port)
         (let (($rhs-depth (+ $depth 1)))
           (cond
             ((peek-exact-depth $port $rhs-depth)
               (skip-depth $port $rhs-depth)
-              (read-leo-syntaxes $port $src $rhs-depth))
-            (else null))))
+              (read-leo $port $src $rhs-depth empty-leo))
+            (else empty-leo))))
       (else 
         (error "expected space or newline before rhs")))))
 
