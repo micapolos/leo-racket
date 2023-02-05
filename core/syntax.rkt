@@ -189,11 +189,14 @@
       (let* (($stx (read-atom $port $src))
              ($datum (syntax-e $stx)))
         (cond
-          ; TODO do:
           ((equal? $datum `do)
             (read-leo-rhs-do-syntaxes $port $src $depth $reversed-stxs))
           ((equal? $datum `do:)
             (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-stxs))
+          ((equal? $datum `the)
+            (read-leo-rhs-the-syntaxes $port $src $depth $reversed-stxs))
+          ((equal? $datum `the:)
+            (read-leo-rhs-the-colon-syntaxes $port $src $depth $reversed-stxs))
           ; TODO racket:
           ((equal? $datum `racket)
             (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-stxs))
@@ -222,6 +225,16 @@
 
 (define (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-lhs-stxs)
   (append (read-rhs-reversed-atoms $port $src) $reversed-lhs-stxs))
+
+(define (read-leo-rhs-the-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (cons
+    #`(#,@(read-leo-rhs-syntaxes $port $src $depth))
+    $reversed-lhs-stxs))
+
+(define (read-leo-rhs-the-colon-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (cons 
+    #`(#,@(reverse (read-rhs-reversed-atoms $port $src)))
+    $reversed-lhs-stxs))
 
 (define (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-lhs-stxs)
   (read-leo-rhs-syntaxes-fn $port $src $depth
@@ -405,6 +418,19 @@
 (check-equal?
   (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") 
   `((circle (radius 10) (center (x 10) (y 20)))))
+
+(check-equal? (string->leo-datums "the\n") `(()))
+(check-equal? (string->leo-datums "the:\n") `(()))
+
+(check-equal? (string->leo-datums "the: 1\n") `((1)))
+(check-equal? (string->leo-datums "the: 1 2\n") `((1 2)))
+
+(check-equal? (string->leo-datums "the\n  1\n") `((1)))
+(check-equal? (string->leo-datums "the\n  foo\n  bar\n") `(((bar foo))))
+
+(check-equal? (string->leo-datums "the foo bar zoo\n") `(((foo (bar zoo)))))
+
+; -------------------------------------------------------------
 
 (define (string->leo-list-syntaxes $string)
   (read-leo-list-syntaxes (open-input-string $string)))

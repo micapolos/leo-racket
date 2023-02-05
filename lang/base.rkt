@@ -233,3 +233,13 @@ do
   if string? "string"
   else "something else"
   check-equal? "something else"
+
+(define-syntax (compile stx)
+  (syntax-case stx ()
+    ((_ body)
+      (let ((anchor (car (generate-temporaries `(anchor)))))
+        #`(begin
+          (define-namespace-anchor #,anchor)
+          (parameterize
+            ((current-namespace (namespace-anchor->namespace #,anchor)))
+            (syntax->datum (expand (datum->syntax #f (quote body))))))))))
