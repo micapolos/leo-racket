@@ -1,11 +1,14 @@
 #lang racket/base
 
-(provide (all-defined-out))
+(provide read-leo-list-stxs)
 
 (require 
   rackunit
   racket/string
   (for-syntax racket/base))
+
+(define (read-leo-list-stxs $port $src)
+  (leo-stxs (read-leo-list $port $src)))
 
 ; ---------------------------------------------------------------
 
