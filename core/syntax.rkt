@@ -135,10 +135,6 @@
 (define (read-atom $port $src) 
   (read-syntax $src $port))
 
-(define (read-reversed-atoms $port $src $reversed-atoms)
-  (leo-reversed-value-stxs 
-    (read-leo-atoms $port $src (leo null $reversed-atoms))))
-
 (define (read-leo-atoms $port $src $leo)
   (let (($leo (leo null (cons (read-atom $port $src) (leo-reversed-value-stxs $leo)))))
     (cond
@@ -149,9 +145,6 @@
         (skip-char $port)
         $leo)
       (else (error "expected space or newline after atoms")))))
-
-(define (read-atoms $port $src)
-  (reverse (read-reversed-atoms $port $src null)))
 
 ; -------------------------------------------------------
 
