@@ -235,8 +235,7 @@
                   (read-leo-rhs-colon-symbol-syntaxes $port $src $depth (leo-reversed-value-stxs $leo)
                     (stx-symbol-drop-last-char $stx))))
               (else 
-                (leo null
-                  (read-leo-rhs-symbol-syntaxes $port $src $depth (leo-reversed-value-stxs $leo) $stx)))))
+                (read-leo-symbol-rhs $port $src $depth $leo $stx))))
           (else
             (leo null
               (read-leo-default-syntaxes $port $src $depth (leo-reversed-value-stxs $leo) $stx))))))))
@@ -266,15 +265,16 @@
     #`(#,@(reverse (read-rhs-reversed-atoms $port $src)))
     $reversed-lhs-stxs))
 
-(define (read-leo-rhs-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
+(define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
   (let 
-    (($args 
-      (append
-        (reverse $reversed-lhs-stxs)
-        (read-leo-rhs-syntaxes $port $src $depth))))
+    (($args
+      (reverse
+        (append
+          (leo-reversed-value-stxs (read-leo-rhs $port $src $depth))
+          (leo-reversed-value-stxs $leo)))))
     (cond
-      ((null? $args) (list $symbol))
-      (else (list #`(#,$symbol #,@$args))))))
+      ((null? $args) (leo null (list $symbol)))
+      (else (leo null (list #`(#,$symbol #,@$args)))))))
 
 (define (read-leo-rhs-colon-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
   (let 
