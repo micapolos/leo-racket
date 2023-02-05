@@ -9,8 +9,8 @@ require:
   for-syntax racket/base
 
 (define-syntax (define stx)
-  (syntax-case stx (does has exists)
-    ((_ (does params body ...))
+  (syntax-case stx (gives has exists)
+    ((_ (gives params body ...))
       #`(racket-define params body ...))
     ((_ (has name fields ...))
       #`(struct name (fields ...) #:transparent))
@@ -61,11 +61,11 @@ do
 
 define
   true
-  does #t
+  gives #t
 
 define
   false
-  does #f
+  gives #f
 
 do
   2
@@ -74,17 +74,17 @@ do
 
 define
   any? x
-  does #t
+  gives #t
 
 define
   true? x
-  does
+  gives
     x
     equal? #t
 
 define
   false? x
-  does
+  gives
     x
     equal? #f
 
@@ -172,20 +172,20 @@ do begin
         pair-to-rhs
         check-equal? 7
 
-(define-syntax (doing stx)
+(define-syntax (giving stx)
   (syntax-case stx ()
     ((_ params ... body)
       #`(lambda (params ...) body))))
 
-(define-syntax (apply stx)
+(define-syntax (take stx)
   (syntax-case stx ()
     ((_ xs ...) 
       #`(#%app xs ...))))
 
 do
   do: x y
-  doing minus: x y
-  apply: 5 3
+  giving minus: x y
+  take: 5 3
   check-equal? 2
 
 (begin-for-syntax
