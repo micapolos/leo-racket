@@ -151,12 +151,6 @@
 
 ; -------------------------------------------------------
 
-(define (read-leo $port ($src #f) ($depth 0))
-  (leo null (read-leo-reverse-syntaxes $port $src $depth null)))
-  
-(define (read-leo-list $port ($src #f) ($depth 0))
-  (leo null (read-leo-reverse-list-syntaxes $port $src $depth null)))
-
 (define (read-leo-syntaxes $port ($src #f) ($depth 0))
   (reverse (read-leo-reverse-syntaxes $port $src $depth null)))
 
@@ -167,22 +161,27 @@
   (reverse (read-leo-reverse-syntaxes-once $port $src $depth null)))
 
 (define (read-leo-reverse-syntaxes $port $src $depth $reversed-stxs)
+  (leo-reversed-value-stxs (read-leo $port $src $depth (leo null $reversed-stxs))))
+
+(define (read-leo $port ($src "") ($depth 0) ($leo empty-leo))
   (cond
-    ((peek-eof $port) 
-      $reversed-stxs)
+    ((peek-eof $port) $leo)
     (else
       (let*
         (($reversed-combined-stxs
-          (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)))
+          (read-leo-reverse-syntaxes-once $port $src $depth (leo-reversed-value-stxs $leo))))
         (cond
           ((peek-exact-depth $port $depth)
             (skip-depth $port $depth)
-            (read-leo-reverse-syntaxes $port $src $depth $reversed-combined-stxs))
-          (else $reversed-combined-stxs))))))
+            (leo null (read-leo-reverse-syntaxes $port $src $depth $reversed-combined-stxs)))
+          (else (leo null $reversed-combined-stxs)))))))
 
 (define (read-leo-reverse-list-syntaxes $port $src $depth $reversed-stxs)
+  (leo-reversed-value-stxs (read-leo-list $port $src $depth (leo null $reversed-stxs))))
+
+(define (read-leo-list $port ($src "") ($depth 0) ($leo empty-leo))
   (cond
-    ((peek-eof $port) $reversed-stxs)
+    ((peek-eof $port) $leo)
     (else
       (let*
         (($reversed-line-stxs
@@ -190,9 +189,16 @@
         (cond
           ((peek-exact-depth $port $depth)
             (skip-depth $port $depth)
-            (read-leo-reverse-list-syntaxes $port $src $depth
-              (append $reversed-line-stxs $reversed-stxs)))
-          (else (append $reversed-line-stxs $reversed-stxs)))))))
+            (leo null
+              (read-leo-reverse-list-syntaxes $port $src $depth
+                (append 
+                  $reversed-line-stxs 
+                  (leo-reversed-value-stxs $leo)))))
+          (else 
+            (leo null 
+              (append 
+                $reversed-line-stxs 
+                (leo-reversed-value-stxs $leo)))))))))
 
 (define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
   (cond
