@@ -188,21 +188,13 @@
     ((peek-eof $port) $leo)
     (else
       (let*
-        (($reversed-line-stxs
-          (read-leo-reverse-syntaxes-once $port $src $depth null)))
+        (($leo-line (read-leo-line $port $src $depth empty-leo)))
         (cond
           ((peek-exact-depth $port $depth)
             (skip-depth $port $depth)
-            (leo null
-              (read-leo-reverse-list-syntaxes $port $src $depth
-                (append 
-                  $reversed-line-stxs 
-                  (leo-reversed-value-stxs $leo)))))
+            (read-leo-list $port $src $depth (leo-append $leo $leo-line)))
           (else 
-            (leo null 
-              (append 
-                $reversed-line-stxs 
-                (leo-reversed-value-stxs $leo)))))))))
+            (leo-append $leo $leo-line)))))))
 
 (define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
   (leo-reversed-value-stxs (read-leo-line $port $src $depth (leo null $reversed-stxs))))
@@ -252,11 +244,6 @@
 
 (define (read-leo-do-colon-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs-atoms $port $src)))
-
-(define (read-leo-rhs-the-syntaxes $port $src $depth $reversed-lhs-stxs)
-  (cons
-    #`(#,@(read-leo-rhs-syntaxes $port $src $depth))
-    $reversed-lhs-stxs))
 
 (define (read-leo-the-rhs $port $src $depth $leo)
   (leo-append 
