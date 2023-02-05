@@ -222,8 +222,7 @@
           ((equal? $datum `do)
             (read-leo-do-rhs $port $src $depth $leo))
           ((equal? $datum `do:)
-            (leo null
-              (read-leo-rhs-do-colon-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
+            (read-leo-do-colon-rhs $port $src $depth $leo))
           ((equal? $datum `the)
             (leo null
               (read-leo-rhs-the-syntaxes $port $src $depth (leo-reversed-value-stxs $leo))))
@@ -254,8 +253,8 @@
 (define (read-leo-do-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs $port $src $depth)))
 
-(define (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-lhs-stxs)
-  (append (read-rhs-reversed-atoms $port $src) $reversed-lhs-stxs))
+(define (read-leo-do-colon-rhs $port $src $depth $leo)
+  (leo-append $leo (read-leo-rhs-atoms $port $src)))
 
 (define (read-leo-rhs-the-syntaxes $port $src $depth $reversed-lhs-stxs)
   (cons
