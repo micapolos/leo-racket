@@ -172,15 +172,18 @@
           (else $reversed-combined-stxs))))))
 
 (define (read-leo-reverse-list-syntaxes $port $src $depth $reversed-stxs)
-  (let*
-    (($reversed-line-stxs
-      (read-leo-reverse-syntaxes-once $port $src $depth null)))
-    (cond
-      ((peek-exact-depth $port $depth)
-        (skip-depth $port $depth)
-        (read-leo-reverse-list-syntaxes $port $src $depth
-          (append $reversed-line-stxs $reversed-stxs)))
-      (else (append $reversed-line-stxs $reversed-stxs)))))
+  (cond
+    ((peek-eof $port) $reversed-stxs)
+    (else
+      (let*
+        (($reversed-line-stxs
+          (read-leo-reverse-syntaxes-once $port $src $depth null)))
+        (cond
+          ((peek-exact-depth $port $depth)
+            (skip-depth $port $depth)
+            (read-leo-reverse-list-syntaxes $port $src $depth
+              (append $reversed-line-stxs $reversed-stxs)))
+          (else (append $reversed-line-stxs $reversed-stxs)))))))
 
 (define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
   (cond
@@ -411,3 +414,13 @@
   (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") 
   `((circle (radius 10) (center (x 10) (y 20)))))
 
+(define (string->leo-list-syntaxes $string)
+  (read-leo-list-syntaxes (open-input-string $string)))
+
+(define (string->leo-list-datums $string)
+  (map syntax->datum (string->leo-list-syntaxes $string)))
+
+(check-equal? (string->leo-list-datums "") `())
+(check-equal? (string->leo-list-datums "1\n") `(1))
+(check-equal? (string->leo-list-datums "1\n2\n") `(1 2))
+(check-equal? (string->leo-list-datums "do\n  1\n  + 2\n") `((+ 1 2)))

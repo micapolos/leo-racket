@@ -1,6 +1,6 @@
-#lang infix/leo
+#lang leo
 
-do
+define
   number
   fibonacci
   does

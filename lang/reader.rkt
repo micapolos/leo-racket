@@ -2,7 +2,7 @@
 
 (require 
   syntax/strip-context
-  infix/leo/core/syntax)
+  leo/core/syntax)
  
 (provide 
   (rename-out 
@@ -17,5 +17,5 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
-      (require infix/leo/lang/base rackunit (for-syntax racket/base))
-      #,@(read-leo-syntaxes port src))))
+      (require leo/lang/base rackunit (for-syntax racket/base))
+      #,@(read-leo-list-syntaxes port src))))

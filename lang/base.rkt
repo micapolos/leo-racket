@@ -1,14 +1,23 @@
-#lang infix/leo/core
+#lang leo/core
 
-do require:
+require:
+  do
+    racket/base
+    rename-in:
+      define racket-define
   rackunit
   for-syntax racket/base
 
 racket
-  (define-syntax (does stx)
-    (syntax-case stx ()
-      ((_ params body ...)
-        #`(define params body ...))))
+  (define-syntax (define stx)
+    (syntax-case stx (does has exists)
+      ((_ (does params body ...))
+        #`(racket-define params body ...))
+      ((_ (has name fields ...))
+        #`(struct name (fields ...) #:transparent))
+      ((_ (exists (name fields ...)))
+        #`(struct name (fields ...) #:transparent))))
+
 
 racket
   (define-syntax (plus stx)
@@ -24,8 +33,8 @@ do
 racket
   (define-syntax (minus stx)
     (syntax-case stx ()
-        ((_ lhs rhs)
-          #`(- lhs rhs))))
+      ((_ lhs rhs)
+        #`(- lhs rhs))))
 
 do
   5
@@ -35,8 +44,8 @@ do
 racket
   (define-syntax (times stx)
     (syntax-case stx ()
-        ((_ lhs rhs)
-          #`(* lhs rhs))))
+      ((_ lhs rhs)
+        #`(* lhs rhs))))
 
 do
   2
@@ -46,20 +55,20 @@ do
 racket
   (define-syntax (less-than? stx)
     (syntax-case stx ()
-        ((_ lhs rhs)
-          #`(< lhs rhs))))
+      ((_ lhs rhs)
+        #`(< lhs rhs))))
 
 racket
   (define-syntax (grater-than? stx)
     (syntax-case stx ()
-        ((_ lhs rhs)
-          #`(> lhs rhs))))
+      ((_ lhs rhs)
+        #`(> lhs rhs))))
 
-do
+define
   true
   does #t
 
-do
+define
   false
   does #f
 
@@ -68,17 +77,17 @@ do
   less-than? 3
   check-equal? true
 
-do
+define
   any? x
   does #t
 
-do
+define
   true? x
   does
     x
     equal? #t
 
-do
+define
   false? x
   does
     x
@@ -102,14 +111,8 @@ do
     plus number
   check-equal? 14
 
-racket
-  (define-syntax (has stx)
-    (syntax-case stx (in)
-      ((_ name fields ...)
-        #`(struct name (fields ...) #:transparent))))
-
 do begin
-  do
+  define
     point
     has: x y
   do
@@ -141,14 +144,8 @@ do begin
         point-y
         check-equal? 7
 
-racket
-  (define-syntax (exists stx)
-    (syntax-case stx ()
-      ((_ (name fields ...))
-        #`(has name fields ...))))
-
 do begin
-  do
+  define
     lhs
     pair-to rhs
     exists
