@@ -7,10 +7,9 @@
   racket/string
   (for-syntax racket/base))
 
-(struct leo (ctxt reversed-statement-stxs reversed-value-stxs) #:transparent)
+(struct leo (reversed-statement-stxs reversed-value-stxs) #:transparent)
 
-(define (empty-leo $ctxt) 
-  (leo $ctxt null null))
+(define empty-leo (leo null null))
 
 (define (leo-stxs $leo)
   (reverse
@@ -28,9 +27,7 @@
             (leo-reversed-value-stxs $lhs)))
         (else
           (cons
-            (datum->syntax
-              (leo-ctxt $lhs)
-              `(begin-values ,@(leo-stxs $rhs)))
+            #`(begin-values ,@(leo-stxs $rhs))
             (leo-reversed-value-stxs $lhs)))))))
 
 ; -------------------------------------------------------
