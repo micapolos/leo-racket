@@ -18,7 +18,6 @@ racket
       ((_ (exists (name fields ...)))
         #`(struct name (fields ...) #:transparent))))
 
-
 racket
   (define-syntax (plus stx)
     (syntax-case stx ()
@@ -217,7 +216,9 @@ racket
 
 racket
   (define-syntax (else stx)
-    (syntax-case stx ()
+    (syntax-case stx (if true?)
+      ((_ (if condition (true? consequent)) alternate)
+        #`(if condition consequent alternate))
       ((_ lhs alternate)
         (expand-else-stx #`lhs #`alternate))))
 

@@ -17,5 +17,5 @@ define
         fibonacci
 
 do
-  10
+  42
   fibonacci
