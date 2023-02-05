@@ -354,31 +354,6 @@
       (else 
         (error "expected space or newline before rhs")))))
 
-(define (read-leo-rhs-syntaxes-fn $port $src $depth $read-fn)
-  (let (($char (peek-char $port)))
-    (cond
-      ((equal? $char #\space)
-        (skip-char $port)
-        ($read-fn $port $src $depth))
-      ((equal? $char #\newline)
-        (skip-char $port)
-        (let (($rhs-depth (+ $depth 1)))
-          (cond
-            ((peek-exact-depth $port $rhs-depth)
-              (skip-depth $port $rhs-depth)
-              ($read-fn $port $src $rhs-depth))
-            (else null))))
-      (else 
-        (error "expected space or newline before rhs")))))
-
-(define (read-with-newline-fn $port $fn)
-  (let (($result ($fn $port)))
-    (cond
-      ((equal? (peek-char $port) #\newline) 
-        (skip-char $port)
-        $result)
-      (else (error "newline expected")))))
-
 (define (string->leo-syntaxes $string)
   (leo-stxs (read-leo (open-input-string $string))))
 
