@@ -136,14 +136,18 @@
   (read-syntax $src $port))
 
 (define (read-reversed-atoms $port $src $reversed-atoms)
-  (let (($reversed-atoms (cons (read-atom $port $src) $reversed-atoms)))
+  (leo-reversed-value-stxs 
+    (read-leo-atoms $port $src (leo null $reversed-atoms))))
+
+(define (read-leo-atoms $port $src $leo)
+  (let (($leo (leo null (cons (read-atom $port $src) (leo-reversed-value-stxs $leo)))))
     (cond
       ((equal? (peek-char $port) #\space)
         (skip-char $port)
-        (read-reversed-atoms $port $src $reversed-atoms))
+        (read-leo-atoms $port $src $leo))
       ((equal? (peek-char $port) #\newline)
         (skip-char $port)
-        $reversed-atoms)
+        $leo)
       (else (error "expected space or newline after atoms")))))
 
 (define (read-atoms $port $src)
@@ -231,9 +235,8 @@
           ((symbol? $datum)
             (cond
               ((symbol-colon-suffix? $datum)
-                (leo null
-                  (read-leo-rhs-colon-symbol-syntaxes $port $src $depth (leo-reversed-value-stxs $leo)
-                    (stx-symbol-drop-last-char $stx))))
+                (read-leo-symbol-colon-rhs $port $src $depth $leo
+                  (stx-symbol-drop-last-char $stx)))
               (else 
                 (read-leo-symbol-rhs $port $src $depth $leo $stx))))
           (else
@@ -283,6 +286,14 @@
         (reverse $reversed-lhs-stxs)
         (read-leo-rhs-list-syntaxes $port $src $depth))))
     (list #`(#,$symbol #,@$args))))
+
+(define (read-leo-symbol-colon-rhs $port $src $depth $leo $symbol)
+  (let 
+    (($args 
+      (append
+        (reverse (leo-reversed-value-stxs $leo))
+        (read-leo-rhs-list-syntaxes $port $src $depth))))
+    (leo null (list #`(#,$symbol #,@$args)))))
 
 (define (read-leo-default-syntaxes $port $src $depth $reversed-lhs-stxs $default)
   (cond 
