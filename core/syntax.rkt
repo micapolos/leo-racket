@@ -1,0 +1,413 @@
+#lang racket/base
+
+(provide (all-defined-out))
+
+(require 
+  rackunit
+  racket/string
+  (for-syntax racket/base))
+
+(struct reader (port src depth) #:transparent)
+
+; -------------------------------------------------------
+
+(define (symbol-colon-suffix? $symbol)
+  (string-suffix? (symbol->string $symbol) ":"))
+
+(define (symbol-drop-last-char $symbol)
+  (string->symbol
+    (let (($string (symbol->string $symbol)))
+      (substring $string 0 (- (string-length $string) 1)))))
+
+(define (stx-symbol-drop-last-char $stx)
+  (datum->syntax $stx (symbol-drop-last-char (syntax-e $stx))))
+
+; -------------------------------------------------------
+
+(define (deeper-reader $reader)
+  (struct-copy reader $reader
+    (depth (+ (reader-depth $reader) 1))))
+
+(define (shallower-reader $reader)
+  (struct-copy reader $reader
+    (depth (- (reader-depth $reader) 1))))
+
+; -------------------------------------------------------
+
+(define (skip-char-count $port $count)
+  (read-string $count $port))
+
+(define (skip-char $port)
+  (read-char $port))
+
+; -------------------------------------------------------
+
+(define (peek-eof $port ($skip 0))
+  (eof-object? (peek-char $port $skip)))
+
+(check-equal? (peek-eof (open-input-string "")) #t)
+(check-equal? (peek-eof (open-input-string "a")) #f)
+
+; -------------------------------------------------------
+
+(define (peek-exact-string $port $string ($skip 0))
+  (equal? 
+    (peek-string (string-length $string) $skip $port)
+    $string))
+
+(check-equal? (peek-exact-string (open-input-string "") "") #t)
+(check-equal? (peek-exact-string (open-input-string "a") "") #t)
+(check-equal? (peek-exact-string (open-input-string "a") "a") #t)
+(check-equal? (peek-exact-string (open-input-string "a") "b") #f)
+(check-equal? (peek-exact-string (open-input-string "ab") "a") #t)
+(check-equal? (peek-exact-string (open-input-string "ab") "ab") #t)
+(check-equal? (peek-exact-string (open-input-string "ab") "ac") #f)
+(check-equal? (peek-exact-string (open-input-string "abc") "ab") #t)
+
+; -------------------------------------------------------
+
+(define indent-string "  ")
+(define indent-length (string-length indent-string))
+
+(define (peek-indent $port ($skip 0)) 
+  (peek-exact-string $port indent-string $skip))
+
+; -------------------------------------------------------
+
+(define (peek-depth-max $port ($max -1) ($depth 0) ($skip 0))
+  (cond
+    ((= $max 0) $depth)
+    ((peek-indent $port $skip) 
+      (peek-depth-max $port (- $max 1) (+ $depth 1) (+ indent-length $skip)))
+    (else $depth)))
+
+(check-equal? (peek-depth-max (open-input-string "") 2) 0)
+(check-equal? (peek-depth-max (open-input-string " ") 2) 0)
+(check-equal? (peek-depth-max (open-input-string "  ") 2) 1)
+(check-equal? (peek-depth-max (open-input-string "   ") 2) 1)
+(check-equal? (peek-depth-max (open-input-string "    ") 2) 2)
+(check-equal? (peek-depth-max (open-input-string "     ") 2) 2)
+(check-equal? (peek-depth-max (open-input-string "      ") 2) 2)
+
+; -------------------------------------------------------
+
+(define (peek-exact-depth $port $depth)
+  (= (peek-depth-max $port $depth) $depth))
+
+(define (skip-depth $port $depth)
+  (skip-char-count $port (* indent-length $depth)))
+
+; -------------------------------------------------------
+
+(define (read-depth $port ($max -1) ($depth 0))
+  (cond
+    ((= $max 0) $depth)
+    ((peek-indent $port) 
+      (skip-char-count $port indent-length)
+      (read-depth $port (- $max 1) (+ $depth 1)))
+    (else $depth)))
+
+(check-equal? (read-depth (open-input-string "")) 0)
+(check-equal? (read-depth (open-input-string " ")) 0)
+(check-equal? (read-depth (open-input-string " a")) 0)
+(check-equal? (read-depth (open-input-string "  ")) 1)
+(check-equal? (read-depth (open-input-string "   ")) 1)
+(check-equal? (read-depth (open-input-string "   a")) 1)
+(check-equal? (read-depth (open-input-string "    ")) 2)
+(check-equal? (read-depth (open-input-string "    a") 0) 0)
+(check-equal? (read-depth (open-input-string "    a") 1) 1)
+(check-equal? (read-depth (open-input-string "    a") 2) 2)
+(check-equal? (read-depth (open-input-string "    a") 3) 2)
+
+; -------------------------------------------------------
+
+(define (read-atom $port $src) 
+  (let* (($stx (read-syntax $src $port))
+         ($datum (syntax-e $stx)))
+    (cond
+      ((boolean? $datum) $stx)
+      ((symbol? $datum) $stx)
+      ((number? $datum) $stx)
+      ((string? $datum) $stx)
+      ((char? $datum) $stx)
+      (else (error "invalid atom")))))
+
+(define (read-reversed-atoms $port $src $reversed-atoms)
+  (let (($reversed-atoms (cons (read-atom $port $src) $reversed-atoms)))
+    (cond
+      ((equal? (peek-char $port) #\space)
+        (skip-char $port)
+        (read-reversed-atoms $port $src $reversed-atoms))
+      ((equal? (peek-char $port) #\newline)
+        (skip-char $port)
+        $reversed-atoms)
+      (else (error "expected space or newline after atoms")))))
+
+(define (read-atoms $port $src)
+  (reverse (read-reversed-atoms $port $src null)))
+
+; -------------------------------------------------------
+  
+(define (read-leo-syntaxes $port ($src #f) ($depth 0))
+  (reverse (read-leo-reverse-syntaxes $port $src $depth null)))
+
+(define (read-leo-list-syntaxes $port ($src #f) ($depth 0))
+  (reverse (read-leo-reverse-list-syntaxes $port $src $depth null)))
+
+(define (read-leo-syntaxes-once $port ($src #f) ($depth 0))
+  (reverse (read-leo-reverse-syntaxes-once $port $src $depth null)))
+
+(define (read-leo-reverse-syntaxes $port $src $depth $reversed-stxs)
+  (cond
+    ((peek-eof $port) 
+      $reversed-stxs)
+    (else
+      (let*
+        (($reversed-combined-stxs
+          (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)))
+        (cond
+          ((peek-exact-depth $port $depth)
+            (skip-depth $port $depth)
+            (read-leo-reverse-syntaxes $port $src $depth $reversed-combined-stxs))
+          (else $reversed-combined-stxs))))))
+
+(define (read-leo-reverse-list-syntaxes $port $src $depth $reversed-stxs)
+  (let*
+    (($reversed-line-stxs
+      (read-leo-reverse-syntaxes-once $port $src $depth null)))
+    (cond
+      ((peek-exact-depth $port $depth)
+        (skip-depth $port $depth)
+        (read-leo-reverse-list-syntaxes $port $src $depth
+          (append $reversed-line-stxs $reversed-stxs)))
+      (else (append $reversed-line-stxs $reversed-stxs)))))
+
+(define (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs)
+  (cond
+    ((equal? (peek-char $port) #\newline)
+      (skip-char $port)
+      (read-leo-reverse-syntaxes-once $port $src $depth $reversed-stxs))
+    ((eof-object? (peek-char $port)) null)
+    ((char-whitespace? (peek-char $port))
+      (error "leo can not start with whitespace"))
+    (else
+      (let* (($stx (read-atom $port $src))
+             ($datum (syntax-e $stx)))
+        (cond
+          ; TODO do:
+          ((equal? $datum `do)
+            (read-leo-rhs-do-syntaxes $port $src $depth $reversed-stxs))
+          ((equal? $datum `do:)
+            (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-stxs))
+          ; TODO racket:
+          ((equal? $datum `racket)
+            (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-stxs))
+          ; TODO datum:
+          ((symbol? $datum)
+            (cond
+              ((symbol-colon-suffix? $datum)
+                (read-leo-rhs-colon-symbol-syntaxes $port $src $depth $reversed-stxs 
+                  (stx-symbol-drop-last-char $stx)))
+              (else 
+                (read-leo-rhs-symbol-syntaxes $port $src $depth $reversed-stxs $stx))))
+          (else
+            (read-leo-default-syntaxes $port $src $depth $reversed-stxs $stx)))))))
+
+(define (read-leo-rhs-gather-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (cond
+    ((peek-exact-string $port " ")
+      (skip-char $port)
+      (append
+        (read-leo-reverse-syntaxes $port $src (+ $depth 1) null)
+        $reversed-lhs-stxs))
+    (else (error "expected space after -"))))
+
+(define (read-leo-rhs-do-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (append (read-leo-rhs-syntaxes $port $src $depth) $reversed-lhs-stxs))
+
+(define (read-leo-rhs-do-colon-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (append (read-rhs-reversed-atoms $port $src) $reversed-lhs-stxs))
+
+(define (read-leo-rhs-racket-syntaxes $port $src $depth $reversed-lhs-stxs)
+  (read-leo-rhs-syntaxes-fn $port $src $depth
+    (lambda ($port $src $depth)
+      (read-with-newline-fn $port
+        (lambda ($port) 
+          (cons (read-syntax $src $port) $reversed-lhs-stxs))))))
+
+(define (read-leo-rhs-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
+  (let 
+    (($args 
+      (append
+        (reverse $reversed-lhs-stxs)
+        (read-leo-rhs-syntaxes $port $src $depth))))
+    (cond
+      ((null? $args) (list $symbol))
+      (else (list #`(#,$symbol #,@$args))))))
+
+(define (read-leo-rhs-colon-symbol-syntaxes $port $src $depth $reversed-lhs-stxs $symbol)
+  (let 
+    (($args 
+      (append
+        (reverse $reversed-lhs-stxs)
+        (read-leo-rhs-list-syntaxes $port $src $depth))))
+    (list #`(#,$symbol #,@$args))))
+
+(define (read-leo-default-syntaxes $port $src $depth $reversed-lhs-stxs $default)
+  (cond 
+    ((not (null? $reversed-lhs-stxs))
+      (error "datum allowed only at the beginning"))
+    ((equal? (peek-char $port) #\newline)
+      (skip-char $port)
+      (list $default))
+    (else (error "expected newline after datum"))))
+
+(define (read-leo-rhs-syntaxes $port $src $depth)
+  (let (($char (peek-char $port)))
+    (cond
+      ((equal? $char #\space)
+        (skip-char $port)
+        (read-leo-syntaxes-once $port $src $depth))
+      ((equal? $char #\newline)
+        (skip-char $port)
+        (let (($rhs-depth (+ $depth 1)))
+          (cond
+            ((peek-exact-depth $port $rhs-depth)
+              (skip-depth $port $rhs-depth)
+              (read-leo-syntaxes $port $src $rhs-depth))
+            (else null))))
+      (else 
+        (error "expected space or newline before rhs")))))
+
+(define (read-rhs-reversed-atoms $port $src)
+  (let (($char (peek-char $port)))
+    (cond
+      ((equal? $char #\space)
+        (skip-char $port)
+        (read-reversed-atoms $port $src null))
+      ((equal? $char #\newline)
+        (skip-char $port)
+        null)
+      (else 
+        (error "expected space before rhs atoms")))))
+
+(define (read-leo-rhs-list-syntaxes $port $src $depth)
+  (let (($char (peek-char $port)))
+    (cond
+      ((equal? $char #\space)
+        (skip-char $port)
+        (read-atoms $port $src))
+      ((equal? $char #\newline)
+        (skip-char $port)
+        (let (($rhs-depth (+ $depth 1)))
+          (cond
+            ((peek-exact-depth $port $rhs-depth)
+              (skip-depth $port $rhs-depth)
+              (read-leo-list-syntaxes $port $src $rhs-depth))
+            (else null))))
+      (else 
+        (error "expected space or newline before rhs")))))
+
+(define (read-leo-rhs-syntaxes-fn $port $src $depth $read-fn)
+  (let (($char (peek-char $port)))
+    (cond
+      ((equal? $char #\space)
+        (skip-char $port)
+        ($read-fn $port $src $depth))
+      ((equal? $char #\newline)
+        (skip-char $port)
+        (let (($rhs-depth (+ $depth 1)))
+          (cond
+            ((peek-exact-depth $port $rhs-depth)
+              (skip-depth $port $rhs-depth)
+              ($read-fn $port $src $rhs-depth))
+            (else null))))
+      (else 
+        (error "expected space or newline before rhs")))))
+
+(define (read-with-newline-fn $port $fn)
+  (let (($result ($fn $port)))
+    (cond
+      ((equal? (peek-char $port) #\newline) 
+        (skip-char $port)
+        $result)
+      (else (error "newline expected")))))
+
+(define (string->leo-syntaxes $string)
+  (read-leo-syntaxes (open-input-string $string)))
+
+(define (string->leo-datums $string)
+  (map syntax->datum (string->leo-syntaxes $string)))
+
+(check-equal? (string->leo-datums "") `())
+
+(check-equal? (string->leo-datums "foo\n") `(foo))
+
+(check-equal? (string->leo-datums "\nfoo\n") `(foo))
+
+(check-equal? (string->leo-datums "foo\nbar\n") `((bar foo)))
+(check-equal? (string->leo-datums "foo\nbar\nzoo\n") `((zoo (bar foo))))
+
+(check-equal? (string->leo-datums "foo bar\n") `((foo bar)))
+(check-equal? (string->leo-datums "foo bar zoo\n") `((foo (bar zoo))))
+
+(check-equal? (string->leo-datums "foo\n  bar\n") `((foo bar)))
+(check-equal? (string->leo-datums "foo\n  bar\n  zoo\n") `((foo (zoo bar))))
+
+(check-equal? (string->leo-datums "foo bar\n  zoo\n") `((foo (bar zoo))))
+(check-equal? (string->leo-datums "foo\n  bar zoo\n") `((foo (bar zoo))))
+
+(check-equal? (string->leo-datums "foo 123\n") `((foo 123)))
+(check-equal? (string->leo-datums "1\nplus 2\n") `((plus 1 2)))
+(check-equal? (string->leo-datums "\"foo\"\n") `("foo"))
+
+(check-equal? (string->leo-datums "racket 123\n") `(123))
+(check-equal? (string->leo-datums "racket \"foo\"\n") `("foo"))
+(check-equal? (string->leo-datums "racket (123 pieces of #t)\n") `((123 pieces of #t)))
+(check-equal? (string->leo-datums "racket 123\nracket 124\n") `(123 124))
+(check-equal? (string->leo-datums "racket racket\n") `(racket))
+
+(check-equal? 
+  (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") 
+  `((times (plus 1 2) (minus 3 4))))
+
+(check-equal? (string->leo-datums "do\n") `())
+(check-equal? (string->leo-datums "do 1\n") `(1))
+(check-equal? (string->leo-datums "1\ndo\n") `(1))
+(check-equal? (string->leo-datums "1\ndo 2\n") `(1 2))
+(check-equal? (string->leo-datums "do 1\ndo 2\n") `(1 2))
+(check-equal? (string->leo-datums "do 1\n") `(1))
+(check-equal? (string->leo-datums "do\n  1\n  plus 2\ndo\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
+
+(check-equal? (string->leo-datums "do:\n") `())
+(check-equal? (string->leo-datums "do: 1\n") `(1))
+(check-equal? (string->leo-datums "do: 1 2\n") `(1 2))
+
+(check-equal? 
+  (string->leo-datums "1\nplus 2\ndo\n  3\n  minus 4\n") 
+  `((plus 1 2) (minus 3 4)))
+
+(check-equal?
+  (string->leo-datums "foo:\n") 
+  `((foo)))
+
+(check-equal?
+  (string->leo-datums "foo: 1\n") 
+  `((foo 1)))
+
+(check-equal?
+  (string->leo-datums "foo: 1 2\n") 
+  `((foo 1 2)))
+
+(check-equal?
+  (string->leo-datums "foo:\n  x 1\n") 
+  `((foo (x 1))))
+
+(check-equal?
+  (string->leo-datums "foo:\n  x 1\n  y 2\n") 
+  `((foo (x 1) (y 2))))
+
+(check-equal?
+  (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") 
+  `((circle (radius 10) (center (x 10) (y 20)))))
+
