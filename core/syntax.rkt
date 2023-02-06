@@ -7,6 +7,7 @@
 (require 
   rackunit
   racket/string
+  syntax/readerr
   (for-syntax racket/base))
 
 (define (read-leo-stxs $port $src)
@@ -14,6 +15,13 @@
 
 (define (read-leo-list-stxs $port $src)
   (leo-stxs (read-leo-list $port $src)))
+
+; ---------------------------------------------------------------
+
+(define (err $port $src $message)
+  (let-values 
+    (((line col pos) (port-next-location $port)))
+    (raise-read-error $message $src line col #f #f)))
 
 ; ---------------------------------------------------------------
 
@@ -166,7 +174,7 @@
       ((equal? (peek-char $port) #\newline)
         (skip-char $port)
         $leo)
-      (else (error "expected space or newline after atoms")))))
+      (else (err $port $src "expected space or newline")))))
 
 ; -------------------------------------------------------
 
@@ -202,7 +210,8 @@
       (read-leo-line $port $src $depth $leo))
     ((eof-object? (peek-char $port)) empty-leo)
     ((char-whitespace? (peek-char $port))
-      (error "leo can not start with whitespace"))
+      (let-values (((line col pos) (port-next-location $port)))
+        (err $port $src "unexpected whitespace")))
     (else
       (let* (($stx (read-atom $port $src))
              ($datum (syntax-e $stx)))
@@ -283,7 +292,7 @@
     ((equal? (peek-char $port) #\newline)
       (skip-char $port)
       (leo-with-value-stx $leo $default))
-    (else (error "expected newline after datum"))))
+    (else (err $port $src "expected newline"))))
 
 (define (read-leo-rhs $port $src $depth)
   (let (($char (peek-char $port)))
@@ -299,8 +308,8 @@
               (skip-depth $port $rhs-depth)
               (read-leo $port $src $rhs-depth empty-leo))
             (else empty-leo))))
-      (else 
-        (error "expected space or newline before rhs")))))
+      (else
+        (err $port $src "expected space or newline")))))
 
 (define (read-leo-rhs-atoms $port $src)
   (let (($char (peek-char $port)))
@@ -312,7 +321,7 @@
         (skip-char $port)
         empty-leo)
       (else 
-        (error "expected space before rhs atoms")))))
+        (err $port $src "expected space or newline")))))
 
 (define (read-leo-rhs-list $port $src $depth)
   (let (($char (peek-char $port)))
@@ -328,8 +337,7 @@
               (skip-depth $port $rhs-depth)
               (read-leo-list $port $src $rhs-depth empty-leo))
             (else empty-leo))))
-      (else 
-        (error "expected space or newline before rhs")))))
+      (else (err $port $src "expected space or newline")))))
 
 (define (string->leo-syntaxes $string)
   (leo-stxs (read-leo (open-input-string $string))))
