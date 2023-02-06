@@ -3,7 +3,12 @@
 do require:
   rackunit
   racket/bool
+  racket/function
   for-syntax racket/base
+  rename-in:
+    racket/base
+    map racket-map
+    filter racket-filter
 
 do
   (define-syntax (gives stx)
@@ -23,55 +28,14 @@ do
       ((_ (name fields ...))
         #`(struct name (fields ...) #:transparent))))
 
-do
-  (define-syntax (plus stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(+ lhs rhs))))
-
-do
-  2
-  plus 3
-  check-equal? 5
-
-do
-  (define-syntax (minus stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(- lhs rhs))))
-
-do
-  5
-  minus 3
-  check-equal? 2
-
-do
-  (define-syntax (times stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(* lhs rhs))))
-
-do
-  2
-  times 3
-  check-equal? 6
-
-do
-  (define-syntax (less-than? stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(< lhs rhs))))
-
-do
-  (define-syntax (grater-than? stx)
-    (syntax-case stx ()
-      ((_ lhs rhs)
-        #`(> lhs rhs))))
-
-do
-  2
-  less-than? 3
-  check-equal? true
+do define: plus +
+do define: minus -
+do define: times *
+do define: divided-by /
+do define: less-than? <
+do define: greater-than? >
+do define: less-or-equal? <=
+do define: greater-or-equal? >=
 
 do
   any? x
@@ -251,3 +215,17 @@ do
   "Hello, "
   join "world!"
   check-equal? "Hello, world!"
+
+do
+  push: list value
+  gives cons: value list
+
+do define: applying curryr
+
+do
+  map: list fn
+  gives racket-map: fn list
+
+do
+  filter: list fn
+  gives racket-filter: fn list

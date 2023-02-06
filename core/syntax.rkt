@@ -252,6 +252,9 @@
 (define (read-leo-give-colon-rhs $port $src $depth $leo)
   (leo-append $leo (read-leo-rhs-atoms $port $src)))
 
+(define (read-leo-flip-rhs $port $src $depth $leo)
+  (leo-append $leo (read-leo-rhs $port $src $depth)))
+
 (define (read-leo-the-rhs $port $src $depth $leo)
   (leo-append-value-stx
     $leo

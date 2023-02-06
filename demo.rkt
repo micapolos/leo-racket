@@ -1,3 +1,8 @@
 #lang leo
 
-displayln "Hello, world!"
+null
+push "Hello"
+push "world"
+push "!!!"
+map string-length
+filter applying: greater-than? 4
