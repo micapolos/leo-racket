@@ -23,6 +23,9 @@
     (((line col pos) (port-next-location $port)))
     (raise-read-error $message $src line col #f #f)))
 
+(define (char-name $char)
+  (substring (format "~v" $char) 2))
+
 ; ---------------------------------------------------------------
 
 (struct leo (reversed-statement-stxs reversed-value-stxs) #:transparent)
@@ -200,41 +203,42 @@
         (leo-append $leo $read-leo)))))
 
 (define (read-leo-line $port $src $depth $leo)
-  (cond
-    ((equal? (peek-char $port) #\newline)
-      (skip-char $port)
-      (read-leo-line $port $src $depth $leo))
-    ((eof-object? (peek-char $port)) eof)
-    ((char-whitespace? (peek-char $port))
-      (let-values (((line col pos) (port-next-location $port)))
-        (err $port $src "unexpected whitespace")))
-    (else
-      (let* (($stx (read-atom $port $src))
-             ($datum (syntax-e $stx)))
-        (cond
-          ((equal? $datum `do)
-            (read-leo-do-rhs $port $src $depth $leo))
-          ((equal? $datum `do:)
-            (read-leo-do-colon-rhs $port $src $depth $leo))
-          ((equal? $datum `give)
-            (read-leo-give-rhs $port $src $depth $leo))
-          ((equal? $datum `give:)
-            (read-leo-give-colon-rhs $port $src $depth $leo))
-          ((equal? $datum `the)
-            (read-leo-the-rhs $port $src $depth $leo))
-          ((equal? $datum `the:)
-            (read-leo-the-colon-rhs $port $src $depth $leo))
-          ((equal? $datum `then)
-            (read-leo-then-rhs $port $src $depth $leo))
-          ((symbol? $datum)
-            (cond
-              ((symbol-colon-suffix? $datum)
-                (read-leo-symbol-colon-rhs $port $src $depth $leo
-                  (stx-symbol-drop-last-char $stx)))
-              (else 
-                (read-leo-symbol-rhs $port $src $depth $leo $stx))))
-          (else
-            (read-leo-default-line $port $src $depth $leo $stx)))))))
+  (let (($peeked-char (peek-char $port)))
+    (cond
+      ((equal? $peeked-char #\newline)
+        (skip-char $port)
+        (read-leo-line $port $src $depth $leo))
+      ((eof-object? $peeked-char) eof)
+      ((char-whitespace? $peeked-char)
+        (let-values (((line col pos) (port-next-location $port)))
+          (err $port $src (string-append "unexpected " (char-name $peeked-char)))))
+      (else
+        (let* (($stx (read-atom $port $src))
+               ($datum (syntax-e $stx)))
+          (cond
+            ((equal? $datum `do)
+              (read-leo-do-rhs $port $src $depth $leo))
+            ((equal? $datum `do:)
+              (read-leo-do-colon-rhs $port $src $depth $leo))
+            ((equal? $datum `give)
+              (read-leo-give-rhs $port $src $depth $leo))
+            ((equal? $datum `give:)
+              (read-leo-give-colon-rhs $port $src $depth $leo))
+            ((equal? $datum `the)
+              (read-leo-the-rhs $port $src $depth $leo))
+            ((equal? $datum `the:)
+              (read-leo-the-colon-rhs $port $src $depth $leo))
+            ((equal? $datum `then)
+              (read-leo-then-rhs $port $src $depth $leo))
+            ((symbol? $datum)
+              (cond
+                ((symbol-colon-suffix? $datum)
+                  (read-leo-symbol-colon-rhs $port $src $depth $leo
+                    (stx-symbol-drop-last-char $stx)))
+                (else 
+                  (read-leo-symbol-rhs $port $src $depth $leo $stx))))
+            (else
+              (read-leo-default-line $port $src $depth $leo $stx))))))))
 
 (define (read-leo-do-rhs $port $src $depth $leo)
   (leo-commit (leo-append $leo (read-leo-rhs $port $src $depth))))

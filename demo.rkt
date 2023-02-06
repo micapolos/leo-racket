@@ -1,3 +1,4 @@
 #lang leo
 
-displayln "Hello, world!"
+format: "~v" #\space
+substring 2
