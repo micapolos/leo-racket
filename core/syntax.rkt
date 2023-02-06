@@ -179,36 +179,32 @@
 ; -------------------------------------------------------
 
 (define (read-leo $port ($src "") ($depth 0) ($leo empty-leo))
-  (cond
-    ((peek-eof $port) $leo)
-    (else
-      (let*
-        (($leo (read-leo-line $port $src $depth $leo)))
-        (cond
-          ((peek-exact-depth $port $depth)
-            (skip-depth $port $depth)
-            (read-leo $port $src $depth $leo))
-          (else $leo))))))
+  (let*
+    (($read-leo (read-leo-line $port $src $depth $leo)))
+    (cond
+      ((eof-object? $read-leo) $leo)
+      ((peek-exact-depth $port $depth)
+        (skip-depth $port $depth)
+        (read-leo $port $src $depth $read-leo))
+      (else $read-leo))))
 
 (define (read-leo-list $port ($src "") ($depth 0) ($leo empty-leo))
-  (cond
-    ((peek-eof $port) $leo)
-    (else
-      (let*
-        (($leo-line (read-leo-line $port $src $depth empty-leo)))
-        (cond
-          ((peek-exact-depth $port $depth)
-            (skip-depth $port $depth)
-            (read-leo-list $port $src $depth (leo-append $leo $leo-line)))
-          (else 
-            (leo-append $leo $leo-line)))))))
+  (let*
+    (($read-leo (read-leo-line $port $src $depth empty-leo)))
+    (cond
+      ((eof-object? $read-leo) $leo)
+      ((peek-exact-depth $port $depth)
+        (skip-depth $port $depth)
+        (read-leo-list $port $src $depth (leo-append $leo $read-leo)))
+      (else 
+        (leo-append $leo $read-leo)))))
 
 (define (read-leo-line $port $src $depth $leo)
   (cond
     ((equal? (peek-char $port) #\newline)
       (skip-char $port)
       (read-leo-line $port $src $depth $leo))
-    ((eof-object? (peek-char $port)) empty-leo)
+    ((eof-object? (peek-char $port)) eof)
     ((char-whitespace? (peek-char $port))
       (let-values (((line col pos) (port-next-location $port)))
         (err $port $src "unexpected whitespace")))
@@ -350,6 +346,7 @@
 (check-equal? (string->leo-datums "foo\n") `(foo))
 
 (check-equal? (string->leo-datums "\nfoo\n") `(foo))
+(check-equal? (string->leo-datums "\nfoo\n\n") `(foo))
 
 (check-equal? (string->leo-datums "foo\nbar\n") `((bar foo)))
 (check-equal? (string->leo-datums "foo\nbar\nzoo\n") `((zoo (bar foo))))
