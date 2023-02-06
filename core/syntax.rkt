@@ -101,19 +101,19 @@
 
 ; -------------------------------------------------------
 
-(define (peek-exact-string $port $string ($skip 0))
+(define (peek-exact-string? $port $string ($skip 0))
   (equal? 
     (peek-string (string-length $string) $skip $port)
     $string))
 
-(check-equal? (peek-exact-string (open-input-string "") "") #t)
-(check-equal? (peek-exact-string (open-input-string "a") "") #t)
-(check-equal? (peek-exact-string (open-input-string "a") "a") #t)
-(check-equal? (peek-exact-string (open-input-string "a") "b") #f)
-(check-equal? (peek-exact-string (open-input-string "ab") "a") #t)
-(check-equal? (peek-exact-string (open-input-string "ab") "ab") #t)
-(check-equal? (peek-exact-string (open-input-string "ab") "ac") #f)
-(check-equal? (peek-exact-string (open-input-string "abc") "ab") #t)
+(check-equal? (peek-exact-string? (open-input-string "") "") #t)
+(check-equal? (peek-exact-string? (open-input-string "a") "") #t)
+(check-equal? (peek-exact-string? (open-input-string "a") "a") #t)
+(check-equal? (peek-exact-string? (open-input-string "a") "b") #f)
+(check-equal? (peek-exact-string? (open-input-string "ab") "a") #t)
+(check-equal? (peek-exact-string? (open-input-string "ab") "ab") #t)
+(check-equal? (peek-exact-string? (open-input-string "ab") "ac") #f)
+(check-equal? (peek-exact-string? (open-input-string "abc") "ab") #t)
 
 ; -------------------------------------------------------
 
@@ -121,7 +121,7 @@
 (define indent-length (string-length indent-string))
 
 (define (peek-indent $port ($skip 0)) 
-  (peek-exact-string $port indent-string $skip))
+  (peek-exact-string? $port indent-string $skip))
 
 ; -------------------------------------------------------
 
@@ -279,7 +279,7 @@
 
 (define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
   (cond
-    ((peek-exact-string $port " =")
+    ((peek-exact-string? $port " =")
       (skip-char-count $port 2)
       (leo-append
         (leo-append-value-stx

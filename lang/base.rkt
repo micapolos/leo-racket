@@ -229,3 +229,8 @@ do
 do
   filter: list fn
   gives racket-filter: fn list
+
+do
+  string
+  in-round-brackets
+  gives join: "(" string ")"
