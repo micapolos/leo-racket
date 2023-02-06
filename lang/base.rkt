@@ -144,7 +144,7 @@ do
 do
   (define-syntax (use stx)
     (syntax-case stx ()
-      ((_ xs ...) 
+      ((_ xs ...)
         #`(#%app xs ...))))
 
 do
