@@ -139,7 +139,7 @@ do
         #`(lambda (params ...) body))))
 
 do
-  (define-syntax (request stx)
+  (define-syntax (use stx)
     (syntax-case stx ()
       ((_ xs ...) 
         #`(#%app xs ...))))
@@ -147,7 +147,7 @@ do
 do
   give: x y
   giving minus: x y
-  request: 5 3
+  use: 5 3
   check-equal? 2
 
 do
@@ -220,7 +220,7 @@ do
   push: list value
   gives cons: value list
 
-do define: applying curryr
+do define: using curryr
 
 do
   map: list fn
