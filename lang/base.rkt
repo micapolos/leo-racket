@@ -2,6 +2,7 @@
 
 do require:
   rackunit
+  racket/bool
   for-syntax racket/base
 
 do
@@ -68,33 +69,19 @@ do
         #`(> lhs rhs))))
 
 do
-  true
-  gives #t
-
-do
-  false
-  gives #f
-
-do
   2
   less-than? 3
   check-equal? true
 
 do
   any? x
-  gives #t
+  gives true
 
 do
   true? x
   gives
     x
-    equal? #t
-
-do
-  false? x
-  gives
-    x
-    equal? #f
+    equal? true
 
 do
   any? "jajko"
@@ -248,7 +235,7 @@ do
   check-equal? "something else"
 
 do
-  (define-syntax (compile stx)
+  (define-syntax (leo stx)
     (syntax-case stx ()
       ((_ body)
         (let ((anchor (car (generate-temporaries `(anchor)))))

@@ -17,5 +17,5 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
-      (require leo/lang/base rackunit (for-syntax racket/base))
+      (require racket/bool leo/lang/base rackunit (for-syntax racket/base))
       #,@(read-leo-stxs port src))))
