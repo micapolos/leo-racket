@@ -219,6 +219,8 @@
             (read-leo-the-rhs $port $src $depth $leo))
           ((equal? $datum `the:)
             (read-leo-the-colon-rhs $port $src $depth $leo))
+          ((equal? $datum `then)
+            (read-leo-then-rhs $port $src $depth $leo))
           ((symbol? $datum)
             (cond
               ((symbol-colon-suffix? $datum)
@@ -250,6 +252,11 @@
   (leo-append-value-stx
     $leo
     #`(#,@(leo-stxs (read-leo-rhs-atoms $port $src)))))
+
+(define (read-leo-then-rhs $port $src $depth $leo)
+  (leo-append
+    $leo
+    (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
   (let 
@@ -409,6 +416,11 @@
 
 (check-equal? (string->leo-datums "do require a\n1\n+ 2\n") `((require a) (+ 1 2)))
 (check-equal? (string->leo-datums "1\ndo 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
+
+(check-equal? (string->leo-datums "then\n") `())
+(check-equal? (string->leo-datums "1\nthen\n") `(1))
+(check-equal? (string->leo-datums "then 2\n") `(2))
+(check-equal? (string->leo-datums "1\nthen 2\n") `(1 2))
 
 ; -------------------------------------------------------------
 
