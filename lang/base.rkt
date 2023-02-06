@@ -4,6 +4,7 @@ do require:
   rackunit
   racket/bool
   racket/function
+  racket/string
   for-syntax racket/base
   rename-in:
     racket/base
@@ -12,9 +13,11 @@ do require:
 
 do
   (define-syntax (gives stx)
-    (syntax-case stx ()
-      ((_ params body ...)
-        #`(define params body ...))))
+    (syntax-case stx (more)
+      ((_ (name params ... (more param)) body ...)
+        #`(define (name params ... . param ) body ...))
+      ((_ name-and-params body ...)
+        #`(define name-and-params body ...))))
 
 do
   (define-syntax (has stx)
@@ -234,3 +237,14 @@ do
   string
   in-round-brackets
   gives join: "(" string ")"
+
+do
+  more strings
+  comma-separated
+  gives
+    strings
+    string-join ", "
+
+do
+  comma-separated: "a" "b" "c"
+  check-equal? "a, b, c"
