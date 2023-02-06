@@ -56,6 +56,13 @@
     (reversed-value-stxs
       (cons $value-stx (leo-reversed-value-stxs $leo)))))
 
+(define (leo-append-reversed-value-stxs $leo $reversed-value-stxs) 
+  (struct-copy leo $leo
+    (reversed-value-stxs
+      (append 
+        $reversed-value-stxs
+        (leo-reversed-value-stxs $leo)))))
+
 (define (leo-commit $leo) 
   (leo
     (append
@@ -271,15 +278,26 @@
     (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-symbol-rhs $port $src $depth $leo $symbol)
-  (let 
-    (($args
-      (reverse
-        (append
-          (leo-reversed-stxs (read-leo-rhs $port $src $depth))
-          (leo-reversed-value-stxs $leo)))))
-    (cond
-      ((null? $args) (leo-with-value-stx $leo $symbol))
-      (else (leo-with-value-stx $leo #`(#,$symbol #,@$args))))))
+  (cond
+    ((peek-exact-string $port " =")
+      (skip-char-count $port 2)
+      (leo-append
+        (leo-append-value-stx
+          $leo
+          (datum->syntax #f 
+            (string->keyword 
+              (symbol->string (syntax-e $symbol)))))
+        (read-leo-rhs $port $src $depth)))
+    (else 
+      (let 
+        (($args
+          (reverse
+            (append
+              (leo-reversed-stxs (read-leo-rhs $port $src $depth))
+              (leo-reversed-value-stxs $leo)))))
+        (cond
+          ((null? $args) (leo-with-value-stx $leo $symbol))
+          (else (leo-with-value-stx $leo #`(#,$symbol #,@$args))))))))
 
 (define (read-leo-symbol-colon-rhs $port $src $depth $leo $symbol)
   (let 
@@ -433,6 +451,15 @@
 (check-equal? (string->leo-datums "1\nthen\n") `(1))
 (check-equal? (string->leo-datums "then 2\n") `(2))
 (check-equal? (string->leo-datums "1\nthen 2\n") `(1 2))
+
+(check-equal? (string->leo-datums "x = 1\n") `(#:x 1))
+(check-equal? (string->leo-datums "foo\n  x = 1\n") `((foo #:x 1)))
+(check-equal? (string->leo-datums "foo\n  x = 1\n  y = 2\n") `((foo #:x 1 #:y 2)))
+(check-equal? (string->leo-datums "foo:\n  x = 1\n") `((foo #:x 1)))
+(check-equal? (string->leo-datums "foo:\n  x = 1\n  y = 2\n") `((foo #:x 1 #:y 2)))
+
+(check-equal? (string->leo-datums "foo\n  x = 1\n  bar\n") `((foo (bar #:x 1))))
+(check-equal? (string->leo-datums "foo:\n  x = 1\n  bar\n") `((foo #:x 1 bar)))
 
 ; -------------------------------------------------------------
 
