@@ -188,12 +188,12 @@ do
 
 do
   (begin-for-syntax
-    (define (expand-else-stx lhs alternate)
+    (define (expand-otherwise-stx lhs alternate)
       (let ((tmp (car (generate-temporaries `(tmp)))))
         (expand-if-stx
           lhs
           tmp
-          (list #`(`else #,alternate)))))
+          (list #`(`otherwise #,alternate)))))
     (define (expand-if-stx if-stx tmp tail)
       (syntax-case if-stx (if)
         ((if expression (predicate consequent))
@@ -206,32 +206,32 @@ do
             (cond #,@tail))))))
 
 do
-  (define-syntax (else stx)
+  (define-syntax (otherwise stx)
     (syntax-case stx (if true?)
       ((_ (if condition (true? consequent)) alternate)
         #`(if condition consequent alternate))
       ((_ lhs alternate)
-        (expand-else-stx #`lhs #`alternate))))
+        (expand-otherwise-stx #`lhs #`alternate))))
 
 do
   1
   if number? "number"
   if string? "string"
-  else "something else"
+  otherwise "something else"
   check-equal? "number"
 
 do
   "foo"
   if number? "number"
   if string? "string"
-  else "something else"
+  otherwise "something else"
   check-equal? "string"
 
 do
   true
   if number? "number"
   if string? "string"
-  else "something else"
+  otherwise "something else"
   check-equal? "something else"
 
 do
@@ -244,3 +244,10 @@ do
             (parameterize
               ((current-namespace (namespace-anchor->namespace #,anchor)))
               (syntax->datum (expand (datum->syntax #f (quote body))))))))))
+
+do define: join string-append
+
+do
+  "Hello, "
+  join "world!"
+  check-equal? "Hello, world!"

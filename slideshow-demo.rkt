@@ -21,3 +21,20 @@ do slide:
   paragraph "Are you satisfied with what you saw?"
   item "Yes"
   item "No"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,3 @@
 #lang leo
 
-do displayln "Hello, world"
+displayln "Hello, world!"
