@@ -1,5 +1,3 @@
 #lang leo
 
-format: "~v" #\space
-substring 2
-leo
+do displayln "Hello, world"

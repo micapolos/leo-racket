@@ -175,7 +175,7 @@ do
         #`(lambda (params ...) body))))
 
 do
-  (define-syntax (take stx)
+  (define-syntax (request stx)
     (syntax-case stx ()
       ((_ xs ...) 
         #`(#%app xs ...))))
@@ -183,7 +183,7 @@ do
 do
   give: x y
   giving minus: x y
-  take: 5 3
+  request: 5 3
   check-equal? 2
 
 do
