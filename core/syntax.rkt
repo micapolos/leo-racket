@@ -305,11 +305,11 @@
           (syntax-e $stx) $stx)))
     ((peek-exact-string? $port " =")
       (skip-char-count $port 2)
-      (read-leo-symbol-stx-equal-rhs $port $src $depth $leo $symbol $stx))
+      (read-leo-identifier-stx-equal-rhs $port $src $depth $leo $symbol $stx))
     (else 
       (read-leo-identifier-stx-rhs $port $src $depth $leo $symbol $stx))))
 
-(define (read-leo-symbol-stx-equal-rhs $port $src $depth $leo $symbol $stx)
+(define (read-leo-identifier-stx-equal-rhs $port $src $depth $leo $symbol $stx)
   (leo-append
     (leo-append-value-stx
       $leo
