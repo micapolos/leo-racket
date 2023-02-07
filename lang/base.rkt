@@ -88,10 +88,10 @@ do
 
 do
   point:
-    give
+    the
       1
       plus 2
-    give
+    the
       3
       plus 4
   as $point in begin

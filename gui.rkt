@@ -30,16 +30,16 @@ variable canvas new:
         send:
           dc
           translate
-          give
+          the
             send: canvas get-width
             divided-by 2
-          give
+          the
             send: canvas get-height
             divided-by 2
         send:
           dc
           rotate
-          give
+          the
             time
             plus 0.5
             times 7.5
@@ -48,12 +48,12 @@ variable canvas new:
         send:
           dc
           scale
-          give
+          the
             time
             times 15
             sin
             plus 2.5
-          give
+          the
             time
             times 15
             sin
