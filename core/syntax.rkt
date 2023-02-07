@@ -78,6 +78,10 @@
   (struct-copy leo $leo
     (empty-line? #t)))
 
+(define (leo-set-empty-line-from $leo $rhs) 
+  (struct-copy leo $leo
+    (empty-line? (leo-empty-line? $rhs))))
+
 (define (leo-commit $leo) 
   (leo
     (append
@@ -106,21 +110,25 @@
   (leo-append $leo $rhs))
 
 (define (leo-append-the-rhs $leo $rhs)
-  (leo-append-value-stx $leo #`(#,@(leo-stxs $rhs))))
+  (leo-append
+    $leo 
+    (leo-with-value-stx $rhs #`(#,@(leo-stxs $rhs)))))
 
 (define (leo-append-then-rhs $leo $rhs)
   (leo-append $leo $rhs))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
-  (let 
-    (($args
-      (reverse
-        (append
-          (leo-reversed-stxs $rhs)
-          (leo-reversed-value-stxs $leo)))))
-    (cond
-      ((and (null? $args) (not $list?)) (leo-with-value-stx $leo $stx))
-        (else (leo-with-value-stx $leo #`(#,$stx #,@$args))))))
+  (leo-set-empty-line-from
+    (let 
+      (($args
+        (reverse
+          (append
+            (leo-reversed-stxs $rhs)
+            (leo-reversed-value-stxs $leo)))))
+      (cond
+        ((and (null? $args) (not $list?)) (leo-with-value-stx $leo $stx))
+          (else (leo-with-value-stx $leo #`(#,$stx #,@$args)))))
+    $rhs))
 
 ; -------------------------------------------------------
 
@@ -513,8 +521,7 @@
 
 (check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
 (check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n") `((foo bar zoo)))
-
-;(read-leo (open-input-string "foo\n\n"))
+(check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n\ngoo\n") `((foo bar zoo) goo))
 
 ; -------------------------------------------------------------
 

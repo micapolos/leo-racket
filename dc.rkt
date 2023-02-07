@@ -1,13 +1,12 @@
 #lang leo
 
-do require:
+require:
   racket/class
   racket/gui/base
 
-do
-  dc
-  invoke-preserving-transformation fn
-  gives:
-    do variable transformation send: dc get-transformation
-    do invoke fn
-    do send: dc set-transformation transformation
+dc
+invoke-preserving-transformation fn
+gives:
+  variable transformation send: dc get-transformation
+  invoke fn
+  send: dc set-transformation transformation

@@ -1,22 +1,22 @@
 #lang leo
 
-do require:
+require:
   racket/class
   racket/gui/base
   leo/dc
   pict
 
-do variable interval 16
+variable interval 16
 
-do variable pict jack-o-lantern 100
+variable pict jack-o-lantern 100
 
-do variable frame new:
+variable frame new:
   frame%
   label "Hello, world!"
   width 640
   height 480
 
-do variable canvas new:
+variable canvas new:
   canvas%
   parent frame
   paint-callback function
@@ -66,14 +66,13 @@ do variable canvas new:
           0
         do refresh:
 
-do
-  refresh:
-  gives
-    new:
-      timer%
-      interval interval
-      just-once? true
-      notify-callback function giving
-        send: canvas refresh
+refresh:
+gives
+  new:
+    timer%
+    interval interval
+    just-once? true
+    notify-callback function giving
+      send: canvas refresh
 
-do send: frame show true
+send: frame show true
