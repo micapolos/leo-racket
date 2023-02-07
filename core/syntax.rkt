@@ -78,12 +78,12 @@
     null
     #f))
 
-(define (leo-append-symbol-stx-rhs $leo $symbol $stx $rhs) 
+(define (leo-append-identifier-stx-rhs $leo $identifier $stx $rhs) 
   (cond
-    ((equal? $symbol `do) (leo-append-do-rhs $leo $rhs))
-    ((equal? $symbol `give) (leo-append-give-rhs $leo $rhs))
-    ((equal? $symbol `the) (leo-append-the-rhs $leo $rhs))
-    ((equal? $symbol `then) (leo-append-then-rhs $leo $rhs))
+    ((equal? $identifier `do) (leo-append-do-rhs $leo $rhs))
+    ((equal? $identifier `give) (leo-append-give-rhs $leo $rhs))
+    ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
+    ((equal? $identifier `then) (leo-append-then-rhs $leo $rhs))
     (else (leo-append-stx-rhs $leo $stx $rhs))))
 
 (define (leo-append-do-rhs $leo $rhs)
@@ -331,7 +331,7 @@
     (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
-  (leo-append-symbol-stx-rhs
+  (leo-append-identifier-stx-rhs
     $leo $identifier $stx (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-symbol-colon-stx-rhs $port $src $depth $leo $symbol $stx)
