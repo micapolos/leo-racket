@@ -18,6 +18,11 @@
 
 ; ---------------------------------------------------------------
 
+(define (todo string)
+  (error (string-append "TODO: " string)))
+
+; ---------------------------------------------------------------
+
 (define (err $port $src $message)
   (let-values 
     (((line col pos) (port-next-location $port)))
@@ -72,6 +77,25 @@
       (leo-reversed-statement-stxs $leo))
     null
     #f))
+
+(define (leo-append-symbol-stx-reversed-value-stxs $leo $symbol $stx $reversed-value-stxs) 
+  (cond
+    ((equal? $symbol `do) (todo "do"))
+    ((equal? $symbol `give) (todo "give"))
+    ((equal? $symbol `the) (todo "the"))
+    ((equal? $symbol `then) (todo "then"))
+    (else (leo-append-stx-reversed-value-stxs $leo $stx $reversed-value-stxs))))
+
+(define (leo-append-stx-reversed-value-stxs $leo $stx $reversed-value-stxs) 
+  (let 
+    (($args
+      (reverse
+        (append
+          $reversed-value-stxs
+          (leo-reversed-value-stxs $leo)))))
+    (cond
+      ((null? $args) (leo-with-value-stx $leo $stx))
+        (else (leo-with-value-stx $leo #`(#,$stx #,@$args))))))
 
 ; -------------------------------------------------------
 
@@ -295,15 +319,8 @@
     (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
-  (let 
-    (($args
-      (reverse
-        (append
-          (leo-reversed-stxs (read-leo-rhs $port $src $depth))
-          (leo-reversed-value-stxs $leo)))))
-    (cond
-      ((null? $args) (leo-with-value-stx $leo $stx))
-        (else (leo-with-value-stx $leo #`(#,$stx #,@$args))))))
+  (leo-append-symbol-stx-reversed-value-stxs 
+    $leo $identifier $stx (leo-reversed-stxs (read-leo-rhs $port $src $depth))))
 
 (define (read-leo-symbol-colon-stx-rhs $port $src $depth $leo $symbol $stx)
   (let 
