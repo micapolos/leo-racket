@@ -279,7 +279,7 @@
   (cond
     ((symbol-colon-suffix? $symbol)
       (let (($stx (stx-symbol-drop-last-char $stx)))
-        (read-leo-identifier-colon-stx-rhs $port $src $depth $leo
+        (read-leo-symbol-colon-stx-rhs $port $src $depth $leo
           (syntax-e $stx) $stx)))
     ((peek-exact-string? $port " =")
       (skip-char-count $port 2)
@@ -305,7 +305,7 @@
       ((null? $args) (leo-with-value-stx $leo $stx))
         (else (leo-with-value-stx $leo #`(#,$stx #,@$args))))))
 
-(define (read-leo-identifier-colon-stx-rhs $port $src $depth $leo $identifier $stx)
+(define (read-leo-symbol-colon-stx-rhs $port $src $depth $leo $symbol $stx)
   (let 
     (($args 
       (reverse
