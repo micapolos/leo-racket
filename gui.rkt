@@ -63,12 +63,12 @@ do
               time
               times 15
               sin
-              plus 3
+              plus 2.5
             give
               time
               times 15
               sin
-              plus 3
+              plus 2.5
           do send: dc translate -50 -50
           do draw-pict:
             pict
