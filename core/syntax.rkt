@@ -52,7 +52,9 @@
     (reversed-value-stxs
       (append
         (leo-reversed-stxs $rhs)
-        (leo-reversed-value-stxs $lhs)))))
+        (leo-reversed-value-stxs $lhs)))
+    (empty-line? 
+      (leo-empty-line? $rhs))))
 
 (define (leo-with-value-stx $leo $value-stx) 
   (struct-copy leo $leo
@@ -70,6 +72,10 @@
         $reversed-value-stxs
         (leo-reversed-value-stxs $leo)))))
 
+(define (leo-append-empty-line $leo) 
+  (struct-copy leo $leo
+    (empty-line? #t)))
+
 (define (leo-commit $leo) 
   (leo
     (append
@@ -78,9 +84,10 @@
     null
     #f))
 
-(define (leo-append-empty-line $leo) 
-  (struct-copy leo $leo
-    (empty-line? #t)))
+(define (leo-commit-if-empty-line $leo) 
+  (cond
+    ((leo-empty-line? $leo) (leo-commit $leo))
+    (else $leo)))
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
@@ -233,24 +240,24 @@
 
 (define (read-leo $port ($src "") ($depth 0) ($leo empty-leo))
   (let*
-    (($read-leo (read-leo-line $port $src $depth $leo)))
+    (($leo-line (read-leo-line $port $src $depth (leo-commit-if-empty-line $leo))))
     (cond
-      ((eof-object? $read-leo) $leo)
+      ((eof-object? $leo-line) $leo)
       ((peek-exact-depth $port $depth)
         (skip-depth $port $depth)
-        (read-leo $port $src $depth $read-leo))
-      (else $read-leo))))
+        (read-leo $port $src $depth $leo-line))
+      (else $leo-line))))
 
 (define (read-leo-list $port ($src "") ($depth 0) ($leo empty-leo))
   (let*
-    (($read-leo (read-leo-line $port $src $depth empty-leo)))
+    (($leo-line (read-leo-line $port $src $depth empty-leo)))
     (cond
-      ((eof-object? $read-leo) $leo)
+      ((eof-object? $leo-line) $leo)
       ((peek-exact-depth $port $depth)
         (skip-depth $port $depth)
-        (read-leo-list $port $src $depth (leo-append $leo $read-leo)))
+        (read-leo-list $port $src $depth (leo-append $leo $leo-line)))
       (else 
-        (leo-append $leo $read-leo)))))
+        (leo-append $leo $leo-line)))))
 
 (define (read-leo-line $port $src $depth $leo)
   (let (($peeked-char (peek-char $port)))
@@ -488,6 +495,8 @@
 
 (check-equal? (string->leo-datums "foo\n  x = 1\n  bar\n") `((foo (bar #:x 1))))
 (check-equal? (string->leo-datums "foo:\n  x = 1\n  bar\n") `((foo #:x 1 bar)))
+
+;(check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
 
 ; -------------------------------------------------------------
 
