@@ -78,20 +78,20 @@
     null
     #f))
 
-(define (leo-append-symbol-stx-reversed-value-stxs $leo $symbol $stx $reversed-value-stxs) 
+(define (leo-append-symbol-stx-rhs $leo $symbol $stx $rhs) 
   (cond
     ((equal? $symbol `do) (todo "do"))
     ((equal? $symbol `give) (todo "give"))
     ((equal? $symbol `the) (todo "the"))
     ((equal? $symbol `then) (todo "then"))
-    (else (leo-append-stx-reversed-value-stxs $leo $stx $reversed-value-stxs))))
+    (else (leo-append-stx-rhs $leo $stx $rhs))))
 
-(define (leo-append-stx-reversed-value-stxs $leo $stx $reversed-value-stxs) 
+(define (leo-append-stx-rhs $leo $stx $rhs) 
   (let 
     (($args
       (reverse
         (append
-          $reversed-value-stxs
+          (leo-reversed-stxs $rhs)
           (leo-reversed-value-stxs $leo)))))
     (cond
       ((null? $args) (leo-with-value-stx $leo $stx))
@@ -319,8 +319,8 @@
     (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
-  (leo-append-symbol-stx-reversed-value-stxs 
-    $leo $identifier $stx (leo-reversed-stxs (read-leo-rhs $port $src $depth))))
+  (leo-append-symbol-stx-rhs
+    $leo $identifier $stx (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-symbol-colon-stx-rhs $port $src $depth $leo $symbol $stx)
   (let 
