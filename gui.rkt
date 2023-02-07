@@ -23,11 +23,11 @@ variable canvas new:
     for: canvas dc
     giving
       dc
-      invoke-preserving-transformation function giving
-        do variable time
+      invoke-preserving-transformation function giving:
+        variable time
           current-inexact-monotonic-milliseconds:
           divided-by 1000.0
-        do send:
+        send:
           dc
           translate
           give
@@ -36,7 +36,7 @@ variable canvas new:
           give
             send: canvas get-height
             divided-by 2
-        do send:
+        send:
           dc
           rotate
           give
@@ -45,7 +45,7 @@ variable canvas new:
             times 7.5
             sin
             times 0.5
-        do send:
+        send:
           dc
           scale
           give
@@ -58,13 +58,13 @@ variable canvas new:
             times 15
             sin
             plus 2.5
-        do send: dc translate -50 -50
-        do draw-pict:
+        send: dc translate -50 -50
+        draw-pict:
           pict
           dc
           0
           0
-        do refresh:
+        refresh:
 
 refresh:
 gives
