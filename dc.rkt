@@ -6,7 +6,7 @@ require:
 
 dc
 invoke-preserving-transformation fn
-gives:
+does:
   variable transformation send: dc get-transformation
   invoke fn
   send: dc set-transformation transformation

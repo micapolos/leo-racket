@@ -16,7 +16,7 @@ require:
     ((_ (name body ...))
       #`(define name body ...))))
 
-(define-syntax (gives stx)
+(define-syntax (does stx)
   (syntax-case stx (more)
     ((_ (name params ... (more param)) body ...)
       #`(define (name params ... . param ) body ...))
@@ -44,10 +44,10 @@ the:
   variable greater-or-equal? >=
 
 any? x
-gives true
+does true
 
 true? x
-gives
+does
   x
   equal? true
 
@@ -135,10 +135,10 @@ as $pair in begin
   check-equal? 7
 
 (define-syntax (function stx)
-  (syntax-case stx (giving for)
-    ((_ (giving (for params ...) body ...))
+  (syntax-case stx (doing for)
+    ((_ (doing (for params ...) body ...))
       #`(lambda (params ...) body ...))
-    ((_ (giving body ...))
+    ((_ (doing body ...))
       #`(lambda () body ...))))
 
 (define-syntax (invoke stx)
@@ -146,13 +146,13 @@ as $pair in begin
     ((_ xs ...)
       #`(#%app xs ...))))
 
-function giving 3
+function doing 3
 invoke
 check-equal? 3
 
 function
   for: x y
-  giving minus: x y
+  doing minus: x y
 invoke: 3 2
 check-equal? 1
 
@@ -216,19 +216,19 @@ join "world!"
 check-equal? "Hello, world!"
 
 push: list value
-gives cons: value list
+does cons: value list
 
 variable applying curryr
 
 map: list fn
-gives racket-map: fn list
+does racket-map: fn list
 
 list: 1 2 3
 map applying: - 1
 check-equal? list: 0 1 2
 
 filter: list fn
-gives racket-filter: fn list
+does racket-filter: fn list
 
 list: "foo" 2 "bar" 4
 filter applying string?
@@ -236,11 +236,11 @@ check-equal? list: "foo" "bar"
 
 string
 in-round-brackets
-gives join: "(" string ")"
+does join: "(" string ")"
 
 more strings
 comma-separated
-gives
+does
   strings
   string-join ", "
 
@@ -249,7 +249,7 @@ check-equal? "a, b, c"
 
 x
 flmod y
-gives
+does
   x
   minus
     x

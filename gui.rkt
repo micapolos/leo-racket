@@ -21,9 +21,9 @@ variable canvas new:
   parent frame
   paint-callback function
     for: canvas dc
-    giving
+    doing
       dc
-      invoke-preserving-transformation function giving:
+      invoke-preserving-transformation function doing:
         variable time
           current-inexact-monotonic-milliseconds:
           divided-by 1000.0
@@ -52,12 +52,12 @@ variable canvas new:
         refresh:
 
 refresh:
-gives
+does
   new:
     timer%
     interval interval
     just-once? true
-    notify-callback function giving
+    notify-callback function doing
       send: canvas refresh
 
 send: frame show true
