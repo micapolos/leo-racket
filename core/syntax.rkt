@@ -1,8 +1,6 @@
 #lang racket/base
 
-(provide 
-  read-leo-stxs
-  read-leo-list-stxs)
+(provide read-leo-stxs)
 
 (require 
   rackunit
@@ -12,14 +10,6 @@
 
 (define (read-leo-stxs $port $src)
   (leo-stxs (read-leo $port $src)))
-
-(define (read-leo-list-stxs $port $src)
-  (leo-stxs (read-leo-list $port $src)))
-
-; ---------------------------------------------------------------
-
-(define (todo string)
-  (error (string-append "TODO: " string)))
 
 ; ---------------------------------------------------------------
 
@@ -99,7 +89,6 @@
   (cond
     ((equal? $identifier `do) (leo-append-do-rhs $leo $rhs))
     ((equal? $identifier `give) (leo-append-give-rhs $leo $rhs))
-    ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
     ((equal? $identifier `then) (leo-append-then-rhs $leo $rhs))
     (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
@@ -108,11 +97,6 @@
 
 (define (leo-append-give-rhs $leo $rhs)
   (leo-append $leo $rhs))
-
-(define (leo-append-the-rhs $leo $rhs)
-  (leo-append
-    $leo 
-    (leo-with-value-stx $rhs #`(#,@(leo-stxs $rhs)))))
 
 (define (leo-append-then-rhs $leo $rhs)
   (leo-append $leo $rhs))
@@ -483,17 +467,6 @@
   (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") 
   `((circle (radius 10) (center (x 10) (y 20)))))
 
-(check-equal? (string->leo-datums "the\n") `(()))
-(check-equal? (string->leo-datums "the:\n") `(()))
-
-(check-equal? (string->leo-datums "the: 1\n") `((1)))
-(check-equal? (string->leo-datums "the: 1 2\n") `((1 2)))
-
-(check-equal? (string->leo-datums "the\n  1\n") `((1)))
-(check-equal? (string->leo-datums "the\n  foo\n  bar\n") `(((bar foo))))
-
-(check-equal? (string->leo-datums "the foo bar zoo\n") `(((foo (bar zoo)))))
-
 (check-equal? (string->leo-datums "do require a\n1\n+ 2\n") `((require a) (+ 1 2)))
 (check-equal? (string->leo-datums "1\ndo 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
 
@@ -522,16 +495,3 @@
 (check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
 (check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n") `((foo bar zoo)))
 (check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n\ngoo\n") `((foo bar zoo) goo))
-
-; -------------------------------------------------------------
-
-(define (string->leo-list-syntaxes $string)
-  (leo-stxs (read-leo-list (open-input-string $string))))
-
-(define (string->leo-list-datums $string)
-  (map syntax->datum (string->leo-list-syntaxes $string)))
-
-(check-equal? (string->leo-list-datums "") `())
-(check-equal? (string->leo-list-datums "1\n") `(1))
-(check-equal? (string->leo-list-datums "1\n2\n") `(1 2))
-(check-equal? (string->leo-list-datums "give\n  1\n  + 2\n") `((+ 1 2)))
