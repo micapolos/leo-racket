@@ -27,43 +27,28 @@ variable canvas new:
         variable time
           current-inexact-monotonic-milliseconds:
           divided-by 1000.0
-        send:
-          dc
-          translate
-          the
-            send: canvas get-width
-            divided-by 2
-          the
-            send: canvas get-height
-            divided-by 2
-        send:
-          dc
-          rotate
-          the
-            time
-            plus 0.5
-            times 7.5
-            sin
-            times 0.5
-        send:
-          dc
-          scale
-          the
-            time
-            times 15
-            sin
-            plus 2.5
-          the
-            time
-            times 15
-            sin
-            plus 2.5
+        variable half-width
+          send: canvas get-width
+          divided-by 2
+        variable half-height
+          send: canvas get-height
+          divided-by 2
+        variable rotation
+          time
+          plus 0.5
+          times 7.5
+          sin
+          times 0.5
+        variable scale
+          time
+          times 15
+          sin
+          plus 2.5
+        send: dc translate half-width half-height
+        send: dc rotate rotation
+        send: dc scale scale scale
         send: dc translate -50 -50
-        draw-pict:
-          pict
-          dc
-          0
-          0
+        draw-pict: pict dc 0 0
         refresh:
 
 refresh:
