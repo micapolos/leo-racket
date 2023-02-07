@@ -80,11 +80,23 @@
 
 (define (leo-append-symbol-stx-rhs $leo $symbol $stx $rhs) 
   (cond
-    ((equal? $symbol `do) (todo "do"))
-    ((equal? $symbol `give) (todo "give"))
-    ((equal? $symbol `the) (todo "the"))
-    ((equal? $symbol `then) (todo "then"))
+    ((equal? $symbol `do) (leo-append-do-rhs $leo $rhs))
+    ((equal? $symbol `give) (leo-append-give-rhs $leo $rhs))
+    ((equal? $symbol `the) (leo-append-the-rhs $leo $rhs))
+    ((equal? $symbol `then) (leo-append-then-rhs $leo $rhs))
     (else (leo-append-stx-rhs $leo $stx $rhs))))
+
+(define (leo-append-do-rhs $leo $rhs)
+  (leo-commit (leo-append $leo $rhs)))
+
+(define (leo-append-give-rhs $leo $rhs)
+  (leo-append $leo $rhs))
+
+(define (leo-append-the-rhs $leo $rhs)
+  (leo-append-value-stx $leo #`(#,@(leo-stxs $rhs))))
+
+(define (leo-append-then-rhs $leo $rhs)
+  (leo-append $leo $rhs))
 
 (define (leo-append-stx-rhs $leo $stx $rhs) 
   (let 
