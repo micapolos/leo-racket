@@ -11,6 +11,7 @@ require:
     map racket-map
     filter racket-filter
     define racket-define
+    else racket-else
 
 (define-syntax (define stx)
   (syntax-case stx ()
@@ -180,29 +181,31 @@ check-equal? 1
         #`(let ((#,tmp lhs))
           (cond #,@tail))))))
 
-(define-syntax (otherwise stx)
+(define-syntax (else stx)
   (syntax-case stx (if true?)
     ((_ (if condition (true? consequent)) alternate)
       #`(if condition consequent alternate))
     ((_ lhs alternate)
-      (expand-otherwise-stx #`lhs #`alternate))))
+      (expand-otherwise-stx #`lhs #`alternate))
+    ((_ body ...)
+      #`(racket-else body ...))))
 
 1
 if number? "number"
 if string? "string"
-otherwise "something else"
+else "something else"
 check-equal? "number"
 
 "foo"
 if number? "number"
 if string? "string"
-otherwise "something else"
+else "something else"
 check-equal? "string"
 
 true
 if number? "number"
 if string? "string"
-otherwise "something else"
+else "something else"
 check-equal? "something else"
 
 (define-syntax (leo stx)

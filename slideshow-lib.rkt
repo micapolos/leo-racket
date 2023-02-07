@@ -4,6 +4,7 @@ require:
   slideshow/widescreen/base
   slideshow/text
   slideshow/pict
+  slideshow/pict
   slideshow/code-pict
   pict/color
 
