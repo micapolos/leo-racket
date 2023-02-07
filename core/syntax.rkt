@@ -283,15 +283,16 @@
           (syntax-e $stx) $stx)))
     ((peek-exact-string? $port " =")
       (skip-char-count $port 2)
-      (leo-append
-        (leo-append-value-stx
-          $leo
-          (datum->syntax #f 
-            (string->keyword 
-              (symbol->string (syntax-e $stx)))))
-        (read-leo-rhs-list $port $src $depth)))
+      (read-leo-symbol-stx-equal-rhs $port $src $depth $leo $symbol $stx))
     (else 
       (read-leo-identifier-stx-rhs $port $src $depth $leo $symbol $stx))))
+
+(define (read-leo-symbol-stx-equal-rhs $port $src $depth $leo $symbol $stx)
+  (leo-append
+    (leo-append-value-stx
+      $leo
+      (datum->syntax #f (string->keyword (symbol->string $symbol))))
+    (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
   (let 
