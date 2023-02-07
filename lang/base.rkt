@@ -12,6 +12,12 @@ do require:
     filter racket-filter
 
 do
+  (define-syntax (variable stx)
+    (syntax-case stx (more)
+      ((_ (name body ...))
+        #`(define name body ...))))
+
+do
   (define-syntax (gives stx)
     (syntax-case stx (more)
       ((_ (name params ... (more param)) body ...)
@@ -59,6 +65,14 @@ do
     (syntax-case stx (in)
       ((_ lhs (symbol (in body ...)))
         (quasisyntax (let ((symbol lhs)) body ...)))))
+
+do variable test
+  1
+  plus 2
+
+do
+  test
+  check-equal? 3
 
 do
   3

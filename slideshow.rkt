@@ -14,6 +14,6 @@ do provide all-from-out:
   slideshow/code-pict
   pict/color
 
-do define: text t
-do define: bold bt
-do define: paragraph para
+do variable text t
+do variable bold bt
+do variable paragraph para

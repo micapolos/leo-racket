@@ -5,15 +5,11 @@ do require:
   racket/draw
   racket/gui/base
 
-do
-  bitmap
-  gives make-bitmap: 128 128
+do variable bitmap make-bitmap: 128 128
 
-do
-  drawing
-  gives
-    bitmap-dc%
-    new bitmap bitmap
+do variable drawing new:
+  bitmap-dc%
+  bitmap bitmap
 
 do send: drawing set-pen "green" 3 'solid
 do send: drawing set-brush "blue" 'solid
