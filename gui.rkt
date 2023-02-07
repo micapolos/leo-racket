@@ -75,10 +75,10 @@ do
             dc
             0
             0
-          do refresh 1
+          do refresh:
 
 do
-  refresh: n
+  refresh:
   gives
     new:
       timer%
