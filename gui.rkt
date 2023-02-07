@@ -14,7 +14,6 @@ do
   pict
   gives
     jack-o-lantern 100
-    freeze
 
 do
   frame
