@@ -3,6 +3,7 @@
 (require
   racket/class
   racket/gui/base
+  leo/lang/base
   leo/dc
   pict)
 
@@ -25,19 +26,33 @@
         (invoke-preserving-transformation dc
           (lambda ()
             (define time
-              (/ (current-inexact-milliseconds) 1000.0))
+              (divided-by 
+                (current-inexact-milliseconds) 
+                1000.0))
 
             (define half-width
-              (/ (send canvas get-width) 2))
+              (divided-by 
+                (send canvas get-width) 
+                2))
 
             (define half-height
-              (/ (send canvas get-height) 2))
+              (divided-by
+                (send canvas get-height) 
+                2))
 
             (define rotation
-              (* (sin (* (+ time 0.5) 7.5)) 0.5))
+              (times 
+                (sin 
+                  (times 
+                    (plus time 0.5) 
+                    7.5)) 
+                0.5))
 
             (define scale
-              (+ (sin (* time 15)) 2.5))
+              (plus 
+                (sin 
+                  (times time 15)) 
+                2.5))
 
             (send dc translate half-width half-height)
             (send dc rotate rotation)
