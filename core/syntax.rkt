@@ -217,7 +217,7 @@
     (cond
       ((equal? $peeked-char #\newline)
         (skip-char $port)
-        (read-leo-line $port $src $depth $leo))
+        (read-leo-line $port $src $depth (leo-commit $leo)))
       ((eof-object? $peeked-char) eof)
       ((char-whitespace? $peeked-char)
         (let-values (((line col pos) (port-next-location $port)))
@@ -292,15 +292,18 @@
               (symbol->string (syntax-e $symbol)))))
         (read-leo-rhs-list $port $src $depth)))
     (else 
-      (let 
-        (($args
-          (reverse
-            (append
-              (leo-reversed-stxs (read-leo-rhs $port $src $depth))
-              (leo-reversed-value-stxs $leo)))))
-        (cond
-          ((null? $args) (leo-with-value-stx $leo $symbol))
-          (else (leo-with-value-stx $leo #`(#,$symbol #,@$args))))))))
+      (read-leo-word-rhs $port $src $depth $leo $symbol))))
+
+(define (read-leo-word-rhs $port $src $depth $leo $word)
+  (let 
+    (($args
+      (reverse
+        (append
+          (leo-reversed-stxs (read-leo-rhs $port $src $depth))
+          (leo-reversed-value-stxs $leo)))))
+    (cond
+      ((null? $args) (leo-with-value-stx $leo $word))
+        (else (leo-with-value-stx $leo #`(#,$word #,@$args))))))
 
 (define (read-leo-symbol-colon-rhs $port $src $depth $leo $symbol)
   (let 
