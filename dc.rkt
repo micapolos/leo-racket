@@ -6,10 +6,10 @@ do require:
 
 do
   dc
-  draw-preserving-transformation fn
+  invoke-preserving-transformation fn
   gives:
-    do define:
+    do
       transformation
-      send: dc get-transformation
+      gives send: dc get-transformation
     do invoke fn
     do send: dc set-transformation transformation

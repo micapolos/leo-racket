@@ -39,7 +39,7 @@ as frame in
       for: canvas dc
       giving
         dc
-        draw-preserving-transformation function giving
+        invoke-preserving-transformation function giving
           set!:
             time
             plus: time dt
