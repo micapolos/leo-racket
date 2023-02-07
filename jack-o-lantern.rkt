@@ -58,11 +58,10 @@ variable canvas new:
           refresh:
 
 refresh:
-does
-  new:
-    timer%
-    interval interval
-    just-once? true
-    notify-callback function doing send: canvas refresh
+does new:
+  timer%
+  interval interval
+  just-once? true
+  notify-callback function doing send: canvas refresh
 
 send: frame show true
