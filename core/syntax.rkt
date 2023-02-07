@@ -78,13 +78,13 @@
     null
     #f))
 
-(define (leo-append-identifier-stx-rhs $leo $identifier $stx $rhs $list?) 
+(define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
     ((equal? $identifier `do) (leo-append-do-rhs $leo $rhs))
     ((equal? $identifier `give) (leo-append-give-rhs $leo $rhs))
     ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
     ((equal? $identifier `then) (leo-append-then-rhs $leo $rhs))
-    (else (leo-append-stx-rhs $leo $stx $rhs $list?))))
+    (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
 (define (leo-append-do-rhs $leo $rhs)
   (leo-commit (leo-append $leo $rhs)))
@@ -98,7 +98,7 @@
 (define (leo-append-then-rhs $leo $rhs)
   (leo-append $leo $rhs))
 
-(define (leo-append-stx-rhs $leo $stx $rhs $list?) 
+(define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
   (let 
     (($args
       (reverse
@@ -317,13 +317,12 @@
     (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
-  (leo-append-identifier-stx-rhs
-    $leo $identifier $stx (read-leo-rhs $port $src $depth) #f))
+  (leo-append-identifier-stx-list?-rhs $leo $identifier $stx #f 
+    (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-identifier-colon-stx-rhs $port $src $depth $leo $identifier $stx)
-  (leo-append-identifier-stx-rhs $leo $identifier $stx
-    (read-leo-rhs-list $port $src $depth)
-    #t))
+  (leo-append-identifier-stx-list?-rhs $leo $identifier $stx #t
+    (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-default-line $port $src $depth $leo $default)
   (cond 
