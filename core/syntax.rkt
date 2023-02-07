@@ -54,7 +54,9 @@
         (leo-reversed-stxs $rhs)
         (leo-reversed-value-stxs $lhs)))
     (empty-line? 
-      (leo-empty-line? $rhs))))
+      (or 
+        (leo-empty-line? $lhs) 
+        (leo-empty-line? $rhs)))))
 
 (define (leo-with-value-stx $leo $value-stx) 
   (struct-copy leo $leo
@@ -68,7 +70,7 @@
 (define (leo-append-reversed-value-stxs $leo $reversed-value-stxs) 
   (struct-copy leo $leo
     (reversed-value-stxs
-      (append 
+      (append
         $reversed-value-stxs
         (leo-reversed-value-stxs $leo)))))
 
@@ -238,9 +240,20 @@
 
 ; -------------------------------------------------------
 
+(define (read-leo-empty-lines $port $leo)
+  (let (($char (peek-char $port)))
+    (cond
+      ((equal? $char #\newline)
+        (skip-char $port)
+        (read-leo-empty-lines $port (leo-append-empty-line $leo)))
+      (else $leo))))
+
 (define (read-leo $port ($src "") ($depth 0) ($leo empty-leo))
   (let*
-    (($leo-line (read-leo-line $port $src $depth (leo-commit-if-empty-line $leo))))
+    (($leo-line 
+      (read-leo-empty-lines $port
+        (read-leo-line $port $src $depth 
+          (leo-commit-if-empty-line $leo)))))
     (cond
       ((eof-object? $leo-line) $leo)
       ((peek-exact-depth $port $depth)
@@ -250,7 +263,9 @@
 
 (define (read-leo-list $port ($src "") ($depth 0) ($leo empty-leo))
   (let*
-    (($leo-line (read-leo-line $port $src $depth empty-leo)))
+    (($leo-line 
+      (read-leo-empty-lines $port
+        (read-leo-line $port $src $depth empty-leo))))
     (cond
       ((eof-object? $leo-line) $leo)
       ((peek-exact-depth $port $depth)
@@ -496,7 +511,10 @@
 (check-equal? (string->leo-datums "foo\n  x = 1\n  bar\n") `((foo (bar #:x 1))))
 (check-equal? (string->leo-datums "foo:\n  x = 1\n  bar\n") `((foo #:x 1 bar)))
 
-;(check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
+(check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
+(check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n") `((foo bar zoo)))
+
+;(read-leo (open-input-string "foo\n\n"))
 
 ; -------------------------------------------------------------
 
