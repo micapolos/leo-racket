@@ -6,17 +6,17 @@ require:
   leo/dc
   pict
 
-variable interval 16
+define interval 16
 
-variable pict jack-o-lantern 100
+define pict jack-o-lantern 100
 
-variable frame new:
+define frame new:
   frame%
   label "Hello, world!"
   width 640
   height 480
 
-variable canvas new:
+define canvas new:
   canvas%
   parent frame
   paint-callback function
@@ -24,26 +24,26 @@ variable canvas new:
     doing
       dc
       invoke-preserving-transformation function doing
-        variable time
+        define time
           current-inexact-milliseconds:
           divided-by 1000.0
 
-        variable half-width
+        define half-width
           send: canvas get-width
           divided-by 2
 
-        variable half-height
+        define half-height
           send: canvas get-height
           divided-by 2
 
-        variable rotation
+        define rotation
           time
           plus 0.5
           times 7.5
           sin
           times 0.5
 
-        variable scale
+        define scale
           time
           times 15
           sin

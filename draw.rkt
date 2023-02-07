@@ -6,8 +6,8 @@ require:
   racket/gui/base
 
 do:
-  variable bitmap make-bitmap: 128 128
-  variable drawing new:
+  define bitmap make-bitmap: 128 128
+  define drawing new:
     bitmap-dc%
     bitmap bitmap
   send: drawing set-pen "green" 3 'solid

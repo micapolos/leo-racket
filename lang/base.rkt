@@ -10,11 +10,14 @@ require:
     racket/base
     map racket-map
     filter racket-filter
+    define racket-define
 
-(define-syntax (variable stx)
-  (syntax-case stx (more)
-    ((_ (name body ...))
-      #`(define name body ...))))
+(define-syntax (define stx)
+  (syntax-case stx ()
+    ((_ (name body ))
+      #`(define name body))
+    ((_ body ...)
+      #`(racket-define body ...))))
 
 (define-syntax (does stx)
   (syntax-case stx (more)
@@ -34,14 +37,14 @@ require:
       #`(struct name (fields ...) #:transparent))))
 
 do:
-  variable plus +
-  variable minus -
-  variable times *
-  variable divided-by /
-  variable less-than? <
-  variable greater-than? >
-  variable less-or-equal? <=
-  variable greater-or-equal? >=
+  define plus +
+  define minus -
+  define times *
+  define divided-by /
+  define less-than? <
+  define greater-than? >
+  define less-or-equal? <=
+  define greater-or-equal? >=
 
 any? x
 does true
@@ -60,7 +63,7 @@ check-equal? true
       (quasisyntax (let ((symbol lhs)) body ...)))))
 
 begin
-  variable test
+  define test
     1
     plus 2
 
@@ -212,7 +215,7 @@ check-equal? "something else"
             ((current-namespace (namespace-anchor->namespace #,anchor)))
             (syntax->datum (expand-once (datum->syntax #f (quote body))))))))))
 
-variable join string-append
+define join string-append
 
 "Hello, "
 join "world!"
@@ -221,7 +224,7 @@ check-equal? "Hello, world!"
 push: list value
 does cons: value list
 
-variable applying curryr
+define applying curryr
 
 map: list fn
 does racket-map: fn list

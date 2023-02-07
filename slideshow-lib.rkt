@@ -15,6 +15,6 @@ provide all-from-out:
   pict/color
 
 do:
-  variable text t
-  variable bold bt
-  variable paragraph para
+  define text t
+  define bold bt
+  define paragraph para
