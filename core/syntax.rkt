@@ -393,9 +393,7 @@
 (check-equal? (string->leo-datums "1\nplus 2\n") `((plus 1 2)))
 (check-equal? (string->leo-datums "\"foo\"\n") `("foo"))
 
-(check-equal? 
-  (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") 
-  `((times (plus 1 2) (minus 3 4))))
+(check-equal? (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") `((times (plus 1 2) (minus 3 4))))
 
 (check-equal? (string->leo-datums "the\n") `())
 (check-equal? (string->leo-datums "the 1\n") `(1))
@@ -409,33 +407,17 @@
 (check-equal? (string->leo-datums "the: 1\n") `(1))
 (check-equal? (string->leo-datums "the: 1 2\n") `(1 2))
 
-(check-equal? 
-  (string->leo-datums "1\nplus 2\ndo\n  3\n  minus 4\n") 
-  `((plus 1 2) (minus 3 4)))
+(check-equal? (string->leo-datums "1\nplus 2\ndo\n  3\n  minus 4\n") `((plus 1 2) (minus 3 4)))
+(check-equal? (string->leo-datums "foo:\n") `((foo)))
+(check-equal? (string->leo-datums "foo: 1\n") `((foo 1)))
 
-(check-equal?
-  (string->leo-datums "foo:\n") 
-  `((foo)))
+(check-equal? (string->leo-datums "foo: 1 2\n") `((foo 1 2)))
 
-(check-equal?
-  (string->leo-datums "foo: 1\n") 
-  `((foo 1)))
+(check-equal? (string->leo-datums "foo:\n  x 1\n") `((foo (x 1))))
 
-(check-equal?
-  (string->leo-datums "foo: 1 2\n") 
-  `((foo 1 2)))
+(check-equal? (string->leo-datums "foo:\n  x 1\n  y 2\n") `((foo (x 1) (y 2))))
 
-(check-equal?
-  (string->leo-datums "foo:\n  x 1\n") 
-  `((foo (x 1))))
-
-(check-equal?
-  (string->leo-datums "foo:\n  x 1\n  y 2\n") 
-  `((foo (x 1) (y 2))))
-
-(check-equal?
-  (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") 
-  `((circle (radius 10) (center (x 10) (y 20)))))
+(check-equal? (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") `((circle (radius 10) (center (x 10) (y 20)))))
 
 (check-equal? (string->leo-datums "do require a\n1\n+ 2\n") `((require a) (+ 1 2)))
 (check-equal? (string->leo-datums "1\ndo 2\n3\n+ 4\n") `(1 2 (+ 3 4)))
