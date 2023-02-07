@@ -88,13 +88,9 @@
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
     ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
-    ((equal? $identifier `then) (leo-append-then-rhs $leo $rhs))
     (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
 (define (leo-append-the-rhs $leo $rhs)
-  (leo-append $leo $rhs))
-
-(define (leo-append-then-rhs $leo $rhs)
   (leo-append $leo $rhs))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
@@ -413,11 +409,6 @@
 (check-equal? (string->leo-datums "foo:\n  x 1\n  y 2\n") `((foo (x 1) (y 2))))
 
 (check-equal? (string->leo-datums "circle:\n  radius 10\n  center:\n    x 10\n    y 20\n") `((circle (radius 10) (center (x 10) (y 20)))))
-
-(check-equal? (string->leo-datums "then\n") `())
-(check-equal? (string->leo-datums "1\nthen\n") `(1))
-(check-equal? (string->leo-datums "then 2\n") `(2))
-(check-equal? (string->leo-datums "1\nthen 2\n") `(1 2))
 
 (check-equal? (string->leo-datums "x =\nfoo\n") `((foo #:x)))
 (check-equal? (string->leo-datums "x = 1\nfoo\n") `((foo #:x 1)))
