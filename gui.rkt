@@ -3,56 +3,88 @@
 do require:
   racket/class
   racket/gui/base
+  leo/dc
   pict
 
-do define: interval 16
+do
+  interval
+  gives 10
 
-do define:
+do
   dt
-  divided-by: 1 60
+  gives
+    1
+    divided-by 60
 
-do define: time 0.0
+do
+  time
+  gives 0.0
+
+do
+  pict
+  gives
+    jack-o-lantern 100
+    freeze
 
 new:
   frame%
   label "Hello, world!"
   width 640
-  height 640
+  height 480
 as frame in
-  function
-    for time
-    giving
-      jack-o-lantern 100
-      translate: -50 -50
-      scale
-        time
-        times 15
-        sin
-        plus 3
-  as make-pict in
+  new:
+    canvas%
+    parent frame
+    paint-callback function
+      for: canvas dc
+      giving
+        dc
+        draw-preserving-transformation function giving
+          set!:
+            time
+            plus: time dt
+          do send:
+            dc
+            translate
+            give
+              send: canvas get-width
+              divided-by 2
+            give
+              send: canvas get-height
+              divided-by 2
+          do send:
+            dc
+            rotate
+            give
+              time
+              plus 0.5
+              times 7.5
+              sin
+              times 0.5
+          do send:
+            dc
+            scale
+            give
+              time
+              times 15
+              sin
+              plus 3
+            give
+              time
+              times 15
+              sin
+              plus 3
+          do send: dc translate -50 -50
+          do draw-pict:
+            pict
+            dc
+            0
+            0
+  as canvas in
     do new:
       timer%
       interval interval
-      notify-callback function giving:
-        send: frame refresh
-        set!:
-          time
-          plus: time dt
-    new:
-      canvas%
-      parent frame
-      paint-callback function
-        for: canvas dc
-        giving draw-pict:
-          give
-            make-pict
-            invoke time
-          dc
-          give
-            send: canvas get-width
-            divided-by 2
-          give
-            send: canvas get-height
-            divided-by 2
+      notify-callback function giving
+        send: canvas refresh-now
   give: frame
 send: show true
