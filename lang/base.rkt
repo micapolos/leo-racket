@@ -59,12 +59,13 @@ check-equal? true
     ((_ lhs (symbol (in body ...)))
       (quasisyntax (let ((symbol lhs)) body ...)))))
 
-variable test
-  1
-  plus 2
+begin
+  variable test
+    1
+    plus 2
 
-test
-check-equal? 3
+  test
+  check-equal? 3
 
 3
 plus 4
@@ -73,66 +74,68 @@ as number in
   plus number
 check-equal? 14
 
-point
-has: x y
+begin
+  vector
+  has: x y
 
-point:
-  do
-    1
-    plus 2
-  do
+  vector:
+    do
+      1
+      plus 2
+    do
+      3
+      plus 4
+  as v in begin
+    v
+    check-equal? vector: 3 7
+
+    v
+    vector?
+    check-equal? true
+
+    "foo"
+    vector?
+    check-equal? false
+
+    v
+    vector-x
+    check-equal? 3
+
+    v
+    vector-y
+    check-equal? 7
+
+begin
+  lhs
+  arrow-to rhs
+  exists
+
+  1
+  plus 2
+  arrow-to
     3
     plus 4
-as $point in begin
-  $point
-  check-equal? point: 3 7
+  as arrow in begin
+    arrow
+    check-equal?
+      3
+      arrow-to 7
 
-  $point
-  point?
-  check-equal? true
+    arrow
+    arrow-to?
+    check-equal? true
 
-  "foo"
-  point?
-  check-equal? false
+    "foo"
+    arrow-to?
+    check-equal? false
 
-  $point
-  point-x
-  check-equal? 3
+    arrow
+    arrow-to-lhs
+    check-equal? 3
 
-  $point
-  point-y
-  check-equal? 7
-
-lhs
-pair-to rhs
-exists
-
-1
-plus 2
-pair-to
-  3
-  plus 4
-as $pair in begin
-  $pair
-  check-equal?
-    3
-    pair-to 7
-
-  $pair
-  pair-to?
-  check-equal? true
-
-  "foo"
-  pair-to?
-  check-equal? false
-
-  $pair
-  pair-to-lhs
-  check-equal? 3
-
-  $pair
-  pair-to-rhs
-  check-equal? 7
+    arrow
+    arrow-to-rhs
+    check-equal? 7
 
 (define-syntax (function stx)
   (syntax-case stx (doing for)
@@ -256,3 +259,7 @@ does
     divided-by y
     floor
     times y
+
+4.75
+flmod 3.25
+check-equal? 1.5
