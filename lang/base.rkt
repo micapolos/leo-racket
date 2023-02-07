@@ -136,24 +136,6 @@ do
       check-equal? 7
 
 do
-  (define-syntax (giving stx)
-    (syntax-case stx ()
-      ((_ params ... body)
-        #`(lambda (params ...) body))))
-
-do
-  (define-syntax (use stx)
-    (syntax-case stx ()
-      ((_ xs ...)
-        #`(#%app xs ...))))
-
-do
-  give: x y
-  giving minus: x y
-  use: 5 3
-  check-equal? 2
-
-do
   (define-syntax (function stx)
     (syntax-case stx (giving for)
       ((_ (giving (for params ...) body ...))
@@ -249,15 +231,25 @@ do
   push: list value
   gives cons: value list
 
-do define: using curryr
+do define: applying curryr
 
 do
   map: list fn
   gives racket-map: fn list
 
 do
+  list: 1 2 3
+  map applying: - 1
+  check-equal? list: 0 1 2
+
+do
   filter: list fn
   gives racket-filter: fn list
+
+do
+  list: "foo" 2 "bar" 4
+  filter applying string?
+  check-equal? list: "foo" "bar"
 
 do
   string
