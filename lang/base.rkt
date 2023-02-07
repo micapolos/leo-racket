@@ -154,6 +154,32 @@ do
   check-equal? 2
 
 do
+  (define-syntax (function stx)
+    (syntax-case stx (giving for)
+      ((_ (giving (for params ...) body ...))
+        #`(lambda (params ...) body ...))
+      ((_ (giving body ...))
+        #`(lambda () body ...))))
+
+do
+  (define-syntax (invoke stx)
+    (syntax-case stx ()
+      ((_ xs ...)
+        #`(#%app xs ...))))
+
+do
+  function giving 3
+  invoke
+  check-equal? 3
+
+do
+  function
+    for: x y
+    giving minus: x y
+  invoke: 3 2
+  check-equal? 1
+
+do
   (begin-for-syntax
     (define (expand-otherwise-stx lhs alternate)
       (let ((tmp (car (generate-temporaries `(tmp)))))
@@ -210,7 +236,7 @@ do
             (define-namespace-anchor #,anchor)
             (parameterize
               ((current-namespace (namespace-anchor->namespace #,anchor)))
-              (syntax->datum (expand (datum->syntax #f (quote body))))))))))
+              (syntax->datum (expand-once (datum->syntax #f (quote body))))))))))
 
 do define: join string-append
 
@@ -248,3 +274,14 @@ do
 do
   comma-separated: "a" "b" "c"
   check-equal? "a, b, c"
+
+do
+  x
+  flmod y
+  gives
+    x
+    minus
+      x
+      divided-by y
+      floor
+      times y
