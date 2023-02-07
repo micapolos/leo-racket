@@ -34,7 +34,7 @@
 ; ---------------------------------------------------------------
 
 (struct leo 
-  (reversed-statement-stxs reversed-value-stxs commit?) 
+  (reversed-statement-stxs reversed-value-stxs empty-line?) 
   #:transparent)
 
 (define empty-leo (leo null null #f))
@@ -77,6 +77,10 @@
       (leo-reversed-statement-stxs $leo))
     null
     #f))
+
+(define (leo-append-empty-line $leo) 
+  (struct-copy leo $leo
+    (empty-line? #t)))
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
@@ -253,7 +257,7 @@
     (cond
       ((equal? $peeked-char #\newline)
         (skip-char $port)
-        (read-leo-line $port $src $depth (leo-commit $leo)))
+        (read-leo-line $port $src $depth (leo-append-empty-line $leo)))
       ((eof-object? $peeked-char) eof)
       ((char-whitespace? $peeked-char)
         (let-values (((line col pos) (port-next-location $port)))
