@@ -33,7 +33,7 @@ require:
     ((_ (name fields ...))
       #`(struct name (fields ...) #:transparent))))
 
-the:
+do:
   variable plus +
   variable minus -
   variable times *
@@ -77,10 +77,10 @@ point
 has: x y
 
 point:
-  the
+  do
     1
     plus 2
-  the
+  do
     3
     plus 4
 as $point in begin

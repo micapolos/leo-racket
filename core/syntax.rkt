@@ -87,10 +87,10 @@
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
-    ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
+    ((equal? $identifier `do) (leo-append-do-rhs $leo $rhs))
     (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
-(define (leo-append-the-rhs $leo $rhs)
+(define (leo-append-do-rhs $leo $rhs)
   (leo-append $leo $rhs))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
@@ -387,17 +387,17 @@
 
 (check-equal? (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") `((times (plus 1 2) (minus 3 4))))
 
-(check-equal? (string->leo-datums "the\n") `())
-(check-equal? (string->leo-datums "the 1\n") `(1))
-(check-equal? (string->leo-datums "1\nthe\n") `(1))
-(check-equal? (string->leo-datums "1\nthe 2\n") `(1 2))
-(check-equal? (string->leo-datums "the 1\nthe 2\n") `(1 2))
-(check-equal? (string->leo-datums "the 1\n") `(1))
-(check-equal? (string->leo-datums "the\n  1\n  plus 2\nthe\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
+(check-equal? (string->leo-datums "do\n") `())
+(check-equal? (string->leo-datums "do 1\n") `(1))
+(check-equal? (string->leo-datums "1\ndo\n") `(1))
+(check-equal? (string->leo-datums "1\ndo 2\n") `(1 2))
+(check-equal? (string->leo-datums "do 1\ndo 2\n") `(1 2))
+(check-equal? (string->leo-datums "do 1\n") `(1))
+(check-equal? (string->leo-datums "do\n  1\n  plus 2\ndo\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
 
-(check-equal? (string->leo-datums "the:\n") `())
-(check-equal? (string->leo-datums "the: 1\n") `(1))
-(check-equal? (string->leo-datums "the: 1 2\n") `(1 2))
+(check-equal? (string->leo-datums "do:\n") `())
+(check-equal? (string->leo-datums "do: 1\n") `(1))
+(check-equal? (string->leo-datums "do: 1 2\n") `(1 2))
 
 (check-equal? (string->leo-datums "foo:\n") `((foo)))
 (check-equal? (string->leo-datums "foo: 1\n") `((foo 1)))
