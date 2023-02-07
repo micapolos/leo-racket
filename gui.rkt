@@ -8,17 +8,7 @@ do require:
 
 do
   interval
-  gives 10
-
-do
-  dt
-  gives
-    1
-    divided-by 60
-
-do
-  time
-  gives 0.0
+  gives 16
 
 do
   pict
@@ -26,13 +16,17 @@ do
     jack-o-lantern 100
     freeze
 
-new:
-  frame%
-  label "Hello, world!"
-  width 640
-  height 480
-as frame in
-  new:
+do
+  frame
+  gives new:
+    frame%
+    label "Hello, world!"
+    width 640
+    height 480
+
+do
+  canvas
+  gives new:
     canvas%
     parent frame
     paint-callback function
@@ -40,9 +34,11 @@ as frame in
       giving
         dc
         invoke-preserving-transformation function giving
-          set!:
+          do
             time
-            plus: time dt
+            gives
+              current-inexact-monotonic-milliseconds:
+              divided-by 1000.0
           do send:
             dc
             translate
@@ -80,11 +76,16 @@ as frame in
             dc
             0
             0
-  as canvas in
-    do new:
+          do refresh 1
+
+do
+  refresh: n
+  gives
+    new:
       timer%
       interval interval
+      just-once? true
       notify-callback function giving
-        send: canvas refresh-now
-  give: frame
-send: show true
+        send: canvas refresh
+
+do send: frame show true
