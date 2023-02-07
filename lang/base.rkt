@@ -1,6 +1,6 @@
 #lang leo/core
 
-do require:
+require:
   rackunit
   racket/bool
   racket/function
@@ -11,283 +11,248 @@ do require:
     map racket-map
     filter racket-filter
 
-do
-  (define-syntax (variable stx)
-    (syntax-case stx (more)
-      ((_ (name body ...))
-        #`(define name body ...))))
+(define-syntax (variable stx)
+  (syntax-case stx (more)
+    ((_ (name body ...))
+      #`(define name body ...))))
 
-do
-  (define-syntax (gives stx)
-    (syntax-case stx (more)
-      ((_ (name params ... (more param)) body ...)
-        #`(define (name params ... . param ) body ...))
-      ((_ name-and-params body ...)
-        #`(define name-and-params body ...))))
+(define-syntax (gives stx)
+  (syntax-case stx (more)
+    ((_ (name params ... (more param)) body ...)
+      #`(define (name params ... . param ) body ...))
+    ((_ name-and-params body ...)
+      #`(define name-and-params body ...))))
 
-do
-  (define-syntax (has stx)
-    (syntax-case stx ()
-      ((_ name fields ...)
-        #`(struct name (fields ...) #:transparent))))
+(define-syntax (has stx)
+  (syntax-case stx ()
+    ((_ name fields ...)
+      #`(struct name (fields ...) #:transparent))))
 
-do
-  (define-syntax (exists stx)
-    (syntax-case stx ()
-      ((_ (name fields ...))
-        #`(struct name (fields ...) #:transparent))))
+(define-syntax (exists stx)
+  (syntax-case stx ()
+    ((_ (name fields ...))
+      #`(struct name (fields ...) #:transparent))))
 
-do define: plus +
-do define: minus -
-do define: times *
-do define: divided-by /
-do define: less-than? <
-do define: greater-than? >
-do define: less-or-equal? <=
-do define: greater-or-equal? >=
+the:
+  variable plus +
+  variable minus -
+  variable times *
+  variable divided-by /
+  variable less-than? <
+  variable greater-than? >
+  variable less-or-equal? <=
+  variable greater-or-equal? >=
 
-do
-  any? x
-  gives true
+any? x
+gives true
 
-do
-  true? x
-  gives
-    x
-    equal? true
+true? x
+gives
+  x
+  equal? true
 
-do
-  any? "jajko"
-  check-equal? true
+any? "jajko"
+check-equal? true
 
-do
-  (define-syntax (as stx)
-    (syntax-case stx (in)
-      ((_ lhs (symbol (in body ...)))
-        (quasisyntax (let ((symbol lhs)) body ...)))))
+(define-syntax (as stx)
+  (syntax-case stx (in)
+    ((_ lhs (symbol (in body ...)))
+      (quasisyntax (let ((symbol lhs)) body ...)))))
 
-do variable test
+variable test
   1
   plus 2
 
-do
-  test
-  check-equal? 3
+test
+check-equal? 3
 
-do
-  3
-  plus 4
-  as number in
-    number
-    plus number
-  check-equal? 14
+3
+plus 4
+as number in
+  number
+  plus number
+check-equal? 14
 
-do
-  point
-  has: x y
+point
+has: x y
 
-do
-  point:
-    the
-      1
-      plus 2
-    the
-      3
-      plus 4
-  as $point in begin
-    do
-      $point
-      check-equal? point: 3 7
-    do
-      $point
-      point?
-      check-equal? true
-    do
-      "foo"
-      point?
-      check-equal? false
-    do
-      $point
-      point-x
-      check-equal? 3
-    do
-      $point
-      point-y
-      check-equal? 7
-
-do
-  lhs
-  pair-to rhs
-  exists
-
-do
-  1
-  plus 2
-  pair-to
+point:
+  the
+    1
+    plus 2
+  the
     3
     plus 4
-  as $pair in begin
-    do
-      $pair
-      check-equal?
-        3
-        pair-to 7
-    do
-      $pair
-      pair-to?
-      check-equal? true
-    do
-      "foo"
-      pair-to?
-      check-equal? false
-    do
-      $pair
-      pair-to-lhs
-      check-equal? 3
-    do
-      $pair
-      pair-to-rhs
-      check-equal? 7
+as $point in begin
+  $point
+  check-equal? point: 3 7
 
-do
-  (define-syntax (function stx)
-    (syntax-case stx (giving for)
-      ((_ (giving (for params ...) body ...))
-        #`(lambda (params ...) body ...))
-      ((_ (giving body ...))
-        #`(lambda () body ...))))
+  $point
+  point?
+  check-equal? true
 
-do
-  (define-syntax (invoke stx)
-    (syntax-case stx ()
-      ((_ xs ...)
-        #`(#%app xs ...))))
+  "foo"
+  point?
+  check-equal? false
 
-do
-  function giving 3
-  invoke
+  $point
+  point-x
   check-equal? 3
 
-do
-  function
-    for: x y
-    giving minus: x y
-  invoke: 3 2
-  check-equal? 1
+  $point
+  point-y
+  check-equal? 7
 
-do
-  (begin-for-syntax
-    (define (expand-otherwise-stx lhs alternate)
-      (let ((tmp (car (generate-temporaries `(tmp)))))
-        (expand-if-stx
-          lhs
-          tmp
-          (list #`(`otherwise #,alternate)))))
-    (define (expand-if-stx if-stx tmp tail)
-      (syntax-case if-stx (if)
-        ((if expression (predicate consequent))
-          (expand-if-stx
-            #`expression
-            tmp
-            (cons #`((predicate #,tmp) consequent) tail)))
-        (lhs
-          #`(let ((#,tmp lhs))
-            (cond #,@tail))))))
+lhs
+pair-to rhs
+exists
 
-do
-  (define-syntax (otherwise stx)
-    (syntax-case stx (if true?)
-      ((_ (if condition (true? consequent)) alternate)
-        #`(if condition consequent alternate))
-      ((_ lhs alternate)
-        (expand-otherwise-stx #`lhs #`alternate))))
+1
+plus 2
+pair-to
+  3
+  plus 4
+as $pair in begin
+  $pair
+  check-equal?
+    3
+    pair-to 7
 
-do
-  1
-  if number? "number"
-  if string? "string"
-  otherwise "something else"
-  check-equal? "number"
+  $pair
+  pair-to?
+  check-equal? true
 
-do
   "foo"
-  if number? "number"
-  if string? "string"
-  otherwise "something else"
-  check-equal? "string"
+  pair-to?
+  check-equal? false
 
-do
-  true
-  if number? "number"
-  if string? "string"
-  otherwise "something else"
-  check-equal? "something else"
+  $pair
+  pair-to-lhs
+  check-equal? 3
 
-do
-  (define-syntax (leo stx)
-    (syntax-case stx ()
-      ((_ body)
-        (let ((anchor (car (generate-temporaries `(anchor)))))
-          #`(begin
-            (define-namespace-anchor #,anchor)
-            (parameterize
-              ((current-namespace (namespace-anchor->namespace #,anchor)))
-              (syntax->datum (expand-once (datum->syntax #f (quote body))))))))))
+  $pair
+  pair-to-rhs
+  check-equal? 7
 
-do define: join string-append
+(define-syntax (function stx)
+  (syntax-case stx (giving for)
+    ((_ (giving (for params ...) body ...))
+      #`(lambda (params ...) body ...))
+    ((_ (giving body ...))
+      #`(lambda () body ...))))
 
-do
-  "Hello, "
-  join "world!"
-  check-equal? "Hello, world!"
+(define-syntax (invoke stx)
+  (syntax-case stx ()
+    ((_ xs ...)
+      #`(#%app xs ...))))
 
-do
-  push: list value
-  gives cons: value list
+function giving 3
+invoke
+check-equal? 3
 
-do define: applying curryr
+function
+  for: x y
+  giving minus: x y
+invoke: 3 2
+check-equal? 1
 
-do
-  map: list fn
-  gives racket-map: fn list
+(begin-for-syntax
+  (define (expand-otherwise-stx lhs alternate)
+    (let ((tmp (car (generate-temporaries `(tmp)))))
+      (expand-if-stx
+        lhs
+        tmp
+        (list #`(`otherwise #,alternate)))))
+  (define (expand-if-stx if-stx tmp tail)
+    (syntax-case if-stx (if)
+      ((if expression (predicate consequent))
+        (expand-if-stx
+          #`expression
+          tmp
+          (cons #`((predicate #,tmp) consequent) tail)))
+      (lhs
+        #`(let ((#,tmp lhs))
+          (cond #,@tail))))))
 
-do
-  list: 1 2 3
-  map applying: - 1
-  check-equal? list: 0 1 2
+(define-syntax (otherwise stx)
+  (syntax-case stx (if true?)
+    ((_ (if condition (true? consequent)) alternate)
+      #`(if condition consequent alternate))
+    ((_ lhs alternate)
+      (expand-otherwise-stx #`lhs #`alternate))))
 
-do
-  filter: list fn
-  gives racket-filter: fn list
+1
+if number? "number"
+if string? "string"
+otherwise "something else"
+check-equal? "number"
 
-do
-  list: "foo" 2 "bar" 4
-  filter applying string?
-  check-equal? list: "foo" "bar"
+"foo"
+if number? "number"
+if string? "string"
+otherwise "something else"
+check-equal? "string"
 
-do
-  string
-  in-round-brackets
-  gives join: "(" string ")"
+true
+if number? "number"
+if string? "string"
+otherwise "something else"
+check-equal? "something else"
 
-do
-  more strings
-  comma-separated
-  gives
-    strings
-    string-join ", "
+(define-syntax (leo stx)
+  (syntax-case stx ()
+    ((_ body)
+      (let ((anchor (car (generate-temporaries `(anchor)))))
+        #`(begin
+          (define-namespace-anchor #,anchor)
+          (parameterize
+            ((current-namespace (namespace-anchor->namespace #,anchor)))
+            (syntax->datum (expand-once (datum->syntax #f (quote body))))))))))
 
-do
-  comma-separated: "a" "b" "c"
-  check-equal? "a, b, c"
+variable join string-append
 
-do
+"Hello, "
+join "world!"
+check-equal? "Hello, world!"
+
+push: list value
+gives cons: value list
+
+variable applying curryr
+
+map: list fn
+gives racket-map: fn list
+
+list: 1 2 3
+map applying: - 1
+check-equal? list: 0 1 2
+
+filter: list fn
+gives racket-filter: fn list
+
+list: "foo" 2 "bar" 4
+filter applying string?
+check-equal? list: "foo" "bar"
+
+string
+in-round-brackets
+gives join: "(" string ")"
+
+more strings
+comma-separated
+gives
+  strings
+  string-join ", "
+
+comma-separated: "a" "b" "c"
+check-equal? "a, b, c"
+
+x
+flmod y
+gives
   x
-  flmod y
-  gives
+  minus
     x
-    minus
-      x
-      divided-by y
-      floor
-      times y
+    divided-by y
+    floor
+    times y
