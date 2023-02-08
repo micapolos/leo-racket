@@ -59,7 +59,7 @@
             (send dc scale scale scale)
             (send dc translate -50 -50)
             (draw-pict pict dc 0 0)
-            (refresh)))))))
+            (if (send frame is-shown?) (refresh) (void))))))))
 
 (define (refresh)
   (new timer%
