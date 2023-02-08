@@ -85,13 +85,21 @@
     ((leo-empty-line? $leo) (leo-commit $leo))
     (else $leo)))
 
+(define (leo-gather $leo) 
+  (struct-copy leo $leo
+    (reversed-value-stxs (list #`(#,@(leo-reversed-value-stxs $leo))))))
+
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
     ((equal? $identifier `do) (leo-append-do-rhs $leo $rhs))
+    ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
     (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
 (define (leo-append-do-rhs $leo $rhs)
   (leo-append $leo $rhs))
+
+(define (leo-append-the-rhs $leo $rhs)
+  (leo-append $leo (leo-gather $rhs)))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
   (leo-set-empty-line-from
@@ -430,3 +438,6 @@
 (check-equal? (string->leo-datums "foo\n\nbar\n") `(foo bar))
 (check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n") `((foo bar zoo)))
 (check-equal? (string->leo-datums "foo\n  bar\n\n  zoo\n\ngoo\n") `((foo bar zoo) goo))
+
+(check-equal? (string->leo-datums "the\n") `(()))
+(check-equal? (string->leo-datums "the foo\n") `((foo)))

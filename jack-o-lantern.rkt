@@ -57,10 +57,10 @@ define canvas new:
           draw-pict: pict dc 0 0
           do
             send: frame is-shown?
-            if true? refresh:
-            else void:
+            if true? the refresh
+            else the void
 
-refresh:
+the refresh
 does new:
   timer%
   interval interval
