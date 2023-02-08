@@ -20,7 +20,7 @@ define canvas new:
   canvas%
   parent frame
   paint-callback function
-    for: canvas dc
+    from: canvas dc
     doing
       dc
       invoke-preserving-transformation function doing

@@ -142,8 +142,8 @@ begin
     check-equal? 7
 
 (define-syntax (function stx)
-  (syntax-case stx (doing for)
-    ((_ (doing (for params ...) body ...))
+  (syntax-case stx (doing from)
+    ((_ (doing (from params ...) body ...))
       #`(lambda (params ...) body ...))
     ((_ (doing body ...))
       #`(lambda () body ...))))
@@ -158,7 +158,7 @@ invoke
 check-equal? 3
 
 function
-  for: x y
+  from: x y
   doing minus: x y
 invoke: 3 2
 check-equal? 1
