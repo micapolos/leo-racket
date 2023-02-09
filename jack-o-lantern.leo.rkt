@@ -5,12 +5,12 @@ require:
   racket/gui/base
   pict
 
-dc
-invoke-preserving-transformation fn
+drawing-context
+invoke-preserving-transformation function
 does:
-  define transformation send: dc get-transformation
-  invoke fn
-  send: dc set-transformation transformation
+  define transformation send: drawing-context get-transformation
+  invoke function
+  send: drawing-context set-transformation transformation
 
 define interval 16
 
@@ -26,9 +26,9 @@ define canvas new:
   canvas%
   parent frame
   paint-callback function
-    from: canvas dc
+    from: canvas drawing-context
     doing
-      dc
+      drawing-context
       invoke-preserving-transformation function doing
         define time
           the current-inexact-milliseconds
@@ -56,11 +56,11 @@ define canvas new:
           plus 2.5
 
         do:
-          send: dc translate half-width half-height
-          send: dc rotate rotation
-          send: dc scale scale scale
-          send: dc translate -50 -50
-          draw-pict: pict dc 0 0
+          send: drawing-context translate half-width half-height
+          send: drawing-context rotate rotation
+          send: drawing-context scale scale scale
+          send: drawing-context translate -50 -50
+          draw-pict: pict drawing-context 0 0
 
         send: frame is-shown?
         if true? the refresh

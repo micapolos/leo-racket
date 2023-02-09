@@ -6,10 +6,10 @@
   leo/lang/base
   pict)
 
-(define (invoke-preserving-transformation dc fn)
-  (define transformation (send dc get-transformation))
-  (fn)
-  (send dc set-transformation transformation))
+(define (invoke-preserving-transformation drawing-context function)
+  (define transformation (send drawing-context get-transformation))
+  (function)
+  (send drawing-context set-transformation transformation))
 
 (define interval 16)
 
@@ -26,8 +26,8 @@
   (new canvas%
     (parent frame)
     (paint-callback 
-      (lambda (canvas dc)
-        (invoke-preserving-transformation dc
+      (lambda (canvas drawing-context)
+        (invoke-preserving-transformation drawing-context
           (lambda ()
             (define time
               (divided-by 
@@ -58,11 +58,11 @@
                   (times time 15)) 
                 2.5))
 
-            (send dc translate half-width half-height)
-            (send dc rotate rotation)
-            (send dc scale scale scale)
-            (send dc translate -50 -50)
-            (draw-pict pict dc 0 0)
+            (send drawing-context translate half-width half-height)
+            (send drawing-context rotate rotation)
+            (send drawing-context scale scale scale)
+            (send drawing-context translate -50 -50)
+            (draw-pict pict drawing-context 0 0)
             (if (send frame is-shown?) (refresh) (void))))))))
 
 (define (refresh)

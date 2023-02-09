@@ -229,15 +229,15 @@ does cons: value list
 
 define applying curryr
 
-map: list fn
-does racket-map: fn list
+map: list function
+does racket-map: function list
 
 list: 1 2 3
 map applying: - 1
 check-equal? list: 0 1 2
 
-filter: list fn
-does racket-filter: fn list
+filter: list function
+does racket-filter: function list
 
 list: "foo" 2 "bar" 4
 filter applying string?
