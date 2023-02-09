@@ -31,7 +31,7 @@ define canvas new:
       dc
       invoke-preserving-transformation function doing
         define time
-          current-inexact-milliseconds:
+          the current-inexact-milliseconds
           divided-by 1000.0
 
         define half-width
