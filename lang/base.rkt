@@ -239,6 +239,21 @@ check-equal? list: 0 1 2
 filter: list function
 does racket-filter: function list
 
+initial
+fold: list f
+does foldl:
+  function
+    from: item folded
+    doing invoke: f folded item
+  initial
+  list
+
+"Items: "
+fold:
+  list: "apple, " "banana, " "pear."
+  string-append
+check-equal? "Items: apple, banana, pear."
+
 list: "foo" 2 "bar" 4
 filter applying string?
 check-equal? list: "foo" "bar"
