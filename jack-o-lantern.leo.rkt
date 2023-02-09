@@ -61,10 +61,10 @@ define canvas new:
           send: dc scale scale scale
           send: dc translate -50 -50
           draw-pict: pict dc 0 0
-          do
-            send: frame is-shown?
-            if true? the refresh
-            else the void
+
+        send: frame is-shown?
+        if true? the refresh
+        else the void
 
 the refresh
 does new:
