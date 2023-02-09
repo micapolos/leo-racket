@@ -1,76 +1,74 @@
-#lang leo
+#lang racket
 
-require:
+(require
   racket/class
   racket/gui/base
-  pict
+  leo/lang/base
+  pict)
 
-dc
-invoke-preserving-transformation fn
-does:
-  define transformation send: dc get-transformation
-  invoke fn
-  send: dc set-transformation transformation
+(define (invoke-preserving-transformation dc fn)
+  (define transformation (send dc get-transformation))
+  (fn)
+  (send dc set-transformation transformation))
 
-define interval 16
+(define interval 16)
 
-define pict jack-o-lantern 100
+(define pict (jack-o-lantern 100))
 
-define frame new:
-  frame%
-  label "Hello, world!"
-  width 640
-  height 480
+(define frame 
+  (new
+    frame%
+    (label "Hello, world!")
+    (width 640)
+    (height 480)))
 
-define canvas new:
-  canvas%
-  parent frame
-  paint-callback function
-    from: canvas dc
-    doing
-      dc
-      invoke-preserving-transformation function doing
-        define time
-          current-inexact-milliseconds:
-          divided-by 1000.0
+(define canvas 
+  (new canvas%
+    (parent frame)
+    (paint-callback 
+      (lambda (canvas dc)
+        (invoke-preserving-transformation dc
+          (lambda ()
+            (define time
+              (divided-by 
+                (current-inexact-milliseconds) 
+                1000.0))
 
-        define half-width
-          send: canvas get-width
-          divided-by 2
+            (define half-width
+              (divided-by 
+                (send canvas get-width) 
+                2))
 
-        define half-height
-          send: canvas get-height
-          divided-by 2
+            (define half-height
+              (divided-by
+                (send canvas get-height) 
+                2))
 
-        define rotation
-          time
-          plus 0.5
-          times 7.5
-          sin
-          times 0.5
+            (define rotation
+              (times 
+                (sin 
+                  (times 
+                    (plus time 0.5) 
+                    7.5)) 
+                0.5))
 
-        define scale
-          time
-          times 15
-          sin
-          plus 2.5
+            (define scale
+              (plus 
+                (sin 
+                  (times time 15)) 
+                2.5))
 
-        do:
-          send: dc translate half-width half-height
-          send: dc rotate rotation
-          send: dc scale scale scale
-          send: dc translate -50 -50
-          draw-pict: pict dc 0 0
-          do
-            send: frame is-shown?
-            if true? the refresh
-            else the void
+            (send dc translate half-width half-height)
+            (send dc rotate rotation)
+            (send dc scale scale scale)
+            (send dc translate -50 -50)
+            (draw-pict pict dc 0 0)
+            (if (send frame is-shown?) (refresh) (void))))))))
 
-the refresh
-does new:
-  timer%
-  interval interval
-  just-once? true
-  notify-callback function doing send: canvas refresh
+(define (refresh)
+  (new timer%
+    (interval interval)
+    (just-once? true)
+    (notify-callback (lambda () (send canvas refresh)))))
 
-send: frame show true
+(send frame show true)
