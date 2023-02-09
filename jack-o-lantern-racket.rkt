@@ -4,8 +4,12 @@
   racket/class
   racket/gui/base
   leo/lang/base
-  leo/dc
   pict)
+
+(define (invoke-preserving-transformation dc fn)
+  (define transformation (send dc get-transformation))
+  (fn)
+  (send dc set-transformation transformation))
 
 (define interval 16)
 
