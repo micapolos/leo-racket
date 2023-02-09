@@ -1,12 +1,11 @@
 #lang racket
 
 (require
-  slideshow/widescreen/base
-  slideshow/text
-  slideshow/pict
-  slideshow/pict
+  pict/color
   slideshow/code-pict
-  pict/color)
+  slideshow/pict
+  slideshow/text
+  slideshow/widescreen/base)
 
 (define text t)
 (define bold bt)

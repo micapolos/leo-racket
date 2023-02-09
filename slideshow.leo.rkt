@@ -1,12 +1,11 @@
 #lang leo
 
 require:
-  slideshow/widescreen/base
-  slideshow/text
-  slideshow/pict
-  slideshow/pict
-  slideshow/code-pict
   pict/color
+  slideshow/code-pict
+  slideshow/pict
+  slideshow/text
+  slideshow/widescreen/base
 
 do:
   define text t
