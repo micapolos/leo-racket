@@ -6,8 +6,6 @@
   syntax/parse
   racket/function)
 
-(define number--plus-number--- +)
-
 (define env 
   (hash 
     `(append string string) `(string-append . string)
