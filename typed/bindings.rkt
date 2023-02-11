@@ -12,6 +12,8 @@
   #:transparent
   #:type-name Bindings)
 
+(define null-bindings (bindings null))
+
 (define 
   (bindings-plus
     ($bindings : Bindings) 

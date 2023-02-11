@@ -15,6 +15,8 @@
   #:transparent
   #:type-name Compiled)
 
+(define null-compiled (compiled null-bindings null))
+
 (define 
   (compiled-with-syntaxes
     ($compiled : Compiled)
