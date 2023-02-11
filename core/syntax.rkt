@@ -50,7 +50,8 @@
 
 (define (leo-with-value-stx $leo $value-stx) 
   (struct-copy leo $leo
-    (reversed-value-stxs (list $value-stx))))
+    (reversed-value-stxs (list $value-stx))
+    (empty-line? #f)))
 
 (define (leo-append-value-stx $leo $value-stx) 
   (struct-copy leo $leo
@@ -392,6 +393,8 @@
 (check-equal? (string->leo-datums "foo 123\n") `((foo 123)))
 (check-equal? (string->leo-datums "1\nplus 2\n") `((plus 1 2)))
 (check-equal? (string->leo-datums "\"foo\"\n") `("foo"))
+
+(check-equal? (string->leo-datums "\n\n1\nplus 2\n") `((plus 1 2)))
 
 (check-equal? (string->leo-datums "1\nplus 2\ntimes\n  3\n  minus 4\n") `((times (plus 1 2) (minus 3 4))))
 
