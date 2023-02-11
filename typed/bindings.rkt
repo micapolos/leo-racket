@@ -6,9 +6,11 @@
   leo/typed/type
   leo/typed/syntax-type)
 
-(define-type Value Any)
+(struct binding ((syntax : (Syntaxof Any)) (type : Type))
+  #:transparent
+  #:type-name Binding)
 
-(struct bindings ((list : (Listof (Pairof Type Value))))
+(struct bindings ((list : (Listof (Pairof Type Binding))))
   #:transparent
   #:type-name Bindings)
 
@@ -18,14 +20,15 @@
   (bindings-plus
     ($bindings : Bindings) 
     ($type : Type) 
-    ($value : Value)) : Bindings
-  (bindings (cons (cons $type $value) (bindings-list $bindings))))
+    ($binding : Binding)) : Bindings
+  (bindings (cons (cons $type $binding) (bindings-list $bindings))))
 
 (define 
-  (bindings-value
+  (bindings-ref
     ($bindings : Bindings) 
-    ($type : Type)) : (U Value False)
-  (assoc $type (bindings-list $bindings)))
+    ($type : Type)) : (U Binding False)
+  (define $assoc (assoc $type (bindings-list $bindings)))
+  (if (equal? $assoc #f) #f (cdr $assoc)))
 
 (define
   (bindings-parse-syntax

@@ -17,5 +17,3 @@
       (map
         (lambda (($datum : Datum)) (datum->syntax #f $datum))
         $datums))))
-
-(datums-compile `("sdf" 1))
