@@ -21,6 +21,6 @@
         racket/bool
         racket/function
         leo/lang/base
-        rackunit
+        leo/testing
         (for-syntax racket/base))
       #,@(read-leo-stxs port src))))

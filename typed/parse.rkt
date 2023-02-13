@@ -5,7 +5,7 @@
 (require 
   syntax/parse
   racket/function
-  rackunit)
+  leo/testing)
 
 (define string-type `string)
 (define number-type `number)
@@ -58,7 +58,7 @@
 (define (parsed-stxs $parsed) 
   (reverse (parsed-rev-stxs $parsed)))
 
-(define (env-stx $env $stx)
+(define (env-parse-stx $env $stx)
   (syntax-parse $stx
     (a:string (stx-typed #`a `string))
     (a:number (stx-typed #`a `number))
@@ -74,7 +74,7 @@
              (type (hash-ref env symbol)))
         (stx-typed #`id type)))))
 
-(define (parsed-plus $parsed $stx)
+(define (parsed-parse-stx $parsed $stx)
   (syntax-parse $stx
     (((~literal def) (id:identifier body:expr))
       (let* ((symbol (syntax-e #`id))

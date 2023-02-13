@@ -34,6 +34,7 @@
   (bindings-parse-syntax
     ($bindings : Bindings)
     ($syntax : (Syntaxof Any))) : (U (Syntaxof Any) False)
+  ()
   (let (($datum (syntax-e $syntax)))
     (cond
       ((boolean? $datum) 

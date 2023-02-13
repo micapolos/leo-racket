@@ -1,7 +1,7 @@
 #lang leo/core
 
 require:
-  rackunit
+  leo/testing
   racket/bool
   racket/function
   racket/string

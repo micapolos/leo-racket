@@ -3,7 +3,7 @@
 (provide read-leo-stxs)
 
 (require 
-  rackunit
+  leo/testing
   racket/string
   syntax/readerr
   (for-syntax racket/base))
