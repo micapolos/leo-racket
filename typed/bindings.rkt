@@ -3,9 +3,11 @@
 (provide (all-defined-out))
 
 (require 
-  leo/typed/type
   racket/function
-  leo/typed/syntax)
+  leo/typed/type
+  leo/typed/types
+  leo/typed/syntax-type
+  leo/typed/syntax-typed)
 
 (struct binding ((syntax : (Syntaxof Any)) (type : Type))
   #:transparent
@@ -36,7 +38,7 @@
     ($bindings : Bindings)
     ($syntax : (Syntaxof Any))) : (U (Syntaxof Any) False)
   (or
-    (syntax-parse $syntax)
+    (syntax->typed $syntax)
     (bindings-parse-complex-syntax $bindings $syntax)))
 
 (define
@@ -46,29 +48,46 @@
   #f)
 
 (define
-  (bindings-parse
+  (bindings-syntax
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (U Bindings False)
-  (let (($syntax-e (syntax-e $syntax)))
-    (cond
-      ((pair? $syntax-e) 
-        (let (($car-stx (car $syntax-e))
-              ($cdr-stx (cdr $syntax-e)))
-          (cond
-            ((identifier? $car-stx) #f)
-            (else #f))))
-      (else #f))))
+    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+  (bindings-resolve $bindings
+    (bindings-syntax-inner $bindings $syntax)))
 
 (define
-  (bindings-parse-identifier-syntaxes
+  (bindings-syntax-inner
     ($bindings : Bindings)
-    ($identifier : Identifier)
-    ($syntaxes : (Listof (Syntaxof Any)))) : (Syntaxof Any)
-  (let (($parsed-syntaxes (map (curry bindings-parse $bindings) $syntaxes)))
-    (syntax-typed
-      #`(#,$identifier #,@$parsed-syntaxes)
-      (struct-type 
-        (list 
-          (field-type-line 
-            (syntax-e $identifier) 
-            $parsed-syntaxes))))))
+    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+  (let (($syntax-e (syntax-e $syntax)))
+    (cond
+      ((boolean? $syntax-e)
+        (syntax-with-type $syntax boolean-type))
+      ((number? $syntax-e)
+        (syntax-with-type $syntax number-type))
+      ((string? $syntax-e)
+        (syntax-with-type $syntax string-type))
+      ((symbol? $syntax-e)
+        (syntax-with-type #`() (field-type $syntax-e void-type-body)))
+      ((and (pair? $syntax-e) (list? $syntax-e))
+        (let (($car (car $syntax-e))
+              ($cdr (cast (cdr $syntax-e) (Listof (Syntaxof Any)))))
+          (cond
+            ((identifier? $car) 
+              (typed-field-syntax 
+                $car 
+                (map (curry bindings-syntax-inner $bindings) $cdr)))
+            (else (error (format "Identifier expected ~v" $car))))))
+      (else (error (format "Parse error ~v" $syntax))))))
+
+; TODO
+(define 
+  (bindings-resolve 
+    ($bindings : Bindings)
+    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+  $syntax)
+
+(define
+  (bindings-plus-syntax 
+    ($bindings : Bindings)
+    ($syntax : (Syntaxof Any))) : (Option Bindings)
+  #f)

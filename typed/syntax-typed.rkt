@@ -6,21 +6,10 @@
   leo/typed/base
   leo/testing
   leo/typed/type
+  leo/typed/syntax-type
+  leo/typed/typed
   leo/typed/type-is-static
   leo/typed/types)
-
-(struct (V) typed (($value : V) ($type : Type))
-  #:transparent
-  #:type-name Typed)
-
-(define (syntax-typed ($syntax : (Syntaxof Any)) ($type : Type))
-  (syntax-property $syntax `type $type))
-
-(define (syntax-type ($syntax : (Syntaxof Any))) : Type
-  (define $value (syntax-property $syntax `type))
-  (cond
-    ((equal? $value #f) (error (format "Non-typed ~s" $syntax)))
-    (else (cast $value Type))))
 
 (define (syntax-is-static? ($syntax : (Syntaxof Any))) : Boolean
   (type-is-static? (syntax-type $syntax)))
@@ -32,54 +21,54 @@
   (typed (syntax->datum $syntax) (syntax-type $syntax)))
 
 (check-equal?
-  (syntax->datum (syntax-typed #`1 number-type)) 
+  (syntax->datum (syntax-with-type #`1 number-type)) 
   1)
 
 (check-equal?
-  (syntax-type (syntax-typed #`1 number-type)) 
+  (syntax-type (syntax-with-type #`1 number-type)) 
   number-type)
 
-(define (syntax-parse ($syntax : (Syntaxof Any))) : (Option (Syntaxof Any))
+(define (syntax->typed ($syntax : (Syntaxof Any))) : (Syntaxof Any)
   (let (($datum (syntax-e $syntax)))
     (cond
       ((boolean? $datum) 
-        (syntax-typed $syntax boolean-type))
+        (syntax-with-type $syntax boolean-type))
       ((number? $datum) 
-        (syntax-typed $syntax number-type))
+        (syntax-with-type $syntax number-type))
       ((string? $datum)
-        (syntax-typed $syntax string-type))
+        (syntax-with-type $syntax string-type))
       ((symbol? $datum)
-        (syntax-typed #`() (field-type $datum void-type-body)))
+        (syntax-with-type #`() (field-type $datum void-type-body)))
       ((and (pair? $datum) (list? $datum))
         (let (($car (car $datum))
-              ($cdr (cast (cdr $datum) (Listof (Syntaxof Any)))))
+              ($cdr (map syntax->typed (cast (cdr $datum) (Listof (Syntaxof Any))))))
           (cond
             ((identifier? $car)
               (typed-field-syntax $car $cdr))
-            (else #f))))
-      (else #f))))
+            (else (error "jajko")))))
+      (else (error "dupa")))))
 
 (check-equal?
-  (syntax-typed-datum (option-ref (syntax-parse #`1))) 
+  (syntax-typed-datum (syntax->typed #`1))
   (typed 1 number-type))
 
 (check-equal?
-  (syntax-typed-datum (option-ref (syntax-parse #`"foo"))) 
+  (syntax-typed-datum (syntax->typed #`"foo"))
   (typed "foo" string-type))
 
 (check-equal? 
-  (syntax-typed-datum (option-ref (syntax-parse #`#f)))
+  (syntax-typed-datum (syntax->typed #`#f))
   (typed #f boolean-type))
 
 (check-equal? 
-  (syntax-typed-datum (option-ref (syntax-parse #`foo)))
+  (syntax-typed-datum (syntax->typed #`foo))
   (typed `() (field-type `foo void-type-body)))
 
 (define 
   (typed-field-syntax
     ($identifier : Identifier) 
     ($syntaxes : (Listof (Syntaxof Any)))) : (Syntaxof Any)
-  (syntax-typed
+  (syntax-with-type
     (let (($syntaxes (filter syntax-is-dynamic? $syntaxes)))
       (cond 
         ((null? $syntaxes) #`())
@@ -100,7 +89,7 @@
   (syntax-typed-datum 
     (typed-field-syntax #`x 
       (list 
-        (syntax-typed #`1 number-type))))
+        (syntax-with-type #`1 number-type))))
   (typed 
     1 
     (field-type `x
@@ -111,8 +100,8 @@
   (syntax-typed-datum 
     (typed-field-syntax #`tuple 
       (list 
-        (syntax-typed #`1 number-type)
-        (syntax-typed #`"foo" string-type))))
+        (syntax-with-type #`1 number-type)
+        (syntax-with-type #`"foo" string-type))))
   (typed 
     `(immutable-vector 1 "foo") 
     (field-type `tuple 
@@ -123,8 +112,8 @@
   (syntax-typed-datum 
     (typed-field-syntax #`tuple 
       (list 
-        (syntax-typed #`1 number-type)
-        (syntax-typed #`"foo" string-type))))
+        (syntax-with-type #`1 number-type)
+        (syntax-with-type #`"foo" string-type))))
   (typed 
     `(immutable-vector 1 "foo") 
     (field-type `tuple 
