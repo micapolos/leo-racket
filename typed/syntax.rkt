@@ -5,7 +5,9 @@
 (require 
   leo/typed/base
   leo/testing
-  leo/typed/type)
+  leo/typed/type
+  leo/typed/type-is-static
+  leo/typed/types)
 
 (struct (V) typed (($value : V) ($type : Type))
   #:transparent
@@ -46,6 +48,15 @@
         (syntax-typed $syntax number-type))
       ((string? $datum)
         (syntax-typed $syntax string-type))
+      ((symbol? $datum)
+        (syntax-typed #`() (field-type $datum void-type-body)))
+      ((and (pair? $datum) (list? $datum))
+        (let (($car (car $datum))
+              ($cdr (cast (cdr $datum) (Listof (Syntaxof Any)))))
+          (cond
+            ((identifier? $car)
+              (typed-field-syntax $car $cdr))
+            (else #f))))
       (else #f))))
 
 (check-equal?
@@ -60,7 +71,9 @@
   (syntax-typed-datum (option-ref (syntax-parse #`#f)))
   (typed #f boolean-type))
 
-(check-equal? (syntax-parse #`foo) #f)
+(check-equal? 
+  (syntax-typed-datum (option-ref (syntax-parse #`foo)))
+  (typed `() (field-type `foo void-type-body)))
 
 (define 
   (typed-field-syntax
