@@ -31,7 +31,7 @@
   (syntax-type (syntax-typed #`1 number-type)) 
   number-type)
 
-(define (syntax-parse ($syntax : (Syntaxof Any))) : (U (Syntaxof Any) False)
+(define (syntax-parse ($syntax : (Syntaxof Any))) : (Option (Syntaxof Any))
   (let (($datum (syntax-e $syntax)))
     (cond
       ((boolean? $datum) 
@@ -42,16 +42,16 @@
         (syntax-typed $syntax string-type))
       (else #f))))
 
-(check-equal? 
-  (syntax-typed-datum (non-false (syntax-parse #`1))) 
+(check-equal?
+  (syntax-typed-datum (option-ref (syntax-parse #`1))) 
   (typed 1 number-type))
 
-(check-equal? 
-  (syntax-typed-datum (non-false (syntax-parse #`"foo"))) 
+(check-equal?
+  (syntax-typed-datum (option-ref (syntax-parse #`"foo"))) 
   (typed "foo" string-type))
 
 (check-equal? 
-  (syntax-typed-datum (non-false (syntax-parse #`#f)))
+  (syntax-typed-datum (option-ref (syntax-parse #`#f)))
   (typed #f boolean-type))
 
 (check-equal? (syntax-parse #`foo) #f)
