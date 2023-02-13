@@ -20,6 +20,12 @@
     ((equal? $value #f) (error (format "Non-typed ~s" $syntax)))
     (else (cast $value Type))))
 
+(define (syntax-is-static? ($syntax : (Syntaxof Any))) : Boolean
+  (type-is-static? (syntax-type $syntax)))
+
+(define (syntax-is-dynamic? ($syntax : (Syntaxof Any))) : Boolean
+  (not (syntax-is-static? $syntax)))
+
 (define (syntax-typed-datum ($syntax : (Syntaxof Any)))
   (typed (syntax->datum $syntax) (syntax-type $syntax)))
 
@@ -61,10 +67,11 @@
     ($identifier : Identifier) 
     ($syntaxes : (Listof (Syntaxof Any)))) : (Syntaxof Any)
   (syntax-typed
-    (cond 
-      ((null? $syntaxes) #`())
-      ((null? (cdr $syntaxes)) (car $syntaxes))
-      (else #`(immutable-vector #,@$syntaxes)))
+    (let (($syntaxes (filter syntax-is-dynamic? $syntaxes)))
+      (cond 
+        ((null? $syntaxes) #`())
+        ((null? (cdr $syntaxes)) (car $syntaxes))
+        (else #`(immutable-vector #,@$syntaxes))))
     (field-type 
       (syntax-e $identifier) 
       (struct-type-body (map syntax-type $syntaxes)))))
@@ -86,6 +93,18 @@
     (field-type `x
       (struct-type-body 
         (list number-type)))))
+
+(check-equal?
+  (syntax-typed-datum 
+    (typed-field-syntax #`tuple 
+      (list 
+        (syntax-typed #`1 number-type)
+        (syntax-typed #`"foo" string-type))))
+  (typed 
+    `(immutable-vector 1 "foo") 
+    (field-type `tuple 
+      (struct-type-body 
+        (list number-type string-type)))))
 
 (check-equal?
   (syntax-typed-datum 

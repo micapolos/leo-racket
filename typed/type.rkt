@@ -35,7 +35,12 @@
 (define boolean-type (native-type `boolean))
 (define number-type (native-type `number))
 (define string-type (native-type `string))
+
 (define void-type-body (struct-type-body null))
+(define nothing-type-body (choice-type-body null))
+
+(define (void-field-type ($symbol : Symbol))
+  (field-type $symbol void-type-body))
 
 (define (type-is-static? ($type : Type)) : Boolean
   (cond
@@ -81,3 +86,4 @@
   
   (check-equal? (type-body-is-static? (choice-type-body null)) #f)
   (check-equal? (type-body-is-static? (choice-type-body (list static-type))) #f))
+
