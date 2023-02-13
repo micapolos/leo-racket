@@ -55,3 +55,46 @@
   (typed #f boolean-type))
 
 (check-equal? (syntax-parse #`foo) #f)
+
+(define 
+  (typed-field-syntax
+    ($identifier : Identifier) 
+    ($syntaxes : (Listof (Syntaxof Any)))) : (Syntaxof Any)
+  (syntax-typed
+    (cond 
+      ((null? $syntaxes) #`())
+      ((null? (cdr $syntaxes)) (car $syntaxes))
+      (else #`(immutable-vector #,@$syntaxes)))
+    (field-type 
+      (syntax-e $identifier) 
+      (struct-type-body (map syntax-type $syntaxes)))))
+
+(check-equal?
+  (syntax-typed-datum 
+    (typed-field-syntax #`foo null))
+  (typed 
+    `()
+    (field-type `foo (struct-type-body null))))
+
+(check-equal?
+  (syntax-typed-datum 
+    (typed-field-syntax #`x 
+      (list 
+        (syntax-typed #`1 number-type))))
+  (typed 
+    1 
+    (field-type `x
+      (struct-type-body 
+        (list number-type)))))
+
+(check-equal?
+  (syntax-typed-datum 
+    (typed-field-syntax #`tuple 
+      (list 
+        (syntax-typed #`1 number-type)
+        (syntax-typed #`"foo" string-type))))
+  (typed 
+    `(immutable-vector 1 "foo") 
+    (field-type `tuple 
+      (struct-type-body 
+        (list number-type string-type)))))

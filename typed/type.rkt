@@ -12,7 +12,7 @@
   #:type-name NativeType
   #:transparent)
 
-(struct field-type ((symbol : Symbol) (body : Type))
+(struct field-type ((symbol : Symbol) (body : TypeBody))
   #:transparent
   #:type-name FieldType)
 
