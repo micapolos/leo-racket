@@ -10,11 +10,11 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed)
 
-(struct binding ((syntax : Syntax) (type : Type))
+(struct binding ((type : Type) (syntax : Syntax))
   #:transparent
   #:type-name Binding)
 
-(struct bindings ((list : (Listof (Pairof Type Binding))))
+(struct bindings ((list : (Listof Binding)))
   #:transparent
   #:type-name Bindings)
 
@@ -23,16 +23,8 @@
 (define 
   (bindings-plus
     ($bindings : Bindings) 
-    ($type : Type) 
     ($binding : Binding)) : Bindings
-  (bindings (cons (cons $type $binding) (bindings-list $bindings))))
-
-(define 
-  (bindings-ref
-    ($bindings : Bindings) 
-    ($type : Type)) : (U Binding False)
-  (define $assoc (assoc $type (bindings-list $bindings)))
-  (if (equal? $assoc #f) #f (cdr $assoc)))
+  (bindings (cons $binding (bindings-list $bindings))))
 
 (define
   (bindings-parse-syntax
@@ -71,28 +63,30 @@
         (syntax-with-type $syntax string-type))
       ((symbol? $syntax-e)
         (syntax-with-type #`() (field-type $syntax-e void-type-body)))
-      ((list? $syntax-e)
-        (let (($car (car $syntax-e))
-              ($cdr (cdr $syntax-e)))
-          (cond
-            ((identifier? $car)
-              (let (($symbol (syntax-e $car)))
-                (cond
-                  ((equal? $symbol `function)
-                    (error "TODO: function"))
-                  (else 
-                    (typed-field-syntax 
-                      $car 
-                      (map (curry bindings-syntax-inner $bindings) $cdr))))))
-            (else (error (format "Identifier expected ~v" $car))))))
+      ((and (list? $syntax-e) (identifier? (car $syntax-e)))
+        (cond 
+          ((equal? (syntax-e (car $syntax-e)) `function)
+            (error "TODO: function"))
+          (else 
+            (typed-field-syntax
+              (car $syntax-e)
+              (map (curry bindings-syntax-inner $bindings) (cdr $syntax-e))))))
       (else (error (format "Parse error ~v" $syntax))))))
 
 ; TODO
-(define 
+(define
   (bindings-resolve 
     ($bindings : Bindings)
     ($syntax : Syntax)) : Syntax
-  $syntax)
+  (let 
+    (($found 
+      (findf 
+        (lambda (($binding : Binding))
+          (equal? (binding-type $binding) (syntax-type $syntax)))
+        (bindings-list $bindings))))
+    (or
+      (and $found (binding-syntax $found))
+      $syntax)))
 
 (define
   (bindings-plus-syntax

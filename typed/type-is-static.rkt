@@ -11,7 +11,8 @@
   (cond
     ((native-type? $type) #f)
     ((field-type? $type) (type-body-is-static? (field-type-body $type)))
-    ((arrow-type? $type) (type-body-is-static? (arrow-type-rhs $type)))))
+    ((arrow-type? $type) 
+      (andmap type-is-static? (arrow-type-rhs-types $type)))))
 
 (define (type-body-is-static? ($type-body : TypeBody)) : Boolean
   (cond
@@ -38,10 +39,10 @@
   (check-equal? (type-is-static? (field-type `foo static-type-body)) #t)
   (check-equal? (type-is-static? (field-type `foo non-static-type-body)) #f)
 
-  (check-equal? (type-is-static? (arrow-type static-type-body static-type-body)) #t)
-  (check-equal? (type-is-static? (arrow-type non-static-type-body static-type-body)) #t)
-  (check-equal? (type-is-static? (arrow-type static-type-body non-static-type-body)) #f)
-  (check-equal? (type-is-static? (arrow-type non-static-type-body non-static-type-body)) #f)
+  (check-equal? (type-is-static? (arrow-type (list static-type) (list static-type))) #t)
+  (check-equal? (type-is-static? (arrow-type (list non-static-type) (list static-type))) #t)
+  (check-equal? (type-is-static? (arrow-type (list static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (arrow-type (list non-static-type) (list non-static-type))) #f)
 
   (check-equal? (type-body-is-static? (struct-type-body (list))) #t)
   (check-equal? (type-body-is-static? (struct-type-body (list static-type))) #t)
