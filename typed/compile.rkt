@@ -12,19 +12,19 @@
     (compiled-syntaxes
       (compiled-plus-syntaxes null-compiled $syntaxes))))
 
-(define (datums-compile ($datums : (Listof Any))) : (Listof Any)
+(define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
   (map
     syntax->datum
     (syntaxes-compile
       (map
-        (lambda (($datum : Any)) (cast-syntax (datum->syntax #f $datum)))
-        $datums))))
+        (lambda (($sexp : Sexp)) (cast-syntax (datum->syntax #f $sexp)))
+        $sexps))))
 
-(define (datum-compile ($datum : Any)) : Any
+(define (sexp-compile ($sexp : Sexp)) : Sexp
   (cond
-    ((list? $datum) (datums-compile $datum))
-    (else (datums-compile (list $datum)))))
+    ((list? $sexp) (sexps-compile $sexp))
+    (else (sexps-compile (list $sexp)))))
 
 (check-equal?
-  (datum-compile `(1 "foo" (point 10 "bar")))
+  (sexp-compile `(1 "foo" (point 10 "bar")))
   `(1 "foo" (immutable-vector 10 "bar")))
