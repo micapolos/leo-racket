@@ -24,7 +24,7 @@
   (cond
     ((list? $sexp) (sexps-compile $sexp))
     (else (sexps-compile (list $sexp)))))
-
+  
 (check-equal?
   (sexp-compile `(1 "foo" (point 10 "bar")))
   `(1 "foo" (immutable-vector 10 "bar")))

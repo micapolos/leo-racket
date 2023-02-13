@@ -18,7 +18,7 @@
   #:transparent
   #:type-name FieldType)
 
-(struct arrow-type ((lhs : TypeBody) (rhs : TypeBody))
+(struct arrow-type ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
   #:transparent
   #:type-name ArrowType)
 

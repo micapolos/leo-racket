@@ -76,9 +76,14 @@
               ($cdr (cdr $syntax-e)))
           (cond
             ((identifier? $car)
-              (typed-field-syntax 
-                $car 
-                (map (curry bindings-syntax-inner $bindings) $cdr)))
+              (let (($symbol (syntax-e $car)))
+                (cond
+                  ((equal? $symbol `function)
+                    (error "TODO: function"))
+                  (else 
+                    (typed-field-syntax 
+                      $car 
+                      (map (curry bindings-syntax-inner $bindings) $cdr))))))
             (else (error (format "Identifier expected ~v" $car))))))
       (else (error (format "Parse error ~v" $syntax))))))
 
