@@ -6,10 +6,11 @@
   racket/function
   leo/typed/type
   leo/typed/types
+  leo/typed/syntax-match
   leo/typed/syntax-type
   leo/typed/syntax-typed)
 
-(struct binding ((syntax : (Syntaxof Any)) (type : Type))
+(struct binding ((syntax : Syntax) (type : Type))
   #:transparent
   #:type-name Binding)
 
@@ -36,7 +37,7 @@
 (define
   (bindings-parse-syntax
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (U (Syntaxof Any) False)
+    ($syntax : Syntax)) : (Option Syntax)
   (or
     (syntax->typed $syntax)
     (bindings-parse-complex-syntax $bindings $syntax)))
@@ -44,22 +45,24 @@
 (define
   (bindings-parse-complex-syntax
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (U (Syntaxof Any) False)
+    ($syntax : Syntax)) : (Option Syntax)
   #f)
 
 (define
   (bindings-syntax
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+    ($syntax : Syntax)) : Syntax
   (bindings-resolve $bindings
     (bindings-syntax-inner $bindings $syntax)))
 
 (define
   (bindings-syntax-inner
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+    ($syntax : Syntax)) : Syntax
   (let (($syntax-e (syntax-e $syntax)))
     (cond
+      ((null? $syntax-e) 
+        (error "empty syntax"))
       ((boolean? $syntax-e)
         (syntax-with-type $syntax boolean-type))
       ((number? $syntax-e)
@@ -68,11 +71,11 @@
         (syntax-with-type $syntax string-type))
       ((symbol? $syntax-e)
         (syntax-with-type #`() (field-type $syntax-e void-type-body)))
-      ((and (pair? $syntax-e) (list? $syntax-e))
+      ((list? $syntax-e)
         (let (($car (car $syntax-e))
-              ($cdr (cast (cdr $syntax-e) (Listof (Syntaxof Any)))))
+              ($cdr (cdr $syntax-e)))
           (cond
-            ((identifier? $car) 
+            ((identifier? $car)
               (typed-field-syntax 
                 $car 
                 (map (curry bindings-syntax-inner $bindings) $cdr)))
@@ -83,11 +86,13 @@
 (define 
   (bindings-resolve 
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (Syntaxof Any)
+    ($syntax : Syntax)) : Syntax
   $syntax)
 
 (define
-  (bindings-plus-syntax 
+  (bindings-plus-syntax
     ($bindings : Bindings)
-    ($syntax : (Syntaxof Any))) : (Option Bindings)
-  #f)
+    ($syntax : Syntax)) : (Option Bindings)
+  (syntax-match-symbol-rhs $syntax `define 
+    (lambda (($define-syntaxes : (Listof Syntax)))
+      $bindings)))

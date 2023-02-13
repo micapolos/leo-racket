@@ -11,7 +11,7 @@
 (struct compiled 
   (
     (bindings : Bindings) 
-    (syntaxes : (Listof (Syntaxof Any))))
+    (syntaxes : (Listof Syntax)))
   #:transparent
   #:type-name Compiled)
 
@@ -20,7 +20,7 @@
 (define 
   (compiled-with-syntaxes
     ($compiled : Compiled)
-    ($syntaxes : (Listof (Syntaxof Any)))) : Compiled
+    ($syntaxes : (Listof Syntax))) : Compiled
   (struct-copy compiled $compiled (syntaxes $syntaxes)))
 
 (define 
@@ -32,7 +32,7 @@
 (define 
   (compiled-plus-syntax 
     ($compiled : Compiled)
-    ($syntax : (Syntaxof Any))) : Compiled
+    ($syntax : Syntax)) : Compiled
   (compiled-with-syntaxes 
     $compiled
     (cons $syntax (compiled-syntaxes $compiled))))
@@ -40,7 +40,7 @@
 (define
   (compiled-parse-syntax
     ($compiled : Compiled)
-    ($syntax : (Syntaxof Any))) : Compiled
+    ($syntax : Syntax)) : Compiled
   (let* (($bindings (compiled-bindings $compiled))
          ($parsed-syntax (bindings-parse-syntax $bindings $syntax)))
     (cond
@@ -57,9 +57,9 @@
 (define 
   (compiled-parse-syntaxes
     ($compiled : Compiled)
-    ($syntaxes : (Listof (Syntaxof Any)))) : Compiled
+    ($syntaxes : (Listof Syntax))) : Compiled
   (foldl 
-    (lambda (($syntax : (Syntaxof Any)) ($compiled : Compiled))
+    (lambda (($syntax : Syntax) ($compiled : Compiled))
       (compiled-parse-syntax $compiled $syntax))
     $compiled
     $syntaxes))

@@ -3,13 +3,13 @@
 (provide (all-defined-out))
 
 (require 
-  leo/typed/base
+  leo/typed/option
   leo/typed/type)
 
-(define (syntax-with-type ($syntax : (Syntaxof Any)) ($type : Type))
+(define (syntax-with-type ($syntax : Syntax) ($type : Type))
   (syntax-property $syntax `type $type))
 
-(define (syntax-type ($syntax : (Syntaxof Any))) : Type
+(define (syntax-type ($syntax : Syntax)) : Type
   (define $value (syntax-property $syntax `type))
   (cond
     ((equal? $value #f) (error (format "Not typed ~s" $syntax)))
