@@ -2,44 +2,34 @@
 
 (provide (all-defined-out))
 
-(define-type TypeLine
+(define-type Type
   (U 
-    BooleanTypeLine
-    NumberTypeLine
-    StringTypeLine
-    FieldTypeLine
-    ArrowTypeLine))
+    NativeType
+    FieldType
+    ArrowType))
 
-(struct boolean-type-line () 
-  #:type-name BooleanTypeLine
+(struct native-type ((any : Any))
+  #:type-name NativeType
   #:transparent)
 
-(struct number-type-line () 
-  #:type-name NumberTypeLine
-  #:transparent)
-
-(struct string-type-line () 
-  #:type-name StringTypeLine
-  #:transparent)
-
-(struct field-type-line ((symbol : Symbol) (body : Type))
+(struct field-type ((symbol : Symbol) (body : Type))
   #:transparent
-  #:type-name FieldTypeLine)
+  #:type-name FieldType)
 
-(struct arrow-type-line ((lhs : Type) (rhs : Type))
+(struct arrow-type ((lhs : Type) (rhs : Type))
   #:transparent
-  #:type-name ArrowTypeLine)
+  #:type-name ArrowType)
 
-(define-type Type (U StructType ChoiceType))
+(define-type TypeBody (U StructTypeBody ChoiceTypeBody))
 
-(struct struct-type ((type-lines : (Listof TypeLine)))
+(struct struct-type-body ((type-lines : (Listof Type)))
   #:transparent
-  #:type-name StructType)
+  #:type-name StructTypeBody)
 
-(struct choice-type ((type-lines : (Listof TypeLine)))
+(struct choice-type-body ((type-lines : (Listof Type)))
   #:transparent
-  #:type-name ChoiceType)
+  #:type-name ChoiceTypeBody)
 
-(define boolean-type (struct-type (list (boolean-type-line))))
-(define number-type (struct-type (list (number-type-line))))
-(define string-type (struct-type (list (string-type-line))))
+(define boolean-type (native-type `boolean))
+(define number-type (native-type `number))
+(define string-type (native-type `string))
