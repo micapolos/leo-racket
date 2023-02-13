@@ -30,7 +30,7 @@
   (struct-copy compiled $compiled (bindings $bindings)))
 
 (define 
-  (compiled-plus-syntax 
+  (compiled-plus-compiled-syntax 
     ($compiled : Compiled)
     ($syntax : Syntax)) : Compiled
   (compiled-with-syntaxes 
@@ -38,28 +38,24 @@
     (cons $syntax (compiled-syntaxes $compiled))))
 
 (define
-  (compiled-parse-syntax
+  (compiled-plus-syntax
     ($compiled : Compiled)
     ($syntax : Syntax)) : Compiled
   (let* (($bindings (compiled-bindings $compiled))
-         ($parsed-syntax (bindings-parse-syntax $bindings $syntax)))
+         ($plus-bindings (bindings-plus-syntax $bindings $syntax)))
     (cond
-      ((syntax? $parsed-syntax)
-        (compiled-plus-syntax $compiled $parsed-syntax))
-      (else
-        (define $parsed-bindings
-          (bindings-parse-define-syntax $bindings $syntax))
-        (cond
-          ((bindings? $parsed-bindings) 
-            (compiled-with-bindings $compiled $parsed-bindings))
-          (else (error "dupa")))))))
+      ((bindings? $plus-bindings) 
+        (struct-copy compiled $compiled (bindings $plus-bindings)))
+      (else 
+        (compiled-plus-compiled-syntax $compiled 
+          (bindings-syntax $bindings $syntax))))))
 
 (define 
-  (compiled-parse-syntaxes
+  (compiled-plus-syntaxes
     ($compiled : Compiled)
     ($syntaxes : (Listof Syntax))) : Compiled
   (foldl 
     (lambda (($syntax : Syntax) ($compiled : Compiled))
-      (compiled-parse-syntax $compiled $syntax))
+      (compiled-plus-syntax $compiled $syntax))
     $compiled
     $syntaxes))

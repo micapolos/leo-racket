@@ -1,8 +1,10 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (provide (all-defined-out))
 
-(require leo/testing)
+(require 
+  leo/testing
+  (for-syntax racket/base))
 
 (define #:forall (T) (option-ref ($any : (Option T))) : T
   (if (equal? $any #f)
