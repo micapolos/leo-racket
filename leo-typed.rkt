@@ -28,5 +28,3 @@ define
   pi
   doing number
   is pi
-
-pi

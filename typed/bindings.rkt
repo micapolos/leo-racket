@@ -266,7 +266,8 @@
               (define $binding 
                 (binding 
                   (if $function? $lhs-type (symbol-type (syntax-e $doing-lhs)))
-                  (syntax-with-type $is-rhs $arrow-type)
+                  (syntax-with-type $is-rhs 
+                    (if $function? $arrow-type $rhs-type))
                   $function?))
               (bindings-plus $bindings $binding))
             (else (error (format "Illegal is lhs ~a" $is-lhs)))))
