@@ -33,6 +33,16 @@
     (syntax-with-type #`pi number-type)
     #f))
 
+(define string-length-binding
+  (binding 
+    (field-type `length (struct-type-body (list string-type)))
+    (syntax-with-type
+      #`string-length
+      (arrow-type
+        (list (field-type `length (struct-type-body (list string-type))))
+        (list number-type)))
+    #t))
+
 (define string-append-binding
   (binding 
     (field-type `plus (struct-type-body (list string-type string-type)))
@@ -56,6 +66,7 @@
 (define base-bindings (bindings (list 
   pi-binding
   string-append-binding
+  string-length-binding
   +-binding)))
 
 (define 

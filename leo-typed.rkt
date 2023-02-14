@@ -1,4 +1,8 @@
 #lang leo/typed
 
-"Hello, "
-plus "world!"
+"Hello"
+plus " "
+plus "world"
+plus "!"
+length
+plus pi
