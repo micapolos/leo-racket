@@ -30,7 +30,7 @@
 (define pi-binding
   (binding 
     (symbol-type `pi)
-    (syntax-with-type #`pi (field-type `pi (struct-type-body (list number-type))))
+    (syntax-with-type #`pi number-type)
     #f))
 
 (define string-append-binding
@@ -106,7 +106,7 @@
       (values 
         null
         (symbol-type `pi))))
-  (typed `pi (field-type `pi (struct-type-body (list number-type)))))
+  (typed `pi number-type))
 
 (check-equal?
   (syntax-typed-datum
@@ -219,7 +219,7 @@
 
 (check-equal?
   (syntax-typed-datum (bindings-syntax base-bindings #`pi))
-  (typed `pi (field-type `pi (struct-type-body (list number-type)))))
+  (typed `pi number-type))
 
 (check-equal?
   (syntax-typed-datum

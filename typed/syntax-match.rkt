@@ -6,6 +6,20 @@
   leo/testing
   leo/typed/option)
 
+(define (any-syntax (any : Any)) : Syntax
+  (if (syntax? any)
+    (let ((e (syntax-e any)))
+      (datum->syntax #f 
+        (cond
+          ((symbol? e) e)
+          ((boolean? e) e)
+          ((number? e) e)
+          ((string? e) e)
+          ((list? e) (map any-syntax e))
+          ((pair? e) (cons (any-syntax (car e)) (any-syntax (cdr e))))
+          (else (error (format "Not a syntassx: ~v" e))))))
+    (error (error (format "Not a syntaffx: ~v" any)))))
+
 (define (cast-syntax-any ($any : Any)) : (Syntaxof Any)
   (if (syntax? $any) $any (error (format "not a syntax ~v" $any))))
 

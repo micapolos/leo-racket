@@ -3,6 +3,7 @@
 (require 
   syntax/strip-context
   leo/core/syntax
+  leo/typed/syntax-match
   leo/typed/compile)
  
 (provide 
@@ -19,9 +20,4 @@
     #`(module leo racket/base
       (provide (all-defined-out))
       (require racket/math leo/testing (for-syntax racket/base))
-      #,@(map
-        (lambda (d) (datum->syntax #f d))
-        (sexps-compile 
-          (map
-            syntax->datum 
-            (read-leo-stxs port src)))))))
+      #,@(anys-compile (read-leo-stxs port src)))))
