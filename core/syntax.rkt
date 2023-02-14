@@ -112,7 +112,8 @@
             (leo-reversed-value-stxs $leo)))))
       (cond
         ((and (null? $args) (not $list?)) (leo-with-value-stx $leo $stx))
-          (else (leo-with-value-stx $leo #`(#,$stx #,@$args)))))
+          (else (leo-with-value-stx $leo 
+            (datum->syntax #f (cons $stx $args))))))
     $rhs))
 
 ; -------------------------------------------------------
