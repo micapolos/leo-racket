@@ -10,6 +10,7 @@
 (define (type-is-static? ($type : Type)) : Boolean
   (cond
     ((native-type? $type) #f)
+    ((symbol-type? $type) #t)
     ((field-type? $type) (type-body-is-static? (field-type-body $type)))
     ((arrow-type? $type) 
       (andmap type-is-static? (arrow-type-rhs-types $type)))))

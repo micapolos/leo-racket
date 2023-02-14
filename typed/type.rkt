@@ -7,12 +7,17 @@
 (define-type Type
   (U 
     NativeType
+    SymbolType
     FieldType
     ArrowType))
 
 (struct native-type ((any : Any))
   #:type-name NativeType
   #:transparent)
+
+(struct symbol-type ((symbol : Symbol))
+  #:transparent
+  #:type-name SymbolType)
 
 (struct field-type ((symbol : Symbol) (body : TypeBody))
   #:transparent

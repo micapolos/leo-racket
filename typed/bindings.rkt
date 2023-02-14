@@ -5,10 +5,13 @@
 (require 
   racket/function
   leo/typed/type
+  leo/typed/typed
   leo/typed/types
+  leo/typed/values
   leo/typed/syntax-match
   leo/typed/syntax-type
-  leo/typed/syntax-typed)
+  leo/typed/syntax-typed
+  leo/testing)
 
 (define-type
   binding-key 
@@ -23,6 +26,37 @@
   #:type-name Bindings)
 
 (define null-bindings (bindings null))
+
+(define pi-binding
+  (binding 
+    (symbol-type `pi)
+    (syntax-with-type #`pi (field-type `pi (struct-type-body (list number-type))))
+    #f))
+
+(define string-append-binding
+  (binding 
+    (field-type `plus (struct-type-body (list string-type string-type)))
+    (syntax-with-type
+      #`string-append
+      (arrow-type
+        (list (field-type `plus (struct-type-body (list string-type string-type))))
+        (list string-type)))
+    #t))
+
+(define +-binding
+  (binding 
+    (field-type `plus (struct-type-body (list number-type number-type)))
+    (syntax-with-type
+      #`+
+      (arrow-type
+        (list (field-type `plus (struct-type-body (list number-type number-type))))
+        (list number-type)))
+    #t))
+
+(define base-bindings (bindings (list 
+  pi-binding
+  string-append-binding
+  +-binding)))
 
 (define 
   (bindings-plus
@@ -44,60 +78,14 @@
     ($syntax : Syntax)) : (Option Syntax)
   #f)
 
-(define
-  (bindings-syntax
-    ($bindings : Bindings)
-    ($syntax : Syntax)) : Syntax
-  (bindings-resolve $bindings
-    (bindings-syntax-inner $bindings $syntax)))
-
-(define
-  (bindings-syntax-inner
-    ($bindings : Bindings)
-    ($syntax : Syntax)) : Syntax
-  (let (($syntax-e (syntax-e $syntax)))
-    (cond
-      ((null? $syntax-e) 
-        (error "empty syntax"))
-      ((boolean? $syntax-e)
-        (syntax-with-type $syntax boolean-type))
-      ((number? $syntax-e)
-        (syntax-with-type $syntax number-type))
-      ((string? $syntax-e)
-        (syntax-with-type $syntax string-type))
-      ((symbol? $syntax-e)
-        (syntax-with-type #`() (field-type $syntax-e void-type-body)))
-      ((and (list? $syntax-e) (identifier? (car $syntax-e)))
-        (cond 
-          ((equal? (syntax-e (car $syntax-e)) `function)
-            (error "TODO: function"))
-          (else 
-            (typed-field-syntax
-              (car $syntax-e)
-              (map (curry bindings-syntax-inner $bindings) (cdr $syntax-e))))))
-      (else (error (format "Parse error ~v" $syntax))))))
-
-; TODO
-(define
-  (bindings-resolve 
-    ($bindings : Bindings)
-    ($syntax : Syntax)) : Syntax
-  (let 
-    (($found 
-      (findf
-        (lambda (($binding : Binding))
-          (equal? (binding-type $binding) (syntax-type $syntax)))
-        (bindings-list $bindings))))
-    (or
-      (and $found (binding-resolve $found $syntax))
-      $syntax)))
+; -------------------------------------------------------------------
 
 (define 
-  (binding-resolve 
+  (binding-values-syntax
     ($binding : Binding)
-    ($syntax : Syntax)) : Syntax
+    ($values : Values)) : Syntax
   (cond
-    ((binding-function? $binding)
+    ((not (binding-function? $binding))
       (binding-syntax $binding))
     (else
       (let* (($binding-syntax (binding-syntax $binding))
@@ -106,9 +94,143 @@
              ($rhs-types (arrow-type-rhs-types $arrow)))
         (if (= (length $rhs-types) 1)
           (syntax-with-type
-            (datum->syntax #f `(,$binding-syntax))
+            (datum->syntax #f 
+              (cons $binding-syntax (values-syntaxes $values)))
             (car $rhs-types))
           (error "Arrow with multi-value return type"))))))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-values-syntax
+      pi-binding
+      (values 
+        null
+        (symbol-type `pi))))
+  (typed `pi (field-type `pi (struct-type-body (list number-type)))))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-values-syntax
+      string-append-binding
+      (values 
+        (list 
+          (syntax-with-type #`"foo" string-type)
+          (syntax-with-type #`"bar" string-type))
+        (field-type `plus (struct-type-body (list string-type string-type))))))
+  (typed `(string-append "foo" "bar") string-type))
+
+; -------------------------------------------------------------------
+
+(define
+  (bindings-values-syntax
+    ($bindings : Bindings)
+    ($values : Values)) : Syntax
+  (let 
+    (($found 
+      (findf
+        (lambda (($binding : Binding))
+          (equal? (binding-type $binding) (values-type $values)))
+        (bindings-list $bindings))))
+    (or
+      (and $found (binding-values-syntax $found $values))
+      (values-syntax $values))))
+
+(check-equal?
+  (syntax-typed-datum
+    (bindings-values-syntax
+      base-bindings
+      (values
+        (list
+          (syntax-with-type #`1 number-type)
+          (syntax-with-type #`"foo" string-type))
+        (field-type `id (struct-type-body (list number-type string-type))))))
+  (typed 
+    `(immutable-vector 1 "foo")
+    (field-type `id (struct-type-body (list number-type string-type)))))
+
+(check-equal?
+  (syntax-typed-datum
+    (bindings-values-syntax
+      base-bindings
+      (values
+        (list
+          (syntax-with-type #`"foo" number-type)
+          (syntax-with-type #`"bar" string-type))
+        (field-type `plus (struct-type-body (list string-type string-type))))))
+  (typed 
+    `(string-append "foo" "bar")
+    string-type))
+
+; -------------------------------------------------------------------
+
+(define
+  (bindings-syntax
+    ($bindings : Bindings)
+    ($syntax : Syntax)) : Syntax
+  (let (($syntax-e (syntax-e $syntax)))
+    (cond
+      ((null? $syntax-e) 
+        (error "null syntax???"))
+      ((boolean? $syntax-e)
+        (syntax-with-type $syntax boolean-type))
+      ((number? $syntax-e)
+        (syntax-with-type $syntax number-type))
+      ((string? $syntax-e)
+        (syntax-with-type $syntax string-type))
+      (else
+        (define $values
+          (cond
+            ((symbol? $syntax-e)
+              (values null (symbol-type $syntax-e)))
+            ((and (list? $syntax-e) (identifier? (car $syntax-e)))
+              (define $identifier (car $syntax-e))
+              (define $symbol (syntax-e $identifier))
+              (define $rhs-syntaxes (cdr $syntax-e))
+              (cond 
+                ((equal? $symbol `function)
+                  (error "TODO: function"))
+                (else 
+                  (define $resolved-rhs-syntaxes 
+                    (map (curry bindings-syntax $bindings) $rhs-syntaxes))
+                  (values
+                    $resolved-rhs-syntaxes
+                    (field-type 
+                      $symbol
+                      (struct-type-body (map syntax-type $resolved-rhs-syntaxes)))))))
+            (else (error (format "values error ~v" $syntax)))))
+        (bindings-values-syntax $bindings $values)))))
+
+; TODO: Replace with boolean true / boolean false
+(check-equal?
+  (syntax-typed-datum (bindings-syntax base-bindings #`#t))
+  (typed #t boolean-type))
+
+(check-equal?
+  (syntax-typed-datum (bindings-syntax base-bindings #`1))
+  (typed 1 number-type))
+
+(check-equal?
+  (syntax-typed-datum (bindings-syntax base-bindings #`"foo"))
+  (typed "foo" string-type))
+
+(check-equal?
+  (syntax-typed-datum (bindings-syntax base-bindings #`foo))
+  (typed `() (symbol-type `foo)))
+
+(check-equal?
+  (syntax-typed-datum (bindings-syntax base-bindings #`pi))
+  (typed `pi (field-type `pi (struct-type-body (list number-type)))))
+
+(check-equal?
+  (syntax-typed-datum
+    (bindings-syntax
+      base-bindings
+      #`(plus "foo" "bar")))
+  (typed 
+    `(string-append "foo" "bar")
+    string-type))
+
+; -------------------------------------------------------------------
 
 (define
   (bindings-plus-syntax
