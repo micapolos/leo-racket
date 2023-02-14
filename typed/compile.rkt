@@ -7,6 +7,9 @@
   leo/typed/syntax-match
   leo/typed/compiled)
 
+(define (anys-compile ($anys : (Listof Any))) : (Listof Any)
+  (syntaxes-compile (map cast-syntax (map cast-syntax-any $anys))))
+
 (define (syntaxes-compile ($syntaxes : (Listof Syntax))) : (Listof Syntax)
   (reverse 
     (compiled-syntaxes

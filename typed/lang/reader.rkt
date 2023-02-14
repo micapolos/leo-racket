@@ -3,7 +3,7 @@
 (require 
   syntax/strip-context
   leo/core/syntax
-  leo/typed/parse)
+  leo/typed/compile)
  
 (provide 
   (rename-out 
@@ -19,4 +19,4 @@
     #`(module leo racket/base
       (provide (all-defined-out))
       (require leo/testing (for-syntax racket/base))
-      #,@(parse (read-leo-stxs port src)))))
+      #,@(anys-compile (read-leo-stxs port src)))))
