@@ -20,6 +20,44 @@
           (map cast-syntax (map cast-syntax-any $syntax-e))))
       (else (error (format "not a syntax ~v" $syntax))))))
 
+(define-type Thunk (Pairof Identifier (Listof Syntax)))
+
+(define (syntax-identifier-option ($syntax : Syntax)) : (Option Identifier)
+  (cond
+    ((identifier? $syntax) $syntax)
+    (else #f)))
+
+(check-equal?
+  (option-map
+    (syntax-identifier-option #`foo) $identifier
+      (syntax->datum $identifier))
+  `foo)
+
+(check-equal?
+  (option-map
+    (syntax-identifier-option #`(foo)) $identifier
+      (syntax->datum $identifier))
+  #f)
+
+(define (syntax-thunk-option ($syntax : Syntax)) : (Option (Syntaxof Thunk))
+  (let (($syntax-e (syntax-e $syntax)))
+    (cond
+      ((null? $syntax-e) #f)
+      ((and (list? $syntax-e) (identifier? (car $syntax-e))) $syntax)
+      (else #f))))
+
+(check-equal? 
+  (option-map
+    (syntax-thunk-option #`(foo 1 2)) $thunk
+      (syntax->datum $thunk))
+  `(foo 1 2))
+
+(check-equal? 
+  (option-map
+    (syntax-thunk-option #`123) $thunk
+      (syntax->datum $thunk))
+  #f)
+
 (check-equal? (syntax->datum (cast-syntax #`foo)) `foo)
 (check-equal? (syntax->datum (cast-syntax #`1)) 1)
 (check-equal? (syntax->datum (cast-syntax #`"foo")) "foo")
