@@ -31,3 +31,13 @@
 (struct choice-type-body ((type-list : (Listof Type)))
   #:transparent
   #:type-name ChoiceTypeBody)
+
+(define (type-arrow $type) : ArrowType
+  (cond
+    ((arrow-type? $type) $type)
+    (else (error (format "not arrow ~v" $type)))))
+
+(define (type-field $type) : FieldType
+  (cond
+    ((field-type? $type) $type)
+    (else (error (format "not field ~v" $type)))))

@@ -6,7 +6,7 @@
   leo/typed/option
   leo/typed/type)
 
-(define (syntax-with-type ($syntax : Syntax) ($type : Type))
+(define (syntax-with-type ($syntax : Syntax) ($type : Type)) : Syntax
   (syntax-property $syntax `type $type))
 
 (define (syntax-type ($syntax : Syntax)) : Type

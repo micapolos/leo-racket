@@ -10,7 +10,11 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed)
 
-(struct binding ((type : Type) (syntax : Syntax))
+(define-type
+  binding-key 
+  (U Identifier (Pairof (Listof Identifier) (Listof Syntax))))
+
+(struct binding ((type : Type) (syntax : Syntax) (function? : Boolean))
   #:transparent
   #:type-name Binding)
 
@@ -80,13 +84,31 @@
     ($syntax : Syntax)) : Syntax
   (let 
     (($found 
-      (findf 
+      (findf
         (lambda (($binding : Binding))
           (equal? (binding-type $binding) (syntax-type $syntax)))
         (bindings-list $bindings))))
     (or
-      (and $found (binding-syntax $found))
+      (and $found (binding-resolve $found $syntax))
       $syntax)))
+
+(define 
+  (binding-resolve 
+    ($binding : Binding)
+    ($syntax : Syntax)) : Syntax
+  (cond
+    ((binding-function? $binding)
+      (binding-syntax $binding))
+    (else
+      (let* (($binding-syntax (binding-syntax $binding))
+             ($arrow (type-arrow (syntax-type $binding-syntax)))
+             ($lhs-types (arrow-type-lhs-types $arrow))
+             ($rhs-types (arrow-type-rhs-types $arrow)))
+        (if (= (length $rhs-types) 1)
+          (syntax-with-type
+            (datum->syntax #f `(,$binding-syntax))
+            (car $rhs-types))
+          (error "Arrow with multi-value return type"))))))
 
 (define
   (bindings-plus-syntax
