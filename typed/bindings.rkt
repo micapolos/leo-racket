@@ -11,6 +11,7 @@
   leo/typed/syntax-match
   leo/typed/syntax-type
   leo/typed/syntax-typed
+  leo/typed/type-parse
   leo/testing)
 
 (define-type
@@ -247,6 +248,38 @@
   (bindings-plus-syntax
     ($bindings : Bindings)
     ($syntax : Syntax)) : (Option Bindings)
-  (syntax-match-symbol-rhs $syntax `define 
-    (lambda (($define-syntaxes : (Listof Syntax)))
-      $bindings)))
+  (cond
+    ((syntax-symbol-arg? $syntax `define)
+      (define $define-syntax (cadr (syntax-e $syntax)))
+      (cond
+        ((syntax-symbol-arg-arg? $define-syntax `is) 
+          (define $is-lhs (cadr (syntax-e $define-syntax)))
+          (define $is-rhs (caddr (syntax-e $define-syntax)))
+          (cond 
+            ((syntax-symbol-arg-arg? $is-lhs `doing) 
+              (define $doing-lhs (cadr (syntax-e $is-lhs)))
+              (define $doing-rhs (caddr (syntax-e $is-lhs)))
+              (define $lhs-type (syntax-parse-type $doing-lhs))
+              (define $rhs-type (syntax-parse-type $doing-rhs))
+              (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
+              (define $function? (not (identifier? $doing-lhs)))
+              (define $binding 
+                (binding 
+                  (if $function? $lhs-type (symbol-type (syntax-e $doing-lhs)))
+                  (syntax-with-type $is-rhs $arrow-type)
+                  $function?))
+              (bindings-plus $bindings $binding))
+            (else (error (format "Illegal is lhs ~a" $is-lhs)))))
+        ((syntax-symbol-arg-arg? $define-syntax `does) 
+          (define $lhs (cadr (syntax-e $define-syntax)))
+          (define $rhs (caddr (syntax-e $define-syntax)))
+          (define $lhs-type (syntax-parse-type $lhs))
+          $bindings)
+        (else (error (format "Illegal define ~a" $define-syntax)))))
+    (else #f)))
+
+; (check-equal?
+;   (bindings-plus-syntax
+;     null-bindings
+;     #`(define (does a b)))
+;   1)

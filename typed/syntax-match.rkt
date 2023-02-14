@@ -60,6 +60,31 @@
       ((and (list? $syntax-e) (identifier? (car $syntax-e))) $syntax)
       (else #f))))
 
+(define (syntax-identifier-args? ($syntax : Syntax))
+  (let ((e (syntax-e $syntax)))
+    (and (list? e) (not (null? e)) (identifier? (car e)))))
+
+(define (syntax-symbol-arg? ($syntax : Syntax) ($symbol : Symbol))
+  (let ((e (syntax-e $syntax)))
+    (and 
+      (list? e)
+      (not (null? e))
+      (identifier? (car e))
+      (equal? (syntax-e (car e)) $symbol)
+      (not (null? (cdr e)))
+      (null? (cddr e)))))
+
+(define (syntax-symbol-arg-arg? ($syntax : Syntax) ($symbol : Symbol))
+  (let ((e (syntax-e $syntax)))
+    (and 
+      (list? e)
+      (not (null? e))
+      (identifier? (car e))
+      (equal? (syntax-e (car e)) $symbol)
+      (not (null? (cdr e)))
+      (not (null? (cdr (cdr e))))
+      (null? (cdddr e)))))
+
 (check-equal? 
   (option-map
     (syntax-thunk-option #`(foo 1 2)) $thunk

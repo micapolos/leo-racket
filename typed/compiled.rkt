@@ -55,7 +55,7 @@
   (compiled-plus-syntaxes
     ($compiled : Compiled)
     ($syntaxes : (Listof Syntax))) : Compiled
-  (foldl 
+  (foldl
     (lambda (($syntax : Syntax) ($compiled : Compiled))
       (compiled-plus-syntax $compiled $syntax))
     $compiled

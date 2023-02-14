@@ -13,7 +13,7 @@
 (define (syntaxes-compile ($syntaxes : (Listof Syntax))) : (Listof Syntax)
   (reverse 
     (compiled-syntaxes
-      (compiled-plus-syntaxes base-compiled $syntaxes))))
+      (compiled-plus-syntaxes null-compiled $syntaxes))))
 
 (define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
   (map
