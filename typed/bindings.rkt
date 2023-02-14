@@ -145,7 +145,7 @@
           (syntax-with-type #`"foo" string-type))
         (field-type `id (struct-type-body (list number-type string-type))))))
   (typed 
-    `(immutable-vector 1 "foo")
+    `(vector-immutable 1 "foo")
     (field-type `id (struct-type-body (list number-type string-type)))))
 
 (check-equal?

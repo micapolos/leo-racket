@@ -7,13 +7,10 @@
   leo/typed/syntax-match
   leo/typed/compiled)
 
-(define (anys-compile ($anys : (Listof Any))) : (Listof Any)
-  (syntaxes-compile (map cast-syntax (map cast-syntax-any $anys))))
-
 (define (syntaxes-compile ($syntaxes : (Listof Syntax))) : (Listof Syntax)
   (reverse 
     (compiled-syntaxes
-      (compiled-plus-syntaxes null-compiled $syntaxes))))
+      (compiled-plus-syntaxes base-compiled $syntaxes))))
 
 (define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
   (map
@@ -30,4 +27,4 @@
   
 (check-equal?
   (sexp-compile `(1 "foo" (point 10 "bar")))
-  `(1 "foo" (immutable-vector 10 "bar")))
+  `(1 "foo" (vector-immutable 10 "bar")))

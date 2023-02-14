@@ -16,6 +16,7 @@
   #:type-name Compiled)
 
 (define null-compiled (compiled null-bindings null))
+(define base-compiled (compiled base-bindings null))
 
 (define 
   (compiled-with-syntaxes

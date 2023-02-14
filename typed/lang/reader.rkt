@@ -18,5 +18,10 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
-      (require leo/testing (for-syntax racket/base))
-      #,@(anys-compile (read-leo-stxs port src)))))
+      (require racket/math leo/testing (for-syntax racket/base))
+      #,@(map
+        (lambda (d) (datum->syntax #f d))
+        (sexps-compile 
+          (map
+            syntax->datum 
+            (read-leo-stxs port src)))))))
