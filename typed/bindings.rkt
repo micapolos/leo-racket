@@ -263,6 +263,9 @@
               (define $rhs-type (syntax-parse-type $doing-rhs))
               (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
               (define $function? (not (identifier? $doing-lhs)))
+              ; TODO: Check that
+              ; - $is-rhs has no type, assuming it's native
+              ; - $is-rhs has type, and it matches
               (define $binding 
                 (binding 
                   (if $function? $lhs-type (symbol-type (syntax-e $doing-lhs)))
