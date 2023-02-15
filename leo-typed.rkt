@@ -39,4 +39,4 @@ define
 define
   pi
   doing number
-  is pi
+  is 3.15159

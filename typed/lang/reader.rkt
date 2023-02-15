@@ -19,5 +19,4 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
-      (require racket/math leo/testing (for-syntax racket/base))
       #,@(anys-compile (read-leo-stxs port src)))))
