@@ -256,7 +256,7 @@
           (define $is-lhs (cadr (syntax-e $define-syntax)))
           (define $is-rhs (caddr (syntax-e $define-syntax)))
           (cond 
-            ((syntax-symbol-arg-arg? $is-lhs `giving) 
+            ((syntax-symbol-arg-arg? $is-lhs `giving)
               (define $giving-lhs (cadr (syntax-e $is-lhs)))
               (define $giving-rhs (caddr (syntax-e $is-lhs)))
               (define $lhs-type (syntax-parse-type $giving-lhs))
