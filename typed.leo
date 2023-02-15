@@ -45,3 +45,5 @@ define
 plus "world!"
 length
 plus pi
+string
+plus " apples."
