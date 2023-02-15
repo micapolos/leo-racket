@@ -256,9 +256,13 @@
           (define $is-lhs (cadr (syntax-e $define-syntax)))
           (define $is-rhs (caddr (syntax-e $define-syntax)))
           (cond 
-            ((syntax-symbol-arg-arg? $is-lhs `giving)
+            (
+              (and 
+                (syntax-symbol-arg-arg? $is-lhs `giving)
+                (syntax-symbol-arg? $is-rhs `native))
               (define $giving-lhs (cadr (syntax-e $is-lhs)))
               (define $giving-rhs (caddr (syntax-e $is-lhs)))
+              (define $native-rhs (cadr (syntax-e $is-rhs)))
               (define $lhs-type (syntax-parse-type $giving-lhs))
               (define $rhs-type (syntax-parse-type $giving-rhs))
               (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
@@ -269,7 +273,7 @@
               (define $binding 
                 (binding 
                   (if $function? $lhs-type (symbol-type (syntax-e $giving-lhs)))
-                  (syntax-with-type $is-rhs 
+                  (syntax-with-type $native-rhs 
                     (if $function? $arrow-type $rhs-type))
                   $function?))
               (bindings-plus $bindings $binding))

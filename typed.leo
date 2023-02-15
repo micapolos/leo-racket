@@ -4,42 +4,42 @@ define
   string
   plus string
   giving string
-  is string-append
+  is native string-append
 
 define
   string
   length
   giving number
-  is string-length
+  is native string-length
 
 define
   number
   plus number
   giving number
-  is +
+  is native +
 
 define
   number
   minus number
   giving number
-  is -
+  is native -
 
 define
   number
   times number
   giving number
-  is *
+  is native *
 
 define
   number
   string
   giving string
-  is number->string
+  is native number->string
 
 define
   pi
   giving number
-  is 3.15159
+  is native 3.15159
 
 "Hello, "
 plus "world!"
