@@ -3,40 +3,45 @@
 define
   string
   plus string
-  doing string
+  giving string
   is string-append
 
 define
   string
   length
-  doing number
+  giving number
   is string-length
 
 define
   number
   plus number
-  doing number
+  giving number
   is +
 
 define
   number
   minus number
-  doing number
+  giving number
   is -
 
 define
   number
   times number
-  doing number
+  giving number
   is *
 
 define
   number
   string
-  doing string
+  giving string
   is number->string
 
 define
   pi
-  doing number
+  giving number
   is 3.15159
+
+"Hello, "
+plus "world!"
+length
+plus pi

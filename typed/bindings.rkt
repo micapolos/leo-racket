@@ -256,19 +256,19 @@
           (define $is-lhs (cadr (syntax-e $define-syntax)))
           (define $is-rhs (caddr (syntax-e $define-syntax)))
           (cond 
-            ((syntax-symbol-arg-arg? $is-lhs `doing) 
-              (define $doing-lhs (cadr (syntax-e $is-lhs)))
-              (define $doing-rhs (caddr (syntax-e $is-lhs)))
-              (define $lhs-type (syntax-parse-type $doing-lhs))
-              (define $rhs-type (syntax-parse-type $doing-rhs))
+            ((syntax-symbol-arg-arg? $is-lhs `giving) 
+              (define $giving-lhs (cadr (syntax-e $is-lhs)))
+              (define $giving-rhs (caddr (syntax-e $is-lhs)))
+              (define $lhs-type (syntax-parse-type $giving-lhs))
+              (define $rhs-type (syntax-parse-type $giving-rhs))
               (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
-              (define $function? (not (identifier? $doing-lhs)))
+              (define $function? (not (identifier? $giving-lhs)))
               ; TODO: Check that
               ; - $is-rhs has no type, assuming it's native
               ; - $is-rhs has type, and it matches
               (define $binding 
                 (binding 
-                  (if $function? $lhs-type (symbol-type (syntax-e $doing-lhs)))
+                  (if $function? $lhs-type (symbol-type (syntax-e $giving-lhs)))
                   (syntax-with-type $is-rhs 
                     (if $function? $arrow-type $rhs-type))
                   $function?))
