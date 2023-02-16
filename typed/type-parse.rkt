@@ -69,7 +69,7 @@
             (and 
               (list? $syntaxes)
               (equal? (length $syntaxes) 3)
-              (equal? (syntax-e (car $syntaxes)) `doing))
+              (equal? (syntax-e (car $syntaxes)) `giving))
             (doing-syntaxes-parse-arrow-type (cdr $syntaxes)))
           (else (error "Function syntax error")))))
     (else (error "Function syntax error"))))
@@ -117,7 +117,7 @@
         (field-type `string (struct-type-body (list string-type)))))))
 
 (check-equal?
-  (syntax-parse-type #`(function (doing number string)))
+  (syntax-parse-type #`(function (giving number string)))
   (arrow-type (list number-type) (list string-type)))
 
 ; (check-equal?
