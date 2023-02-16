@@ -55,7 +55,7 @@
         (error "TODO: escaping"))
       (else 
         (or
-          (option-map (syntaxes-parse-type-body-option $syntaxes) $type-body
+          (option-bind (syntaxes-parse-type-body-option $syntaxes) $type-body
             (field-type $symbol $type-body))
           (field-type $symbol (syntaxes-parse-struct-type-body $syntaxes)))))))
 

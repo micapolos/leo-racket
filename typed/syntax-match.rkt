@@ -42,13 +42,13 @@
     (else #f)))
 
 (check-equal?
-  (option-map
+  (option-bind
     (syntax-identifier-option #`foo) $identifier
       (syntax->datum $identifier))
   `foo)
 
 (check-equal?
-  (option-map
+  (option-bind
     (syntax-identifier-option #`(foo)) $identifier
       (syntax->datum $identifier))
   #f)
@@ -86,13 +86,13 @@
       (null? (cdddr e)))))
 
 (check-equal? 
-  (option-map
+  (option-bind
     (syntax-thunk-option #`(foo 1 2)) $thunk
       (syntax->datum $thunk))
   `(foo 1 2))
 
 (check-equal? 
-  (option-map
+  (option-bind
     (syntax-thunk-option #`123) $thunk
       (syntax->datum $thunk))
   #f)

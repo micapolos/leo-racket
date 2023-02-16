@@ -11,7 +11,13 @@
     (error "False!!!")
     $any))
 
-(define-syntax (option-map $syntax)
+(define #:forall (T R) (option-map 
+  ($option : (Option T)) 
+  ($fn : (-> T (Option R))))
+  : (Option R)
+  (and $option ($fn $option)))
+
+(define-syntax (option-bind $syntax)
   (syntax-case $syntax ()
     ((_ expr name body ...) 
       #`(let ((name expr))
@@ -19,5 +25,5 @@
           ((equal? name #f) #f)
           (else body ...))))))
 
-(check-equal? (option-map #f value value) #f)
-(check-equal? (option-map (+ 1 2) value (+ value value)) 6)
+(check-equal? (option-bind #f value value) #f)
+(check-equal? (option-bind (+ 1 2) value (+ value value)) 6)
