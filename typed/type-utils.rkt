@@ -7,6 +7,8 @@
   leo/typed/type
   leo/typed/types)
 
+; ---------------------------------------------------------
+
 (define (type-is-dynamic? ($type : Type)) : Boolean
   (not (type-is-static? $type)))
 
@@ -57,3 +59,13 @@
   (check-equal? (type-body-is-static? (choice-type-body null)) #f)
   (check-equal? (type-body-is-static? (choice-type-body (list static-type))) #f))
 
+; ---------------------------------------------------------
+
+(define (struct-type-body-size ($struct-type-body : StructTypeBody)) : Exact-Nonnegative-Integer
+  (length (filter type-is-dynamic? (struct-type-body-type-list $struct-type-body))))
+
+(check-equal?
+  (struct-type-body-size 
+    (struct-type-body 
+      (list number-type (symbol-type `foo) string-type)))
+  2)

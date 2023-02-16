@@ -6,7 +6,7 @@
   leo/typed/type
   leo/typed/types
   leo/typed/option
-  leo/typed/type-is-static
+  leo/typed/type-utils
   leo/testing)
 
 ; ------------------------------------------------------------------
