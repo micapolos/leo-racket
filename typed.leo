@@ -39,7 +39,7 @@ define
 define
   pi
   giving number
-  is native 3.15159
+  is 3.15159
 
 "Hello, "
 plus "world!"

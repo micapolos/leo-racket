@@ -86,25 +86,40 @@
           (define $is-lhs (cadr (syntax-e $define-syntax)))
           (define $is-rhs (caddr (syntax-e $define-syntax)))
           (cond 
-            (
-              (and 
-                (syntax-symbol-arg-arg? $is-lhs `giving)
-                (syntax-symbol-arg? $is-rhs `native))
+            ((syntax-symbol-arg-arg? $is-lhs `giving)
+              (define $native-rhs 
+                (and 
+                  (syntax-symbol-arg? $is-rhs `native)
+                  (cadr (syntax-e $is-rhs))))
               (define $giving-lhs (cadr (syntax-e $is-lhs)))
               (define $giving-rhs (caddr (syntax-e $is-lhs)))
-              (define $native-rhs (cadr (syntax-e $is-rhs)))
               (define $lhs-type (syntax-parse-type $giving-lhs))
               (define $rhs-type (syntax-parse-type $giving-rhs))
               (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
               (define $function? (not (identifier? $giving-lhs)))
+              (define $binding-type
+                (if $function? $lhs-type (symbol-type (syntax-e $giving-lhs))))
+              (define $expected-body-type
+                (if $function? $arrow-type $rhs-type))
+              (define $body 
+                (or 
+                  (and $native-rhs (syntax-with-type $native-rhs $expected-body-type))
+                  (bindings-syntax $bindings $is-rhs)))
+              (define $actual-type (syntax-type $body))
+              (if (equal? $actual-type $expected-body-type)
+                $actual-type
+                (error 
+                  (format 
+                    "type error, expected: ~a, actual: ~a"
+                    $expected-body-type
+                    $actual-type)))
               ; TODO: Check that
               ; - $is-rhs has no type, assuming it's native
               ; - $is-rhs has type, and it matches
               (define $binding 
                 (binding 
-                  (if $function? $lhs-type (symbol-type (syntax-e $giving-lhs)))
-                  (syntax-with-type $native-rhs 
-                    (if $function? $arrow-type $rhs-type))
+                  $binding-type
+                  $body
                   $function?))
               (compiled-plus-binding $compiled $binding))
             (else (error (format "Illegal is lhs ~a" $is-lhs)))))
