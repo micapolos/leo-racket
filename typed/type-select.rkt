@@ -139,14 +139,12 @@
     (symbol-type `boolean))
   #f)
 
-; single dynamic type
 (check-equal?
   (type-list-selector-indexed
     (list number-type)
     (symbol-type `number))
   (cons #f number-type))
 
-; single dynamic type and single static type
 (check-equal?
   (type-list-selector-indexed
     (list number-type (symbol-type `foo))
