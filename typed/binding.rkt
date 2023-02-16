@@ -3,11 +3,14 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/option
   leo/typed/syntax-type
   leo/typed/syntax-typed
   leo/typed/type
   leo/typed/types
+  leo/typed/typed
   leo/typed/syntax-resolve
+  leo/typed/syntax-typed
   leo/testing)
 
 (struct constant-binding (
@@ -19,13 +22,15 @@
 
 (struct function-binding (
   (symbol : Symbol) 
-  (param-types : Type) 
+  (param-types : (Listof Type))
   (return-type : Type) 
   (identifier : Identifier))
   #:transparent
   #:type-name FunctionBinding)
 
 (define-type Binding (U ConstantBinding FunctionBinding))
+
+; -------------------------------------------------------------
 
 (define
   (constant-binding-resolve
@@ -37,6 +42,24 @@
     (syntax-with-type
       (constant-binding-identifier $constant-binding)
       (constant-binding-type $constant-binding))))
+
+(check-equal?
+  (option-map
+    (constant-binding-resolve
+      (constant-binding `foo string-type #`foo-string)
+      `foo)
+    syntax-typed-datum)
+  (typed `foo-string string-type))
+
+(check-equal?
+  (option-map
+    (constant-binding-resolve
+      (constant-binding `foo string-type #`foo-string)
+      `not-foo)
+    syntax-typed-datum)
+  #f)
+
+; --------------------------------------------------------------
 
 (define 
   (function-binding-resolve
@@ -55,8 +78,55 @@
       (datum->syntax #f 
         (cons
           (function-binding-identifier $function-binding)
-          (map syntax-is-dynamic? $args)))
+          (filter syntax-is-dynamic? $args)))
       (function-binding-return-type $function-binding))))
+
+(check-equal?
+  (option-map
+    (function-binding-resolve
+      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      `foo
+      (list 
+        (syntax-with-type #`"a" string-type)
+        (syntax-with-type #`1 number-type)))
+    syntax-typed-datum)
+  (typed `(bool "a" 1) boolean-type))
+
+(check-equal?
+  (option-map
+    (function-binding-resolve
+      (function-binding `foo (list string-type (symbol-type `empty) number-type) boolean-type #`bool)
+      `foo
+      (list 
+        (syntax-with-type #`"a" string-type)
+        (syntax-with-type #`() (symbol-type `empty))
+        (syntax-with-type #`1 number-type)))
+    syntax-typed-datum)
+  (typed `(bool "a" 1) boolean-type))
+
+(check-equal?
+  (option-map
+    (function-binding-resolve
+      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      `foo
+      (list 
+        (syntax-with-type #`1 number-type)
+        (syntax-with-type #`1 number-type)))
+    syntax-typed-datum)
+  #f)
+
+(check-equal?
+  (option-map
+    (function-binding-resolve
+      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      `not-foo
+      (list 
+        (syntax-with-type #`"a" string-type)
+        (syntax-with-type #`1 number-type)))
+    syntax-typed-datum)
+  #f)
+
+; --------------------------------------------------------------------
 
 (define
   (binding-list-resolve-symbol
@@ -66,8 +136,21 @@
   (and
     (not (null? $binding-list))
     (constant-binding? (car $binding-list))
-    (constant-binding-resolve (car $binding-list) $symbol)
-    (binding-list-resolve-symbol (cdr $binding-list) $symbol)))
+    (or 
+      (constant-binding-resolve (car $binding-list) $symbol)
+      (binding-list-resolve-symbol (cdr $binding-list) $symbol))))
+
+(check-equal?
+  (option-map
+    (binding-list-resolve-symbol
+      (list
+        (constant-binding `foo string-type #`foo-string)
+        (constant-binding `bar string-type #`foo-string))
+      `foo)
+    syntax-typed-datum)
+  (typed `foo-string string-type))
+
+; --------------------------------------------------------------------
 
 (define
   (binding-list-resolve-symbol-args
@@ -78,8 +161,11 @@
   (and
     (not (null? $binding-list))
     (function-binding? (car $binding-list))
-    (function-binding-resolve (car $binding-list) $symbol $args)
-    (binding-list-resolve-symbol-args (cdr $binding-list) $symbol $args)))
+    (or 
+      (function-binding-resolve (car $binding-list) $symbol $args)
+      (binding-list-resolve-symbol-args (cdr $binding-list) $symbol $args))))
+
+; --------------------------------------------------------------------
 
 (define
   (binding-list-resolve
@@ -109,3 +195,4 @@
           (binding-list-resolve-symbol-args $binding-list $symbol $args)
           (symbol-args-make $symbol $args)))
       (else (error (format "Invalid syntax: ~a" $syntax))))))
+
