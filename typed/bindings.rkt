@@ -204,7 +204,10 @@
                 ((and (equal? $symbol `as) (equal? (length $rhs-syntaxes) 2))
                   (define $as-lhs-syntax (car $rhs-syntaxes))
                   (define $as-rhs-syntax (cadr $rhs-syntaxes))
-                  (define $lhs-syntax (bindings-syntax $bindings $as-lhs-syntax))
+                  (define $lhs-syntax 
+                    (if (syntax-symbol-arg? $as-lhs-syntax `native)
+                      (cadr (syntax-e $as-lhs-syntax))
+                      (bindings-syntax $bindings $as-lhs-syntax)))
                   (define $rhs-type (syntax-parse-type $as-rhs-syntax))
                   (values
                     (list (syntax-as $lhs-syntax $rhs-type))
