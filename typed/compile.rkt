@@ -30,4 +30,4 @@
   
 (check-equal?
   (sexp-compile `(1 "foo" (point 10 "bar")))
-  `(1 "foo" (vector-immutable 10 "bar")))
+  `(1 "foo" (vector 10 "bar")))

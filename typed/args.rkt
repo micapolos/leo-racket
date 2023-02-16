@@ -20,7 +20,7 @@
       (cond
         ((null? dynamic-syntaxes) #`())
         ((null? (cdr dynamic-syntaxes)) (car dynamic-syntaxes))
-        (else (datum->syntax #f (cons `vector-immutable dynamic-syntaxes))))
+        (else (datum->syntax #f (cons `vector dynamic-syntaxes))))
       (args-type args))))
 
 (check-equal?
@@ -43,7 +43,7 @@
           (syntax-with-type #`"foo" string-type)) 
         (field-type `foo (struct-type-body (list number-type string-type))))))
   (typed 
-    `(vector-immutable 1 "foo")
+    `(vector 1 "foo")
     (field-type `foo (struct-type-body (list number-type string-type)))))
 
 (check-equal?

@@ -75,7 +75,7 @@
       (cond 
         ((null? $syntaxes) #`())
         ((null? (cdr $syntaxes)) (car $syntaxes))
-        (else (datum->syntax #f (cons #`vector-immutable $syntaxes)))))
+        (else (datum->syntax #f (cons #`vector $syntaxes)))))
     (field-type 
       (syntax-e $identifier) 
       (struct-type-body (map syntax-type $syntaxes)))))
@@ -105,7 +105,7 @@
         (syntax-with-type #`1 number-type)
         (syntax-with-type #`"foo" string-type))))
   (typed 
-    `(vector-immutable 1 "foo") 
+    `(vector 1 "foo") 
     (field-type `tuple 
       (struct-type-body 
         (list number-type string-type)))))
@@ -117,7 +117,7 @@
         (syntax-with-type #`1 number-type)
         (syntax-with-type #`"foo" string-type))))
   (typed 
-    `(vector-immutable 1 "foo") 
+    `(vector 1 "foo") 
     (field-type `tuple 
       (struct-type-body 
         (list number-type string-type)))))
