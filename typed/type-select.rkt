@@ -8,27 +8,7 @@
   leo/typed/type-is-static
   leo/testing)
 
-(define 
-  (type-list-selector-index
-    ($type-list : (Listof Type))
-    ($selector : Type)) : (Option Integer)
-  (type-list-selector-index-from $type-list $selector 0))
-
-(define 
-  (type-list-selector-index-from
-    ($type-list : (Listof Type))
-    ($selector : Type)
-    ($index : Integer)) : (Option Integer)
-  (cond
-    ((null? $type-list) #f)
-    ((type-selector-selects? (car $type-list) $selector) $index)
-    (else 
-      (type-list-selector-index-from
-        (cdr $type-list)
-        $selector
-        (if (type-is-static? (car $type-list))
-          $index
-          (+ $index 1))))))
+; ------------------------------------------------------------------
 
 (define (type-selector-selects? ($type : Type) ($selector : Type)) : Boolean
   (cond
@@ -101,3 +81,54 @@
     (field-type `number void-type-body)
     (field-type `field (struct-type-body (list (symbol-type `not-number))))) #f)
 
+; ------------------------------------------------------------------
+
+(define
+  (type-list-selector-indexed-from
+    ($type-list : (Listof Type))
+    ($selector : Type)
+    ($index : Exact-Nonnegative-Integer)) : 
+      (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
+  (cond
+    ((null? $type-list) #f)
+    ((type-selector-selects? (car $type-list) $selector) 
+      (cons 
+        (if (type-is-static? (car $type-list)) #f $index)
+        (car $type-list)))
+    (else 
+      (type-list-selector-indexed-from
+        (cdr $type-list)
+        $selector
+        (if (type-is-static? (car $type-list))
+          $index
+          (+ $index 1))))))
+
+(define 
+  (type-list-selector-indexed
+    ($type-list : (Listof Type))
+    ($selector : Type)) : (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
+  (type-list-selector-indexed-from $type-list $selector 0))
+
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type (symbol-type `foo) string-type)
+    (symbol-type `number))
+  (cons 0 number-type))
+
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type (symbol-type `foo) string-type)
+    (symbol-type `foo))
+  (cons #f (symbol-type `foo)))
+
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type (symbol-type `foo) string-type)
+    (symbol-type `string))
+  (cons 1 string-type))
+
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type (symbol-type `foo) string-type)
+    (symbol-type `boolean))
+  #f)
