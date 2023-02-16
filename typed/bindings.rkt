@@ -201,6 +201,14 @@
               (cond 
                 ((equal? $symbol `function)
                   (error "TODO: function"))
+                ((and (equal? $symbol `as) (equal? (length $rhs-syntaxes) 2))
+                  (define $as-lhs-syntax (car $rhs-syntaxes))
+                  (define $as-rhs-syntax (cadr $rhs-syntaxes))
+                  (define $lhs-syntax (bindings-syntax $bindings $as-lhs-syntax))
+                  (define $rhs-type (syntax-parse-type $as-rhs-syntax))
+                  (values
+                    (list (syntax-as $lhs-syntax $rhs-type))
+                    $rhs-type))
                 (else 
                   (define $resolved-rhs-syntaxes 
                     (map (curry bindings-syntax $bindings) $rhs-syntaxes))
