@@ -10,23 +10,23 @@
   leo/typed/syntax-typed
   leo/testing)
 
-(struct values ((syntaxes : (Listof Syntax)) (type : Type))
+(struct args ((syntaxes : (Listof Syntax)) (type : Type))
   #:transparent
-  #:type-name Values)
+  #:type-name Args)
 
-(define (values-syntax (values : Values)) : Syntax
-  (let ((dynamic-syntaxes (filter syntax-is-dynamic? (values-syntaxes values))))
+(define (args-syntax (args : Args)) : Syntax
+  (let ((dynamic-syntaxes (filter syntax-is-dynamic? (args-syntaxes args))))
     (syntax-with-type
       (cond
         ((null? dynamic-syntaxes) #`())
         ((null? (cdr dynamic-syntaxes)) (car dynamic-syntaxes))
         (else (datum->syntax #f (cons `vector-immutable dynamic-syntaxes))))
-      (values-type values))))
+      (args-type args))))
 
 (check-equal?
   (syntax-typed-datum 
-    (values-syntax 
-      (values 
+    (args-syntax 
+      (args 
         (list
           (syntax-with-type #`1 number-type)) 
         (field-type `foo (struct-type-body (list number-type))))))
@@ -36,8 +36,8 @@
 
 (check-equal?
   (syntax-typed-datum 
-    (values-syntax 
-      (values 
+    (args-syntax 
+      (args 
         (list
           (syntax-with-type #`1 number-type)
           (syntax-with-type #`"foo" string-type)) 
@@ -48,8 +48,8 @@
 
 (check-equal?
   (syntax-typed-datum 
-    (values-syntax 
-      (values 
+    (args-syntax 
+      (args 
         (list
           (syntax-with-type #`() (void-field-type `empty))
           (syntax-with-type #`"foo" string-type)) 

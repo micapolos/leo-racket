@@ -7,7 +7,7 @@
   leo/typed/type
   leo/typed/typed
   leo/typed/types
-  leo/typed/values
+  leo/typed/args
   leo/typed/syntax-match
   leo/typed/syntax-type
   leo/typed/syntax-typed
@@ -93,9 +93,9 @@
 ; -------------------------------------------------------------------
 
 (define 
-  (binding-values-syntax
+  (binding-args-syntax
     ($binding : Binding)
-    ($values : Values)) : Syntax
+    ($args : Args)) : Syntax
   (cond
     ((not (binding-function? $binding))
       (binding-syntax $binding))
@@ -107,24 +107,24 @@
         (if (= (length $rhs-types) 1)
           (syntax-with-type
             (datum->syntax #f 
-              (cons $binding-syntax (values-syntaxes $values)))
+              (cons $binding-syntax (args-syntaxes $args)))
             (car $rhs-types))
           (error "Arrow with multi-value return type"))))))
 
 (check-equal?
   (syntax-typed-datum
-    (binding-values-syntax
+    (binding-args-syntax
       pi-binding
-      (values 
+      (args 
         null
         (symbol-type `pi))))
   (typed `pi number-type))
 
 (check-equal?
   (syntax-typed-datum
-    (binding-values-syntax
+    (binding-args-syntax
       string-append-binding
-      (values 
+      (args 
         (list 
           (syntax-with-type #`"foo" string-type)
           (syntax-with-type #`"bar" string-type))
@@ -134,24 +134,24 @@
 ; -------------------------------------------------------------------
 
 (define
-  (bindings-values-syntax
+  (bindings-args-syntax
     ($bindings : Bindings)
-    ($values : Values)) : Syntax
+    ($args : Args)) : Syntax
   (let 
     (($found 
       (findf
         (lambda (($binding : Binding))
-          (equal? (binding-type $binding) (values-type $values)))
+          (equal? (binding-type $binding) (args-type $args)))
         (bindings-list $bindings))))
     (or
-      (and $found (binding-values-syntax $found $values))
-      (values-syntax $values))))
+      (and $found (binding-args-syntax $found $args))
+      (args-syntax $args))))
 
 (check-equal?
   (syntax-typed-datum
-    (bindings-values-syntax
+    (bindings-args-syntax
       base-bindings
-      (values
+      (args
         (list
           (syntax-with-type #`1 number-type)
           (syntax-with-type #`"foo" string-type))
@@ -162,9 +162,9 @@
 
 (check-equal?
   (syntax-typed-datum
-    (bindings-values-syntax
+    (bindings-args-syntax
       base-bindings
-      (values
+      (args
         (list
           (syntax-with-type #`"foo" number-type)
           (syntax-with-type #`"bar" string-type))
@@ -190,10 +190,10 @@
       ((string? $syntax-e)
         (syntax-with-type $syntax string-type))
       (else
-        (define $values
+        (define $args
           (cond
             ((symbol? $syntax-e)
-              (values null (symbol-type $syntax-e)))
+              (args null (symbol-type $syntax-e)))
             ((and (list? $syntax-e) (identifier? (car $syntax-e)))
               (define $identifier (car $syntax-e))
               (define $symbol (syntax-e $identifier))
@@ -209,19 +209,19 @@
                       (cadr (syntax-e $as-lhs-syntax))
                       (bindings-syntax $bindings $as-lhs-syntax)))
                   (define $rhs-type (syntax-parse-type $as-rhs-syntax))
-                  (values
+                  (args
                     (list (syntax-as $lhs-syntax $rhs-type))
                     $rhs-type))
                 (else 
                   (define $resolved-rhs-syntaxes 
                     (map (curry bindings-syntax $bindings) $rhs-syntaxes))
-                  (values
+                  (args
                     $resolved-rhs-syntaxes
                     (field-type 
                       $symbol
                       (struct-type-body (map syntax-type $resolved-rhs-syntaxes)))))))
-            (else (error (format "values error ~v" $syntax)))))
-        (bindings-values-syntax $bindings $values)))))
+            (else (error (format "args error ~v" $syntax)))))
+        (bindings-args-syntax $bindings $args)))))
 
 ; TODO: Replace with boolean true / boolean false
 (check-equal?
