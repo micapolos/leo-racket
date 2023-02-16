@@ -8,7 +8,7 @@
   leo/typed/type
   leo/typed/syntax-type
   leo/typed/typed
-  leo/typed/type-is-static
+  leo/typed/type-utils
   leo/typed/syntax-match
   leo/typed/types)
 

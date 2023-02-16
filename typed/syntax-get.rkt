@@ -12,9 +12,9 @@
   leo/typed/syntax-typed
   leo/testing)
 
-(define (syntax-get-option ($syntax : Syntax) ($selector : Type)) : (Option Syntax)
+(define (syntax-get ($syntax : Syntax) ($selector : Type)) : (Option Syntax)
   (define $syntax-type (syntax-type $syntax))
-  (define $indexed (type-get-indexed $syntax-type $selector))
+  (define $indexed (type-get $syntax-type $selector))
   (cond
     ((equal? $indexed #f) #f)
     (else 
@@ -29,7 +29,7 @@
 
 (check-equal?
   (option-map
-    (syntax-get-option
+    (syntax-get
       (syntax-with-type 
         #`foo
         (field-type `foo (struct-type-body (list number-type string-type))))

@@ -8,6 +8,7 @@
   leo/typed/typed
   leo/typed/types
   leo/typed/args
+  leo/typed/syntax-get
   leo/typed/syntax-match
   leo/typed/syntax-type
   leo/typed/syntax-typed
@@ -111,6 +112,25 @@
             (car $rhs-types))
           (error "Arrow with multi-value return type"))))))
 
+(define 
+  (binding-syntaxes-resolve
+    ($binding : Binding)
+    ($syntaxes : (Listof Syntax))) : Syntax
+  (cond
+    ((not (binding-function? $binding))
+      (binding-syntax $binding))
+    (else
+      (let* (($binding-syntax (binding-syntax $binding))
+             ($arrow (type-arrow (syntax-type $binding-syntax)))
+             ($lhs-types (arrow-type-lhs-types $arrow))
+             ($rhs-types (arrow-type-rhs-types $arrow)))
+        (if (= (length $rhs-types) 1)
+          (syntax-with-type
+            (datum->syntax #f 
+              (cons $binding-syntax (filter syntax-is-dynamic? $syntaxes)))
+            (car $rhs-types))
+          (error "Arrow with multi-value return type"))))))
+
 (check-equal?
   (syntax-typed-datum
     (binding-args-syntax
@@ -146,6 +166,22 @@
     (or
       (and $found (binding-args-syntax $found $args))
       (args-syntax $args))))
+
+(define
+  (bindings-symbol-syntaxes-resolve
+    ($bindings : Bindings)
+    ($symbol : Symbol)
+    ($syntaxes : (Listof Syntax))) : (Option Syntax)
+  (define $type
+    (field-type $symbol 
+      (struct-type-body (map syntax-type $syntaxes))))
+  (let 
+    (($found 
+      (findf
+        (lambda (($binding : Binding))
+          (equal? (binding-type $binding) $type))
+        (bindings-list $bindings))))
+    (and $found (binding-syntaxes-resolve $found $syntaxes))))
 
 (check-equal?
   (syntax-typed-datum
@@ -212,7 +248,7 @@
                   (args
                     (list (syntax-as $lhs-syntax $rhs-type))
                     $rhs-type))
-                (else 
+                (else
                   (define $resolved-rhs-syntaxes 
                     (map (curry bindings-syntax $bindings) $rhs-syntaxes))
                   (args
@@ -252,3 +288,33 @@
   (typed 
     `(string-append "foo" "bar")
     string-type))
+
+(define 
+  (symbol-syntaxes-resolve 
+    ($symbol : Symbol) 
+    ($syntaxes : (Listof Syntax))) : (Option Syntax)
+  (cond
+    ((and (equal? $symbol `get) (= (length $syntaxes) 2))
+      (define $lhs-syntax (car $syntaxes))
+      (define $rhs-syntax (cadr $syntaxes))
+      (syntax-get $lhs-syntax (syntax-type $rhs-syntax)))
+    (else #f)))
+
+(define 
+  ($symbol-syntaxes-resolve 
+    ($symbol : Symbol) 
+    ($syntaxes : (Listof Syntax))) : (Option Syntax)
+  (cond
+    ((and (equal? $symbol `get) (= (length $syntaxes) 2))
+      (define $lhs-syntax (car $syntaxes))
+      (define $rhs-syntax (cadr $syntaxes))
+      (syntax-get $lhs-syntax (syntax-type $rhs-syntax)))
+    (else #f)))
+
+(define 
+  (symbol-syntaxes-make 
+    ($symbol : Symbol) 
+    ($syntaxes : (Listof Syntax))) : Syntax
+  (syntax-with-type
+    (datum->syntax #f (cons $symbol $syntaxes))
+    (field-type $symbol (struct-type-body (map syntax-type $syntaxes)))))

@@ -8,37 +8,22 @@
   leo/typed/type-select
   leo/testing)
 
-(define (struct-type-body-get-indexed 
-    ($struct-type-body : StructTypeBody)
-    ($selector : Type))
-  (type-list-selector-indexed 
-    (struct-type-body-type-list $struct-type-body) 
-    $selector))
-
-(define (type-body-get-indexed 
-    ($type-body : TypeBody)
-    ($selector : Type))
-  (cond
-    ((struct-type-body? $type-body) 
-      (struct-type-body-get-indexed $type-body $selector))
-    ((choice-type-body? $type-body) #f)))
-
-(define (field-type-get-indexed 
+(define (field-type-get 
     ($field-type : FieldType)
     ($selector : Type))
-  (type-body-get-indexed (field-type-body $field-type) $selector))
+  (type-body-select (field-type-body $field-type) $selector))
 
-(define (type-get-indexed 
+(define (type-get 
     ($type : Type)
     ($selector : Type))
   (cond
     ((native-type? $type) #f)
     ((symbol-type? $type) #f)
-    ((field-type? $type) (field-type-get-indexed $type $selector))
+    ((field-type? $type) (field-type-get $type $selector))
     ((arrow-type? $type) #f)))
 
 (check-equal?
-  (type-get-indexed
+  (type-get
     (field-type `foo
       (struct-type-body 
         (list number-type (symbol-type `foo) string-type)))

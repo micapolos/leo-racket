@@ -42,8 +42,8 @@ define
   is 3.15159
 
 "Hello, "
-plus "world!"
-length
-plus pi
-string
-plus " apples."
+append "world!"
+get length
+add pi
+make string
+append " apples."
