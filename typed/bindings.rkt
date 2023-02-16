@@ -314,22 +314,3 @@
       (define $rhs-syntax (cadr $syntaxes))
       (syntax-get $lhs-syntax (syntax-type $rhs-syntax)))
     (else #f)))
-
-(define 
-  ($symbol-syntaxes-resolve 
-    ($symbol : Symbol) 
-    ($syntaxes : (Listof Syntax))) : (Option Syntax)
-  (cond
-    ((and (equal? $symbol `get) (= (length $syntaxes) 2))
-      (define $lhs-syntax (car $syntaxes))
-      (define $rhs-syntax (cadr $syntaxes))
-      (syntax-get $lhs-syntax (syntax-type $rhs-syntax)))
-    (else #f)))
-
-(define 
-  (symbol-syntaxes-make 
-    ($symbol : Symbol) 
-    ($syntaxes : (Listof Syntax))) : Syntax
-  (syntax-with-type
-    (datum->syntax #f (cons $symbol $syntaxes))
-    (field-type $symbol (struct-type-body (map syntax-type $syntaxes)))))

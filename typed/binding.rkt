@@ -6,6 +6,8 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed
   leo/typed/type
+  leo/typed/types
+  leo/typed/syntax-resolve
   leo/testing)
 
 (struct constant-binding (
@@ -78,3 +80,32 @@
     (function-binding? (car $binding-list))
     (function-binding-resolve (car $binding-list) $symbol $args)
     (binding-list-resolve-symbol-args (cdr $binding-list) $symbol $args)))
+
+(define
+  (binding-list-resolve
+    ($binding-list : (Listof Binding))
+    ($syntax : Syntax))
+  : Syntax
+  (let (($e (syntax-e $syntax)))
+    (cond
+      ((null? $e) 
+        (error "null syntax"))
+      ((boolean? $e)
+        (syntax-with-type $syntax boolean-type))
+      ((number? $e)
+        (syntax-with-type $syntax number-type))
+      ((string? $e)
+        (syntax-with-type $syntax string-type))
+      ((symbol? $e)
+        (define $symbol $e)
+        (or
+          (binding-list-resolve-symbol $binding-list $symbol)
+          (symbol-make $symbol)))
+      ((and (list? $e) (identifier? (car $e)))
+        (define $symbol (syntax-e (car $e)))
+        (define $args (cdr $e))
+        (or 
+          (symbol-args-resolve $symbol $args)
+          (binding-list-resolve-symbol-args $binding-list $symbol $args)
+          (symbol-args-make $symbol $args)))
+      (else (error (format "Invalid syntax: ~a" $syntax))))))
