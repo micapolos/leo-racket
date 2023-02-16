@@ -19,6 +19,21 @@
   binding-key 
   (U Identifier (Pairof (Listof Identifier) (Listof Syntax))))
 
+(struct constant-binding (
+  ($symbol : Symbol) 
+  ($type : Type) 
+  ($identifier : Identifier))
+  #:transparent
+  #:type-name SymbolBinding)
+
+(struct function-binding (
+  ($symbol : Symbol) 
+  ($arg-types : Type) 
+  ($return-type : Type) 
+  ($identifier : Identifier))
+  #:transparent
+  #:type-name FunctionBinding)
+
 (struct binding ((type : Type) (syntax : Syntax) (function? : Boolean))
   #:transparent
   #:type-name Binding)
