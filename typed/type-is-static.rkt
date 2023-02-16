@@ -7,6 +7,9 @@
   leo/typed/type
   leo/typed/types)
 
+(define (type-is-dynamic? ($type : Type)) : Boolean
+  (not (type-is-static? $type)))
+
 (define (type-is-static? ($type : Type)) : Boolean
   (cond
     ((native-type? $type) #f)

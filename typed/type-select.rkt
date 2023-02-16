@@ -5,6 +5,7 @@
 (require 
   leo/typed/type
   leo/typed/types
+  leo/typed/option
   leo/typed/type-is-static
   leo/testing)
 
@@ -107,7 +108,12 @@
   (type-list-selector-indexed
     ($type-list : (Listof Type))
     ($selector : Type)) : (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
-  (type-list-selector-indexed-from $type-list $selector 0))
+  (option-bind
+    (type-list-selector-indexed-from $type-list $selector 0)
+    $indexed
+    (if (> (length (filter type-is-dynamic? $type-list)) 1)
+      $indexed
+      (cons #f (cdr $indexed)))))
 
 (check-equal?
   (type-list-selector-indexed
@@ -132,3 +138,17 @@
     (list number-type (symbol-type `foo) string-type)
     (symbol-type `boolean))
   #f)
+
+; single dynamic type
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type)
+    (symbol-type `number))
+  (cons #f number-type))
+
+; single dynamic type and single static type
+(check-equal?
+  (type-list-selector-indexed
+    (list number-type (symbol-type `foo))
+    (symbol-type `number))
+  (cons #f number-type))
