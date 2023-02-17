@@ -55,7 +55,7 @@ define canvas new:
           sin
           plus 2.5
 
-        this:
+        begin:
           send: drawing-context translate half-width half-height
           send: drawing-context rotate rotation
           send: drawing-context scale scale scale
