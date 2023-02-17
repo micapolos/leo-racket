@@ -88,3 +88,17 @@
       (symbol-type `string))
     syntax-typed-datum)
   (typed `(cdr foo) string-type))
+
+(check-equal?
+  (option-map
+    (syntax-get
+      (syntax-with-type 
+        #`foo
+        (field-type `point 
+          (struct-type-body 
+            (list 
+              (field-type `x (struct-type-body (list number-type)))
+              (field-type `y (struct-type-body (list number-type)))))))
+      (symbol-type `y))
+    syntax-typed-datum)
+  (typed `(cdr foo) (field-type `y (struct-type-body (list number-type)))))

@@ -19,13 +19,15 @@
     ($symbol : Symbol)) : Syntax
   (syntax-with-type #`() (symbol-type $symbol)))
 
-(define 
+(define
   (symbol-args-resolve 
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : (Option Syntax)
   (cond
     ((= (length $args) 1)
       (syntax-get (car $args) (symbol-type $symbol)))
+    ((and (equal? $symbol `get) (= (length $args) 2))
+      (syntax-get (car $args) (syntax-type (cadr $args))))
     (else #f)))
 
 (define 
