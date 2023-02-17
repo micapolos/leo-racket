@@ -260,4 +260,3 @@
   (typed 
     `(vector a b) 
     (field-type `not-plus (struct-type-body (list string-type string-type)))))
-

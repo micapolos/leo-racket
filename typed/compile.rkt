@@ -10,10 +10,12 @@
 (define (anys-compile ($anys : (Listof Any))) : (Listof Syntax)
   (syntaxes-compile (map any-syntax $anys)))
 
-(define (syntaxes-compile ($syntaxes : (Listof Syntax))) : (Listof Syntax)
+(define (syntaxes-compile ($syntax-list : (Listof Syntax))) : (Listof Syntax)
   (reverse 
-    (compiled-syntaxes
-      (compiled-plus-syntaxes null-compiled $syntaxes))))
+    (compiled-syntax-list
+      (compiled-plus-syntax-list
+        base-compiled 
+        $syntax-list))))
 
 (define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
   (map
