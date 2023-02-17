@@ -7,7 +7,6 @@
   leo/typed/type
   leo/typed/typed
   leo/typed/types
-  leo/typed/args
   leo/typed/syntax-get
   leo/typed/syntax-match
   leo/typed/syntax-type
