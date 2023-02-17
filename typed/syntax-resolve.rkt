@@ -32,10 +32,4 @@
   (symbol-args-make 
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : Syntax
-  (syntax-with-type
-    (let (($dynamic-args (filter syntax-is-dynamic? $args)))
-      (cond
-        ((null? $dynamic-args) #`())
-        ((null? (cdr $dynamic-args)) (car $dynamic-args))
-        (else (datum->syntax #f (cons `vector $dynamic-args)))))
-    (field-type $symbol (struct-type-body (map syntax-type $args)))))
+  (typed-field-syntax (datum->syntax #f $symbol) $args))
