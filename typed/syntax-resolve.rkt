@@ -25,10 +25,8 @@
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : (Option Syntax)
   (cond
-    ((and (equal? $symbol `get) (= (length $args) 2))
-      (define $lhs-syntax (car $args))
-      (define $rhs-syntax (cadr $args))
-      (syntax-get $lhs-syntax (syntax-type $rhs-syntax)))
+    ((= (length $args) 1)
+      (syntax-get (car $args) (symbol-type $symbol)))
     (else #f)))
 
 (define 
@@ -36,5 +34,5 @@
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (datum->syntax #f (cons $symbol (filter syntax-is-dynamic? $args)))
+    (datum->syntax #f (cons `vector (filter syntax-is-dynamic? $args)))
     (field-type $symbol (struct-type-body (map syntax-type $args)))))

@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  racket/function
   leo/typed/option
   leo/typed/syntax-type
   leo/typed/syntax-typed
@@ -87,10 +88,10 @@
       (function-binding `foo (list string-type number-type) boolean-type #`bool)
       `foo
       (list 
-        (syntax-with-type #`"a" string-type)
-        (syntax-with-type #`1 number-type)))
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b number-type)))
     syntax-typed-datum)
-  (typed `(bool "a" 1) boolean-type))
+  (typed `(bool a b) boolean-type))
 
 (check-equal?
   (option-map
@@ -98,11 +99,11 @@
       (function-binding `foo (list string-type (symbol-type `empty) number-type) boolean-type #`bool)
       `foo
       (list 
-        (syntax-with-type #`"a" string-type)
-        (syntax-with-type #`() (symbol-type `empty))
-        (syntax-with-type #`1 number-type)))
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b (symbol-type `empty))
+        (syntax-with-type #`c number-type)))
     syntax-typed-datum)
-  (typed `(bool "a" 1) boolean-type))
+  (typed `(bool a c) boolean-type))
 
 (check-equal?
   (option-map
@@ -110,8 +111,8 @@
       (function-binding `foo (list string-type number-type) boolean-type #`bool)
       `foo
       (list 
-        (syntax-with-type #`1 number-type)
-        (syntax-with-type #`1 number-type)))
+        (syntax-with-type #`a number-type)
+        (syntax-with-type #`b number-type)))
     syntax-typed-datum)
   #f)
 
@@ -121,8 +122,8 @@
       (function-binding `foo (list string-type number-type) boolean-type #`bool)
       `not-foo
       (list 
-        (syntax-with-type #`"a" string-type)
-        (syntax-with-type #`1 number-type)))
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b number-type)))
     syntax-typed-datum)
   #f)
 
@@ -135,9 +136,10 @@
   : (Option Syntax)
   (and
     (not (null? $binding-list))
-    (constant-binding? (car $binding-list))
-    (or 
-      (constant-binding-resolve (car $binding-list) $symbol)
+    (or
+      (and
+        (constant-binding? (car $binding-list))
+        (constant-binding-resolve (car $binding-list) $symbol))
       (binding-list-resolve-symbol (cdr $binding-list) $symbol))))
 
 (check-equal?
@@ -160,39 +162,102 @@
   : (Option Syntax)
   (and
     (not (null? $binding-list))
-    (function-binding? (car $binding-list))
-    (or 
-      (function-binding-resolve (car $binding-list) $symbol $args)
+    (or
+      (and
+        (function-binding? (car $binding-list))
+        (function-binding-resolve (car $binding-list) $symbol $args))
       (binding-list-resolve-symbol-args (cdr $binding-list) $symbol $args))))
+
+(check-equal?
+  (option-map
+    (binding-list-resolve-symbol-args
+      (list
+        (function-binding `plus (list string-type string-type) string-type #`string-append)
+        (constant-binding `bar string-type #`foo-string))
+      `plus
+      (list
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b string-type)))
+    syntax-typed-datum)
+  (typed `(string-append a b) string-type))
 
 ; --------------------------------------------------------------------
 
 (define
-  (binding-list-resolve
+  (binding-list-apply-symbol
     ($binding-list : (Listof Binding))
-    ($syntax : Syntax))
+    ($symbol : Symbol))
   : Syntax
-  (let (($e (syntax-e $syntax)))
-    (cond
-      ((null? $e) 
-        (error "null syntax"))
-      ((boolean? $e)
-        (syntax-with-type $syntax boolean-type))
-      ((number? $e)
-        (syntax-with-type $syntax number-type))
-      ((string? $e)
-        (syntax-with-type $syntax string-type))
-      ((symbol? $e)
-        (define $symbol $e)
-        (or
-          (binding-list-resolve-symbol $binding-list $symbol)
-          (symbol-make $symbol)))
-      ((and (list? $e) (identifier? (car $e)))
-        (define $symbol (syntax-e (car $e)))
-        (define $args (cdr $e))
-        (or 
-          (symbol-args-resolve $symbol $args)
-          (binding-list-resolve-symbol-args $binding-list $symbol $args)
-          (symbol-args-make $symbol $args)))
-      (else (error (format "Invalid syntax: ~a" $syntax))))))
+  (or
+    (binding-list-resolve-symbol $binding-list $symbol)
+    (symbol-make $symbol)))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-list-apply-symbol
+      (list
+        (constant-binding `foo string-type #`foo-string)
+        (constant-binding `bar string-type #`foo-string))
+      `foo))
+  (typed `foo-string string-type))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-list-apply-symbol
+      (list
+        (constant-binding `foo string-type #`foo-string)
+        (constant-binding `bar string-type #`foo-string))
+      `not-foo))
+  (typed `() (symbol-type `not-foo)))
+
+; --------------------------------------------------------------------
+
+(define 
+  (binding-list-apply-symbol-args
+    ($binding-list : (Listof Binding))
+    ($symbol : Symbol)
+    ($args : (Listof Syntax)))
+  : Syntax
+  (or 
+    (symbol-args-resolve $symbol $args)
+    (binding-list-resolve-symbol-args $binding-list $symbol $args)
+    (symbol-args-make $symbol $args)))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-list-apply-symbol-args
+      (list
+        (function-binding `plus (list string-type string-type) string-type #`string-append)
+        (constant-binding `bar string-type #`foo-string))
+      `string
+      (list 
+        (syntax-with-type #`x 
+          (field-type `id (struct-type-body (list number-type string-type)))))))
+  (typed `(vector-ref x 1) string-type))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-list-apply-symbol-args
+      (list
+        (function-binding `plus (list string-type string-type) string-type #`string-append)
+        (constant-binding `bar string-type #`foo-string))
+      `plus
+      (list
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b string-type))))
+  (typed `(string-append a b) string-type))
+
+(check-equal?
+  (syntax-typed-datum
+    (binding-list-apply-symbol-args
+      (list
+        (function-binding `plus (list string-type string-type) string-type #`string-append)
+        (constant-binding `bar string-type #`foo-string))
+      `not-plus
+      (list
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b string-type))))
+  (typed 
+    `(vector a b) 
+    (field-type `not-plus (struct-type-body (list string-type string-type)))))
 

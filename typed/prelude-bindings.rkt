@@ -49,7 +49,7 @@
   (function-binding 
     `length 
     (list string-type) 
-    string-type
+    number-type
     #`string-length))
 
 (define prelude-binding-list
@@ -62,14 +62,15 @@
     string-length-binding))
 
 (check-equal?
+  (syntax-typed-datum (binding-list-apply-symbol prelude-binding-list `pi))
+  (typed `pi number-type))
+
+(check-equal?
   (syntax-typed-datum
-    (binding-list-resolve
+    (binding-list-apply-symbol-args
       prelude-binding-list
-      (datum->syntax #f 
-        (list 
-          `plus
-          (syntax-with-type #`"a" string-type)
-          (syntax-with-type #`"b" string-type)))))
-  (typed
-    `(string-append "a" "b")
-    string-type))
+      `plus
+      (list
+        (syntax-with-type #`a string-type)
+        (syntax-with-type #`b string-type))))
+  (typed `(string-append a b) string-type))
