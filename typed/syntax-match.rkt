@@ -64,6 +64,14 @@
   (let ((e (syntax-e $syntax)))
     (and (list? e) (not (null? e)) (identifier? (car e)))))
 
+(define (syntax-symbol-args? ($syntax : Syntax) ($symbol : Symbol))
+  (let ((e (syntax-e $syntax)))
+    (and 
+      (list? e)
+      (not (null? e))
+      (identifier? (car e))
+      (equal? (syntax-e (car e)) $symbol))))
+
 (define (syntax-symbol-arg? ($syntax : Syntax) ($symbol : Symbol))
   (let ((e (syntax-e $syntax)))
     (and 

@@ -1,8 +1,12 @@
 #lang leo/typed
 
-point:
-  x 10
-  y 20
+circle:
+  center point:
+    x 10
+    y 20
+  radius 30
+center
+point
 x
 number
 plus pi
