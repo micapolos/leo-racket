@@ -5,6 +5,7 @@
 (require 
   leo/testing
   racket/string
+  racket/function
   syntax/readerr
   (for-syntax racket/base))
 
@@ -232,6 +233,33 @@
         $leo)
       (else (err $port $src "expected space or newline")))))
 
+(define (read-dotted-atom $port $src $leo) 
+  (let (($atom (read-atom $port $src)))
+    (cond
+      ((identifier? $atom)
+        (define $reversed-atoms
+          (map 
+            (curry datum->syntax #f)
+            (map 
+              string->symbol
+              (map 
+                (lambda ($string) 
+                  (if (equal? $string "") (error "empty dotted string") $string))
+                (reverse 
+                  (string-split 
+                    (symbol->string (syntax-e $atom)) 
+                    "."))))))
+        (define $last-atom (car $reversed-atoms))
+        (define $leading-atoms (reverse (cdr $reversed-atoms)))
+        (define $folded-leo
+          (foldl 
+            (lambda ($atom $leo) 
+              (leo-append-stx-list?-rhs $leo $atom #f empty-leo))
+            $leo
+            $leading-atoms))
+        (values $folded-leo $last-atom))
+      (else (values $leo $atom)))))
+
 ; -------------------------------------------------------
 
 (define (read-leo-empty-lines $port $leo)
@@ -279,8 +307,9 @@
         (let-values (((line col pos) (port-next-location $port)))
           (err $port $src (string-append "unexpected " (char-name $peeked-char)))))
       (else
-        (let* (($stx (read-atom $port $src))
-               ($datum (syntax-e $stx)))
+        (let*-values 
+          ((($leo $stx) (read-dotted-atom $port $src $leo))
+           (($datum) (syntax-e $stx)))
           (cond
             ((symbol? $datum)
               (read-leo-symbol-stx-rhs $port $src $depth $leo $datum $stx))
@@ -445,3 +474,6 @@
 
 (check-equal? (string->leo-datums "the\n") `(()))
 (check-equal? (string->leo-datums "the foo\n") `((foo)))
+
+(check-equal? (string->leo-datums "foo.bar.zoo\n") `((zoo (bar foo))))
+(check-equal? (string->leo-datums "point\nx.number\n") `((number (x point))))

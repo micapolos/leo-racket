@@ -5,8 +5,5 @@ circle:
     x 10
     y 20
   radius 30
-center
-point
-x
-number
+center.point.x.number
 plus pi
