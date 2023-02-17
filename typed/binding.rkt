@@ -7,6 +7,7 @@
   leo/typed/option
   leo/typed/syntax-type
   leo/typed/syntax-typed
+  leo/typed/syntax-get
   leo/typed/type
   leo/typed/types
   leo/typed/typed
@@ -15,7 +16,8 @@
   leo/testing)
 
 (struct argument-binding (
-  (type : Type))
+  (type : Type)
+  (identifier : Identifier))
   #:transparent
   #:type-name ArgumentBinding)
 
@@ -135,6 +137,36 @@
 ; --------------------------------------------------------------------
 
 (define
+  (argument-binding-resolve
+    ($argument-binding : ArgumentBinding) 
+    ($symbol : Symbol)) 
+  : (Option Syntax)
+  (define $type (argument-binding-type $argument-binding))
+  (define $given-type (field-type `given (struct-type-body (list $type))))
+  (define $identifier (argument-binding-identifier $argument-binding))
+  (syntax-get 
+    (syntax-with-type $identifier $given-type)
+    (symbol-type $symbol)))
+
+(check-equal?
+  (option-map
+    (argument-binding-resolve
+      (argument-binding number-type #`tmp)
+      `number)
+    syntax-typed-datum)
+  (typed `tmp number-type))
+
+(check-equal?
+  (option-map
+    (argument-binding-resolve
+      (argument-binding number-type #`tmp)
+      `not-number)
+    syntax-typed-datum)
+  #f)
+
+; --------------------------------------------------------------------
+
+(define
   (binding-list-resolve-symbol
     ($binding-list : (Listof Binding))
     ($symbol : Symbol))
@@ -145,6 +177,9 @@
       (and
         (constant-binding? (car $binding-list))
         (constant-binding-resolve (car $binding-list) $symbol))
+      (and
+        (argument-binding? (car $binding-list))
+        (argument-binding-resolve (car $binding-list) $symbol))
       (binding-list-resolve-symbol (cdr $binding-list) $symbol))))
 
 (check-equal?

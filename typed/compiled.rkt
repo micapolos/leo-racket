@@ -4,14 +4,17 @@
 
 (require
   racket/function
+  leo/typed/option
   leo/typed/type
+  leo/typed/typed
   leo/typed/types
   leo/typed/binding
   leo/typed/base-binding-list
   leo/typed/syntax-match
   leo/typed/syntax-typed
   leo/typed/type-parse
-  leo/typed/syntax-type)
+  leo/typed/syntax-type
+  leo/testing)
 
 (struct compiled 
   (
@@ -75,21 +78,28 @@
         (compiled-plus-typed-syntax
           $compiled
           (binding-list-apply-symbol $binding-list $syntax-e)))
-      ((syntax-identifier-args? $syntax)
-        (define $identifier (car $syntax-e))
-        (define $symbol (syntax-e $identifier))
-        (define $args (cdr $syntax-e))
-        (cond 
-          ((equal? $symbol `function)
-            (error "TODO: function"))
-          (else
-            (compiled-plus-typed-syntax
-              $compiled
-              (binding-list-apply-symbol-args
-                $binding-list
-                $symbol
-                (map (curry binding-list-syntax $binding-list) $args))))))
-      (else (error (format "Syntax error ~a" $syntax))))))
+      (else
+        (or
+          (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
+            (and 
+              $do-syntax
+              (compiled-plus-typed-syntax $compiled $do-syntax)))
+          (cond
+            ((syntax-identifier-args? $syntax)
+              (define $identifier (car $syntax-e))
+              (define $symbol (syntax-e $identifier))
+              (define $args (cdr $syntax-e))
+              (cond 
+                ((equal? $symbol `function)
+                  (error "TODO: function"))
+                (else
+                  (compiled-plus-typed-syntax
+                    $compiled
+                    (binding-list-apply-symbol-args
+                      $binding-list
+                      $symbol
+                      (map (curry binding-list-syntax $binding-list) $args))))))
+            (else (error (format "Syntax error ~a" $syntax)))))))))
 
 (define 
   (compiled-plus-syntax-list
@@ -128,21 +138,29 @@
   : (Option Syntax)
   (and
     (syntax-symbol-arg-arg? $syntax `do)
-    (let* (($syntax-e (syntax-e $syntax))
-           ($identifier (car $syntax-e))
+    (let* (($tmp-syntax (car (generate-temporaries `(tmp))))
+           ($syntax-e (syntax-e $syntax))
            ($expr-syntax (cadr $syntax-e))
            ($body-syntax (caddr $syntax-e))
            ($expr-typed-syntax (binding-list-syntax $binding-list $expr-syntax))
            ($expr-type (syntax-type $expr-typed-syntax))
-           ($body-binding-list (cons (argument-binding $expr-type) $binding-list))
-           ($body-typed-syntax (binding-list-syntax $body-binding-list $expr-syntax))
+           ($body-binding-list (cons (argument-binding $expr-type $tmp-syntax) $binding-list))
+           ($body-typed-syntax (binding-list-syntax $body-binding-list $body-syntax))
            ($body-type (syntax-type $body-typed-syntax)))
       (syntax-with-type
         (datum->syntax #f 
           `(let 
-            ((,$identifier ,$expr-typed-syntax))
+            ((,$tmp-syntax ,$expr-typed-syntax))
             ,$body-typed-syntax))
         $body-type))))
+
+(check-equal?
+  (option-map
+    (binding-list-parse-do
+      null
+      #`(do 1 number))
+    syntax-typed-datum)
+  (typed `(let ((tmp1 1)) tmp1) number-type))
 
 ; -------------------------------------------------------------------
 
