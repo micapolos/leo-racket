@@ -71,10 +71,12 @@
     ($identifier : Identifier) 
     ($syntaxes : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (let (($syntaxes (filter syntax-is-dynamic? $syntaxes)))
-      (cond 
-        ((null? $syntaxes) #`())
-        ((null? (cdr $syntaxes)) (car $syntaxes))
+    (let (($syntaxes (filter syntax-is-dynamic? $syntaxes))
+          ($size (length $syntaxes)))
+      (case $size
+        ((0) #`())
+        ((1) (car $syntaxes))
+        ((2) (datum->syntax #f (list #`cons (car $syntaxes) (cadr $syntaxes))))
         (else (datum->syntax #f (cons #`vector $syntaxes)))))
     (field-type 
       (syntax-e $identifier) 
@@ -102,10 +104,10 @@
   (syntax-typed-datum 
     (typed-field-syntax #`tuple 
       (list 
-        (syntax-with-type #`1 number-type)
-        (syntax-with-type #`"foo" string-type))))
+        (syntax-with-type #`a number-type)
+        (syntax-with-type #`b string-type))))
   (typed 
-    `(vector 1 "foo") 
+    `(cons a b) 
     (field-type `tuple 
       (struct-type-body 
         (list number-type string-type)))))
@@ -114,10 +116,23 @@
   (syntax-typed-datum 
     (typed-field-syntax #`tuple 
       (list 
-        (syntax-with-type #`1 number-type)
-        (syntax-with-type #`"foo" string-type))))
+        (syntax-with-type #`a number-type)
+        (syntax-with-type #`b string-type)
+        (syntax-with-type #`c boolean-type))))
   (typed 
-    `(vector 1 "foo") 
+    `(vector a b c) 
+    (field-type `tuple 
+      (struct-type-body 
+        (list number-type string-type boolean-type)))))
+
+(check-equal?
+  (syntax-typed-datum 
+    (typed-field-syntax #`tuple 
+      (list 
+        (syntax-with-type #`a number-type)
+        (syntax-with-type #`b string-type))))
+  (typed 
+    `(cons a b) 
     (field-type `tuple 
       (struct-type-body 
         (list number-type string-type)))))

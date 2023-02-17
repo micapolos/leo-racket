@@ -233,7 +233,7 @@
       (list 
         (syntax-with-type #`x 
           (field-type `id (struct-type-body (list number-type string-type)))))))
-  (typed `(vector-ref x 1) string-type))
+  (typed `(cdr x) string-type))
 
 (check-equal?
   (syntax-typed-datum
@@ -258,5 +258,5 @@
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b string-type))))
   (typed 
-    `(vector a b) 
+    `(cons a b) 
     (field-type `not-plus (struct-type-body (list string-type string-type)))))

@@ -1,9 +1,10 @@
 #lang leo/typed
 
-point:
-  20
-  "foo"
-  #f
-  x 10
-  y 20
-x
+"Hello, "
+plus "world!"
+length
+plus pi
+string
+plus " "
+plus "apples"
+plus "."
