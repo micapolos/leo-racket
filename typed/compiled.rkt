@@ -160,6 +160,7 @@
       null
       #`(do 1 number))
     syntax-typed-datum)
+  ; TODO: Fix this test, generated tmp1 is not guaranteed.
   (typed `(let ((tmp1 1)) tmp1) number-type))
 
 ; -------------------------------------------------------------------
