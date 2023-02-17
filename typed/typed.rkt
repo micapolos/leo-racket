@@ -4,6 +4,6 @@
 
 (require leo/typed/type)
 
-(struct (V) typed (($value : V) ($type : Type))
+(struct (V) typed ((value : V) (type : Type))
   #:transparent
   #:type-name Typed)
