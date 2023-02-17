@@ -37,7 +37,7 @@ require:
     ((_ (name fields ...))
       #`(struct name (fields ...) #:transparent))))
 
-do:
+this:
   define plus +
   define minus -
   define times *
@@ -83,10 +83,10 @@ begin
   has: x y
 
   vector:
-    do
+    this
       1
       plus 2
-    do
+    this
       3
       plus 4
   as v in begin

@@ -31,7 +31,7 @@ define canvas new:
       drawing-context
       invoke-preserving-transformation function doing
         define time
-          the current-inexact-milliseconds
+          current-inexact-milliseconds:
           divided-by 1000.0
 
         define half-width
@@ -55,7 +55,7 @@ define canvas new:
           sin
           plus 2.5
 
-        do:
+        this:
           send: drawing-context translate half-width half-height
           send: drawing-context rotate rotation
           send: drawing-context scale scale scale
@@ -63,10 +63,10 @@ define canvas new:
           draw-pict: pict drawing-context 0 0
 
         send: frame is-shown?
-        if true? the refresh
-        else the void
+        if true? refresh:
+        else void:
 
-the refresh
+refresh:
 does new:
   timer%
   interval interval

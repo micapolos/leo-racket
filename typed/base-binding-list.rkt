@@ -13,7 +13,7 @@
 
 (define binding:pi
   (constant-binding 
-    `pi 
+    `pi
     number-type 
     #`pi))
 

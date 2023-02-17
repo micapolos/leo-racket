@@ -7,7 +7,7 @@ require:
   slideshow/text
   slideshow/widescreen/base
 
-do:
+this:
   define text t
   define bold bt
   define paragraph para

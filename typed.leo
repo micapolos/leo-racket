@@ -7,3 +7,6 @@ circle:
   radius 30
 center.point.x.number
 plus pi
+times 100
+string
+plus " world!"
