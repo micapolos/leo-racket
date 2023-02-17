@@ -5,8 +5,5 @@ plus "world!"
 do
   string
   plus " ("
-  plus
-    string
-    length
-    string
+  plus string.length.string
   plus ")"
