@@ -93,6 +93,16 @@
       (not (null? (cdr (cdr e))))
       (null? (cdddr e)))))
 
+(define (syntax-symbol-arg-args? ($syntax : Syntax) ($symbol : Symbol))
+  (let ((e (syntax-e $syntax)))
+    (and 
+      (list? e)
+      (not (null? e))
+      (identifier? (car e))
+      (equal? (syntax-e (car e)) $symbol)
+      (not (null? (cdr e)))
+      (not (null? (cdr (cdr e)))))))
+
 (check-equal? 
   (option-bind
     (syntax-thunk-option #`(foo 1 2)) $thunk

@@ -119,6 +119,31 @@
       (compiled $binding-list null)
       $syntax)))
 
+; ---------------------------------------------------------------
+
+(define 
+  (binding-list-parse-do 
+    ($binding-list : (Listof Binding))
+    ($syntax : Syntax))
+  : (Option Syntax)
+  (and
+    (syntax-symbol-arg-arg? $syntax `do)
+    (let* (($syntax-e (syntax-e $syntax))
+           ($identifier (car $syntax-e))
+           ($expr-syntax (cadr $syntax-e))
+           ($body-syntax (caddr $syntax-e))
+           ($expr-typed-syntax (binding-list-syntax $binding-list $expr-syntax))
+           ($expr-type (syntax-type $expr-typed-syntax))
+           ($body-binding-list (cons (argument-binding $expr-type) $binding-list))
+           ($body-typed-syntax (binding-list-syntax $body-binding-list $expr-syntax))
+           ($body-type (syntax-type $body-typed-syntax)))
+      (syntax-with-type
+        (datum->syntax #f 
+          `(let 
+            ((,$identifier ,$expr-typed-syntax))
+            ,$body-typed-syntax))
+        $body-type))))
+
 ; -------------------------------------------------------------------
 
 ; (define

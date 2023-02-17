@@ -14,6 +14,11 @@
   leo/typed/syntax-typed
   leo/testing)
 
+(struct argument-binding (
+  (type : Type))
+  #:transparent
+  #:type-name ArgumentBinding)
+
 (struct constant-binding (
   (symbol : Symbol)
   (type : Type)
@@ -29,7 +34,7 @@
   #:transparent
   #:type-name FunctionBinding)
 
-(define-type Binding (U ConstantBinding FunctionBinding))
+(define-type Binding (U ArgumentBinding ConstantBinding FunctionBinding))
 
 ; -------------------------------------------------------------
 
