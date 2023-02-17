@@ -34,5 +34,9 @@
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (datum->syntax #f (cons `vector (filter syntax-is-dynamic? $args)))
+    (let (($dynamic-args (filter syntax-is-dynamic? $args)))
+      (cond
+        ((null? $dynamic-args) #`())
+        ((null? (cdr $dynamic-args)) (car $dynamic-args))
+        (else (datum->syntax #f (cons `vector $dynamic-args)))))
     (field-type $symbol (struct-type-body (map syntax-type $args)))))
