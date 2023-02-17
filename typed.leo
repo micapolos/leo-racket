@@ -1,8 +1,5 @@
 #lang leo/typed
 
-"Hello, "
-plus "world!"
-length
-plus pi
-string
-plus " apples."
+point
+  x 20
+  y 30
