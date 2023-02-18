@@ -32,12 +32,13 @@ do
   plus string.length.string
   plus ")"
 
-point:
-  x 10
-  y 20
+numbers: 2 3
 do
-  point.x.fixnum
-  plus point.y.fixnum
-do
-  "x + y = "
-  plus fixnum.string
+  numbers.first.fixnum.string
+  plus " + "
+  plus numbers.second.fixnum.string
+  plus " = "
+  plus
+    numbers.first.fixnum
+    plus numbers.second.fixnum
+    string
