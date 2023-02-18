@@ -1,5 +1,7 @@
 #lang leo
 
+require: racket/unsafe/ops
+
 define
   fixnum
   plus fixnum
@@ -29,3 +31,13 @@ do
   plus " ("
   plus string.length.string
   plus ")"
+
+point:
+  x 10
+  y 20
+do
+  point.x.fixnum
+  plus point.y.fixnum
+do
+  "x + y = "
+  plus fixnum.string
