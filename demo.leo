@@ -1,8 +1,4 @@
 #lang leo
 
-require:
-  racket/math
-  racket/unsafe/ops
-
-pi
-of flonum
+3
+plus 4
