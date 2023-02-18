@@ -76,8 +76,8 @@
       (case $size
         ((0) #`())
         ((1) (car $syntaxes))
-        ((2) (datum->syntax #f (list #`cons (car $syntaxes) (cadr $syntaxes))))
-        (else (datum->syntax #f (cons #`vector $syntaxes)))))
+        ((2) (datum->syntax #f (list `cons (car $syntaxes) (cadr $syntaxes))))
+        (else (datum->syntax #f (cons `vector $syntaxes)))))
     (field-type 
       (syntax-e $identifier) 
       (struct-type-body (map syntax-type $syntaxes)))))

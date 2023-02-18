@@ -8,11 +8,14 @@
     (module-begin #%module-begin)))
 
 (require
-  (for-syntax racket/base))
+  (for-syntax 
+    racket/base
+    leo/typed/compile))
  
 (define-syntax (module-begin $syntax)
   (syntax-case $syntax ()
-    ((_ expr ...)
-      #`(#%module-begin 
-        (provide (all-defined-out))
-        expr ...))))
+    ((_ body ...)
+      (let* (($syntaxes (syntax-e #`(body ...))))
+        #`(#%module-begin 
+          (provide (all-defined-out))
+          #,@$syntaxes)))))
