@@ -108,7 +108,12 @@
   (type-list-select
     ($type-list : (Listof Type))
     ($selector : Type)) : (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
-  (type-list-select-from $type-list $selector 0))
+  (cond
+    ((and (equal? $selector (symbol-type `first)) (>= (length $type-list) 1))
+      (cons 0 (list-ref $type-list 0)))
+    ((and (equal? $selector (symbol-type `second)) (>= (length $type-list) 2))
+      (cons 1 (list-ref $type-list 1)))
+    (else (type-list-select-from $type-list $selector 0))))
 
 (define (struct-type-body-select
     ($struct-type-body : StructTypeBody)
@@ -160,3 +165,15 @@
     (list number-type (symbol-type `foo))
     (symbol-type `number))
   (cons 0 number-type))
+
+(check-equal?
+  (type-list-select
+    (list number-type string-type)
+    (symbol-type `first))
+  (cons 0 number-type))
+
+(check-equal?
+  (type-list-select
+    (list number-type string-type)
+    (symbol-type `second))
+  (cons 1 string-type))

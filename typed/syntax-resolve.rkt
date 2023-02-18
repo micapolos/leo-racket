@@ -25,7 +25,8 @@
     ($args : (Listof Syntax))) : (Option Syntax)
   (cond
     ((= (length $args) 1)
-      (syntax-get (car $args) (symbol-type $symbol)))
+      (define $arg (car $args))
+      (syntax-get $arg (symbol-type $symbol)))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
     (else #f)))

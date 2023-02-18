@@ -1,8 +1,4 @@
 #lang leo
 
-define
-  string.exclamate
-  does exclamate.string.plus "!"
-
-"Hello"
-exclamate
+foo: 10 20
+second
