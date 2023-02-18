@@ -16,8 +16,10 @@
     ((equal? $type $selector) #t)
     ((equal? $selector (symbol-type `boolean)) 
       (equal? $type boolean-type))
-    ((equal? $selector (symbol-type `number)) 
-      (equal? $type number-type))
+    ((equal? $selector (symbol-type `fixnum)) 
+      (equal? $type fixnum-type))
+    ((equal? $selector (symbol-type `flonum)) 
+      (equal? $type flonum-type))
     ((equal? $selector (symbol-type `string)) 
       (equal? $type string-type))
     ((equal? $selector (symbol-type `function)) 
@@ -47,8 +49,11 @@
 (check-equal? (type-selects? boolean-type (symbol-type `boolean)) #t)
 (check-equal? (type-selects? boolean-type (symbol-type `not-boolean)) #f)
 
-(check-equal? (type-selects? number-type (symbol-type `number)) #t)
-(check-equal? (type-selects? number-type (symbol-type `not-number)) #f)
+(check-equal? (type-selects? fixnum-type (symbol-type `fixnum)) #t)
+(check-equal? (type-selects? fixnum-type (symbol-type `not-fixnum)) #f)
+
+(check-equal? (type-selects? flonum-type (symbol-type `flonum)) #t)
+(check-equal? (type-selects? flonum-type (symbol-type `not-flonum)) #f)
 
 (check-equal? (type-selects? string-type (symbol-type `string)) #t)
 (check-equal? (type-selects? string-type (symbol-type `not-string)) #f)
@@ -136,9 +141,9 @@
 
 (check-equal?
   (type-list-select
-    (list number-type (symbol-type `foo) string-type)
-    (symbol-type `number))
-  (cons 0 number-type))
+    (list fixnum-type (symbol-type `foo) string-type)
+    (symbol-type `fixnum))
+  (cons 0 fixnum-type))
 
 (check-equal?
   (type-list-select
@@ -160,15 +165,15 @@
 
 (check-equal?
   (type-list-select
-    (list number-type)
-    (symbol-type `number))
-  (cons 0 number-type))
+    (list fixnum-type)
+    (symbol-type `fixnum))
+  (cons 0 fixnum-type))
 
 (check-equal?
   (type-list-select
-    (list number-type (symbol-type `foo))
-    (symbol-type `number))
-  (cons 0 number-type))
+    (list fixnum-type (symbol-type `foo))
+    (symbol-type `fixnum))
+  (cons 0 fixnum-type))
 
 (check-equal?
   (type-list-select

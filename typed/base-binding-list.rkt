@@ -14,34 +14,62 @@
 (define binding:pi
   (constant-binding 
     `pi
-    number-type 
+    flonum-type 
     #`pi))
 
-(define binding:+
+(define binding:fx+
   (function-binding 
     `plus 
-    (list number-type number-type) 
+    (list fixnum-type fixnum-type) 
     number-type
-    #`+))
+    #`unsafe-fx+))
 
-(define binding:-
+(define binding:fl+
+  (function-binding 
+    `plus 
+    (list flonum-type flonum-type) 
+    number-type
+    #`unsafe-fl+))
+
+(define binding:fx-
   (function-binding 
     `minus 
-    (list number-type number-type) 
+    (list fixnum-type fixnum-type) 
     number-type
-    #`-))
+    #`unsafe-fx-))
 
-(define binding:*
+(define binding:fl-
+  (function-binding 
+    `minus 
+    (list flonum-type flonum-type) 
+    number-type
+    #`unsafe-fl-))
+
+(define binding:fx*
   (function-binding 
     `times
-    (list number-type number-type) 
+    (list fixnum-type fixnum-type) 
     number-type
-    #`*))
+    #`unsafe-fx*))
 
-(define binding:number->string
+(define binding:fl*
+  (function-binding 
+    `times
+    (list flonum-type flonum-type) 
+    number-type
+    #`unsafe-fl*))
+
+(define binding:fx->string
   (function-binding 
     `string 
-    (list number-type) 
+    (list fixnum-type) 
+    string-type
+    #`number->string))
+
+(define binding:fl->string
+  (function-binding 
+    `string 
+    (list flonum-type) 
     string-type
     #`number->string))
 
@@ -56,22 +84,26 @@
   (function-binding 
     `length 
     (list string-type) 
-    number-type
+    fixnum-type
     #`string-length))
 
 (define base-binding-list
   (list
     binding:pi
-    binding:+
-    binding:-
-    binding:*
-    binding:number->string
+    binding:fx+
+    binding:fl+
+    binding:fx-
+    binding:fl-
+    binding:fx*
+    binding:fl*
+    binding:fx->string
+    binding:fl->string
     binding:string-append
     binding:string-length))
 
 (check-equal?
   (syntax-typed-datum (binding-list-apply-symbol base-binding-list `pi))
-  (typed `pi number-type))
+  (typed `pi flonum-type))
 
 (check-equal?
   (syntax-typed-datum
