@@ -4,9 +4,6 @@ define
   number
   dodać string
   does
-    number.string
+    dodać.number.string
     plus " "
-    plus string
-
-10
-dodać "sdf"
+    plus dodać.string

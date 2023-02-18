@@ -14,6 +14,7 @@
   leo/typed/base-binding-list
   leo/typed/syntax-match
   leo/typed/syntax-typed
+  leo/typed/syntax-resolve
   leo/typed/type-parse
   leo/typed/syntax-type
   leo/testing)
@@ -190,9 +191,13 @@
               (define $arg-tmps
                 (generate-temporaries 
                   (make-list (length $dynamic-arg-types) `tmp)))
-              (define $argument-bindings 
-                (map argument-binding $dynamic-arg-types $arg-tmps))
-              (define $body-binding-list (append $argument-bindings $binding-list))
+              (define $argument-binding
+                (argument-binding
+                  $type
+                  (symbol-args-make
+                    $symbol 
+                    (map syntax-with-type $arg-tmps $dynamic-arg-types))))
+              (define $body-binding-list (cons $argument-binding $binding-list))
               (define $typed-body (binding-list-syntax $body-binding-list $body))
               (define $return-type (syntax-type $typed-body))
               (define $fn (car (generate-temporaries `(fn))))
