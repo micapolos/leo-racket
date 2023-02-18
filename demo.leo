@@ -32,7 +32,7 @@ do
   plus string.length.string
   plus ")"
 
-numbers: 2 3
+numbers: 10 20
 do
   numbers.first.fixnum.string
   plus " + "
