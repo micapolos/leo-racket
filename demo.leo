@@ -1,4 +1,7 @@
 #lang leo
 
-3
-plus 4
+define
+  fixnum
+  dodać fixnum
+  giving fixnum
+  does 1

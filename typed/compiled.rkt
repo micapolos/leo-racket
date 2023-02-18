@@ -208,9 +208,24 @@
       (define $arg (cadr (syntax-e $syntax)))
       (cond
         ((syntax-symbol-arg-arg? $arg `does) 
-          (define $args (cdr (syntax-e $arg)))
-          (define $type (syntax-parse-type (car $args)))
-          (define $body (cadr $args))
+          (define $does-args (cdr (syntax-e $arg)))
+          (define $does-lhs (car $does-args))
+          (define $does-rhs (cadr $does-args))
+          (define-values
+            ($type $return-type)
+            (cond
+              ((syntax-symbol-arg-arg? $does-lhs `giving) 
+                (define $giving-args (cdr (syntax-e $does-lhs)))
+                (define $giving-lhs (car $giving-args))
+                (define $giving-rhs (cadr $giving-args))
+                (values 
+                  (syntax-parse-type $giving-lhs) 
+                  (syntax-parse-type $giving-rhs)))
+              (else 
+                (values 
+                  (syntax-parse-type $does-lhs) 
+                  #f))))
+          (define $body $does-rhs)
           (cond 
             ((and (field-type? $type) (struct-type-body? (field-type-body $type)))
               (define $symbol (field-type-symbol $type))
@@ -226,12 +241,22 @@
                     (map syntax-with-type $arg-tmps $dynamic-arg-types))))
               (define $body-binding-list (cons $argument-binding $binding-list))
               (define $typed-body (binding-list-syntax $body-binding-list $body))
-              (define $return-type (syntax-type $typed-body))
+              (define $body-return-type (syntax-type $typed-body))
+              (when 
+                (and
+                  $return-type 
+                  (not (equal? $body-return-type $return-type)))
+                (error 
+                  (format 
+                    "Expression: ~a, type: ~a, expected type: ~a"
+                    (syntax-e $body)
+                    $body-return-type 
+                    $return-type)))
               (define $fn (type-generate-temporary $type))
               (compiled-plus-syntax
                 (compiled-plus-binding
                   $compiled
-                  (function-binding $symbol $arg-types $return-type $fn))
+                  (function-binding $symbol $arg-types $body-return-type $fn))
                 (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body))))
             (else #f)))
         (else 
