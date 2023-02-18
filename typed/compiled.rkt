@@ -4,7 +4,9 @@
 
 (require
   racket/function
+  racket/list
   leo/typed/option
+  leo/typed/type-utils
   leo/typed/type
   leo/typed/typed
   leo/typed/types
@@ -184,9 +186,13 @@
             ((and (field-type? $type) (struct-type-body? (field-type-body $type)))
               (define $symbol (field-type-symbol $type))
               (define $arg-types (struct-type-body-type-list (field-type-body $type)))
-              (define $tmp-arg (car (generate-temporaries `(tmp))))
-              (define $argument-binding (argument-binding $type $tmp-arg))
-              (define $body-binding-list (cons $argument-binding $binding-list))
+              (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
+              (define $arg-tmps
+                (generate-temporaries 
+                  (make-list (length $dynamic-arg-types) `tmp)))
+              (define $argument-bindings 
+                (map argument-binding $dynamic-arg-types $arg-tmps))
+              (define $body-binding-list (append $argument-bindings $binding-list))
               (define $typed-body (binding-list-syntax $body-binding-list $body))
               (define $return-type (syntax-type $typed-body))
               (define $fn (car (generate-temporaries `(fn))))
@@ -194,7 +200,7 @@
                 (compiled-plus-binding
                   $compiled
                   (function-binding $symbol $arg-types $return-type $fn))
-                (datum->syntax #f `(define ,$fn ,$typed-body))))
+                (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body))))
             (else #f)))
         (else 
           (define $value (binding-list-syntax $binding-list $arg))
@@ -206,63 +212,3 @@
               (argument-binding $type $tmp))
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
-
-; -------------------------------------------------------------------
-
-; (define
-;   (compiled-plus-define-syntax
-;     ($compiled : Compiled)
-;     ($syntax : Syntax)) : (Option Compiled)
-;   (define $bindings (compiled-bindings $compiled))
-;   (cond
-;     ((syntax-symbol-arg? $syntax `define)
-;       (define $define-syntax (cadr (syntax-e $syntax)))
-;       (cond
-;         ((syntax-symbol-arg-arg? $define-syntax `is) 
-;           (define $is-lhs (cadr (syntax-e $define-syntax)))
-;           (define $is-rhs (caddr (syntax-e $define-syntax)))
-;           (cond 
-;             ((syntax-symbol-arg-arg? $is-lhs `giving)
-;               (define $native-rhs 
-;                 (and 
-;                   (syntax-symbol-arg? $is-rhs `native)
-;                   (cadr (syntax-e $is-rhs))))
-;               (define $giving-lhs (cadr (syntax-e $is-lhs)))
-;               (define $giving-rhs (caddr (syntax-e $is-lhs)))
-;               (define $lhs-type (syntax-parse-type $giving-lhs))
-;               (define $rhs-type (syntax-parse-type $giving-rhs))
-;               (define $arrow-type (arrow-type (list $lhs-type) (list $rhs-type)))
-;               (define $function? (not (identifier? $giving-lhs)))
-;               (define $binding-type
-;                 (if $function? $lhs-type (symbol-type (syntax-e $giving-lhs))))
-;               (define $expected-body-type
-;                 (if $function? $arrow-type $rhs-type))
-;               (define $body 
-;                 (or 
-;                   (and $native-rhs (syntax-with-type $native-rhs $expected-body-type))
-;                   (bindings-syntax $bindings $is-rhs)))
-;               (define $actual-type (syntax-type $body))
-;               (if (equal? $actual-type $expected-body-type)
-;                 $actual-type
-;                 (error 
-;                   (format 
-;                     "type error, expected: ~a, actual: ~a"
-;                     $expected-body-type
-;                     $actual-type)))
-;               ; TODO: Check that
-;               ; - $is-rhs has no type, assuming it's native
-;               ; - $is-rhs has type, and it matches
-;               (define $binding 
-;                 (binding 
-;                   $binding-type
-;                   $body
-;                   $function?))
-;               (compiled-plus-binding $compiled $binding))
-;             (else (error (format "Illegal is lhs ~a" $is-lhs)))))
-;         ((syntax-symbol-arg-arg? $define-syntax `does) 
-;           (define $lhs (cadr (syntax-e $define-syntax)))
-;           (define $rhs (caddr (syntax-e $define-syntax)))
-;           (define $lhs-type (syntax-parse-type $lhs))
-;           $compiled)
-;         (else (error (format "Illegal define ~a" $define-syntax)))))
-;     (else #f)))

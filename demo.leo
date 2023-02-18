@@ -1,6 +1,12 @@
 #lang leo
 
-define pi 3.14159
+define
+  number
+  dodać string
+  does
+    number.string
+    plus " "
+    plus string
 
-pi.number
-plus 123
+10
+dodać "sdf"
