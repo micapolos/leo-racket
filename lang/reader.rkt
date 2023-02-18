@@ -17,6 +17,5 @@
  
 (define (leo-read-syntax src port)
   (strip-context
-    #`(module leo racket/base
-      (provide (all-defined-out))
+    #`(module leo leo/lang/expander
       #,@(anys-compile (read-leo-stxs port src)))))
