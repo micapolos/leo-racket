@@ -10,6 +10,7 @@
   leo/typed/type
   leo/typed/typed
   leo/typed/types
+  leo/typed/type-generate-temporary
   leo/typed/binding
   leo/typed/base-binding-list
   leo/typed/syntax-match
@@ -142,12 +143,12 @@
   : (Option Syntax)
   (and
     (syntax-symbol-arg-arg? $syntax `do)
-    (let* (($tmp-syntax (car (generate-temporaries `(tmp))))
-           ($syntax-e (syntax-e $syntax))
+    (let* (($syntax-e (syntax-e $syntax))
            ($expr-syntax (cadr $syntax-e))
            ($body-syntax (caddr $syntax-e))
            ($expr-typed-syntax (binding-list-syntax $binding-list $expr-syntax))
            ($expr-type (syntax-type $expr-typed-syntax))
+           ($tmp-syntax (type-generate-temporary $expr-type))
            ($body-binding-list (cons (argument-binding $expr-type $tmp-syntax) $binding-list))
            ($body-typed-syntax (binding-list-syntax $body-binding-list $body-syntax))
            ($body-type (syntax-type $body-typed-syntax)))
@@ -164,8 +165,8 @@
       null
       #`(do 1 number))
     syntax-typed-datum)
-  ; TODO: Fix this test, generated tmp1 is not guaranteed.
-  (typed `(let ((tmp1 1)) tmp1) number-type))
+  ; TODO: Fix this test, generated number1 is not guaranteed.
+  (typed `(let ((number1 1)) number1) number-type))
 
 ; ---------------------------------------------------------------
 
@@ -189,8 +190,7 @@
               (define $arg-types (struct-type-body-type-list (field-type-body $type)))
               (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
               (define $arg-tmps
-                (generate-temporaries 
-                  (make-list (length $dynamic-arg-types) `tmp)))
+                (map type-generate-temporary $dynamic-arg-types))
               (define $argument-binding
                 (argument-binding
                   $type
@@ -200,7 +200,7 @@
               (define $body-binding-list (cons $argument-binding $binding-list))
               (define $typed-body (binding-list-syntax $body-binding-list $body))
               (define $return-type (syntax-type $typed-body))
-              (define $fn (car (generate-temporaries `(fn))))
+              (define $fn (type-generate-temporary $type))
               (compiled-plus-typed-syntax
                 (compiled-plus-binding
                   $compiled
@@ -210,7 +210,7 @@
         (else 
           (define $value (binding-list-syntax $binding-list $arg))
           (define $type (syntax-type $value))
-          (define $tmp (car (generate-temporaries `(tmp))))
+          (define $tmp (type-generate-temporary $type))
           (compiled-plus-typed-syntax
             (compiled-plus-binding
               $compiled
