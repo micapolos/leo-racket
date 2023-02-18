@@ -21,42 +21,42 @@
   (function-binding 
     `plus 
     (list fixnum-type fixnum-type) 
-    number-type
+    fixnum-type
     #`unsafe-fx+))
 
 (define binding:fl+
   (function-binding 
     `plus 
     (list flonum-type flonum-type) 
-    number-type
+    flonum-type
     #`unsafe-fl+))
 
 (define binding:fx-
   (function-binding 
     `minus 
     (list fixnum-type fixnum-type) 
-    number-type
+    fixnum-type
     #`unsafe-fx-))
 
 (define binding:fl-
   (function-binding 
     `minus 
     (list flonum-type flonum-type) 
-    number-type
+    flonum-type
     #`unsafe-fl-))
 
 (define binding:fx*
   (function-binding 
     `times
     (list fixnum-type fixnum-type) 
-    number-type
+    fixnum-type
     #`unsafe-fx*))
 
 (define binding:fl*
   (function-binding 
     `times
     (list flonum-type flonum-type) 
-    number-type
+    flonum-type
     #`unsafe-fl*))
 
 (define binding:fx->string
@@ -85,7 +85,7 @@
     `length 
     (list string-type) 
     fixnum-type
-    #`string-length))
+    #`unsafe-string-length))
 
 (define base-binding-list
   (list

@@ -273,7 +273,7 @@
       (list 
         (syntax-with-type #`x 
           (field-type `id (struct-type-body (list number-type string-type)))))))
-  (typed `(cdr x) string-type))
+  (typed `(unsafe-cdr x) string-type))
 
 (check-equal?
   (syntax-typed-datum

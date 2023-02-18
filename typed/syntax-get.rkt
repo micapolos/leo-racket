@@ -40,13 +40,13 @@
                         (caddr (syntax-e $syntax))))
                     (else 
                       (list 
-                        (if (= $index 0) `car `cdr)
+                        (if (= $index 0) `unsafe-car `unsafe-cdr)
                         $syntax))))
                 (else 
                   (cond 
                     ((syntax-symbol-args? $syntax `vector)
                       (list-ref (syntax-e $syntax) (+ $index 1)))
-                    (else (list `vector-ref $syntax $index)))))))
+                    (else (list `unsafe-vector-ref $syntax $index)))))))
           $type))))))
 
 (check-equal?
@@ -67,7 +67,7 @@
         (field-type `foo (struct-type-body (list number-type string-type))))
       (symbol-type `string))
     syntax-typed-datum)
-  (typed `(cdr foo) string-type))
+  (typed `(unsafe-cdr foo) string-type))
 
 (check-equal?
   (option-map
@@ -87,7 +87,7 @@
         (field-type `foo (struct-type-body (list number-type string-type boolean-type))))
       (symbol-type `string))
     syntax-typed-datum)
-  (typed `(vector-ref foo 1) string-type))
+  (typed `(unsafe-vector-ref foo 1) string-type))
 
 (check-equal?
   (option-map
@@ -117,7 +117,7 @@
         (field-type `foo (struct-type-body (list number-type (symbol-type `foo) string-type))))
       (symbol-type `string))
     syntax-typed-datum)
-  (typed `(cdr foo) string-type))
+  (typed `(unsafe-cdr foo) string-type))
 
 (check-equal?
   (option-map
@@ -131,7 +131,7 @@
               (field-type `y (struct-type-body (list number-type)))))))
       (symbol-type `y))
     syntax-typed-datum)
-  (typed `(cdr foo) (field-type `y (struct-type-body (list number-type)))))
+  (typed `(unsafe-cdr foo) (field-type `y (struct-type-body (list number-type)))))
 
 (check-equal?
   (option-map

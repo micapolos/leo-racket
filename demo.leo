@@ -1,4 +1,7 @@
 #lang leo
 
-10.0
-plus 20.0
+10
+plus 20
+plus
+  "Hello"
+  length
