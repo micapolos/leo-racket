@@ -1,9 +1,8 @@
 #lang leo
 
 define
-  number
-  dodać string
-  does
-    dodać.number.string
-    plus " "
-    plus dodać.string
+  string.exclamate
+  does exclamate.string.plus "!"
+
+"Hello"
+exclamate
