@@ -1,4 +1,11 @@
 #lang leo
 
-foo: 10 20
-second
+define
+  number
+  dodać number
+  does
+    dodać.first.number
+    plus dodać.second.number
+
+10
+dodać 20

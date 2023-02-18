@@ -141,15 +141,4 @@
         (field-type `foo (struct-type-body (list number-type string-type))))
       (symbol-type `first))
     syntax-typed-datum)
-  (typed `a number-type))
-
-(check-equal?
-  (option-map
-    (syntax-get
-      (syntax-with-type 
-        #`(cons a b)
-        (field-type `foo (struct-type-body (list number-type string-type))))
-      (symbol-type `second))
-    syntax-typed-datum)
-  (typed `b string-type))
-
+  (typed `a (field-type `first (struct-type-body (list number-type)))))

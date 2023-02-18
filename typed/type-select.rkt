@@ -110,9 +110,13 @@
     ($selector : Type)) : (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
   (cond
     ((and (equal? $selector (symbol-type `first)) (>= (length $type-list) 1))
-      (cons 0 (list-ref $type-list 0)))
+      (cons 
+        0 
+        (field-type `first (struct-type-body (list (list-ref $type-list 0))))))
     ((and (equal? $selector (symbol-type `second)) (>= (length $type-list) 2))
-      (cons 1 (list-ref $type-list 1)))
+      (cons 
+        1 
+        (field-type `second (struct-type-body (list (list-ref $type-list 1))))))
     (else (type-list-select-from $type-list $selector 0))))
 
 (define (struct-type-body-select
@@ -170,10 +174,10 @@
   (type-list-select
     (list number-type string-type)
     (symbol-type `first))
-  (cons 0 number-type))
+  (cons 0 (field-type `first (struct-type-body (list number-type)))))
 
 (check-equal?
   (type-list-select
     (list number-type string-type)
     (symbol-type `second))
-  (cons 1 string-type))
+  (cons 1 (field-type `second (struct-type-body (list string-type)))))
