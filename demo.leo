@@ -3,5 +3,6 @@
 define
   fixnum
   dodać fixnum
-  giving fixnum
-  does 1
+  does
+    dodać.first.fixnum
+    plus dodać.second.fixnum
