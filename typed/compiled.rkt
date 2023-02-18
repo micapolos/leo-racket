@@ -92,7 +92,12 @@
             (and 
               $do-syntax
               (compiled-plus-typed-syntax $compiled $do-syntax)))
+          (let (($of-syntax (syntax-parse-of $syntax)))
+            (and 
+              $of-syntax
+              (compiled-plus-typed-syntax $compiled $of-syntax)))
           (compiled-parse-define $compiled $syntax)
+          (compiled-parse-require $compiled $syntax)
           (cond
             ((syntax-identifier-args? $syntax)
               (define $identifier (car $syntax-e))
@@ -174,6 +179,24 @@
 
 ; ---------------------------------------------------------------
 
+(define (syntax-parse-of ($syntax : Syntax)) : (Option Syntax)
+  (cond
+    ((syntax-symbol-arg-arg? $syntax `of)
+      (define $syntax-e (syntax-e $syntax))
+      (define $native-syntax (cadr $syntax-e))
+      (define $type-syntax (caddr $syntax-e))
+      (define $type (syntax-parse-type $type-syntax))
+      (syntax-with-type $native-syntax $type))
+    (else #f)))
+
+(check-equal?
+  (option-map
+    (syntax-parse-of #`(of pi flonum))
+    syntax-typed-datum)
+  (typed `pi flonum-type))
+
+; ---------------------------------------------------------------
+
 (define 
   (compiled-parse-define
     ($compiled : Compiled)
@@ -221,3 +244,17 @@
               (argument-binding $type $tmp))
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
+
+; --------------------------------------------------------------------
+
+(define 
+  (compiled-parse-require
+    ($compiled : Compiled)
+    ($syntax : Syntax))
+  : (Option Compiled)
+  (cond
+    ((syntax-symbol-args? $syntax `require)
+      (compiled-plus-typed-syntax $compiled $syntax))
+    (else #f)))
+
+

@@ -13,7 +13,8 @@
     (cond
       ((equal? $syntax-e `boolean) boolean-type)
       ((equal? $syntax-e `string) string-type)
-      ((equal? $syntax-e `number) number-type)
+      ((equal? $syntax-e `fixnum) fixnum-type)
+      ((equal? $syntax-e `flonum) flonum-type)
       ((symbol? $syntax-e) (field-type $syntax-e void-type-body))
       ((list? $syntax-e) (syntaxes-parse-type $syntax-e))
       (else (error (format "type parse error ~v" $syntax))))))
@@ -70,11 +71,11 @@
               (list? $syntaxes)
               (equal? (length $syntaxes) 3)
               (equal? (syntax-e (car $syntaxes)) `giving))
-            (doing-syntaxes-parse-arrow-type (cdr $syntaxes)))
+            (giving-syntaxes-parse-arrow-type (cdr $syntaxes)))
           (else (error "Function syntax error")))))
     (else (error "Function syntax error"))))
 
-(define (doing-syntaxes-parse-arrow-type
+(define (giving-syntaxes-parse-arrow-type
   ($syntaxes : (Listof Syntax))) : ArrowType
   (cond
     ((equal? (length $syntaxes) 2)
@@ -99,26 +100,27 @@
   (choice-type-body (map syntax-parse-type $syntaxes)))
 
 (check-equal? (syntax-parse-type #`boolean) boolean-type)
-(check-equal? (syntax-parse-type #`number) number-type)
+(check-equal? (syntax-parse-type #`fixnum) fixnum-type)
+(check-equal? (syntax-parse-type #`flonum) flonum-type)
 (check-equal? (syntax-parse-type #`string) string-type)
 (check-equal? (syntax-parse-type #`foo) (field-type `foo void-type-body))
 
 (check-equal? 
-  (syntax-parse-type #`(foo boolean number string)) 
+  (syntax-parse-type #`(foo boolean fixnum string)) 
   (field-type `foo 
-    (struct-type-body (list boolean-type number-type string-type))))
+    (struct-type-body (list boolean-type fixnum-type string-type))))
 
 (check-equal?
-  (syntax-parse-type #`(id (number number) (string string)))
+  (syntax-parse-type #`(id (fixnum fixnum) (string string)))
   (field-type `id 
     (struct-type-body
       (list 
-        (field-type `number (struct-type-body (list number-type)))
+        (field-type `fixnum (struct-type-body (list fixnum-type)))
         (field-type `string (struct-type-body (list string-type)))))))
 
 (check-equal?
-  (syntax-parse-type #`(function (giving number string)))
-  (arrow-type (list number-type) (list string-type)))
+  (syntax-parse-type #`(function (giving fixnum string)))
+  (arrow-type (list fixnum-type) (list string-type)))
 
 ; (check-equal?
 ;   (syntax-parse-type #`(foo (choice boolean number string)))
