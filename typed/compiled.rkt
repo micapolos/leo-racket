@@ -175,14 +175,36 @@
   (cond
     ((syntax-symbol-arg? $syntax `define)
       (define $arg (cadr (syntax-e $syntax)))
-      (define $value (binding-list-syntax $binding-list $arg))
-      (define $type (syntax-type $value))
-      (define $tmp (car (generate-temporaries `(tmp))))
-      (compiled-plus-typed-syntax
-        (compiled-plus-binding
-          $compiled
-          (argument-binding $type $tmp))
-        (datum->syntax #f `(define ,$tmp ,$value))))
+      (cond
+        ((syntax-symbol-arg-arg? $arg `does) 
+          (define $args (cdr (syntax-e $arg)))
+          (define $type (syntax-parse-type (car $args)))
+          (define $body (cadr $args))
+          (cond 
+            ((and (field-type? $type) (struct-type-body? (field-type-body $type)))
+              (define $symbol (field-type-symbol $type))
+              (define $arg-types (struct-type-body-type-list (field-type-body $type)))
+              (define $tmp-arg (car (generate-temporaries `(tmp))))
+              (define $argument-binding (argument-binding $type $tmp-arg))
+              (define $body-binding-list (cons $argument-binding $binding-list))
+              (define $typed-body (binding-list-syntax $body-binding-list $body))
+              (define $return-type (syntax-type $typed-body))
+              (define $fn (car (generate-temporaries `(fn))))
+              (compiled-plus-typed-syntax
+                (compiled-plus-binding
+                  $compiled
+                  (function-binding $symbol $arg-types $return-type $fn))
+                (datum->syntax #f `(define ,$fn ,$typed-body))))
+            (else #f)))
+        (else 
+          (define $value (binding-list-syntax $binding-list $arg))
+          (define $type (syntax-type $value))
+          (define $tmp (car (generate-temporaries `(tmp))))
+          (compiled-plus-typed-syntax
+            (compiled-plus-binding
+              $compiled
+              (argument-binding $type $tmp))
+            (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
 
 ; -------------------------------------------------------------------

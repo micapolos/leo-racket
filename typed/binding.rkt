@@ -17,7 +17,7 @@
 
 (struct argument-binding (
   (type : Type)
-  (identifier : Identifier))
+  (syntax : Syntax))
   #:transparent
   #:type-name ArgumentBinding)
 
@@ -143,9 +143,9 @@
   : (Option Syntax)
   (define $type (argument-binding-type $argument-binding))
   (define $given-type (field-type `given (struct-type-body (list $type))))
-  (define $identifier (argument-binding-identifier $argument-binding))
+  (define $syntax (argument-binding-syntax $argument-binding))
   (syntax-get 
-    (syntax-with-type $identifier $given-type)
+    (syntax-with-type $syntax $given-type)
     (symbol-type $symbol)))
 
 (check-equal?
