@@ -253,11 +253,11 @@
                     $body-return-type 
                     $return-type)))
               (define $fn (type-generate-temporary $type))
+              (define $binding (function-binding $symbol $arg-types $body-return-type $fn))
+              (define $compiled-syntax (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body)))
               (compiled-plus-syntax
-                (compiled-plus-binding
-                  $compiled
-                  (function-binding $symbol $arg-types $body-return-type $fn))
-                (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body))))
+                (compiled-plus-binding $compiled $binding)
+                $compiled-syntax))
             (else #f)))
         (else 
           (define $value (binding-list-syntax $binding-list $arg))
