@@ -239,25 +239,39 @@
                   (symbol-args-make
                     $symbol 
                     (map syntax-with-type $arg-tmps $dynamic-arg-types))))
-              (define $body-binding-list (cons $argument-binding $binding-list))
-              (define $typed-body (binding-list-syntax $body-binding-list $body))
-              (define $body-return-type (syntax-type $typed-body))
-              (when 
-                (and
-                  $return-type 
-                  (not (equal? $body-return-type $return-type)))
-                (error 
-                  (format 
-                    "Expression: ~a, type: ~a, expected type: ~a"
-                    (syntax-e $body)
-                    $body-return-type 
-                    $return-type)))
-              (define $fn (type-generate-temporary $type))
-              (define $binding (function-binding $symbol $arg-types $body-return-type $fn))
-              (define $compiled-syntax (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body)))
-              (compiled-plus-syntax
-                (compiled-plus-binding $compiled $binding)
-                $compiled-syntax))
+              (cond 
+                ((syntax-symbol-arg? $body `native)
+                  (unless $return-type (error "native requires type"))
+                  (define $native-args (cdr (syntax-e $body)))
+                  (define $native-body (car $native-args))
+                  (unless (identifier? $native-body)
+                    (error "native must be identifier"))
+                  (define $native-type $return-type) ; this is a lie
+                  (define $binding 
+                    (function-binding $symbol $arg-types $return-type $native-body))
+                  (compiled-plus-binding $compiled $binding))
+                (else 
+                  (define $body-binding-list (cons $argument-binding $binding-list))
+                  (define $typed-body (binding-list-syntax $body-binding-list $body))
+                  (define $body-return-type (syntax-type $typed-body))
+                  (when 
+                    (and
+                      $return-type 
+                      (not (equal? $body-return-type $return-type)))
+                    (error 
+                      (format 
+                        "Expression: ~a, type: ~a, expected type: ~a"
+                        (syntax-e $body)
+                        $body-return-type 
+                        $return-type)))
+                  (define $fn (type-generate-temporary $type))
+                  (define $binding 
+                    (function-binding $symbol $arg-types $body-return-type $fn))
+                  (define $compiled-syntax 
+                    (datum->syntax #f `(define (,$fn ,@$arg-tmps) ,$typed-body)))
+                  (compiled-plus-syntax
+                    (compiled-plus-binding $compiled $binding)
+                    $compiled-syntax))))
             (else #f)))
         (else 
           (define $value (binding-list-syntax $binding-list $arg))

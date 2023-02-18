@@ -3,6 +3,8 @@
 define
   fixnum
   dodać fixnum
-  does
-    dodać.first.fixnum
-    plus dodać.second.fixnum
+  giving fixnum
+  does native unsafe-fx+
+
+2
+dodać 3
