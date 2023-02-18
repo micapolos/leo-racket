@@ -1,8 +1,6 @@
 #lang leo
 
-"Hello, "
-plus "world!"
-do
-  "("
-  plus string
-  plus ")"
+define pi 3.14159
+
+pi.number
+times pi.number

@@ -84,6 +84,7 @@
             (and 
               $do-syntax
               (compiled-plus-typed-syntax $compiled $do-syntax)))
+          (compiled-parse-define $compiled $syntax)
           (cond
             ((syntax-identifier-args? $syntax)
               (define $identifier (car $syntax-e))
@@ -162,6 +163,27 @@
     syntax-typed-datum)
   ; TODO: Fix this test, generated tmp1 is not guaranteed.
   (typed `(let ((tmp1 1)) tmp1) number-type))
+
+; ---------------------------------------------------------------
+
+(define 
+  (compiled-parse-define
+    ($compiled : Compiled)
+    ($syntax : Syntax))
+  : (Option Compiled)
+  (define $binding-list (compiled-binding-list $compiled))
+  (cond
+    ((syntax-symbol-arg? $syntax `define)
+      (define $arg (cadr (syntax-e $syntax)))
+      (define $value (binding-list-syntax $binding-list $arg))
+      (define $type (syntax-type $value))
+      (define $tmp (car (generate-temporaries `(tmp))))
+      (compiled-plus-typed-syntax
+        (compiled-plus-binding
+          $compiled
+          (argument-binding $type $tmp))
+        (datum->syntax #f `(define ,$tmp ,$value))))
+    (else #f)))
 
 ; -------------------------------------------------------------------
 
