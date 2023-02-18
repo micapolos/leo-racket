@@ -3,7 +3,7 @@
 (require
   racket/class
   racket/gui/base
-  leo/lang/base
+  leo/script/lang/base
   pict)
 
 (define (invoke-preserving-transformation drawing-context function)

@@ -1,4 +1,4 @@
-#lang leo
+#lang leo/script
 
 require:
   pict/color

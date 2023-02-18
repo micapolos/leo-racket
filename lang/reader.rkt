@@ -2,7 +2,9 @@
 
 (require 
   syntax/strip-context
-  leo/core/syntax)
+  leo/script/core/syntax
+  leo/typed/syntax-match
+  leo/typed/compile)
  
 (provide 
   (rename-out 
@@ -15,12 +17,6 @@
  
 (define (leo-read-syntax src port)
   (strip-context
-    #`(module leo racket/base
+    #`(module leo racket
       (provide (all-defined-out))
-      (require
-        racket/bool
-        racket/function
-        leo/lang/base
-        leo/testing
-        (for-syntax racket/base))
-      #,@(read-leo-stxs port src))))
+      #,@(anys-compile (read-leo-stxs port src)))))

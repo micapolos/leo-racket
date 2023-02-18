@@ -2,7 +2,7 @@
 
 (require 
   syntax/strip-context
-  leo/core/syntax)
+  leo/script/core/syntax)
  
 (provide 
   (rename-out 
@@ -17,4 +17,10 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
+      (require
+        racket/bool
+        racket/function
+        leo/script/lang/base
+        leo/testing
+        (for-syntax racket/base))
       #,@(read-leo-stxs port src))))

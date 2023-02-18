@@ -1,4 +1,4 @@
-#lang leo/core
+#lang leo/script/core
 
 require:
   leo/testing
