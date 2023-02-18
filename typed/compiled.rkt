@@ -12,7 +12,6 @@
   leo/typed/types
   leo/typed/type-generate-temporary
   leo/typed/binding
-  leo/typed/base-binding-list
   leo/typed/syntax-match
   leo/typed/syntax-typed
   leo/typed/syntax-resolve
@@ -28,7 +27,6 @@
   #:type-name Compiled)
 
 (define null-compiled (compiled null null))
-(define base-compiled (compiled base-binding-list null))
 
 (define 
   (compiled-with-syntax-list

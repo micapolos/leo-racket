@@ -14,7 +14,7 @@
   (reverse 
     (compiled-syntax-list
       (compiled-parse-syntax-list
-        base-compiled 
+        null-compiled 
         $syntax-list))))
 
 (define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
