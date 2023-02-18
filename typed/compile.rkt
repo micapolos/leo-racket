@@ -13,7 +13,7 @@
 (define (syntaxes-compile ($syntax-list : (Listof Syntax))) : (Listof Syntax)
   (reverse 
     (compiled-syntax-list
-      (compiled-plus-syntax-list
+      (compiled-parse-syntax-list
         base-compiled 
         $syntax-list))))
 

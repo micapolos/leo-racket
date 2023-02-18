@@ -50,7 +50,7 @@
     (cons $binding (compiled-binding-list $compiled))))
 
 (define 
-  (compiled-plus-typed-syntax 
+  (compiled-plus-syntax 
     ($compiled : Compiled)
     ($syntax : Syntax)) : Compiled
   (compiled-with-syntax-list
@@ -58,7 +58,7 @@
     (cons $syntax (compiled-syntax-list $compiled))))
 
 (define
-  (compiled-plus-syntax
+  (compiled-parse-syntax
     ($compiled : Compiled)
     ($syntax : Syntax)) : Compiled
   (let* (($binding-list (compiled-binding-list $compiled))
@@ -67,23 +67,23 @@
       ((null? $syntax-e) 
         (error "null syntax???"))
       ((boolean? $syntax-e)
-        (compiled-plus-typed-syntax 
+        (compiled-plus-syntax 
           $compiled
           (syntax-with-type $syntax boolean-type)))
       ((fixnum? $syntax-e)
-        (compiled-plus-typed-syntax
+        (compiled-plus-syntax
           $compiled
           (syntax-with-type $syntax fixnum-type)))
       ((flonum? $syntax-e)
-        (compiled-plus-typed-syntax
+        (compiled-plus-syntax
           $compiled
           (syntax-with-type $syntax flonum-type)))
       ((string? $syntax-e)
-        (compiled-plus-typed-syntax
+        (compiled-plus-syntax
           $compiled
           (syntax-with-type $syntax string-type)))
       ((symbol? $syntax-e)
-        (compiled-plus-typed-syntax
+        (compiled-plus-syntax
           $compiled
           (binding-list-apply-symbol $binding-list $syntax-e)))
       (else
@@ -91,11 +91,11 @@
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
             (and 
               $do-syntax
-              (compiled-plus-typed-syntax $compiled $do-syntax)))
+              (compiled-plus-syntax $compiled $do-syntax)))
           (let (($of-syntax (syntax-parse-of $syntax)))
             (and 
               $of-syntax
-              (compiled-plus-typed-syntax $compiled $of-syntax)))
+              (compiled-plus-syntax $compiled $of-syntax)))
           (compiled-parse-define $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
           (cond
@@ -107,7 +107,7 @@
                 ((equal? $symbol `function)
                   (error "TODO: function"))
                 (else
-                  (compiled-plus-typed-syntax
+                  (compiled-plus-syntax
                     $compiled
                     (binding-list-apply-symbol-args
                       $binding-list
@@ -116,12 +116,12 @@
             (else (error (format "Syntax error ~a" $syntax)))))))))
 
 (define 
-  (compiled-plus-syntax-list
+  (compiled-parse-syntax-list
     ($compiled : Compiled)
     ($syntax-list : (Listof Syntax))) : Compiled
   (foldl
     (lambda (($syntax : Syntax) ($compiled : Compiled))
-      (compiled-plus-syntax $compiled $syntax))
+      (compiled-parse-syntax $compiled $syntax))
     $compiled
     $syntax-list))
 
@@ -139,7 +139,7 @@
     ($binding-list : (Listof Binding))
     ($syntax : Syntax)) : Syntax
   (compiled-syntax
-    (compiled-plus-syntax
+    (compiled-parse-syntax
       (compiled $binding-list null)
       $syntax)))
 
@@ -228,7 +228,7 @@
               (define $typed-body (binding-list-syntax $body-binding-list $body))
               (define $return-type (syntax-type $typed-body))
               (define $fn (type-generate-temporary $type))
-              (compiled-plus-typed-syntax
+              (compiled-plus-syntax
                 (compiled-plus-binding
                   $compiled
                   (function-binding $symbol $arg-types $return-type $fn))
@@ -238,7 +238,7 @@
           (define $value (binding-list-syntax $binding-list $arg))
           (define $type (syntax-type $value))
           (define $tmp (type-generate-temporary $type))
-          (compiled-plus-typed-syntax
+          (compiled-plus-syntax
             (compiled-plus-binding
               $compiled
               (argument-binding $type $tmp))
@@ -254,7 +254,7 @@
   : (Option Compiled)
   (cond
     ((syntax-symbol-args? $syntax `require)
-      (compiled-plus-typed-syntax $compiled $syntax))
+      (compiled-plus-syntax $compiled $syntax))
     (else #f)))
 
 
