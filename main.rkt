@@ -10,12 +10,14 @@
 (require
   (for-syntax 
     racket/base
+    racket/function
+    syntax/strip-context
     leo/typed/compile))
  
 (define-syntax (module-begin $syntax)
   (syntax-case $syntax ()
     ((_ body ...)
-      (let* (($syntaxes (syntax-e #`(body ...))))
+      (let* (($syntaxes (map (curry replace-context $syntax) (syntax-e #`(body ...)))))
         #`(#%module-begin 
           (provide (all-defined-out))
           #,@$syntaxes)))))

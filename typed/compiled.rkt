@@ -160,10 +160,10 @@
            ($body-typed-syntax (binding-list-syntax $body-binding-list $body-syntax))
            ($body-type (syntax-type $body-typed-syntax)))
       (syntax-with-type
-        (datum->syntax #f 
-          `(let 
-            ((,$tmp-syntax ,$expr-typed-syntax))
-            ,$body-typed-syntax))
+        (datum->syntax $syntax 
+          (list `let 
+            (list (list $tmp-syntax $expr-typed-syntax))
+            $body-typed-syntax))
         $body-type))))
 
 (check-equal?
