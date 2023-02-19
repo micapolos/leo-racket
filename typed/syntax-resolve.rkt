@@ -35,4 +35,4 @@
   (symbol-args-make 
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : Syntax
-  (typed-field-syntax (datum->syntax #f $symbol) $args))
+  (typed-field-syntax $symbol $args))

@@ -46,7 +46,7 @@
               ($cdr (map syntax->typed (cdr $datum))))
           (cond
             ((identifier? $car)
-              (typed-field-syntax $car $cdr))
+              (typed-field-syntax (syntax-e $car) $cdr))
             (else (error "jajko")))))
       (else (error "dupa")))))
 
@@ -68,7 +68,7 @@
 
 (define 
   (typed-field-syntax
-    ($identifier : Identifier) 
+    ($symbol : Symbol) 
     ($syntaxes : (Listof Syntax))) : Syntax
   (syntax-with-type
     (let (($syntaxes (filter syntax-is-dynamic? $syntaxes))
@@ -79,19 +79,19 @@
         ((2) (datum->syntax #f (list `cons (car $syntaxes) (cadr $syntaxes))))
         (else (datum->syntax #f (cons `vector $syntaxes)))))
     (field-type 
-      (syntax-e $identifier) 
+      $symbol
       (struct-type-body (map syntax-type $syntaxes)))))
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax #`foo null))
+    (typed-field-syntax `foo null))
   (typed 
     `()
     (field-type `foo (struct-type-body null))))
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax #`x 
+    (typed-field-syntax `x 
       (list 
         (syntax-with-type #`1 number-type))))
   (typed 
@@ -102,7 +102,7 @@
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax #`tuple 
+    (typed-field-syntax `tuple 
       (list 
         (syntax-with-type #`a number-type)
         (syntax-with-type #`b string-type))))
@@ -114,7 +114,7 @@
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax #`tuple 
+    (typed-field-syntax `tuple 
       (list 
         (syntax-with-type #`a number-type)
         (syntax-with-type #`b string-type)
@@ -127,7 +127,7 @@
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax #`tuple 
+    (typed-field-syntax `tuple 
       (list 
         (syntax-with-type #`a number-type)
         (syntax-with-type #`b string-type))))
