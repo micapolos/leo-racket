@@ -24,14 +24,18 @@
   (if (syntax? $any) $any (error (format "not a syntax ~v" $any))))
 
 (define (cast-syntax ($syntax : (Syntaxof Any))) : Syntax
-  (let (($syntax-e (syntax-e $syntax)))
+  (let (($ctx $syntax)
+        ($srcloc $syntax)
+        ($syntax-e (syntax-e $syntax)))
     (cond
-      ((symbol? $syntax-e) (datum->syntax $syntax $syntax-e))
-      ((number? $syntax-e) (datum->syntax $syntax $syntax-e))
-      ((string? $syntax-e) (datum->syntax $syntax $syntax-e))
+      ((symbol? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
+      ((number? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
+      ((string? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
       ((list? $syntax-e)
-        (datum->syntax $syntax 
-          (map cast-syntax (map cast-syntax-any $syntax-e))))
+        (datum->syntax 
+          $ctx 
+          (map cast-syntax (map cast-syntax-any $syntax-e))
+          $srcloc))
       (else (error (format "not a syntax ~v" $syntax))))))
 
 (define-type Thunk (Pairof Identifier (Listof Syntax)))
