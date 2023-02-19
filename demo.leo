@@ -2,11 +2,63 @@
 
 require: racket/unsafe/ops
 
+define pi 3.14
+
 define
   fixnum
   plus fixnum
   giving fixnum
   does native unsafe-fx+
+
+define
+  fixnum
+  minus fixnum
+  giving fixnum
+  does native unsafe-fx-
+
+define
+  fixnum
+  times fixnum
+  giving fixnum
+  does native unsafe-fx*
+
+define
+  fixnum.string
+  giving string
+  does native number->string
+
+define
+  flonum
+  plus flonum
+  giving flonum
+  does native unsafe-fl+
+
+define
+  flonum
+  minus flonum
+  giving flonum
+  does native unsafe-fl-
+
+define
+  flonum
+  times flonum
+  giving flonum
+  does native unsafe-fl*
+
+define
+  flonum.string
+  giving string
+  does native number->string
+
+define
+  flonum.fixnum
+  giving fixnum
+  does native unsafe-fl->fx
+
+define
+  fixnum.flonum
+  giving flonum
+  does native unsafe-fx->fl
 
 define
   string
@@ -18,11 +70,6 @@ define
   string.length
   giving fixnum
   does native string-length
-
-define
-  fixnum.string
-  giving string
-  does native number->string
 
 "Hello, "
 plus "world!"
@@ -45,9 +92,12 @@ do
 
 point:
   center point:
-    x 10
-    y 20
-  radius 30
+    x 10.0
+    y 20.0
+  radius 30.0
 do
-  point.center.point.x.fixnum
-  plus 100
+  point.center.point.x.flonum
+  plus 100.0
+  plus pi.flonum
+  string
+  plus "!!!"
