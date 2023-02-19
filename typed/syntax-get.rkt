@@ -16,6 +16,7 @@
 
 (define (syntax-get ($syntax : Syntax) ($selector : Type)) : (Option Syntax)
   (define $type (syntax-type $syntax))
+  (define $ctx $syntax)
   (and
     (field-type? $type)
     (struct-type-body? (field-type-body $type))
@@ -40,13 +41,13 @@
                         (caddr (syntax-e $syntax))))
                     (else 
                       (list 
-                        (if (= $index 0) `unsafe-car `unsafe-cdr)
+                        (if (= $index 0) #`unsafe-car #`unsafe-cdr)
                         $syntax))))
                 (else 
                   (cond 
                     ((syntax-symbol-args? $syntax `vector)
                       (list-ref (syntax-e $syntax) (+ $index 1)))
-                    (else (list `unsafe-vector-ref $syntax $index)))))))
+                    (else (list #`unsafe-vector-ref $syntax $index)))))))
           $type))))))
 
 (check-equal?

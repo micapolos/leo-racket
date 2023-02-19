@@ -42,3 +42,12 @@ do
     numbers.first.fixnum
     plus numbers.second.fixnum
     string
+
+point:
+  center point:
+    x 10
+    y 20
+  radius 30
+do
+  point.center.point.x.fixnum
+  plus 100
