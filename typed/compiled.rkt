@@ -397,73 +397,68 @@
     ($syntax : Syntax))
   : (Option Syntax)
   (cond
-    ((or (syntax-symbol-arg-arg? $syntax `doing) (syntax-symbol-arg-arg? $syntax `lambda))
-      (define $doing-args (cdr (syntax-e $syntax)))
-      (define $doing-lhs (car $doing-args))
-      (define $doing-rhs (cadr $doing-args))
+    ((or (syntax-symbol-arg-args? $syntax `doing) (syntax-symbol-arg-args? $syntax `lambda))
+      (define $doing-reverse-args (reverse (cdr (syntax-e $syntax))))
+      (define $doing-lhss (reverse (cdr $doing-reverse-args)))
+      (define $doing-rhs (car $doing-reverse-args))
+      (define $doing-lhs (and (= (length $doing-lhss) 1) (car $doing-lhss)))
       (define-values
-        ($type $return-type)
+        ($arg-types $return-type)
         (cond
-          ((or 
-            (syntax-symbol-arg-arg? $doing-lhs `giving) 
-            (syntax-symbol-arg-arg? $doing-lhs `->))
-            (define $giving-args (cdr (syntax-e $doing-lhs)))
-            (define $giving-lhs (car $giving-args))
-            (define $giving-rhs (cadr $giving-args))
+          (
+            (and 
+              $doing-lhs 
+              (or 
+                (syntax-symbol-arg-args? $doing-lhs `giving) 
+                (syntax-symbol-arg-args? $doing-lhs `->)))
+            (define $giving-reverse-args (reverse (cdr (syntax-e $doing-lhs))))
+            (define $giving-lhss (reverse (cdr $giving-reverse-args)))
+            (define $giving-rhs (car $giving-reverse-args))
             (values 
-              (syntax-parse-type $giving-lhs) 
+              (map syntax-parse-type $giving-lhss) 
               (syntax-parse-type $giving-rhs)))
           (else 
             (values 
-              (syntax-parse-type $doing-lhs) 
+              (map syntax-parse-type $doing-lhss) 
               #f))))
       (define $body $doing-rhs)
+      (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
+      (define $arg-tmps
+        (map type-generate-temporary $dynamic-arg-types))
+      (define $typed-arg-tmps
+        (map syntax-with-type $arg-tmps $dynamic-arg-types))
+      (define $argument-bindings
+        (map
+          argument-binding
+          $dynamic-arg-types $typed-arg-tmps))
       (cond 
-        ((and (field-type? $type) (struct-type-body? (field-type-body $type)))
-          (define $symbol (field-type-symbol $type))
-          (define $arg-types (struct-type-body-type-list (field-type-body $type)))
-          (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
-          (define $arg-tmps
-            (map type-generate-temporary $dynamic-arg-types))
-          (define $argument-binding
-            (argument-binding
-              $type
-              (symbol-args-make
-                $symbol 
-                (map syntax-with-type $arg-tmps $dynamic-arg-types))))
-          (cond 
-            ((syntax-symbol-arg? $body `native)
-              (unless $return-type (error "native requires type"))
-              (define $native-args (cdr (syntax-e $body)))
-              (define $native-body (car $native-args))
-              (unless (identifier? $native-body)
-                (error "native must be identifier"))
-              (define $native-type $return-type) ; the is a lie
-              (syntax-with-type
-                $native-body
-                (arrow-type 
-                  (list (field-type $symbol (struct-type-body $arg-types)))
-                  (list $return-type))))
-            (else 
-              (define $body-binding-list (cons $argument-binding $binding-list))
-              (define $typed-body (binding-list-syntax $body-binding-list $body))
-              (define $body-return-type (syntax-type $typed-body))
-              (when 
-                (and
-                  $return-type 
-                  (not (equal? $body-return-type $return-type)))
-                (error 
-                  (format 
-                    "Expression: ~a, type: ~a, expected type: ~a"
-                    (syntax-e $body)
-                    $body-return-type 
-                    $return-type)))
-              (syntax-with-type
-                (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
-                (arrow-type 
-                  (list (field-type $symbol (struct-type-body $arg-types)))
-                  (list $body-return-type))))))
-        (else #f)))
+        ((syntax-symbol-arg? $body `native)
+          (unless $return-type (error "native requires type"))
+          (define $native-args (cdr (syntax-e $body)))
+          (define $native-body (car $native-args))
+          (unless (identifier? $native-body)
+            (error "native must be identifier"))
+          (define $native-type $return-type) ; the is a lie
+          (syntax-with-type
+            $native-body
+            (arrow-type $arg-types (list $return-type))))
+        (else 
+          (define $body-binding-list (append $argument-bindings $binding-list))
+          (define $typed-body (binding-list-syntax $body-binding-list $body))
+          (define $body-return-type (syntax-type $typed-body))
+          (when 
+            (and
+              $return-type 
+              (not (equal? $body-return-type $return-type)))
+            (error 
+              (format 
+                "Expression: ~a, type: ~a, expected type: ~a"
+                (syntax-e $body)
+                $body-return-type 
+                $return-type)))
+          (syntax-with-type
+            (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
+            (arrow-type $arg-types (list $body-return-type))))))
     (else #f)))
 
 ; ----------------------------------------------------------------------
@@ -489,9 +484,9 @@
   (typed 1.0 flonum-type))
 
 (check-equal?
-  (compile-typed #`(doing (plus number string) (number plus)))
+  (compile-typed #`(doing number string number))
   (typed 
     `(#%plain-lambda (number2 string3) number2)
     (arrow-type
-      (list (field-type `plus (struct-type-body (list number-type string-type))))
+      (list number-type string-type)
       (list number-type))))

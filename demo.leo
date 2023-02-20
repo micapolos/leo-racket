@@ -199,15 +199,14 @@ do
     string
 check-equal? "10 + 20 = 30"
 
-number
-double
+the: string number
 doing
-  double.number
-  plus double.number
-apply
-  10
-  double
-check-equal? 20
+  string
+  append " ("
+  append number.string
+  append ")"
+apply: "Hello" 10
+check-equal? "Hello (10)"
 
 ; racket syntax
 (check-equal? (plus 1 2) 3)
