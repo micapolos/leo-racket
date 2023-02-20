@@ -459,7 +459,7 @@
                     $body-return-type 
                     $return-type)))
               (syntax-with-type
-                (datum->syntax #f `(lambda (,@$arg-tmps) ,$typed-body))
+                (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
                 (arrow-type 
                   (list (field-type $symbol (struct-type-body $arg-types)))
                   (list $body-return-type))))))
@@ -491,7 +491,7 @@
 (check-equal?
   (compile-typed #`(doing (plus number string) (number plus)))
   (typed 
-    `(lambda (number2 string3) number2)
+    `(#%plain-lambda (number2 string3) number2)
     (arrow-type
       (list (field-type `plus (struct-type-body (list number-type string-type))))
       (list number-type))))
