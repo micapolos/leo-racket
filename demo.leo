@@ -128,8 +128,8 @@ check-equal? 2
 define
   number.squared
   does
-    squared.number
-    times squared.number
+    number
+    times number
 
 16
 squared
@@ -140,7 +140,7 @@ define
   area
   does
     pi.number
-    times area.circle.radius.number.squared
+    times circle.radius.number.squared
 
 circle radius 10
 area
@@ -170,7 +170,7 @@ check-equal? 3
 define
   string.exclamate
   does
-    exclamate.string
+    string
     append "!!!"
 
 "Hello"

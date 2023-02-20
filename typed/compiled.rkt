@@ -307,12 +307,12 @@
               (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
               (define $arg-tmps
                 (map type-generate-temporary $dynamic-arg-types))
-              (define $argument-binding
-                (argument-binding
-                  $type
-                  (symbol-args-make
-                    $symbol 
-                    (map syntax-with-type $arg-tmps $dynamic-arg-types))))
+              (define $typed-arg-tmps
+                (map syntax-with-type $arg-tmps $dynamic-arg-types))
+              (define $argument-bindings
+                (map
+                  argument-binding
+                  $dynamic-arg-types $typed-arg-tmps))
               (cond 
                 ((syntax-symbol-arg? $body `native)
                   (unless $return-type (error "native requires type"))
@@ -325,7 +325,7 @@
                     (function-binding $symbol $arg-types $return-type $native-body))
                   (compiled-plus-binding $compiled $binding))
                 (else 
-                  (define $body-binding-list (cons $argument-binding $binding-list))
+                  (define $body-binding-list (append $argument-bindings $binding-list))
                   (define $typed-body (binding-list-syntax $body-binding-list $body))
                   (define $body-return-type (syntax-type $typed-body))
                   (when 
