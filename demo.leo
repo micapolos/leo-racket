@@ -116,7 +116,7 @@ do
   plus pi.number
   string.exclamate
 
-; lisp syntax
+; racket syntax
 (plus 1 2)
 (append "Hello, " "world!")
 (circle (center (point 10 20)) (radius 30))
