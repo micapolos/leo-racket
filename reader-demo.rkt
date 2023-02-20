@@ -1,4 +1,4 @@
-#lang reader leo/reader
+#lang reader leo
 
 string-append:
   "Hello"
