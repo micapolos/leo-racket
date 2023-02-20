@@ -2,8 +2,9 @@
 
 require racket/math
 
-define zero 0
-define one 0
+bind zero 0
+
+bind one 0
 
 define
   pi
@@ -44,8 +45,15 @@ define
   giving number
   does native string-length
 
+define
+  string.exclamate
+  does
+    exclamate.string
+    plus "!!!"
+
 "Hello, "
-plus "world!"
+plus "world"
+exclamate
 do
   string
   plus " ("
