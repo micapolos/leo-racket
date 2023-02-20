@@ -7,7 +7,7 @@
   leo/typed/types
   leo/typed/option
   leo/typed/type-utils
-  leo/testing)
+  leo/typed/testing)
 
 ; ------------------------------------------------------------------
 

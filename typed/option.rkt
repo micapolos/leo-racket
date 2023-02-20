@@ -3,7 +3,7 @@
 (provide (all-defined-out))
 
 (require 
-  leo/testing
+  leo/typed/testing
   (for-syntax racket/base))
 
 (define #:forall (T) (option-ref ($any : (Option T))) : T

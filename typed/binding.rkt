@@ -13,7 +13,7 @@
   leo/typed/typed
   leo/typed/syntax-resolve
   leo/typed/syntax-typed
-  leo/testing)
+  leo/typed/testing)
 
 (struct argument-binding (
   (type : Type)

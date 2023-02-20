@@ -5,7 +5,7 @@
 (require 
   leo/typed/type
   leo/typed/types
-  leo/testing)
+  leo/typed/testing)
 
 (define (type-symbol ($type : Type)) : (Option Symbol)
   (cond

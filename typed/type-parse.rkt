@@ -6,7 +6,7 @@
   leo/typed/option
   leo/typed/type
   leo/typed/types
-  leo/testing)
+  leo/typed/testing)
 
 (define (syntax-parse-type ($syntax : Syntax)) : Type
   (let (($syntax-e (syntax-e $syntax)))

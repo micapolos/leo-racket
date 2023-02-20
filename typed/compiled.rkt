@@ -17,7 +17,7 @@
   leo/typed/syntax-resolve
   leo/typed/type-parse
   leo/typed/syntax-type
-  leo/testing)
+  leo/typed/testing)
 
 (struct compiled 
   (

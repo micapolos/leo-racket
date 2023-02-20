@@ -4,7 +4,7 @@
 
 (require 
   leo/typed/option
-  leo/testing
+  leo/typed/testing
   leo/typed/type
   leo/typed/syntax-type
   leo/typed/typed

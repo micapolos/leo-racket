@@ -4,7 +4,7 @@
 
 (require 
   leo/typed/type 
-  leo/testing)
+  leo/typed/testing)
 
 (define (type-matches? (actual : Type) (expected : Type)) : Boolean
   (equal? actual expected))

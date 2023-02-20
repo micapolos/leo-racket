@@ -5,7 +5,7 @@
 (require 
   leo/typed/type
   leo/typed/type-symbol
-  leo/testing)
+  leo/typed/testing)
 
 (define (type-generate-temporary ($type : Type)) : Identifier
   (define $symbol (type-symbol $type))

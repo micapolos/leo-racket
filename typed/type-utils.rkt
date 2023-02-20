@@ -3,7 +3,7 @@
 (provide (all-defined-out))
 
 (require 
-  leo/testing
+  leo/typed/testing
   leo/typed/type
   leo/typed/types)
 

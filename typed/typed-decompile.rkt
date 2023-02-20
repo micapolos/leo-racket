@@ -5,7 +5,7 @@
 (require 
   leo/typed/type
   leo/typed/typed
-  leo/testing)
+  leo/typed/testing)
 
 (define (typed-decompile ($typed : (Typed Any))) : Any
   (define $type (typed-type $typed))

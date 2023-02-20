@@ -12,7 +12,7 @@
   leo/typed/typed
   leo/typed/syntax-typed
   leo/typed/syntax-match
-  leo/testing)
+  leo/typed/testing)
 
 (define (syntax-get ($syntax : Syntax) ($selector : Type)) : (Option Syntax)
   (define $type (syntax-type $syntax))

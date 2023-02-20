@@ -1,4 +1,4 @@
-#lang racket/base
+#lang typed/racket/base
 
 (provide (all-defined-out))
 
@@ -20,7 +20,7 @@
           #,actual-value
           #,expected-value)))))
 
-(define (check $srcloc $expr $actual $expected)
+(define (check ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
   (unless (equal? $actual $expected)
     (error 
       (format 
@@ -33,9 +33,11 @@
           "expected:   ~v\n"
           "------------------"
           )
-        (and $srcloc (srcloc-source $srcloc))
-        (and $srcloc (srcloc-line $srcloc))
-        (and $srcloc (srcloc-column $srcloc))
+        (srcloc-source (cast $srcloc srcloc))
+        (srcloc-line (cast $srcloc srcloc))
+        (srcloc-column (cast $srcloc srcloc))
         $expr
         $actual
         $expected))))
+
+(check-equal? (+ 1 2 ) 3)

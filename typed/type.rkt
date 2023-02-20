@@ -2,7 +2,7 @@
 
 (provide (all-defined-out))
 
-(require leo/testing)
+(require leo/typed/testing)
 
 (define-type Type
   (U 

@@ -12,7 +12,7 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed
   leo/typed/type-parse
-  leo/testing)
+  leo/typed/testing)
 
 (define 
   (symbol-make 
