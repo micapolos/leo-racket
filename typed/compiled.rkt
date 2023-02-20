@@ -91,6 +91,7 @@
               $of-syntax
               (compiled-plus-syntax $compiled $of-syntax)))
           (compiled-parse-define $compiled $syntax)
+          (compiled-parse-bind $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
           (cond
             ((syntax-identifier-args? $syntax)
@@ -341,9 +342,24 @@
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
 
-(compiled-parse-define
-  null-compiled
-  #`(define (is pi 3.14)))
+(define 
+  (compiled-parse-bind
+    ($compiled : Compiled)
+    ($syntax : Syntax))
+  : (Option Compiled)
+  (define $binding-list (compiled-binding-list $compiled))
+  (cond
+    ((syntax-symbol-arg? $syntax `bind)
+      (define $arg (cadr (syntax-e $syntax)))
+      (define $value (binding-list-syntax $binding-list $arg))
+      (define $type (syntax-type $value))
+      (define $tmp (type-generate-temporary $type))
+      (compiled-plus-syntax
+        (compiled-plus-binding
+          $compiled
+          (argument-binding $type $tmp))
+        (datum->syntax #f `(define ,$tmp ,$value))))
+    (else #f)))
 
 ; --------------------------------------------------------------------
 

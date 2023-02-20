@@ -1,7 +1,9 @@
 #lang leo
 
-require:
-  racket/math
+require racket/math
+
+define zero 0
+define one 0
 
 define
   pi
