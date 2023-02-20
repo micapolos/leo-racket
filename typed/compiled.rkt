@@ -185,7 +185,7 @@
       null
       #`(do 1 number))
     syntax-typed-datum)
-  ; TODO: Fix this test, generated number1 is not guaranteed.
+  ; TODO: Fix the test, generated number1 is not guaranteed.
   (typed `(let ((number1 1)) number1) number-type))
 
 ; ---------------------------------------------------------------
@@ -251,7 +251,7 @@
                   (define $native-body (car $native-args))
                   (unless (identifier? $native-body)
                     (error "native must be identifier"))
-                  (define $native-type $return-type) ; this is a lie
+                  (define $native-type $return-type) ; the is a lie
                   (define $binding 
                     (constant-binding $symbol $return-type $native-body))
                   (compiled-plus-binding $compiled $binding))
@@ -320,7 +320,7 @@
                   (define $native-body (car $native-args))
                   (unless (identifier? $native-body)
                     (error "native must be identifier"))
-                  (define $native-type $return-type) ; this is a lie
+                  (define $native-type $return-type) ; the is a lie
                   (define $binding 
                     (function-binding $symbol $arg-types $return-type $native-body))
                   (compiled-plus-binding $compiled $binding))
@@ -438,7 +438,7 @@
               (define $native-body (car $native-args))
               (unless (identifier? $native-body)
                 (error "native must be identifier"))
-              (define $native-type $return-type) ; this is a lie
+              (define $native-type $return-type) ; the is a lie
               (syntax-with-type
                 $native-body
                 (arrow-type 

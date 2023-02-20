@@ -93,14 +93,11 @@
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
-     ((equal? $identifier `this) (leo-append-this-rhs $leo $rhs))
+     ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
      (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
-(define (leo-append-this-rhs $leo $rhs)
-   (leo-append $leo $rhs))
-
 (define (leo-append-the-rhs $leo $rhs)
-  (leo-append $leo (leo-gather $rhs)))
+   (leo-append $leo $rhs))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
   (leo-set-empty-line-from
@@ -463,18 +460,18 @@
 (check-equal? (string->leo-datums "point\nx.number\n") `((number (x point))))
 
 
-(check-equal? (string->leo-datums "this\n") `())
-(check-equal? (string->leo-datums "this 1\n") `(1))
-(check-equal? (string->leo-datums "1\nthis\n") `(1))
-(check-equal? (string->leo-datums "1\nthis 2\n") `(1 2))
-(check-equal? (string->leo-datums "this 1\nthis 2\n") `(1 2))
-(check-equal? (string->leo-datums "this 1\n") `(1))
-(check-equal? (string->leo-datums "this\n  1\n  plus 2\nthis\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
-(check-equal? (string->leo-datums "this:\n") `())
+(check-equal? (string->leo-datums "the\n") `())
+(check-equal? (string->leo-datums "the 1\n") `(1))
+(check-equal? (string->leo-datums "1\nthe\n") `(1))
+(check-equal? (string->leo-datums "1\nthe 2\n") `(1 2))
+(check-equal? (string->leo-datums "the 1\nthe 2\n") `(1 2))
+(check-equal? (string->leo-datums "the 1\n") `(1))
+(check-equal? (string->leo-datums "the\n  1\n  plus 2\nthe\n  3\n  plus 4\n") `((plus 1 2) (plus 3 4)))
+(check-equal? (string->leo-datums "the:\n") `())
 
-(check-equal? (string->leo-datums "this foo\n") `(foo))
-(check-equal? (string->leo-datums "this: foo bar\n") `(foo bar))
-(check-equal? (string->leo-datums "this foo bar\n") `((foo bar)))
+(check-equal? (string->leo-datums "the foo\n") `(foo))
+(check-equal? (string->leo-datums "the: foo bar\n") `(foo bar))
+(check-equal? (string->leo-datums "the foo bar\n") `((foo bar)))
 
-(check-equal? (string->leo-datums "this: 1\n") `(1))
-(check-equal? (string->leo-datums "this: 1 2\n") `(1 2))
+(check-equal? (string->leo-datums "the: 1\n") `(1))
+(check-equal? (string->leo-datums "the: 1 2\n") `(1 2))
