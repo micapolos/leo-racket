@@ -37,8 +37,14 @@ bind zero 0
 bind one 1
 
 bind two
-  one
-  plus one
+  one.number
+  plus one.number
+
+zero.number
+
+one.number
+
+two.number
 
 define
   number.squared
