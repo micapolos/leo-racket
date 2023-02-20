@@ -40,10 +40,6 @@ bind two
   one
   plus one
 
-bind half pi
-  pi
-  times 0.5
-
 define
   number.squared
   does
