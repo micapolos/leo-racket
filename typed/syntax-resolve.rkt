@@ -29,6 +29,10 @@
       (syntax-get $arg (symbol-type $symbol)))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
+    ((and (equal? $symbol `check-equal?) (= (length $args) 2))
+      (syntax-with-type
+        (datum->syntax #f `(,$symbol ,@$args))
+        void-type))
     (else #f)))
 
 (define 

@@ -4,6 +4,7 @@
 
 (require leo/typed/type)
 
+(define void-type (native-type `void))
 (define boolean-type (native-type `boolean))
 (define number-type (native-type `number))
 (define string-type (native-type `string))

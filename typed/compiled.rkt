@@ -192,7 +192,7 @@
 
 ; ---------------------------------------------------------------
 
-(define 
+(define
   (compiled-parse-define
     ($compiled : Compiled)
     ($syntax : Syntax))

@@ -19,5 +19,5 @@
   (strip-context
     #`(module leo racket/base
       (provide (all-defined-out))
-      (require racket/unsafe/ops)
+      (require racket/unsafe/ops leo/testing)
       #,@(anys-compile (read-leo-stxs port src)))))
