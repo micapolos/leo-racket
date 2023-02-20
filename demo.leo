@@ -67,7 +67,7 @@ area
 
 define
   string
-  plus string
+  append string
   giving string
   does native string-append
 
@@ -80,27 +80,27 @@ define
   string.exclamate
   does
     exclamate.string
-    plus "!!!"
+    append "!!!"
 
 "Hello"
 exclamate
 
 "Hello, "
-plus "world"
+append "world"
 exclamate
 do
   string
-  plus " ("
-  plus string.length.string
-  plus ")"
+  append " ("
+  append string.length.string
+  append ")"
 
 numbers: 10 20
 do
   numbers.first.number.string
-  plus " + "
-  plus numbers.second.number.string
-  plus " = "
-  plus
+  append " + "
+  append numbers.second.number.string
+  append " = "
+  append
     numbers.first.number
     plus numbers.second.number
     string
@@ -115,3 +115,8 @@ do
   plus 100.0
   plus pi.number
   string.exclamate
+
+; lisp syntax
+(plus 1 2)
+(append "Hello, " "world!")
+(circle (center (point 10 20)) (radius 30))
