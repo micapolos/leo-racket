@@ -151,10 +151,10 @@
 (check-equal?
   (option-map
     (argument-binding-resolve
-      (argument-binding fixnum-type #`tmp)
-      `fixnum)
+      (argument-binding number-type #`tmp)
+      `number)
     syntax-typed-datum)
-  (typed `tmp fixnum-type))
+  (typed `tmp number-type))
 
 (check-equal?
   (option-map

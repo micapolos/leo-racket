@@ -6,8 +6,6 @@
 
 (define boolean-type (native-type `boolean))
 (define number-type (native-type `number))
-(define fixnum-type (native-type `fixnum))
-(define flonum-type (native-type `flonum))
 (define string-type (native-type `string))
 
 (define void-type-body (struct-type-body null))

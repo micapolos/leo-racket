@@ -55,10 +55,10 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list fixnum-type))))
-      (symbol-type `fixnum))
+        (field-type `foo (struct-type-body (list number-type))))
+      (symbol-type `number))
     syntax-typed-datum)
-  (typed `foo fixnum-type))
+  (typed `foo number-type))
 
 (check-equal?
   (option-map

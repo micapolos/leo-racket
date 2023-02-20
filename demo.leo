@@ -1,69 +1,35 @@
 #lang leo
 
 require:
-  racket/unsafe/ops
   racket/math
 
 define
   pi
-  being flonum.pi
+  being number.pi
   is native pi
 
 define
-  fixnum
-  plus fixnum
-  giving fixnum
-  does native unsafe-fx+
+  number
+  plus number
+  giving number
+  does native +
 
 define
-  fixnum
-  minus fixnum
-  giving fixnum
-  does native unsafe-fx-
+  number
+  minus number
+  giving number
+  does native -
 
 define
-  fixnum
-  times fixnum
-  giving fixnum
-  does native unsafe-fx*
+  number
+  times number
+  giving number
+  does native *
 
 define
-  fixnum.string
+  number.string
   giving string
   does native number->string
-
-define
-  flonum
-  plus flonum
-  giving flonum
-  does native unsafe-fl+
-
-define
-  flonum
-  minus flonum
-  giving flonum
-  does native unsafe-fl-
-
-define
-  flonum
-  times flonum
-  giving flonum
-  does native unsafe-fl*
-
-define
-  flonum.string
-  giving string
-  does native number->string
-
-define
-  flonum.fixnum
-  giving fixnum
-  does native unsafe-fl->fx
-
-define
-  fixnum.flonum
-  giving flonum
-  does native unsafe-fx->fl
 
 define
   string
@@ -73,7 +39,7 @@ define
 
 define
   string.length
-  giving fixnum
+  giving number
   does native string-length
 
 "Hello, "
@@ -86,13 +52,13 @@ do
 
 numbers: 10 20
 do
-  numbers.first.fixnum.string
+  numbers.first.number.string
   plus " + "
-  plus numbers.second.fixnum.string
+  plus numbers.second.number.string
   plus " = "
   plus
-    numbers.first.fixnum
-    plus numbers.second.fixnum
+    numbers.first.number
+    plus numbers.second.number
     string
 
 point:
@@ -101,8 +67,8 @@ point:
     y 20.0
   radius 30.0
 do
-  point.center.point.x.flonum
+  point.center.point.x.number
   plus 100.0
-  plus pi.flonum
+  plus pi.number
   string
   plus "!!!"

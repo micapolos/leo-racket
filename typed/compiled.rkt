@@ -68,14 +68,10 @@
         (compiled-plus-syntax 
           $compiled
           (syntax-with-type $syntax boolean-type)))
-      ((fixnum? $syntax-e)
+      ((number? $syntax-e)
         (compiled-plus-syntax
           $compiled
-          (syntax-with-type $syntax fixnum-type)))
-      ((flonum? $syntax-e)
-        (compiled-plus-syntax
-          $compiled
-          (syntax-with-type $syntax flonum-type)))
+          (syntax-with-type $syntax number-type)))
       ((string? $syntax-e)
         (compiled-plus-syntax
           $compiled
@@ -170,10 +166,10 @@
   (option-map
     (binding-list-parse-do
       null
-      #`(do 1 fixnum))
+      #`(do 1 number))
     syntax-typed-datum)
-  ; TODO: Fix this test, generated fixnum1 is not guaranteed.
-  (typed `(let ((fixnum1 1)) fixnum1) fixnum-type))
+  ; TODO: Fix this test, generated number1 is not guaranteed.
+  (typed `(let ((number1 1)) number1) number-type))
 
 ; ---------------------------------------------------------------
 
@@ -189,9 +185,9 @@
 
 (check-equal?
   (option-map
-    (syntax-parse-of #`(of pi flonum))
+    (syntax-parse-of #`(of pi number))
     syntax-typed-datum)
-  (typed `pi flonum-type))
+  (typed `pi number-type))
 
 ; ---------------------------------------------------------------
 
