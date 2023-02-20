@@ -4,7 +4,7 @@ require racket/math
 
 bind zero 0
 
-bind one 0
+bind one 1
 
 define
   pi
