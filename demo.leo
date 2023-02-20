@@ -1,8 +1,13 @@
 #lang leo
 
-require: racket/unsafe/ops
+require:
+  racket/unsafe/ops
+  racket/math
 
-define pi 3.14
+define
+  pi
+  being flonum.pi
+  is native pi
 
 define
   fixnum

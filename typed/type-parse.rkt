@@ -15,7 +15,7 @@
       ((equal? $syntax-e `string) string-type)
       ((equal? $syntax-e `fixnum) fixnum-type)
       ((equal? $syntax-e `flonum) flonum-type)
-      ((symbol? $syntax-e) (field-type $syntax-e void-type-body))
+      ((symbol? $syntax-e) (symbol-type $syntax-e))
       ((list? $syntax-e) (syntaxes-parse-type $syntax-e))
       (else (error (format "type parse error ~v" $syntax))))))
 
@@ -103,7 +103,7 @@
 (check-equal? (syntax-parse-type #`fixnum) fixnum-type)
 (check-equal? (syntax-parse-type #`flonum) flonum-type)
 (check-equal? (syntax-parse-type #`string) string-type)
-(check-equal? (syntax-parse-type #`foo) (field-type `foo void-type-body))
+(check-equal? (syntax-parse-type #`foo) (symbol-type `foo))
 
 (check-equal? 
   (syntax-parse-type #`(foo boolean fixnum string)) 

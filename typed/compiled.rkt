@@ -206,6 +206,65 @@
       (define $arg (cadr (syntax-e $syntax)))
       (cond
         ((or 
+          (syntax-symbol-arg-arg? $arg `is) 
+          (syntax-symbol-arg-arg? $arg `:=))
+          (define $is-args (cdr (syntax-e $arg)))
+          (define $is-lhs (car $is-args))
+          (define $is-rhs (cadr $is-args))
+          (define-values
+            ($type $return-type)
+            (cond
+              ((or 
+                (syntax-symbol-arg-arg? $is-lhs `being) 
+                (syntax-symbol-arg-arg? $is-lhs `:))
+                (define $being-args (cdr (syntax-e $is-lhs)))
+                (define $being-lhs (car $being-args))
+                (define $being-rhs (cadr $being-args))
+                (values 
+                  (syntax-parse-type $being-lhs) 
+                  (syntax-parse-type $being-rhs)))
+              (else 
+                (values 
+                  (syntax-parse-type $is-lhs) 
+                  #f))))
+          (define $body $is-rhs)
+          (cond 
+            ((symbol-type? $type)
+              (define $symbol (symbol-type-symbol $type))
+              (cond 
+                ((syntax-symbol-arg? $body `native)
+                  (unless $return-type (error "native requires type"))
+                  (define $native-args (cdr (syntax-e $body)))
+                  (define $native-body (car $native-args))
+                  (unless (identifier? $native-body)
+                    (error "native must be identifier"))
+                  (define $native-type $return-type) ; this is a lie
+                  (define $binding 
+                    (constant-binding $symbol $return-type $native-body))
+                  (compiled-plus-binding $compiled $binding))
+                (else 
+                  (define $typed-body (binding-list-syntax $binding-list $body))
+                  (define $body-return-type (syntax-type $typed-body))
+                  (when 
+                    (and
+                      $return-type 
+                      (not (equal? $body-return-type $return-type)))
+                    (error 
+                      (format 
+                        "Expression: ~a, type: ~a, expected type: ~a"
+                        (syntax-e $body)
+                        $body-return-type 
+                        $return-type)))
+                  (define $tmp (type-generate-temporary $type))
+                  (define $binding
+                    (constant-binding $symbol $body-return-type $tmp))
+                  (define $compiled-syntax 
+                    (datum->syntax #f `(define ,$tmp ,$typed-body)))
+                  (compiled-plus-syntax
+                    (compiled-plus-binding $compiled $binding)
+                    $compiled-syntax))))
+            (else (error (format "not a symbol type: ~a" $type)))))
+        ((or 
           (syntax-symbol-arg-arg? $arg `does) 
           (syntax-symbol-arg-arg? $arg `lambda))
           (define $does-args (cdr (syntax-e $arg)))
@@ -285,6 +344,10 @@
               (argument-binding $type $tmp))
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
+
+(compiled-parse-define
+  null-compiled
+  #`(define (is pi 3.14)))
 
 ; --------------------------------------------------------------------
 
