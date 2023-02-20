@@ -205,14 +205,18 @@
     ((syntax-symbol-arg? $syntax `define)
       (define $arg (cadr (syntax-e $syntax)))
       (cond
-        ((syntax-symbol-arg-arg? $arg `does) 
+        ((or 
+          (syntax-symbol-arg-arg? $arg `does) 
+          (syntax-symbol-arg-arg? $arg `lambda))
           (define $does-args (cdr (syntax-e $arg)))
           (define $does-lhs (car $does-args))
           (define $does-rhs (cadr $does-args))
           (define-values
             ($type $return-type)
             (cond
-              ((syntax-symbol-arg-arg? $does-lhs `giving) 
+              ((or 
+                (syntax-symbol-arg-arg? $does-lhs `giving) 
+                (syntax-symbol-arg-arg? $does-lhs `:))
                 (define $giving-args (cdr (syntax-e $does-lhs)))
                 (define $giving-lhs (car $giving-args))
                 (define $giving-rhs (cadr $giving-args))
