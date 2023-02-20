@@ -48,7 +48,7 @@
     ($args : (Listof Syntax)))
   : (Option Syntax)
   (cond
-    ((equal? $symbol `apply) 
+    ((equal? $symbol `apply)
       (error "TODO: function application"))
     (else #f)))
 
