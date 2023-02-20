@@ -46,12 +46,18 @@ define
     squared.number
     times squared.number
 
+16
+squared
+
 define
   circle radius number
   area
   does
     pi.number
-    times area.circle.radius.squared
+    times area.circle.radius.number.squared
+
+circle radius 10
+area
 
 define
   string
@@ -69,6 +75,9 @@ define
   does
     exclamate.string
     plus "!!!"
+
+"Hello"
+exclamate
 
 "Hello, "
 plus "world"
@@ -99,5 +108,4 @@ do
   circle.center.point.x.number
   plus 100.0
   plus pi.number
-  string
-  plus "!!!"
+  string.exclamate
