@@ -94,10 +94,16 @@
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
      ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
+     ((equal? $identifier `parenthesized) (leo-append-parenthesized-rhs $leo $rhs))
      (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
 (define (leo-append-the-rhs $leo $rhs)
-   (leo-append $leo $rhs))
+  (leo-append $leo $rhs))
+
+(define (leo-append-parenthesized-rhs $leo $rhs)
+  (leo-append
+     $leo 
+     (leo-with-value-stx $rhs #`(#,@(leo-stxs $rhs)))))
 
 (define (leo-append-stx-list?-rhs $leo $stx $list? $rhs) 
   (leo-set-empty-line-from
@@ -475,3 +481,8 @@
 
 (check-equal? (string->leo-datums "the: 1\n") `(1))
 (check-equal? (string->leo-datums "the: 1 2\n") `(1 2))
+
+(check-equal? (string->leo-datums "parenthesized\n") `(()))
+(check-equal? (string->leo-datums "parenthesized 1\n") `((1)))
+(check-equal? (string->leo-datums "parenthesized: 1\n") `((1)))
+(check-equal? (string->leo-datums "parenthesized: 1 2\n") `((1 2)))
