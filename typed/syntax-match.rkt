@@ -17,8 +17,9 @@
           ((string? e) e)
           ((list? e) (map any-syntax e))
           ((pair? e) (cons (any-syntax (car e)) (any-syntax (cdr e))))
-          (else (error (format "Not a syntassx: ~v" e))))))
-    (error (error (format "Not a syntaffx: ~v" any)))))
+          (else (error (format "Not a syntassx: ~v" e))))
+        any))
+    (error (error (format "Not a syntax: ~v" any)))))
 
 (define (cast-syntax-any ($any : Any)) : (Syntaxof Any)
   (if (syntax? $any) $any (error (format "not a syntax ~v" $any))))
