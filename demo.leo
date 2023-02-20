@@ -1,6 +1,8 @@
 #lang leo
 
-require racket/math
+require:
+  racket/base
+  racket/math
 
 define
   number
@@ -41,6 +43,19 @@ bind two
 bind half pi
   pi
   times 0.5
+
+define
+  number.squared
+  does
+    squared.number
+    times squared.number
+
+define
+  circle radius number
+  area
+  does
+    pi.number
+    times area.circle.radius.squared
 
 define
   string
