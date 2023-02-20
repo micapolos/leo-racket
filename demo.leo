@@ -199,6 +199,14 @@ do
     string
 check-equal? "10 + 20 = 30"
 
+number
+squared
+doing
+  squared.number
+  times squared.number
+do todo "function application"
+check-equal? todo "function application"
+
 ; racket syntax
 (check-equal? (plus 1 2) 3)
 (check-equal? (append "Hello, " "world!") "Hello, world!")

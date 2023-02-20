@@ -33,10 +33,22 @@
       (syntax-with-type
         (datum->syntax #f `(,$symbol ,@$args))
         void-type))
-    (else #f)))
+    (else 
+      (symbol-args-resolve-apply $symbol $args))))
 
 (define 
   (symbol-args-make 
     ($symbol : Symbol) 
     ($args : (Listof Syntax))) : Syntax
   (typed-field-syntax $symbol $args))
+
+(define
+  (symbol-args-resolve-apply
+    ($symbol : Symbol)
+    ($args : (Listof Syntax)))
+  : (Option Syntax)
+  (cond
+    ((equal? $symbol `apply) 
+      (error "TODO: function application"))
+    (else #f)))
+
