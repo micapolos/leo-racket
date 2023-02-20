@@ -80,6 +80,14 @@
         (compiled-plus-syntax
           $compiled
           (binding-list-apply-symbol $binding-list $syntax-e)))
+      ((and (syntax-symbol-arg? $syntax `fixnum) (fixnum? (syntax-e (cadr $syntax-e))))
+        (compiled-plus-syntax
+          $compiled
+          (syntax-with-type (cadr $syntax-e) fixnum-type)))
+      ((and (syntax-symbol-arg? $syntax `flonum) (flonum? (syntax-e (cadr $syntax-e))))
+        (compiled-plus-syntax
+          $compiled
+          (syntax-with-type (cadr $syntax-e) flonum-type)))
       (else
         (or
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
@@ -126,6 +134,32 @@
     ((null? $syntax-list) #`(void))
     ((null? (cdr $syntax-list)) (car $syntax-list))
     (else (error "TODO: Multi-syntax")))))
+
+(define (compile-syntax ($syntax : Syntax)) : Syntax
+  (compiled-syntax (compiled-parse-syntax null-compiled $syntax)))
+
+(define (compile-typed ($syntax : Syntax))
+  (syntax-typed-datum (compile-syntax $syntax)))
+
+(check-equal?
+  (compile-typed #`#f)
+  (typed #f boolean-type))
+
+(check-equal?
+  (compile-typed #`1)
+  (typed 1 number-type))
+
+(check-equal?
+  (compile-typed #`"foo")
+  (typed "foo" string-type))
+
+(check-equal?
+  (compile-typed #`(fixnum 1))
+  (typed 1 fixnum-type))
+
+(check-equal?
+  (compile-typed #`(flonum 1.0))
+  (typed 1.0 flonum-type))
 
 ; -----------------------------------------------------------------------
 
@@ -372,5 +406,4 @@
     ((syntax-symbol-args? $syntax `require)
       (compiled-plus-syntax $compiled $syntax))
     (else #f)))
-
 

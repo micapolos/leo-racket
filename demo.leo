@@ -1,8 +1,69 @@
 #lang leo
 
 require:
+  racket/unsafe/ops
   racket/base
   racket/math
+
+define
+  fixnum
+  plus fixnum
+  giving fixnum
+  does native unsafe-fx+
+
+fixnum 2
+plus fixnum 3
+check-equal? fixnum 5
+
+define
+  fixnum
+  minus fixnum
+  giving fixnum
+  does native unsafe-fx-
+
+fixnum 5
+minus fixnum 3
+check-equal? fixnum 2
+
+define
+  fixnum
+  times fixnum
+  giving fixnum
+  does native unsafe-fx*
+
+fixnum 2
+times fixnum 3
+check-equal? fixnum 6
+
+define
+  flonum
+  plus flonum
+  giving flonum
+  does native unsafe-fl+
+
+flonum 2.25
+plus flonum 3.5
+check-equal? flonum 5.75
+
+define
+  flonum
+  minus flonum
+  giving flonum
+  does native unsafe-fl-
+
+flonum 5.75
+minus flonum 3.5
+check-equal? flonum 2.25
+
+define
+  flonum
+  times flonum
+  giving flonum
+  does native unsafe-fl*
+
+flonum 2.5
+times flonum 1.25
+check-equal? flonum 3.125
 
 define
   number
