@@ -49,6 +49,26 @@
   : (Option Syntax)
   (cond
     ((equal? $symbol `apply)
-      (error "TODO: function application"))
+      (cond
+        ((null? $args) 
+          (error "apply - no function"))
+        (else 
+          (define $fn-syntax (car $args))
+          (define $fn-args (cdr $args))
+          (define $fn-type (syntax-type $fn-syntax))
+          (unless (arrow-type? $fn-type)
+            (error "apply not a function"))
+          (define $fn-arg-types (map syntax-type $fn-args))
+          (unless (equal? (arrow-type-lhs-types $fn-type) $fn-arg-types)
+            (error 
+              (format 
+                "arrow function type mismatch: ~a ~a"
+                (arrow-type-lhs-types $fn-type) 
+                $fn-arg-types)))
+          (unless (= (length (arrow-type-rhs-types $fn-type)) 1)
+            (error "arrow multi-return not supported"))
+          (syntax-with-type
+            (datum->syntax #f `(#%app ,@$args))
+            (car (arrow-type-rhs-types $fn-type))))))
     (else #f)))
 

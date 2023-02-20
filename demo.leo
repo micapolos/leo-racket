@@ -200,12 +200,14 @@ do
 check-equal? "10 + 20 = 30"
 
 number
-squared
+double
 doing
-  squared.number
-  times squared.number
-do todo "function application"
-check-equal? todo "function application"
+  double.number
+  plus double.number
+apply
+  10
+  double
+check-equal? 20
 
 ; racket syntax
 (check-equal? (plus 1 2) 3)
