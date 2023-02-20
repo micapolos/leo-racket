@@ -94,6 +94,10 @@
             (and 
               $do-syntax
               (compiled-plus-syntax $compiled $do-syntax)))
+          (let (($doing-syntax (binding-list-parse-doing $binding-list $syntax)))
+            (and 
+              $doing-syntax
+              (compiled-plus-syntax $compiled $doing-syntax)))
           (let (($of-syntax (syntax-parse-of $syntax)))
             (and 
               $of-syntax
@@ -140,28 +144,6 @@
 
 (define (compile-typed ($syntax : Syntax))
   (syntax-typed-datum (compile-syntax $syntax)))
-
-(check-equal?
-  (compile-typed #`#f)
-  (typed #f boolean-type))
-
-(check-equal?
-  (compile-typed #`1)
-  (typed 1 number-type))
-
-(check-equal?
-  (compile-typed #`"foo")
-  (typed "foo" string-type))
-
-(check-equal?
-  (compile-typed #`(fixnum 1))
-  (typed 1 fixnum-type))
-
-(check-equal?
-  (compile-typed #`(flonum 1.0))
-  (typed 1.0 flonum-type))
-
-; -----------------------------------------------------------------------
 
 (define
   (binding-list-syntax
@@ -407,3 +389,109 @@
       (compiled-plus-syntax $compiled $syntax))
     (else #f)))
 
+; --------------------------------------------------------------------
+
+(define
+  (binding-list-parse-doing
+    ($binding-list : (Listof Binding))
+    ($syntax : Syntax))
+  : (Option Syntax)
+  (cond
+    ((or (syntax-symbol-arg-arg? $syntax `doing) (syntax-symbol-arg-arg? $syntax `lambda))
+      (define $doing-args (cdr (syntax-e $syntax)))
+      (define $doing-lhs (car $doing-args))
+      (define $doing-rhs (cadr $doing-args))
+      (define-values
+        ($type $return-type)
+        (cond
+          ((or 
+            (syntax-symbol-arg-arg? $doing-lhs `giving) 
+            (syntax-symbol-arg-arg? $doing-lhs `->))
+            (define $giving-args (cdr (syntax-e $doing-lhs)))
+            (define $giving-lhs (car $giving-args))
+            (define $giving-rhs (cadr $giving-args))
+            (values 
+              (syntax-parse-type $giving-lhs) 
+              (syntax-parse-type $giving-rhs)))
+          (else 
+            (values 
+              (syntax-parse-type $doing-lhs) 
+              #f))))
+      (define $body $doing-rhs)
+      (cond 
+        ((and (field-type? $type) (struct-type-body? (field-type-body $type)))
+          (define $symbol (field-type-symbol $type))
+          (define $arg-types (struct-type-body-type-list (field-type-body $type)))
+          (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
+          (define $arg-tmps
+            (map type-generate-temporary $dynamic-arg-types))
+          (define $argument-binding
+            (argument-binding
+              $type
+              (symbol-args-make
+                $symbol 
+                (map syntax-with-type $arg-tmps $dynamic-arg-types))))
+          (cond 
+            ((syntax-symbol-arg? $body `native)
+              (unless $return-type (error "native requires type"))
+              (define $native-args (cdr (syntax-e $body)))
+              (define $native-body (car $native-args))
+              (unless (identifier? $native-body)
+                (error "native must be identifier"))
+              (define $native-type $return-type) ; this is a lie
+              (syntax-with-type
+                $native-body
+                (arrow-type 
+                  (list (field-type $symbol (struct-type-body $arg-types)))
+                  (list $return-type))))
+            (else 
+              (define $body-binding-list (cons $argument-binding $binding-list))
+              (define $typed-body (binding-list-syntax $body-binding-list $body))
+              (define $body-return-type (syntax-type $typed-body))
+              (when 
+                (and
+                  $return-type 
+                  (not (equal? $body-return-type $return-type)))
+                (error 
+                  (format 
+                    "Expression: ~a, type: ~a, expected type: ~a"
+                    (syntax-e $body)
+                    $body-return-type 
+                    $return-type)))
+              (syntax-with-type
+                (datum->syntax #f `(lambda (,@$arg-tmps) ,$typed-body))
+                (arrow-type 
+                  (list (field-type $symbol (struct-type-body $arg-types)))
+                  (list $body-return-type))))))
+        (else #f)))
+    (else #f)))
+
+; ----------------------------------------------------------------------
+
+(check-equal?
+  (compile-typed #`#f)
+  (typed #f boolean-type))
+
+(check-equal?
+  (compile-typed #`1)
+  (typed 1 number-type))
+
+(check-equal?
+  (compile-typed #`"foo")
+  (typed "foo" string-type))
+
+(check-equal?
+  (compile-typed #`(fixnum 1))
+  (typed 1 fixnum-type))
+
+(check-equal?
+  (compile-typed #`(flonum 1.0))
+  (typed 1.0 flonum-type))
+
+(check-equal?
+  (compile-typed #`(doing (plus number string) (number plus)))
+  (typed 
+    `(lambda (number2 string3) number2)
+    (arrow-type
+      (list (field-type `plus (struct-type-body (list number-type string-type))))
+      (list number-type))))

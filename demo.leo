@@ -2,7 +2,6 @@
 
 require:
   racket/unsafe/ops
-  racket/base
   racket/math
 
 define
