@@ -84,38 +84,38 @@
       (map syntax-type $args))
     (syntax-with-type
       (datum->syntax #f 
-        (cons
-          (function-binding-identifier $function-binding)
-          (filter syntax-is-dynamic? $args)))
+        `(#%app
+          ,(function-binding-identifier $function-binding)
+          ,@(filter syntax-is-dynamic? $args)))
       (function-binding-return-type $function-binding))))
 
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      (function-binding `foo (list string-type number-type) boolean-type #`fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b number-type)))
     syntax-typed-datum)
-  (typed `(bool a b) boolean-type))
+  (typed `(#%app fn a b) boolean-type))
 
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type (symbol-type `empty) number-type) boolean-type #`bool)
+      (function-binding `foo (list string-type (symbol-type `empty) number-type) boolean-type #`fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b (symbol-type `empty))
         (syntax-with-type #`c number-type)))
     syntax-typed-datum)
-  (typed `(bool a c) boolean-type))
+  (typed `(#%app fn a c) boolean-type))
 
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      (function-binding `foo (list string-type number-type) boolean-type #`fn)
       `foo
       (list 
         (syntax-with-type #`a number-type)
@@ -219,7 +219,7 @@
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b string-type)))
     syntax-typed-datum)
-  (typed `(string-append a b) string-type))
+  (typed `(#%app string-append a b) string-type))
 
 ; --------------------------------------------------------------------
 
@@ -285,7 +285,7 @@
       (list
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b string-type))))
-  (typed `(string-append a b) string-type))
+  (typed `(#%app string-append a b) string-type))
 
 (check-equal?
   (syntax-typed-datum
