@@ -216,7 +216,7 @@
             (cond
               ((or 
                 (syntax-symbol-arg-arg? $does-lhs `giving) 
-                (syntax-symbol-arg-arg? $does-lhs `:))
+                (syntax-symbol-arg-arg? $does-lhs `->))
                 (define $giving-args (cdr (syntax-e $does-lhs)))
                 (define $giving-lhs (car $giving-args))
                 (define $giving-rhs (cadr $giving-args))
