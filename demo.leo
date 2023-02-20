@@ -2,15 +2,6 @@
 
 require racket/math
 
-bind zero 0
-
-bind one 1
-
-define
-  pi
-  being number.pi
-  is native pi
-
 define
   number
   plus number
@@ -33,6 +24,23 @@ define
   number.string
   giving string
   does native number->string
+
+define
+  pi
+  being number.pi
+  is native pi
+
+bind zero 0
+
+bind one 1
+
+bind two
+  one
+  plus one
+
+bind half pi
+  pi
+  times 0.5
 
 define
   string
@@ -71,13 +79,13 @@ do
     plus numbers.second.number
     string
 
-point:
+circle:
   center point:
     x 10.0
     y 20.0
   radius 30.0
 do
-  point.center.point.x.number
+  circle.center.point.x.number
   plus 100.0
   plus pi.number
   string
