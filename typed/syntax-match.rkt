@@ -4,7 +4,8 @@
 
 (require 
   leo/typed/testing
-  leo/typed/option)
+  leo/typed/option
+  (for-syntax racket/base))
 
 (define (any-syntax (any : Any)) : Syntax
   (if (syntax? any)
@@ -107,6 +108,105 @@
       (equal? (syntax-e (car e)) $symbol)
       (not (null? (cdr e)))
       (not (null? (cdr (cdr e)))))))
+
+(define-syntax
+  (syntax-symbol-match-args $syntax)
+    (syntax-case $syntax ()
+      ((_ syntax symbol args body ...)
+        (let ((e (car (generate-temporaries `(e)))))
+          #`(let ((#,e (syntax-e syntax)))
+            (and
+              (list? #,e)
+              (>= (length #,e) 1)
+              (equal? (syntax-e (car #,e)) symbol)
+              (let ((args (cdr #,e))) body ...)))))))
+
+(check-equal?
+  (syntax-symbol-match-args #`(foo) `foo args (map syntax->datum args))
+  `())
+
+(check-equal?
+  (syntax-symbol-match-args #`(foo 1 2) `foo args (map syntax->datum args))
+  `(1 2))
+
+(check-equal?
+  (syntax-symbol-match-args #`(foo 1 2) `bar args (map syntax->datum args))
+  #f)
+
+(define-syntax
+  (syntax-symbol-match-arg $syntax)
+    (syntax-case $syntax ()
+      ((_ syntax symbol arg body ...)
+        (let ((e (car (generate-temporaries `(e)))))
+          #`(let ((#,e (syntax-e syntax)))
+            (and
+              (list? #,e)
+              (= (length #,e) 2)
+              (equal? (syntax-e (car #,e)) symbol)
+              (let ((arg (cadr #,e)))
+                body ...)))))))
+
+(check-equal?
+  (syntax-symbol-match-arg #`(foo 1) `foo lhs (syntax->datum lhs))
+  1)
+
+(check-equal?
+  (syntax-symbol-match-arg #`(foo 1) `bar lhs (syntax->datum lhs))
+  #f)
+
+(check-equal?
+  (syntax-symbol-match-arg #`(foo 1 2) `foo lhs (syntax->datum lhs))
+  #f)
+
+(define-syntax
+  (syntax-symbol-match-arg-arg $syntax)
+    (syntax-case $syntax ()
+      ((_ syntax symbol lhs rhs body ...)
+        (let ((e (car (generate-temporaries `(e)))))
+          #`(let ((#,e (syntax-e syntax)))
+            (and
+              (list? #,e)
+              (= (length #,e) 3)
+              (equal? (syntax-e (car #,e)) symbol)
+              (let ((lhs (cadr #,e))
+                    (rhs (caddr #,e)))
+                body ...)))))))
+
+(check-equal?
+  (syntax-symbol-match-arg-arg #`(foo 1 2) `foo lhs rhs
+    (list (syntax->datum lhs) (syntax->datum rhs)))
+  (list 1 2))
+
+(check-equal?
+  (syntax-symbol-match-arg-arg #`(foo 1 2) `bar lhs rhs
+    (list (syntax->datum lhs) (syntax->datum rhs)))
+  #f)
+
+(check-equal?
+  (syntax-symbol-match-arg-arg #`(foo 1 2 3) `foo lhs rhs
+    (list (syntax->datum lhs) (syntax->datum rhs)))
+  #f)
+
+(define-syntax
+  (syntax-symbol-match-args-arg $syntax)
+    (syntax-case $syntax ()
+      ((_ syntax symbol args arg body ...)
+        (let ((e (car (generate-temporaries `(e))))
+              (rev (car (generate-temporaries `(rev)))))
+          #`(let ((#,e (syntax-e syntax)))
+            (and
+              (list? #,e)
+              (>= (length #,e) 2)
+              (equal? (syntax-e (car #,e)) symbol)
+              (let* ((#,rev (reverse (cdr #,e)))
+                     (args (reverse (cdr #,rev)))
+                     (arg (car #,rev)))
+                body ...)))))))
+
+(check-equal?
+  (syntax-symbol-match-args-arg #`(foo 1 2 3) `foo args arg 
+    (cons (syntax->datum arg) (map syntax->datum args)))
+  `(3 1 2))
 
 (check-equal? 
   (option-bind
