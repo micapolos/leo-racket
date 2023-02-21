@@ -23,4 +23,5 @@
         (let (($type-body (field-type-body $type)))
           (cond
             ((struct-type-body? $type-body) `(TODO))
-            ((choice-type-body? $type-body) `(TODO))))))))
+            ((choice-type-body? $type-body) `(TODO))))))
+    ((type-type? $type) `(TODO))))

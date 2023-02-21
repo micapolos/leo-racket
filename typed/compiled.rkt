@@ -118,16 +118,12 @@
               (define $identifier (car $syntax-e))
               (define $symbol (syntax-e $identifier))
               (define $args (cdr $syntax-e))
-              (cond 
-                ((equal? $symbol `function)
-                  (error "TODO: function"))
-                (else
-                  (compiled-plus-syntax
-                    $compiled
-                    (binding-list-apply-symbol-args
-                      $binding-list
-                      $symbol
-                      (map (curry binding-list-syntax $binding-list) $args))))))
+              (compiled-plus-syntax
+                $compiled
+                (binding-list-apply-symbol-args
+                  $binding-list
+                  $symbol
+                  (map (curry binding-list-syntax $binding-list) $args))))
             (else (error (format "Syntax error ~a" $syntax)))))))))
 
 (define 

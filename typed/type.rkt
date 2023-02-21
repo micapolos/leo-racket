@@ -9,7 +9,8 @@
     NativeType
     SymbolType
     FieldType
-    ArrowType))
+    ArrowType
+    TypeType))
 
 (struct native-type ((any : Any))
   #:type-name NativeType
@@ -26,6 +27,10 @@
 (struct arrow-type ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
   #:transparent
   #:type-name ArrowType)
+
+(struct type-type ((type : Type))
+  #:transparent
+  #:type-name TypeType)
 
 (define-type TypeBody (U StructTypeBody ChoiceTypeBody))
 

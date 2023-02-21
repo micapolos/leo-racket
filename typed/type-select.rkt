@@ -26,6 +26,8 @@
       (equal? $type string-type))
     ((equal? $selector (symbol-type `function)) 
       (arrow-type? $type))
+    ((equal? $selector (symbol-type `any)) 
+      (type-type? $type))
     ((and (field-type? $selector) (equal? (field-type-symbol $selector) `field))
       (define $selector-body (field-type-body $selector))
       (if 
@@ -76,6 +78,16 @@
   (type-selects? 
     (field-type `foo void-type-body)
     (symbol-type `not-foo)) #f)
+
+(check-equal? 
+  (type-selects? 
+    (type-type number-type)
+    (symbol-type `any)) #t)
+
+(check-equal? 
+  (type-selects? 
+    (type-type number-type)
+    (symbol-type `not-any)) #f)
 
 (check-equal? 
   (type-selects? 
