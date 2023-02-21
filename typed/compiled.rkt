@@ -162,20 +162,25 @@
     ($syntax : Syntax))
   : (Option Syntax)
   (and
-    (syntax-symbol-arg-arg? $syntax `do)
+    (syntax-symbol-arg-args? $syntax `do)
     (let* (($syntax-e (syntax-e $syntax))
-           ($expr-syntax (cadr $syntax-e))
-           ($body-syntax (caddr $syntax-e))
-           ($expr-typed-syntax (binding-list-syntax $binding-list $expr-syntax))
-           ($expr-type (syntax-type $expr-typed-syntax))
-           ($tmp-syntax (type-generate-temporary $expr-type))
-           ($body-binding-list (cons (argument-binding $expr-type $tmp-syntax) $binding-list))
+           ($do-reverse-syntaxes (reverse (cdr $syntax-e)))
+           ($expr-syntaxes (reverse (cdr $do-reverse-syntaxes)))
+           ($body-syntax (car $do-reverse-syntaxes))
+           ($expr-typed-syntaxes (map (curry binding-list-syntax $binding-list) $expr-syntaxes))
+           ($expr-types (map syntax-type $expr-typed-syntaxes))
+           ($tmp-syntaxes (map type-generate-temporary $expr-types))
+           ($argument-bindings (map argument-binding $expr-types $tmp-syntaxes))
+           ($body-binding-list (append $argument-bindings $binding-list))
            ($body-typed-syntax (binding-list-syntax $body-binding-list $body-syntax))
            ($body-type (syntax-type $body-typed-syntax)))
       (syntax-with-type
         (datum->syntax $syntax 
           (list `let 
-            (list (list $tmp-syntax $expr-typed-syntax))
+            (map 
+              (lambda (($tmp : Syntax) ($expr : Syntax)) (list $tmp $expr)) 
+              $tmp-syntaxes 
+              $expr-typed-syntaxes)
             $body-typed-syntax))
         $body-type))))
 

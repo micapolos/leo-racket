@@ -177,6 +177,7 @@ define
 exclamate
 check-equal? "Hello!!!"
 
+; local binding
 "Hello, "
 append "world"
 exclamate
@@ -187,18 +188,30 @@ do
   append ")"
 check-equal? "Hello, world!!! (15)"
 
-numbers: 10 20
+; local bindings
+the: 10 "apples"
 do
-  numbers.first.number.string
-  append " + "
-  append numbers.second.number.string
-  append " = "
-  append
-    numbers.first.number
-    plus numbers.second.number
-    string
-check-equal? "10 + 20 = 30"
+  number.string
+  append " "
+  append string
+check-equal? "10 apples"
 
+; function without arguments
+doing
+  2
+  plus 2
+apply
+check-equal? 4
+
+; function with one argument
+number
+doing
+  number
+  plus 1
+apply 10
+check-equal? 11
+
+; function with two arguments
 the: string number
 doing
   string
