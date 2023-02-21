@@ -93,8 +93,14 @@
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
+     ((equal? $identifier `group) (leo-append-group-rhs $leo $rhs))
      ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
      (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
+
+ (define (leo-append-group-rhs $leo $rhs)
+   (leo-append
+      $leo 
+      (leo-with-value-stx $rhs #`(#,@(leo-stxs $rhs)))))
 
 (define (leo-append-the-rhs $leo $rhs)
   (leo-append $leo $rhs))
@@ -475,3 +481,14 @@
 
 (check-equal? (string->leo-datums "the: 1\n") `(1))
 (check-equal? (string->leo-datums "the: 1 2\n") `(1 2))
+
+(check-equal? (string->leo-datums "group\n") `(()))
+(check-equal? (string->leo-datums "group:\n") `(()))
+(check-equal? (string->leo-datums "group a\n") `((a)))
+(check-equal? (string->leo-datums "group a b\n") `(((a b))))
+(check-equal? (string->leo-datums "group: a\n") `((a)))
+(check-equal? (string->leo-datums "group: a b\n") `((a b)))
+(check-equal? (string->leo-datums "group\n  a\n") `((a)))
+(check-equal? (string->leo-datums "group\n  a\n  b\n") `(((b a))))
+(check-equal? (string->leo-datums "group:\n  a\n") `((a)))
+(check-equal? (string->leo-datums "group:\n  a\n  b\n") `((a b)))
