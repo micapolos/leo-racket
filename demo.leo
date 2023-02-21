@@ -212,11 +212,10 @@ apply 10
 check-equal? 11
 
 ; function with two arguments
-the: string number
+the: number string
 doing
-  string
-  append " ("
-  append number.string
-  append ")"
-apply: "Hello" 10
-check-equal? "Hello (10)"
+  number.string
+  append " "
+  append string
+apply: 10 "apples"
+check-equal? "10 apples"
