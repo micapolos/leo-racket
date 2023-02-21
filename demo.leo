@@ -80,13 +80,13 @@ check-equal? false
 
 2
 equals 2
-if-true "equal"
+then "equal"
 else "not equal"
 check-equal? "equal"
 
 2
 equals 3
-if-true "equal"
+then "equal"
 else "not equal"
 check-equal? "not equal"
 

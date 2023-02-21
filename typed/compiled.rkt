@@ -98,10 +98,10 @@
             (and 
               $do-syntax
               (compiled-plus-syntax $compiled $do-syntax)))
-          (let (($if-syntax (binding-list-parse-if $binding-list $syntax)))
+          (let (($then-else-syntax (binding-list-parse-then-else $binding-list $syntax)))
             (and 
-              $if-syntax
-              (compiled-plus-syntax $compiled $if-syntax)))
+              $then-else-syntax
+              (compiled-plus-syntax $compiled $then-else-syntax)))
           (let (($doing-syntax (binding-list-parse-doing $binding-list $syntax)))
             (and 
               $doing-syntax
@@ -477,7 +477,7 @@
 ; ----------------------------------------------------------------------
 
 (define
-  (binding-list-parse-if
+  (binding-list-parse-then-else
     ($binding-list : (Listof Binding))
     ($syntax : Syntax))
   : (Option Syntax)
@@ -487,17 +487,17 @@
       (define $else-lhs (car $else-args))
       (define $else-rhs (cadr $else-args))
       (cond
-        ((syntax-symbol-arg-arg? $else-lhs `if-true)
-          (define $if-true-args (cdr (syntax-e $else-lhs)))
-          (define $if-true-lhs (car $if-true-args))
-          (define $if-true-rhs (cadr $if-true-args))
-          (define $condition (binding-list-syntax $binding-list $if-true-lhs))
+        ((syntax-symbol-arg-arg? $else-lhs `then)
+          (define $then-args (cdr (syntax-e $else-lhs)))
+          (define $then-lhs (car $then-args))
+          (define $then-rhs (cadr $then-args))
+          (define $condition (binding-list-syntax $binding-list $then-lhs))
           (unless (equal? (syntax-type $condition) boolean-type)
             (error "condition must be boolean"))
-          (define $consequent (binding-list-syntax $binding-list $if-true-rhs))
+          (define $consequent (binding-list-syntax $binding-list $then-rhs))
           (define $alternate (binding-list-syntax $binding-list $else-rhs))
           (unless (equal? (syntax-type $consequent) (syntax-type $alternate))
-            (error "if-true and else type mismatch"))
+            (error "then and else type mismatch"))
           (syntax-with-type
             (datum->syntax #f `(if ,$condition ,$consequent ,$alternate))
             (syntax-type $alternate)))
