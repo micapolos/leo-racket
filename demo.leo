@@ -66,6 +66,32 @@ check-equal? flonum 3.125
 
 define
   number
+  equals number
+  giving boolean
+  does (native =)
+
+2
+equals 2
+check-equal? true
+
+2
+equals 3
+check-equal? false
+
+2
+equals 2
+if-true "equal"
+else "not equal"
+check-equal? "equal"
+
+2
+equals 3
+if-true "equal"
+else "not equal"
+check-equal? "not equal"
+
+define
+  number
   plus number
   giving number
   does native +
@@ -121,10 +147,6 @@ check-equal? true
 4
 greater-than? 4
 check-equal? false
-
-2
-times 3
-check-equal? 6
 
 define
   number.string
