@@ -69,7 +69,6 @@ define
   equals number
   giving boolean
   does (native =)
-; TODO: Don't use `= syntax for keyword in leo/script/core/syntax.rkt.
 
 2
 equals 2
