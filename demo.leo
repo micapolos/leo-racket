@@ -170,7 +170,8 @@ pi.number
 less-than? 3.15
 check-equal? true
 
-; TODO: Better name than "bind", maybe "make", "remember", "build", "set"?
+comment: Find better name than "bind"
+comment: maybe: "make" "remember" "build" "set"
 bind zero 0
 
 zero.number
@@ -240,7 +241,7 @@ define
 exclamate
 check-equal? "Hello!!!"
 
-; local binding
+comment: local binding
 "Hello, "
 append "world"
 exclamate
@@ -251,7 +252,7 @@ do
   append ")"
 check-equal? "Hello, world!!! (15)"
 
-; local bindings
+comment: local bindings
 the: 10 "apples"
 do
   number.string
@@ -259,14 +260,14 @@ do
   append string
 check-equal? "10 apples"
 
-; function without arguments
+comment: function without arguments
 doing
   2
   plus 2
 apply
 check-equal? 4
 
-; function with one argument
+comment: function with one argument
 number
 doing
   number
@@ -274,7 +275,7 @@ doing
 apply 10
 check-equal? 11
 
-; function with two arguments
+comment: function with two arguments
 the: number string
 doing
   number.string
