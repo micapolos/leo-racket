@@ -64,10 +64,14 @@
     (cond
       ((null? $syntax-e) 
         (error "null syntax???"))
-      ((boolean? $syntax-e)
+      ((equal? $syntax-e `true)
         (compiled-plus-syntax 
           $compiled
-          (syntax-with-type $syntax boolean-type)))
+          (syntax-with-type (datum->syntax #f #t $syntax) boolean-type)))
+      ((equal? $syntax-e `false)
+        (compiled-plus-syntax 
+          $compiled
+          (syntax-with-type (datum->syntax #f #f $syntax) boolean-type)))
       ((number? $syntax-e)
         (compiled-plus-syntax
           $compiled
@@ -469,7 +473,11 @@
 ; ----------------------------------------------------------------------
 
 (check-equal?
-  (compile-typed #`#f)
+  (compile-typed #`true)
+  (typed #t boolean-type))
+
+(check-equal?
+  (compile-typed #`false)
   (typed #f boolean-type))
 
 (check-equal?

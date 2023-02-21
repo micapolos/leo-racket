@@ -102,11 +102,11 @@ define
 
 2
 less-than? 3
-check-equal? #t
+check-equal? true
 
 3
 less-than? 3
-check-equal? #f
+check-equal? false
 
 define
   number
@@ -116,11 +116,11 @@ define
 
 4
 greater-than? 3
-check-equal? #t
+check-equal? true
 
 4
 greater-than? 4
-check-equal? #f
+check-equal? false
 
 2
 times 3
@@ -142,11 +142,11 @@ define
 
 pi.number
 greater-than? 3.14
-check-equal? #t
+check-equal? true
 
 pi.number
 less-than? 3.15
-check-equal? #t
+check-equal? true
 
 bind zero 0
 

@@ -32,8 +32,10 @@
 (define (syntax->typed ($syntax : Syntax)) : Syntax
   (let (($datum (syntax-e $syntax)))
     (cond
-      ((boolean? $datum) 
-        (syntax-with-type $syntax boolean-type))
+      ((equal? $datum `true) 
+        (syntax-with-type (datum->syntax #f #t) boolean-type))
+      ((equal? $datum `false) 
+        (syntax-with-type (datum->syntax #f #f) boolean-type))
       ((number? $datum) 
         (syntax-with-type $syntax number-type))
       ((string? $datum)
@@ -63,7 +65,11 @@
   (typed "foo" string-type))
 
 (check-equal? 
-  (syntax-typed-datum (syntax->typed #`#f))
+  (syntax-typed-datum (syntax->typed #`true))
+  (typed #t boolean-type))
+
+(check-equal? 
+  (syntax-typed-datum (syntax->typed #`false))
   (typed #f boolean-type))
 
 (check-equal? 
