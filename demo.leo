@@ -68,7 +68,7 @@ define
   number
   equals number
   giving boolean
-  does (native =)
+  does native: =
 
 2
 equals 2
