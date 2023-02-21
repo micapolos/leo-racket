@@ -18,7 +18,7 @@
       ((equal? $syntax-e `fixnum) fixnum-type)
       ((equal? $syntax-e `flonum) flonum-type)
       ((symbol? $syntax-e) (symbol-type $syntax-e))
-      (else 
+      (else
         (or
           (syntax-parse-arrow-type $syntax)
           (cond
@@ -26,15 +26,10 @@
             (else (error (format "type parse error ~v" $syntax)))))))))
 
 (define (syntax-parse-arrow-type ($syntax : Syntax)) : (Option Type)
-  (cond
-    ((syntax-symbol-arg-args? $syntax `giving)
-      (define $giving-reverse-args (reverse (cdr (syntax-e $syntax))))
-      (define $giving-lhss (reverse (cdr $giving-reverse-args)))
-      (define $giving-rhs (car $giving-reverse-args))
-      (arrow-type
-        (map syntax-parse-type $giving-lhss)
-        (list (syntax-parse-type $giving-rhs))))
-    (else #f)))
+  (syntax-symbol-match-args-arg $syntax `giving args arg
+    (arrow-type
+      (map syntax-parse-type args)
+      (list (syntax-parse-type arg)))))
 
 (define (syntax-parse-types ($syntax : Syntax)) : (Listof Type)
   (let (($syntax-e (syntax-e $syntax)))
@@ -74,30 +69,6 @@
           (option-bind (syntaxes-parse-type-body-option $syntaxes) $type-body
             (field-type $symbol $type-body))
           (field-type $symbol (syntaxes-parse-struct-type-body $syntaxes)))))))
-
-(define (function-syntaxes-parse-arrow-type
-  ($syntaxes : (Listof Syntax))) : ArrowType
-  (cond
-    ((equal? (length $syntaxes) 1)
-      (let (($syntaxes (syntax-e (car $syntaxes))))
-        (cond
-          (
-            (and 
-              (list? $syntaxes)
-              (equal? (length $syntaxes) 3)
-              (equal? (syntax-e (car $syntaxes)) `giving))
-            (giving-syntaxes-parse-arrow-type (cdr $syntaxes)))
-          (else (error "Function syntax error")))))
-    (else (error "Function syntax error"))))
-
-(define (giving-syntaxes-parse-arrow-type
-  ($syntaxes : (Listof Syntax))) : ArrowType
-  (cond
-    ((equal? (length $syntaxes) 2)
-      (arrow-type
-        (syntax-parse-types (car $syntaxes))
-        (syntax-parse-types (car (cdr $syntaxes)))))
-    (else (error "Function syntax error"))))
 
 (define (identifier-syntaxes-parse-type-body-option
   ($identifier : Identifier)
