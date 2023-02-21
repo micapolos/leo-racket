@@ -171,6 +171,7 @@ pi.number
 less-than? 3.15
 check-equal? true
 
+; TODO: Better name than "bind", maybe "make", "remember", "build", "set"?
 bind zero 0
 
 zero.number
