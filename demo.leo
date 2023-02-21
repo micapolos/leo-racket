@@ -95,6 +95,38 @@ times 3
 check-equal? 6
 
 define
+  number
+  less-than? number
+  giving boolean
+  does native <
+
+2
+less-than? 3
+check-equal? #t
+
+3
+less-than? 3
+check-equal? #f
+
+define
+  number
+  greater-than? number
+  giving boolean
+  does native >
+
+4
+greater-than? 3
+check-equal? #t
+
+4
+greater-than? 4
+check-equal? #f
+
+2
+times 3
+check-equal? 6
+
+define
   number.string
   giving string
   does native number->string
@@ -105,8 +137,16 @@ check-equal? "128"
 
 define
   pi
-  being number.pi
+  being pi number
   is native pi
+
+pi.number
+greater-than? 3.14
+check-equal? #t
+
+pi.number
+less-than? 3.15
+check-equal? #t
 
 bind zero 0
 
