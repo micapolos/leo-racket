@@ -248,7 +248,7 @@
         (constant-binding `foo string-type #`foo-string)
         (constant-binding `bar string-type #`foo-string))
       `not-foo))
-  (typed `() (symbol-type `not-foo)))
+  (typed #f (symbol-type `not-foo)))
 
 ; --------------------------------------------------------------------
 

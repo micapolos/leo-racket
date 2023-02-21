@@ -283,3 +283,6 @@ doing
   append string
 apply: 10 "apples"
 check-equal? "10 apples"
+
+any number
+check-equal? any number

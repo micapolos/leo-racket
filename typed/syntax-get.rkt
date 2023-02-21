@@ -28,7 +28,7 @@
               ($type (cdr $indexed)))
         (syntax-with-type
           (if (not $index)
-            #`()
+            #`#f
             (datum->syntax #f 
               (case $size
                 ((0) (error "impossible"))
@@ -108,7 +108,7 @@
         (field-type `foo (struct-type-body (list number-type (symbol-type `foo) string-type))))
       (symbol-type `foo))
     syntax-typed-datum)
-  (typed `() (symbol-type `foo)))
+  (typed #f (symbol-type `foo)))
 
 (check-equal?
   (option-map

@@ -92,6 +92,12 @@
         (compiled-plus-syntax
           $compiled
           (syntax-with-type (cadr $syntax-e) flonum-type)))
+      ((syntax-symbol-arg? $syntax `any)
+        (compiled-plus-syntax
+          $compiled
+          (syntax-with-type 
+            #``()
+            (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))

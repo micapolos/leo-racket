@@ -17,7 +17,7 @@
 (define 
   (symbol-make 
     ($symbol : Symbol)) : Syntax
-  (syntax-with-type #`() (symbol-type $symbol)))
+  (syntax-with-type #`#f (symbol-type $symbol)))
 
 (define
   (symbol-args-resolve 

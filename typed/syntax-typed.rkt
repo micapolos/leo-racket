@@ -41,7 +41,7 @@
       ((string? $datum)
         (syntax-with-type $syntax string-type))
       ((symbol? $datum)
-        (syntax-with-type #`() (field-type $datum void-type-body)))
+        (syntax-with-type #`#f (field-type $datum void-type-body)))
       ((null? $datum) (error "dupa"))
       ((and (syntax-symbol-arg? $syntax `fixnum) (number? (syntax-e (cadr $datum))))
         (error "fixnum"))
@@ -74,7 +74,7 @@
 
 (check-equal? 
   (syntax-typed-datum (syntax->typed #`foo))
-  (typed `() (field-type `foo void-type-body)))
+  (typed #f (field-type `foo void-type-body)))
 
 (define 
   (typed-field-syntax
@@ -84,7 +84,7 @@
     (let (($syntaxes (filter syntax-is-dynamic? $syntaxes))
           ($size (length $syntaxes)))
       (case $size
-        ((0) #`())
+        ((0) #`#f)
         ((1) (car $syntaxes))
         ((2) (datum->syntax #f (list #`cons (car $syntaxes) (cadr $syntaxes))))
         (else (datum->syntax #f (cons #`vector $syntaxes)))))
@@ -95,9 +95,7 @@
 (check-equal?
   (syntax-typed-datum 
     (typed-field-syntax `foo null))
-  (typed 
-    `()
-    (field-type `foo (struct-type-body null))))
+  (typed #f (field-type `foo (struct-type-body null))))
 
 (check-equal?
   (syntax-typed-datum 
