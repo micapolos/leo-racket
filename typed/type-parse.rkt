@@ -6,6 +6,7 @@
   leo/typed/option
   leo/typed/type
   leo/typed/types
+  leo/typed/syntax-match
   leo/typed/testing)
 
 (define (syntax-parse-type ($syntax : Syntax)) : Type
@@ -17,8 +18,23 @@
       ((equal? $syntax-e `fixnum) fixnum-type)
       ((equal? $syntax-e `flonum) flonum-type)
       ((symbol? $syntax-e) (symbol-type $syntax-e))
-      ((list? $syntax-e) (syntaxes-parse-type $syntax-e))
-      (else (error (format "type parse error ~v" $syntax))))))
+      (else 
+        (or
+          (syntax-parse-arrow-type $syntax)
+          (cond
+            ((list? $syntax-e) (syntaxes-parse-type $syntax-e))
+            (else (error (format "type parse error ~v" $syntax)))))))))
+
+(define (syntax-parse-arrow-type ($syntax : Syntax)) : (Option Type)
+  (cond
+    ((syntax-symbol-arg-args? $syntax `giving)
+      (define $giving-reverse-args (reverse (cdr (syntax-e $syntax))))
+      (define $giving-lhss (reverse (cdr $giving-reverse-args)))
+      (define $giving-rhs (car $giving-reverse-args))
+      (arrow-type
+        (map syntax-parse-type $giving-lhss)
+        (list (syntax-parse-type $giving-rhs))))
+    (else #f)))
 
 (define (syntax-parse-types ($syntax : Syntax)) : (Listof Type)
   (let (($syntax-e (syntax-e $syntax)))
@@ -51,8 +67,6 @@
   ($syntaxes : (Listof Syntax))) : Type
   (let (($symbol (syntax-e $identifier)))
     (cond
-      ((equal? $symbol `function) 
-        (function-syntaxes-parse-arrow-type $syntaxes))
       ((equal? $symbol `identifier) 
         (error "TODO: escaping"))
       (else 
@@ -121,8 +135,8 @@
         (field-type `string (struct-type-body (list string-type)))))))
 
 (check-equal?
-  (syntax-parse-type #`(function (giving number string)))
-  (arrow-type (list number-type) (list string-type)))
+  (syntax-parse-type #`(giving number string boolean))
+  (arrow-type (list number-type string-type) (list boolean-type)))
 
 ; (check-equal?
 ;   (syntax-parse-type #`(foo (choice boolean number string)))
