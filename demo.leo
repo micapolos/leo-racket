@@ -220,7 +220,3 @@ doing
   append ")"
 apply: "Hello" 10
 check-equal? "Hello (10)"
-
-; racket syntax
-(check-equal? (plus 1 2) 3)
-(check-equal? (append "Hello, " "world!") "Hello, world!")
