@@ -6,6 +6,8 @@
   racket/string
   leo/typed/testing)
 
+; TODO: Refactor to writer
+
 (define (sexp-leo-string ($sexp : Sexp)) : String
   (cond
     ((null? $sexp) "")
