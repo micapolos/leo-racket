@@ -13,7 +13,7 @@
   (cond
     ((native-type? $type) 
       $value)
-    ((symbol-type? $type) 
+    ((symbol-type? $type)
       (symbol-type-symbol $type))
     ((arrow-type? $type) 
       (list `function)) ; TODO

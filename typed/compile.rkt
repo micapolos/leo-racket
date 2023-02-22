@@ -11,7 +11,7 @@
   (syntaxes-compile (map any-syntax $anys)))
 
 (define (syntaxes-compile ($syntax-list : (Listof Syntax))) : (Listof Syntax)
-  (reverse 
+  (reverse
     (compiled-syntax-list
       (compiled-parse-syntax-list
         null-compiled 
