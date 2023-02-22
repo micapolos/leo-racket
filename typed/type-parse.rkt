@@ -24,6 +24,7 @@
       (else
         (or
           (syntax-parse-arrow-type $syntax)
+          (syntax-parse-type-type $syntax)
           (cond
             ((list? $syntax-e) (syntaxes-parse-type $syntax-e))
             (else (error (format "type parse error ~v" $syntax)))))))))
@@ -33,6 +34,10 @@
     (arrow-type
       (map syntax-parse-type args)
       (list (syntax-parse-type arg)))))
+
+(define (syntax-parse-type-type ($syntax : Syntax)) : (Option Type)
+  (syntax-symbol-match-arg $syntax `any arg
+    (type-type (syntax-parse-type arg))))
 
 (define (syntax-parse-types ($syntax : Syntax)) : (Listof Type)
   (let (($syntax-e (syntax-e $syntax)))
@@ -120,4 +125,8 @@
 (check-equal?
   (any-parse-type `(giving number string boolean))
   (arrow-type (list number-type string-type) (list boolean-type)))
+
+(check-equal?
+  (any-parse-type `(any number))
+  (type-type number-type))
 
