@@ -238,8 +238,8 @@
             ((symbol-type? $type)
               (define $symbol (symbol-type-symbol $type))
               (cond 
-                ((syntax-symbol-arg? $body `native)
-                  (unless $return-type (error "native requires type"))
+                ((syntax-symbol-arg? $body `racket)
+                  (unless $return-type (error "racket requires type"))
                   (define $native-args (cdr (syntax-e $body)))
                   (define $native-body (car $native-args))
                   (unless (identifier? $native-body)
@@ -307,7 +307,7 @@
                   argument-binding
                   $dynamic-arg-types $typed-arg-tmps))
               (cond 
-                ((syntax-symbol-arg? $body `native)
+                ((syntax-symbol-arg? $body `racket)
                   (unless $return-type (error "native requires type"))
                   (define $native-args (cdr (syntax-e $body)))
                   (define $native-body (car $native-args))
@@ -393,7 +393,7 @@
         $dynamic-param-types $typed-param-tmps))
     (define $body $does-rhs)
     (or
-      (syntax-symbol-match-args $body `native $native-args
+      (syntax-symbol-match-args $body `racket $native-args
         (unless (= (length $native-args) 1)
           (error "expected 1 native arg"))
         (unless $return-type (error "native requires type"))
@@ -499,7 +499,7 @@
           argument-binding
           $dynamic-arg-types $typed-arg-tmps))
       (cond 
-        ((syntax-symbol-arg? $body `native)
+        ((syntax-symbol-arg? $body `racket)
           (unless $return-type (error "native requires type"))
           (define $native-args (cdr (syntax-e $body)))
           (define $native-body (car $native-args))

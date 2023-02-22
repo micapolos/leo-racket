@@ -8,7 +8,7 @@ define
   fixnum
   plus fixnum
   giving fixnum
-  does native unsafe-fx+
+  does racket unsafe-fx+
 
 fixnum 2
 plus fixnum 3
@@ -18,7 +18,7 @@ define
   fixnum
   minus fixnum
   giving fixnum
-  does native unsafe-fx-
+  does racket unsafe-fx-
 
 fixnum 5
 minus fixnum 3
@@ -28,7 +28,7 @@ define
   fixnum
   times fixnum
   giving fixnum
-  does native unsafe-fx*
+  does racket unsafe-fx*
 
 fixnum 2
 times fixnum 3
@@ -38,7 +38,7 @@ define
   flonum
   plus flonum
   giving flonum
-  does native unsafe-fl+
+  does racket unsafe-fl+
 
 flonum 2.25
 plus flonum 3.5
@@ -48,7 +48,7 @@ define
   flonum
   minus flonum
   giving flonum
-  does native unsafe-fl-
+  does racket unsafe-fl-
 
 flonum 5.75
 minus flonum 3.5
@@ -58,7 +58,7 @@ define
   flonum
   times flonum
   giving flonum
-  does native unsafe-fl*
+  does racket unsafe-fl*
 
 flonum 2.5
 times flonum 1.25
@@ -68,7 +68,7 @@ define
   number
   equals number
   giving boolean
-  does native: =
+  does racket: =
 
 2
 equals 2
@@ -94,7 +94,7 @@ define
   number
   plus number
   giving number
-  does native +
+  does racket +
 
 2
 plus 3
@@ -104,7 +104,7 @@ define
   number
   minus number
   giving number
-  does native -
+  does racket -
 
 5
 minus 3
@@ -114,7 +114,7 @@ define
   number
   times number
   giving number
-  does native *
+  does racket *
 
 2
 times 3
@@ -124,7 +124,7 @@ define
   number
   less-than? number
   giving boolean
-  does native <
+  does racket <
 
 2
 less-than? 3
@@ -138,7 +138,7 @@ define
   number
   greater-than? number
   giving boolean
-  does native >
+  does racket >
 
 4
 greater-than? 3
@@ -151,7 +151,7 @@ check-equal? false
 define
   number.string
   giving string
-  does native number->string
+  does racket number->string
 
 128
 string
@@ -160,7 +160,7 @@ check-equal? "128"
 define
   pi
   being pi number
-  is native pi
+  is racket pi
 
 pi.number
 greater-than? 3.14
@@ -216,7 +216,7 @@ define
   string
   append string
   giving string
-  does native string-append
+  does racket string-append
 
 "Hello, "
 append "world!"
@@ -225,7 +225,7 @@ check-equal? "Hello, world!"
 define
   string.length
   giving number
-  does native string-length
+  does racket string-length
 
 "foo"
 length
