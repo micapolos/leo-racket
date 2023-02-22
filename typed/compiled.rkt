@@ -13,6 +13,7 @@
   leo/typed/types
   leo/typed/type-generate-temporary
   leo/typed/binding
+  leo/typed/syntaxes
   leo/typed/syntax-match
   leo/typed/syntax-typed
   leo/typed/syntax-resolve
@@ -573,6 +574,10 @@
 (check-equal?
   (compile-typed #`(flonum 1.0))
   (typed 1.0 flonum-type))
+
+(check-equal?
+  (compile-typed #`(any number))
+  (typed `(void) (type-type number-type)))
 
 ; TODO: Fix the test, generated number2 and string3 are not guaranteed.
 ; (check-equal?

@@ -30,7 +30,7 @@
                 (struct-type-body-type-list $type-body)))
             ((choice-type-body? $type-body) `(TODO))))))
     ((type-type? $type) 
-      `(type ,(type-any (type-type-type $type))))))
+      (type-any $type))))
 
 (define 
   (any-types-anys ($any : Any) ($types : (Listof Type))) : (Listof Any)
@@ -86,3 +86,9 @@
     `anything 
     (arrow-type (list number-type string-type) (list boolean-type)))
   `(giving number string boolean))
+
+(check-equal? 
+  (any-type-decompile 
+    `anything 
+    (type-type number-type))
+  `(any number))

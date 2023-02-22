@@ -21,7 +21,7 @@
       `(,(field-type-symbol $type)
         ,@(type-body-anys (field-type-body $type))))
     ((type-type? $type)
-      `(type ,(type-any (type-type-type $type))))))
+      `(any ,(type-any (type-type-type $type))))))
 
 (define (type-body-anys ($type-body : TypeBody)) : (Listof Any)
   (cond
@@ -48,4 +48,4 @@
   (type-any (arrow-type (list number-type string-type) (list boolean-type)))
   `(giving number string boolean))
 
-(check-equal? (type-any (type-type number-type)) `(type number))
+(check-equal? (type-any (type-type number-type)) `(any number))
