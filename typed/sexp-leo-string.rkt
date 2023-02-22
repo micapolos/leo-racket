@@ -6,11 +6,13 @@
   racket/string
   leo/typed/testing)
 
-; TODO: Refactor to writer
-
 (define (sexp-leo-string ($sexp : Sexp)) : String
+  (string-append (sexp-leo-line $sexp) "\n"))
+
+(define (sexp-leo-line ($sexp : Sexp)) : String
   (cond
-    ((null? $sexp) "")
+    ((null? $sexp) 
+      (sexp-leo-default-string $sexp))
     ((list? $sexp) 
       (let (($car (car $sexp))
             ($cdr (cdr $sexp)))
@@ -23,11 +25,11 @@
                 (string-append 
                   (sexp-leo-default-string $car)
                   " " 
-                  (sexp-leo-string (car $cdr))))
+                  (sexp-leo-line (car $cdr))))
               (else 
                 (string-append 
                   (sexp-leo-default-string $car) 
-                  (indent (string-append "\n" (sexps-leo-string $cdr)))))))
+                  (string-indent (string-append "\n" (sexps-leo-string $cdr)))))))
           (else (sexp-leo-default-string $sexp)))))
     (else (sexp-leo-default-string $sexp))))
 
@@ -35,19 +37,19 @@
   (format "~a" $sexp))
 
 (define (sexps-leo-string ($sexps : (Listof Sexp))) : String
-  (string-join (map sexp-leo-string $sexps) "\n"))
+  (string-join (map sexp-leo-line $sexps) "\n"))
 
-(define (indent ($string : String)) : String
+(define (string-indent ($string : String)) : String
   (string-replace $string "\n" "\n  "))
 
-(check-equal? (sexp-leo-string `()) "")
-(check-equal? (sexp-leo-string 1) "1")
-(check-equal? (sexp-leo-string 1.0) "1.0")
-(check-equal? (sexp-leo-string "\"foo\"") "\"foo\"")
-(check-equal? (sexp-leo-string #t) "#t")
+(check-equal? (sexp-leo-string `()) "()\n")
+(check-equal? (sexp-leo-string 1) "1\n")
+(check-equal? (sexp-leo-string 1.0) "1.0\n")
+(check-equal? (sexp-leo-string "\"foo\"") "\"foo\"\n")
+(check-equal? (sexp-leo-string #t) "#t\n")
 
-(check-equal? (sexp-leo-string `foo) "foo")
-(check-equal? (sexp-leo-string `(foo)) "(foo)")
-(check-equal? (sexp-leo-string `(foo a)) "foo a")
-(check-equal? (sexp-leo-string `(foo a b)) "foo\n  a\n  b")
-(check-equal? (sexp-leo-string `(foo (a b))) "foo a b")
+(check-equal? (sexp-leo-string `foo) "foo\n")
+(check-equal? (sexp-leo-string `(foo)) "(foo)\n")
+(check-equal? (sexp-leo-string `(foo a)) "foo a\n")
+(check-equal? (sexp-leo-string `(foo a b)) "foo\n  a\n  b\n")
+(check-equal? (sexp-leo-string `(foo (a b))) "foo a b\n")
