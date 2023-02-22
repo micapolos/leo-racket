@@ -9,6 +9,9 @@
   leo/typed/syntax-match
   leo/typed/testing)
 
+(define (any-parse-type ($any : Any)) : Type
+  (syntax-parse-type (cast-syntax (datum->syntax #f $any))))
+
 (define (syntax-parse-type ($syntax : Syntax)) : Type
   (let (($syntax-e (syntax-e $syntax)))
     (cond
@@ -113,3 +116,8 @@
 ;   (syntax-parse-type #`(foo (choice boolean number string)))
 ;   (field-type `foo 
 ;     (choice-type-body (list boolean-type number-type string-type))))
+
+(check-equal?
+  (any-parse-type `(giving number string boolean))
+  (arrow-type (list number-type string-type) (list boolean-type)))
+
