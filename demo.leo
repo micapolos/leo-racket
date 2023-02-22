@@ -286,3 +286,13 @@ check-equal? "10 apples"
 
 any number
 check-equal? any number
+
+comment: top level expression
+circle:
+  center point:
+    x 10
+    y 20
+  radius 2
+  area
+    pi.number
+    times squared 2

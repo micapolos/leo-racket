@@ -22,7 +22,5 @@
       (require 
         racket/unsafe/ops 
         leo/testing
-        leo/typed/any-leo-string
-        leo/typed/decompiler
-        leo/typed/type-parse)
+        leo/typed/runtime)
       #,@(anys-compile (read-leo-stxs port src)))))

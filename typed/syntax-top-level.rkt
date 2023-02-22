@@ -20,17 +20,14 @@
   (cond
     ((and $type (not (equal? void-type $type)))
       (datum->syntax #f 
-        `(display
-          (any-leo-string 
-            (any-type-decompile
-              ,$syntax
-              (any-parse-type 
-                (quote 
-                  ,(cast-syntax 
-                    (datum->syntax #f 
-                      (type-any $type))))))))))
+        `(leo-display
+          ,$syntax
+          (quote 
+            ,(cast-syntax 
+              (datum->syntax #f 
+                (type-any $type)))))))
     (else $syntax)))
 
 (check-equal?
   (syntax->datum (syntax-top-level (number-typed-syntax 1)))
-  '(display (any-leo-string (any-type-decompile 1 (any-parse-type 'number)))))
+  '(leo-display 1 'number))
