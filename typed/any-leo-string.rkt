@@ -29,7 +29,7 @@
               (else 
                 (string-append 
                   (any-leo-default-string $car) 
-                  (string-indent (string-append "\n" (anys-leo-string $cdr)))))))
+                  (string-indent (string-append ":\n" (anys-leo-string $cdr)))))))
           (else (any-leo-default-string $any)))))
     (else (any-leo-default-string $any))))
 
@@ -51,5 +51,5 @@
 (check-equal? (any-leo-string `foo) "foo\n")
 (check-equal? (any-leo-string `(foo)) "(foo)\n")
 (check-equal? (any-leo-string `(foo a)) "foo a\n")
-(check-equal? (any-leo-string `(foo a b)) "foo\n  a\n  b\n")
+(check-equal? (any-leo-string `(foo a b)) "foo:\n  a\n  b\n")
 (check-equal? (any-leo-string `(foo (a b))) "foo a b\n")
