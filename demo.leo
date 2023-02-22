@@ -233,6 +233,7 @@ check-equal? 3
 
 define
   string.exclamate
+  giving string
   does
     string
     append "!!!"
@@ -284,6 +285,7 @@ doing
 apply: 10 "apples"
 check-equal? "10 apples"
 
+comment: types
 any number
 check-equal? any number
 

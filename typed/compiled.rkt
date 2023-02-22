@@ -9,6 +9,7 @@
   leo/typed/type-utils
   leo/typed/type
   leo/typed/typed
+  leo/typed/typed-syntax
   leo/typed/types
   leo/typed/type-generate-temporary
   leo/typed/binding
@@ -95,9 +96,7 @@
       ((syntax-symbol-arg? $syntax `any)
         (compiled-plus-syntax
           $compiled
-          (syntax-with-type 
-            #``()
-            (syntax-parse-type (cadr $syntax-e)))))
+          (type-typed-syntax (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
@@ -115,6 +114,7 @@
           (compiled-parse-define $compiled $syntax)
           (compiled-parse-bind $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
+          (compiled-parse-does $compiled $syntax)
           (cond
             ((syntax-identifier-args? $syntax)
               (define $identifier (car $syntax-e))
@@ -350,6 +350,83 @@
               (argument-binding $type $tmp))
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
+
+(define
+  (compiled-parse-does
+    ($compiled : Compiled)
+    ($syntax : Syntax))
+  : (Option Compiled)
+  (syntax-symbol-match-arg-arg $syntax `does $does-lhs $does-rhs
+    (define $does-lhs-type (syntax-type $does-lhs))
+    (unless (type-type? $does-lhs-type)
+      (error "does lhs not a type"))
+    (define $lhs-type (type-type-type $does-lhs-type))
+    (define-values
+      ($param-types $return-type)
+      (cond
+        ((arrow-type? $lhs-type)
+          (define $return-types (arrow-type-rhs-types $lhs-type))
+          (unless (= (length $return-types) 1)
+            (error "expected single return type"))
+          (values 
+            (arrow-type-lhs-types $lhs-type)
+            (car $return-types)))
+        (else (values (list $lhs-type) #f))))
+    (unless (= (length $param-types) 1)
+      (error "expected single param type"))
+    (define $param-type (car $param-types))
+    (unless (field-type? $param-type)
+      (error "expected field param type"))
+    (define $param-field-type-body (field-type-body $param-type))
+    (unless (struct-type-body? $param-field-type-body)
+      (error "expected field with struct"))
+    (define $symbol (field-type-symbol $param-type))
+    (define $field-param-types (struct-type-body-type-list $param-field-type-body))
+    (define $dynamic-param-types (filter type-is-dynamic? $field-param-types))
+    (define $param-tmps
+      (map type-generate-temporary $dynamic-param-types))
+    (define $typed-param-tmps
+      (map syntax-with-type $param-tmps $dynamic-param-types))
+    (define $argument-bindings
+      (map
+        argument-binding
+        $dynamic-param-types $typed-param-tmps))
+    (define $body $does-rhs)
+    (or
+      (syntax-symbol-match-args $body `native $native-args
+        (unless (= (length $native-args) 1)
+          (error "expected 1 native arg"))
+        (unless $return-type (error "native requires type"))
+        (define $native-body (car $native-args))
+        (unless (identifier? $native-body)
+          (error "native must be identifier"))
+        (define $binding 
+          (function-binding $symbol $field-param-types $return-type $native-body))
+        (compiled-plus-binding $compiled $binding))
+      (let ()
+        (define $binding-list (compiled-binding-list $compiled))
+        (define $body-binding-list (append $argument-bindings $binding-list))
+        (define $typed-body (binding-list-syntax $body-binding-list $body))
+        (define $body-return-type (syntax-type $typed-body))
+        (when 
+          (and
+            $return-type
+            (not (equal? $body-return-type $return-type)))
+          (error 
+            (format 
+              "Expression: ~a, type: ~a, expected type: ~a"
+              (syntax-e $body)
+              $body-return-type 
+              $return-type)))
+        (define $fn (type-generate-temporary $param-type))
+        (define $binding 
+          (function-binding $symbol $field-param-types $body-return-type $fn))
+        (define $compiled-syntax 
+          (datum->syntax #f `(define (,$fn ,@$param-tmps) ,$typed-body)))
+        (compiled-plus-syntax
+          (compiled-plus-binding $compiled $binding)
+          $compiled-syntax)))))
+
 
 (define 
   (compiled-parse-bind

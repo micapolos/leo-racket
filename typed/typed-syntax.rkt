@@ -46,6 +46,11 @@
     (datum->syntax #f (filter syntax-is-dynamic? $typed-syntaxes))
     (field-type $symbol (struct-type-body (map syntax-type $typed-syntaxes)))))
 
+(define (type-typed-syntax ($type : Type))
+  (syntax-with-type
+    void-syntax
+    (type-type $type)))
+
 (check-equal? 
   (syntax-typed-datum (boolean-typed-syntax #f))
   (typed `false boolean-type))
@@ -86,3 +91,7 @@
     (field-type `foo 
       (struct-type-body 
         (list number-type (symbol-type `bar) string-type)))))
+
+(check-equal? 
+  (syntax-typed-datum (type-typed-syntax number-type))
+  (typed `(void) (type-type number-type)))
