@@ -6,6 +6,19 @@
   racket/string
   leo/typed/testing)
 
+(define (any-leo-infix? ($any : Any)) : Boolean
+  (or
+    (not (list? $any))
+    (and (= (length $any) 3) (any-leo-infix? (cadr $any)))))
+
+(check-equal? (any-leo-infix? `a) #t)
+(check-equal? (any-leo-infix? 1) #t)
+(check-equal? (any-leo-infix? "foo") #t)
+(check-equal? (any-leo-infix? `(foo)) #f)
+(check-equal? (any-leo-infix? `(foo a)) #f)
+(check-equal? (any-leo-infix? `(foo a b)) #t)
+(check-equal? (any-leo-infix? `(foo a b c)) #f)
+
 (define (any-leo-string ($any : Any)) : String
   (string-append (any-leo-line $any) "\n"))
 
