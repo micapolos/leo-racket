@@ -12,8 +12,9 @@
 
 (define (any-type-decompile ($any : Any) ($type : Type)) : Any
   (cond
-    ((native-type? $type) 
-      $any)
+    ((equal? $type boolean-type)
+      (if (cast $any Boolean) `true `false))
+    ((native-type? $type) $any)
     ((symbol-type? $type)
       (symbol-type-symbol $type))
     ((arrow-type? $type) 
@@ -56,6 +57,13 @@
         (cons 
           (any-type-decompile (car $anys) (car $types))
           (anys-types-decompile (cdr $anys) (cdr $types))))))
+
+(check-equal? (any-type-decompile "foo" string-type) "foo")
+(check-equal? (any-type-decompile 3.14 number-type) 3.14)
+(check-equal? (any-type-decompile 1 fixnum-type) 1)
+(check-equal? (any-type-decompile 3.14 flonum-type) 3.14)
+(check-equal? (any-type-decompile #t boolean-type) `true)
+(check-equal? (any-type-decompile #f boolean-type) `false)
 
 (check-equal? 
   (any-type-decompile `anything (native-type `number)) 
