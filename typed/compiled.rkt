@@ -21,7 +21,8 @@
   leo/typed/type-parse
   leo/typed/syntax-parse
   leo/typed/syntax-type
-  leo/typed/testing)
+  leo/typed/testing
+  leo/typed/values)
 
 (struct compiled 
   (
@@ -523,7 +524,7 @@
 
 (check-equal?
   (compile-typed #`(any number))
-  (typed `(void) (type-type number-type)))
+  (typed null-value (type-type number-type)))
 
 (let-in
   $binding (compile-binding #`(does (any (increment number)) (done number)))

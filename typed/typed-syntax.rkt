@@ -6,6 +6,7 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed
   leo/typed/syntaxes
+  leo/typed/values
   leo/typed/type
   leo/typed/types
   leo/typed/typed
@@ -38,7 +39,7 @@
 
 (define (symbol-typed-syntax ($symbol : Symbol))
   (syntax-with-type 
-    void-syntax
+    null-syntax
     (symbol-type $symbol)))
 
 (define (field-typed-syntax ($symbol : Symbol) ($typed-syntaxes : (Listof Syntax)))
@@ -48,7 +49,7 @@
 
 (define (type-typed-syntax ($type : Type))
   (syntax-with-type
-    void-syntax
+    null-syntax
     (type-type $type)))
 
 (check-equal? 
@@ -77,7 +78,7 @@
 
 (check-equal? 
   (syntax-typed-datum (symbol-typed-syntax `foo))
-  (typed `(void) (symbol-type `foo)))
+  (typed null-value (symbol-type `foo)))
 
 (check-equal? 
   (syntax-typed-datum 
@@ -94,4 +95,4 @@
 
 (check-equal? 
   (syntax-typed-datum (type-typed-syntax number-type))
-  (typed `(void) (type-type number-type)))
+  (typed null-value (type-type number-type)))

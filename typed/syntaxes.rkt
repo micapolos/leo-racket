@@ -2,4 +2,10 @@
 
 (provide (all-defined-out))
 
-(define void-syntax #`(void))
+(require 
+  leo/typed/values
+  leo/typed/testing)
+
+(define null-syntax (datum->syntax #f null-value))
+
+(check-equal? (syntax->datum null-syntax) null-value)
