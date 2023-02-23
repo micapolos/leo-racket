@@ -16,7 +16,8 @@
     ((field-type? $type)
       (field-type-symbol $type))
     ((arrow-type? $type) `function)
-    ((type-type? $type) `any)))
+    ((type-type? $type) `any)
+    ((thing-type? $type) `thing)))
 
 (check-equal? (type-symbol (native-type `foo)) `foo)
 (check-equal? (type-symbol (native-type "non-symbol")) #f)
@@ -24,3 +25,4 @@
 (check-equal? (type-symbol (void-field-type `foo)) `foo)
 (check-equal? (type-symbol (arrow-type null null)) `function)
 (check-equal? (type-symbol (type-type number-type)) `any)
+(check-equal? (type-symbol (thing-type)) `thing)

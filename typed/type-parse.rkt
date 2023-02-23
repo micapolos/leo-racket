@@ -15,6 +15,7 @@
 (define (syntax-parse-type ($syntax : Syntax)) : Type
   (let (($syntax-e (syntax-e $syntax)))
     (cond
+      ((equal? $syntax-e `thing) (thing-type))
       ((equal? $syntax-e `boolean) boolean-type)
       ((equal? $syntax-e `string) string-type)
       ((equal? $syntax-e `number) number-type)

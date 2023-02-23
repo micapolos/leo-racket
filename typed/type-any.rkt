@@ -21,7 +21,8 @@
       `(,(field-type-symbol $type)
         ,@(type-body-anys (field-type-body $type))))
     ((type-type? $type)
-      `(any ,(type-any (type-type-type $type))))))
+      `(any ,(type-any (type-type-type $type))))
+    ((thing-type? $type) `thing)))
 
 (define (type-body-anys ($type-body : TypeBody)) : (Listof Any)
   (cond
@@ -37,6 +38,7 @@
 (check-equal? (type-any boolean-type) `boolean)
 (check-equal? (type-any (native-type `foo)) `foo)
 (check-equal? (type-any (symbol-type `foo)) `foo)
+(check-equal? (type-any (thing-type)) `thing)
 
 (check-equal? 
   (type-any 

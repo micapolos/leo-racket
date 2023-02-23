@@ -10,7 +10,8 @@
     SymbolType
     FieldType
     ArrowType
-    TypeType))
+    TypeType
+    ThingType))
 
 (struct native-type ((any : Any))
   #:type-name NativeType
@@ -31,6 +32,10 @@
 (struct type-type ((type : Type))
   #:transparent
   #:type-name TypeType)
+
+(struct thing-type ()
+  #:transparent
+  #:type-name ThingType)
 
 (define-type TypeBody (U StructTypeBody ChoiceTypeBody))
 

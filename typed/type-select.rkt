@@ -16,6 +16,8 @@
     ((equal? $type $selector) #t)
     ((equal? $selector (symbol-type `boolean)) 
       (equal? $type boolean-type))
+    ((equal? $selector (symbol-type `thing)) 
+      (equal? $type (thing-type)))
     ((equal? $selector (symbol-type `number)) 
       (equal? $type number-type))
     ((equal? $selector (symbol-type `fixnum)) 
@@ -58,6 +60,9 @@
 
 (check-equal? (type-selects? string-type (symbol-type `string)) #t)
 (check-equal? (type-selects? string-type (symbol-type `not-string)) #f)
+
+(check-equal? (type-selects? (thing-type) (symbol-type `thing)) #t)
+(check-equal? (type-selects? (thing-type) (symbol-type `not-thing)) #f)
 
 (check-equal? 
   (type-selects?

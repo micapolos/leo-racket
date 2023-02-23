@@ -19,7 +19,8 @@
     ((field-type? $type) (type-body-is-static? (field-type-body $type)))
     ((arrow-type? $type) 
       (andmap type-is-static? (arrow-type-rhs-types $type)))
-    ((type-type? $type) #t)))
+    ((type-type? $type) #t)
+    ((thing-type? $type) #f)))
 
 (define (type-body-is-static? ($type-body : TypeBody)) : Boolean
   (cond
@@ -52,6 +53,8 @@
   (check-equal? (type-is-static? (arrow-type (list non-static-type) (list non-static-type))) #f)
 
   (check-equal? (type-is-static? (type-type number-type)) #t)
+
+  (check-equal? (type-is-static? (thing-type)) #f)
 
   (check-equal? (type-body-is-static? (struct-type-body (list))) #t)
   (check-equal? (type-body-is-static? (struct-type-body (list static-type))) #t)
