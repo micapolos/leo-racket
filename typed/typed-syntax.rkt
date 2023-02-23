@@ -43,9 +43,7 @@
     (symbol-type $symbol)))
 
 (define (field-typed-syntax ($symbol : Symbol) ($typed-syntaxes : (Listof Syntax)))
-  (syntax-with-type
-    (datum->syntax #f (filter syntax-is-dynamic? $typed-syntaxes))
-    (field-type $symbol (struct-type-body (map syntax-type $typed-syntaxes)))))
+  (typed-field-syntax $symbol $typed-syntaxes))
 
 (define (type-typed-syntax ($type : Type))
   (syntax-with-type
@@ -88,7 +86,7 @@
         (symbol-typed-syntax `bar)
         (string-typed-syntax "foo"))))
   (typed 
-    `(1 "foo") 
+    `(cons 1 "foo") 
     (field-type `foo 
       (struct-type-body 
         (list number-type (symbol-type `bar) string-type)))))

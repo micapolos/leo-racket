@@ -81,13 +81,13 @@
     ($symbol : Symbol) 
     ($syntaxes : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (let (($syntaxes (filter syntax-is-dynamic? $syntaxes))
-          ($size (length $syntaxes)))
+    (let* (($dynamic-syntaxes (filter syntax-is-dynamic? $syntaxes))
+           ($size (length $dynamic-syntaxes)))
       (case $size
         ((0) #`#f)
         ((1) (car $syntaxes))
-        ((2) (datum->syntax #f (list #`cons (car $syntaxes) (cadr $syntaxes))))
-        (else (datum->syntax #f (cons #`vector $syntaxes)))))
+        ((2) (datum->syntax #f (list #`cons (car $dynamic-syntaxes) (cadr $dynamic-syntaxes))))
+        (else (datum->syntax #f (cons #`vector $dynamic-syntaxes)))))
     (field-type 
       $symbol
       (struct-type-body (map syntax-type $syntaxes)))))
