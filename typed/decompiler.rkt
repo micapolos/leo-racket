@@ -30,7 +30,9 @@
                 (struct-type-body-type-list $type-body)))
             ((choice-type-body? $type-body) `(TODO))))))
     ((type-type? $type) 
-      (type-any $type))))
+      (type-any $type))
+    ((thing-type? $type)
+      `(thing ,$any))))
 
 (define 
   (any-types-anys ($any : Any) ($types : (Listof Type))) : (Listof Any)

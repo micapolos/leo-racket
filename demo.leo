@@ -4,13 +4,11 @@ require:
   racket/unsafe/ops
   racket/math
 
-comment: primitive types
-the:
-  any number
-  any fixnum
-  any flonum
-  any string
-  any boolean
+any process thing
+does processed thing
+
+process 123
+check-equal? processed 123
 
 any
   fixnum
