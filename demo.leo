@@ -157,7 +157,7 @@ does racket number->string
 string
 check-equal? "128"
 
-bind pi
+make pi
   racket pi
   as number
 
@@ -169,19 +169,17 @@ pi.number
 less-than? 3.15
 check-equal? true
 
-comment: Find better name than "bind"
-comment: maybe: "make" "remember" "build" "set"
-bind zero 0
+make zero 0
 
 zero.number
 check-equal? 0
 
-bind one 1
+make one 1
 
 one.number
 check-equal? 1
 
-bind two
+make two
   one.number
   plus one.number
 

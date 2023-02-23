@@ -121,7 +121,7 @@
               $as-syntax 
               (compiled-plus-syntax $compiled $as-syntax)))
           (compiled-parse-define $compiled $syntax)
-          (compiled-parse-bind $compiled $syntax)
+          (compiled-parse-make $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
           (compiled-parse-does $compiled $syntax)
           (compiled-parse-is $compiled $syntax)
@@ -513,11 +513,11 @@
 ; ---------------------------------------------------------------------
 
 (define 
-  (compiled-parse-bind
+  (compiled-parse-make
     ($compiled : Compiled)
     ($syntax : Syntax))
   : (Option Compiled)
-  (syntax-symbol-match-arg $syntax `bind $arg
+  (syntax-symbol-match-arg $syntax `make $arg
     (define $binding-list (compiled-binding-list $compiled))
     (define $value (binding-list-syntax $binding-list $arg))
     (define $type (syntax-type $value))
