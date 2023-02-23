@@ -7,6 +7,7 @@
   leo/typed/type
   leo/typed/typed
   leo/typed/types
+  leo/typed/type-match
   leo/typed/syntax-get
   leo/typed/syntax-match
   leo/typed/syntax-type
@@ -60,12 +61,13 @@
           (define $fn-type (syntax-type $fn-syntax))
           (unless (arrow-type? $fn-type)
             (error "apply not a function"))
+          (define $param-types (arrow-type-lhs-types $fn-type))
           (define $fn-arg-types (map syntax-type $fn-args))
-          (unless (equal? (arrow-type-lhs-types $fn-type) $fn-arg-types)
+          (unless (arg-types-match-arrow-type? $fn-arg-types $fn-type)
             (error 
               (format 
-                "arrow function type mismatch: ~a ~a"
-                (arrow-type-lhs-types $fn-type) 
+                "apply type type mismatch: ~a ~a"
+                $fn-type
                 $fn-arg-types)))
           (unless (= (length (arrow-type-rhs-types $fn-type)) 1)
             (error "arrow multi-return not supported"))

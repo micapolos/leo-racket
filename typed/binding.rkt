@@ -11,6 +11,7 @@
   leo/typed/type
   leo/typed/types
   leo/typed/typed
+  leo/typed/type-match
   leo/typed/syntax-resolve
   leo/typed/syntax-typed
   leo/typed/testing)
@@ -79,9 +80,9 @@
     (equal? 
       $symbol 
       (function-binding-symbol $function-binding))
-    (equal? 
-      (function-binding-param-types $function-binding) 
-      (map syntax-type $args))
+    (types-match? 
+      (map syntax-type $args)
+      (function-binding-param-types $function-binding))
     (syntax-with-type
       (datum->syntax #f 
         `(#%app

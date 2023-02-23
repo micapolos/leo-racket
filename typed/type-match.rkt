@@ -78,3 +78,21 @@
     (field-type `foo (struct-type-body (list (native-type `foo))))
     (field-type `foo (struct-type-body (list (native-type `foo) (native-type `bar)))))
   #f)
+
+; ------------------------------------------------------------
+
+(define
+  (types-match? 
+    ($types : (Listof Type)) 
+    ($other-types : (Listof Type)))
+  : Boolean
+  (and
+    (= (length $types) (length $other-types))
+    (andmap type-matches? $types $other-types)))
+
+(define
+  (arg-types-match-arrow-type?
+    ($arg-types : (Listof Type)) 
+    ($arrow-type : ArrowType))
+  : Boolean
+  (types-match? $arg-types (arrow-type-lhs-types $arrow-type)))
