@@ -71,4 +71,3 @@
             (datum->syntax #f `(#%app ,@$args))
             (car (arrow-type-rhs-types $fn-type))))))
     (else #f)))
-

@@ -157,10 +157,9 @@ does racket number->string
 string
 check-equal? "128"
 
-any
-  pi
-  giving pi number
-is racket pi
+bind pi
+  racket pi
+  as number
 
 pi.number
 greater-than? 3.14

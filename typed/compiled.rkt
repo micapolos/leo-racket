@@ -19,6 +19,7 @@
   leo/typed/syntax-typed
   leo/typed/syntax-resolve
   leo/typed/type-parse
+  leo/typed/syntax-parse
   leo/typed/syntax-type
   leo/typed/testing)
 
@@ -101,6 +102,8 @@
           (type-typed-syntax (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
+          (let-in $racket-syntax (syntax-parse-racket $syntax)
+            (and $racket-syntax (compiled-plus-syntax $compiled $racket-syntax)))
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
             (and 
               $do-syntax
@@ -113,6 +116,10 @@
             (and 
               $doing-syntax
               (compiled-plus-syntax $compiled $doing-syntax)))
+          (let-in $as-syntax (binding-list-parse-as $binding-list $syntax)
+            (and 
+              $as-syntax 
+              (compiled-plus-syntax $compiled $as-syntax)))
           (compiled-parse-define $compiled $syntax)
           (compiled-parse-bind $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
@@ -625,6 +632,21 @@
         (datum->syntax #f `(if ,$condition ,$consequent ,$alternate))
         (syntax-type $alternate)))))
 
+; --------------------------------------------------------------------
+
+(define
+  (binding-list-parse-as 
+    ($binding-list : (Listof Binding))
+    ($syntax : Syntax))
+  : (Option Syntax)
+  (syntax-symbol-match-arg-arg $syntax `as $lhs $rhs
+    (define $value (binding-list-syntax $binding-list $lhs))
+    (define $type-option (syntax-type-option $value))
+    (when $type-option (error "as lhs should be untyped"))
+    (unless (identifier? $value) (error "as lhs should be symbol"))
+    (define $type (syntax-parse-type $rhs))
+    (syntax-with-type $value $type)))
+
 ; ----------------------------------------------------------------------
 
 (check-equal?
@@ -682,6 +704,10 @@
   (unless (constant-binding? $binding) (error "not a constant binding"))
   (check-equal? (constant-binding-symbol $binding) `magic)
   (check-equal? (constant-binding-type $binding) number-type))
+
+(check-equal?
+  (compile-typed #`(as (racket foo) number))
+  (typed `foo number-type))
 
 ; TODO: Fix the test, generated number2 and string3 are not guaranteed.
 ; (check-equal?
