@@ -33,6 +33,8 @@
       (syntax-with-type
         (datum->syntax #f `(,$symbol ,@$args))
         void-type))
+    ((and (equal? $symbol `kind) (= (length $args) 1))
+      (error "TODO: kind"))
     (else 
       (symbol-args-resolve-apply $symbol $args))))
 

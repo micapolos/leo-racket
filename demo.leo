@@ -4,6 +4,14 @@ require:
   racket/unsafe/ops
   racket/math
 
+comment: primitive types
+the:
+  any number
+  any fixnum
+  any flonum
+  any string
+  any boolean
+
 any
   fixnum
   plus fixnum
@@ -280,10 +288,6 @@ doing
   append string
 apply: 10 "apples"
 check-equal? "10 apples"
-
-comment: types
-any number
-check-equal? any number
 
 comment: top level expression
 circle:
