@@ -117,6 +117,7 @@
           (compiled-parse-bind $compiled $syntax)
           (compiled-parse-require $compiled $syntax)
           (compiled-parse-does $compiled $syntax)
+          (compiled-parse-is $compiled $syntax)
           (cond
             ((syntax-identifier-args? $syntax)
               (define $identifier (car $syntax-e))
@@ -361,6 +362,71 @@
 ; ----------------------------------------------------------------------
 
 (define
+  (compiled-parse-is
+    ($compiled : Compiled)
+    ($syntax : Syntax))
+  : (Option Compiled)
+  (syntax-symbol-match-arg-arg $syntax `is $is-lhs $is-rhs
+    (define $binding-list (compiled-binding-list $compiled))
+    (define $is-lhs-value (binding-list-syntax $binding-list $is-lhs))
+    (define $is-lhs-type (syntax-type $is-lhs-value))
+    (unless (type-type? $is-lhs-type)
+      (error "is lhs not a type"))
+    (define $lhs-type (type-type-type $is-lhs-type))
+    (define-values
+      ($param-types $return-type)
+      (cond
+        ((arrow-type? $lhs-type)
+          (define $return-types (arrow-type-rhs-types $lhs-type))
+          (unless (= (length $return-types) 1)
+            (error "expected single return type"))
+          (values 
+            (arrow-type-lhs-types $lhs-type)
+            (car $return-types)))
+        (else (values (list $lhs-type) #f))))
+    (unless (= (length $param-types) 1)
+      (error "expected single param type"))
+    (define $param-type (car $param-types))
+    (unless (symbol-type? $param-type)
+      (error "expected symbol-type"))
+    (define $symbol (symbol-type-symbol $param-type))
+    (define $body $is-rhs)
+    (or
+      (syntax-symbol-match-args $body `racket $native-args
+        (unless (= (length $native-args) 1)
+          (error "expected 1 native arg"))
+        (unless $return-type (error "native requires type"))
+        (define $native-body (car $native-args))
+        (unless (identifier? $native-body)
+          (error "native must be identifier"))
+        (define $binding 
+          (constant-binding $symbol $return-type $native-body))
+        (compiled-plus-binding $compiled $binding))
+      (let ()
+        (define $typed-body (binding-list-syntax $binding-list $body))
+        (define $body-return-type (syntax-type $typed-body))
+        (when 
+          (and
+            $return-type
+            (not (equal? $body-return-type $return-type)))
+          (error 
+            (format 
+              "Expression: ~a, type: ~a, expected type: ~a"
+              (syntax-e $body)
+              $body-return-type 
+              $return-type)))
+        (define $fn (type-generate-temporary $param-type))
+        (define $binding 
+          (constant-binding $symbol $body-return-type $fn))
+        (define $compiled-syntax 
+          (datum->syntax #f `(define ,$fn ,$typed-body)))
+        (compiled-plus-syntax
+          (compiled-plus-binding $compiled $binding)
+          $compiled-syntax)))))
+
+; ----------------------------------------------------------------------
+
+(define
   (compiled-parse-does
     ($compiled : Compiled)
     ($syntax : Syntax))
@@ -597,6 +663,25 @@
   (check-equal? 
     (function-binding-return-type $binding) 
     (field-type `done (struct-type-body (list number-type)))))
+
+(let-in
+  $binding (compile-binding #`(does (any (giving (stringify number) string)) "foo"))
+  (unless (function-binding? $binding) (error "not a function binding"))
+  (check-equal? (function-binding-symbol $binding) `stringify)
+  (check-equal? (function-binding-param-types $binding) (list number-type))
+  (check-equal? (function-binding-return-type $binding) string-type))
+
+(let-in
+  $binding (compile-binding #`(is (any magic) 128))
+  (unless (constant-binding? $binding) (error "not a constant binding"))
+  (check-equal? (constant-binding-symbol $binding) `magic)
+  (check-equal? (constant-binding-type $binding) number-type))
+
+(let-in
+  $binding (compile-binding #`(is (any (giving magic number)) 128))
+  (unless (constant-binding? $binding) (error "not a constant binding"))
+  (check-equal? (constant-binding-symbol $binding) `magic)
+  (check-equal? (constant-binding-type $binding) number-type))
 
 ; TODO: Fix the test, generated number2 and string3 are not guaranteed.
 ; (check-equal?

@@ -157,10 +157,10 @@ does racket number->string
 string
 check-equal? "128"
 
-define
+any
   pi
-  being pi number
-  is racket pi
+  giving pi number
+is racket pi
 
 pi.number
 greater-than? 3.14
