@@ -4,11 +4,15 @@ require:
   racket/unsafe/ops
   racket/math
 
-any process thing
-does processed thing
+any duplicate thing
+does result:
+  original thing
+  duplicated thing
 
-process 123
-check-equal? processed 123
+duplicate 123
+check-equal? result:
+  original 123
+  duplicated 123
 
 any
   fixnum
