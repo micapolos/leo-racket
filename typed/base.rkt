@@ -19,3 +19,8 @@
               (map string-titlecase 
                 (string-split (symbol->string (syntax->datum #`name)) "-"))
               "")))))))
+
+(define-syntax (let-in $syntax)
+  (syntax-case $syntax ()
+    ((_ var expr body ...)
+      #`(let ((var expr)) body ...))))

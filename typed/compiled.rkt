@@ -5,6 +5,7 @@
 (require
   racket/function
   racket/list
+  leo/typed/base
   leo/typed/option
   leo/typed/type-utils
   leo/typed/type
@@ -151,6 +152,11 @@
 
 (define (compile-typed ($syntax : Syntax))
   (syntax-typed-datum (compile-syntax $syntax)))
+
+(define (compile-binding ($syntax : Syntax))
+  (let-in $binding-list (compiled-binding-list (compiled-parse-syntax null-compiled $syntax))
+    (when (null? $binding-list) (error "No bindings"))
+    (car $binding-list)))
 
 (define
   (binding-list-syntax
@@ -352,13 +358,17 @@
             (datum->syntax #f `(define ,$tmp ,$value))))))
     (else #f)))
 
+; ----------------------------------------------------------------------
+
 (define
   (compiled-parse-does
     ($compiled : Compiled)
     ($syntax : Syntax))
   : (Option Compiled)
   (syntax-symbol-match-arg-arg $syntax `does $does-lhs $does-rhs
-    (define $does-lhs-type (syntax-type $does-lhs))
+    (define $binding-list (compiled-binding-list $compiled))
+    (define $does-lhs-value (binding-list-syntax $binding-list $does-lhs))
+    (define $does-lhs-type (syntax-type $does-lhs-value))
     (unless (type-type? $does-lhs-type)
       (error "does lhs not a type"))
     (define $lhs-type (type-type-type $does-lhs-type))
@@ -405,7 +415,6 @@
           (function-binding $symbol $field-param-types $return-type $native-body))
         (compiled-plus-binding $compiled $binding))
       (let ()
-        (define $binding-list (compiled-binding-list $compiled))
         (define $body-binding-list (append $argument-bindings $binding-list))
         (define $typed-body (binding-list-syntax $body-binding-list $body))
         (define $body-return-type (syntax-type $typed-body))
@@ -428,6 +437,7 @@
           (compiled-plus-binding $compiled $binding)
           $compiled-syntax)))))
 
+; ---------------------------------------------------------------------
 
 (define 
   (compiled-parse-bind
@@ -578,6 +588,15 @@
 (check-equal?
   (compile-typed #`(any number))
   (typed `(void) (type-type number-type)))
+
+(let-in
+  $binding (compile-binding #`(does (any (increment number)) (done number)))
+  (unless (function-binding? $binding) (error "not a function binding"))
+  (check-equal? (function-binding-symbol $binding) `increment)
+  (check-equal? (function-binding-param-types $binding) (list number-type))
+  (check-equal? 
+    (function-binding-return-type $binding) 
+    (field-type `done (struct-type-body (list number-type)))))
 
 ; TODO: Fix the test, generated number2 and string3 are not guaranteed.
 ; (check-equal?

@@ -4,71 +4,71 @@ require:
   racket/unsafe/ops
   racket/math
 
-define
+any
   fixnum
   plus fixnum
   giving fixnum
-  does racket unsafe-fx+
+does racket unsafe-fx+
 
 fixnum 2
 plus fixnum 3
 check-equal? fixnum 5
 
-define
+any
   fixnum
   minus fixnum
   giving fixnum
-  does racket unsafe-fx-
+does racket unsafe-fx-
 
 fixnum 5
 minus fixnum 3
 check-equal? fixnum 2
 
-define
+any
   fixnum
   times fixnum
   giving fixnum
-  does racket unsafe-fx*
+does racket unsafe-fx*
 
 fixnum 2
 times fixnum 3
 check-equal? fixnum 6
 
-define
+any
   flonum
   plus flonum
   giving flonum
-  does racket unsafe-fl+
+does racket unsafe-fl+
 
 flonum 2.25
 plus flonum 3.5
 check-equal? flonum 5.75
 
-define
+any
   flonum
   minus flonum
   giving flonum
-  does racket unsafe-fl-
+does racket unsafe-fl-
 
 flonum 5.75
 minus flonum 3.5
 check-equal? flonum 2.25
 
-define
+any
   flonum
   times flonum
   giving flonum
-  does racket unsafe-fl*
+does racket unsafe-fl*
 
 flonum 2.5
 times flonum 1.25
 check-equal? flonum 3.125
 
-define
+any
   number
   equals number
   giving boolean
-  does racket: =
+does racket: =
 
 2
 equals 2
@@ -90,41 +90,41 @@ then "equal"
 else "not equal"
 check-equal? "not equal"
 
-define
+any
   number
   plus number
   giving number
-  does racket +
+does racket +
 
 2
 plus 3
 check-equal? 5
 
-define
+any
   number
   minus number
   giving number
-  does racket -
+does racket -
 
 5
 minus 3
 check-equal? 2
 
-define
+any
   number
   times number
   giving number
-  does racket *
+does racket *
 
 2
 times 3
 check-equal? 6
 
-define
+any
   number
   less-than? number
   giving boolean
-  does racket <
+does racket <
 
 2
 less-than? 3
@@ -134,11 +134,11 @@ check-equal? true
 less-than? 3
 check-equal? false
 
-define
+any
   number
   greater-than? number
   giving boolean
-  does racket >
+does racket >
 
 4
 greater-than? 3
@@ -148,10 +148,10 @@ check-equal? true
 greater-than? 4
 check-equal? false
 
-define
+any
   number.string
   giving string
-  does racket number->string
+does racket number->string
 
 128
 string
@@ -189,22 +189,21 @@ bind two
 two.number
 check-equal? 2
 
-define
-  number.squared
-  does
-    number
-    times number
+any number.squared
+does
+  number
+  times number
 
 16
 squared
 check-equal? 256
 
-define
+any
   circle radius number
   area
-  does
-    pi.number
-    times circle.radius.number.squared
+does
+  pi.number
+  times circle.radius.number.squared
 
 circle radius 10
 area
@@ -212,31 +211,31 @@ check-equal?
   pi.number
   times 100
 
-define
+any
   string
   append string
   giving string
-  does racket string-append
+does racket string-append
 
 "Hello, "
 append "world!"
 check-equal? "Hello, world!"
 
-define
+any
   string.length
   giving number
-  does racket string-length
+does racket string-length
 
 "foo"
 length
 check-equal? 3
 
-define
+any
   string.exclamate
   giving string
-  does
-    string
-    append "!!!"
+does
+  string
+  append "!!!"
 
 "Hello"
 exclamate
