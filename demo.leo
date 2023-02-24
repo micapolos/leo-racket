@@ -4,16 +4,6 @@ require:
   racket/unsafe/ops
   racket/math
 
-any duplicate thing
-does result:
-  original thing
-  duplicated thing
-
-duplicate 123
-check-equal? result:
-  original 123
-  duplicated 123
-
 any
   fixnum
   plus fixnum
@@ -267,13 +257,6 @@ do
   append " "
   append string
 check-equal? "10 apples"
-
-comment: function without arguments
-doing
-  2
-  plus 2
-apply
-check-equal? 4
 
 comment: function with one argument
 number
