@@ -159,12 +159,13 @@ greater-than? 4
 check-equal? false
 
 any
-  number.string
+  number
+  to-string
   giving string
 does racket number->string
 
 128
-string
+to-string
 check-equal? "128"
 
 make pi
@@ -255,14 +256,14 @@ exclamate
 do
   string
   append " ("
-  append string.length.string
+  append string.length.to-string
   append ")"
 check-equal? "Hello, world!!! (15)"
 
 comment: local bindings
 the: 10 "apples"
 do
-  number.string
+  number.to-string
   append " "
   append string
 check-equal? "10 apples"
@@ -285,7 +286,7 @@ check-equal? 11
 comment: function with two arguments
 the: number string
 doing
-  number.string
+  number.to-string
   append " "
   append string
 apply: 10 "apples"

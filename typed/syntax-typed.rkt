@@ -9,7 +9,9 @@
   leo/typed/syntax-type
   leo/typed/typed
   leo/typed/type-utils
+  leo/typed/syntaxes
   leo/typed/syntax-match
+  leo/typed/values
   leo/typed/types)
 
 (define (syntax-is-static? ($syntax : Syntax)) : Boolean
@@ -29,84 +31,41 @@
   (syntax-type (syntax-with-type #`1 number-type)) 
   number-type)
 
-(define (syntax->typed ($syntax : Syntax)) : Syntax
-  (let (($datum (syntax-e $syntax)))
-    (cond
-      ((equal? $datum `true) 
-        (syntax-with-type (datum->syntax #f #t) boolean-type))
-      ((equal? $datum `false) 
-        (syntax-with-type (datum->syntax #f #f) boolean-type))
-      ((number? $datum) 
-        (syntax-with-type $syntax number-type))
-      ((string? $datum)
-        (syntax-with-type $syntax string-type))
-      ((symbol? $datum)
-        (syntax-with-type #`#f (field-type $datum void-type-body)))
-      ((null? $datum) (error "dupa"))
-      ((and (syntax-symbol-arg? $syntax `fixnum) (number? (syntax-e (cadr $datum))))
-        (error "fixnum"))
-      ((and (syntax-symbol-arg? $syntax `flonum) (number? (syntax-e (cadr $datum))))
-        (error "flonum"))
-      ((list? $datum)
-        (let (($car (car $datum))
-              ($cdr (map syntax->typed (cdr $datum))))
-          (cond
-            ((identifier? $car)
-              (typed-field-syntax (syntax-e $car) $cdr))
-            (else (error "jajko")))))
-      (else (error "dupa")))))
-
-(check-equal?
-  (syntax-typed-datum (syntax->typed #`1))
-  (typed 1 number-type))
-
-(check-equal?
-  (syntax-typed-datum (syntax->typed #`"foo"))
-  (typed "foo" string-type))
-
-(check-equal? 
-  (syntax-typed-datum (syntax->typed #`true))
-  (typed #t boolean-type))
-
-(check-equal? 
-  (syntax-typed-datum (syntax->typed #`false))
-  (typed #f boolean-type))
-
-(check-equal? 
-  (syntax-typed-datum (syntax->typed #`foo))
-  (typed #f (field-type `foo void-type-body)))
-
 (define 
   (typed-field-syntax
     ($symbol : Symbol) 
     ($syntaxes : (Listof Syntax))) : Syntax
+  (syntax-list-typed-syntax 
+    (cons 
+      (syntax-with-type (datum->syntax #f $symbol) $symbol)
+      $syntaxes)))
+
+(define (syntax-list-typed-syntax ($syntax-list : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (let* (($dynamic-syntaxes (filter syntax-is-dynamic? $syntaxes))
-           ($size (length $dynamic-syntaxes)))
+    (let* (($dynamic-syntax-list (filter syntax-is-dynamic? $syntax-list))
+           ($size (length $dynamic-syntax-list)))
       (case $size
-        ((0) #`#f)
-        ((1) (car $syntaxes))
-        ((2) (datum->syntax #f (list #`cons (car $dynamic-syntaxes) (cadr $dynamic-syntaxes))))
-        (else (datum->syntax #f (cons #`vector $dynamic-syntaxes)))))
-    (field-type 
-      $symbol
-      (struct-type-body (map syntax-type $syntaxes)))))
+        ((0) null-syntax)
+        ((1) (car $dynamic-syntax-list))
+        ((2) 
+          (datum->syntax #f 
+            (list #`cons (car $dynamic-syntax-list) (cadr $dynamic-syntax-list))))
+        (else (datum->syntax #f (cons #`vector $dynamic-syntax-list)))))
+    (map syntax-type $syntax-list)))
 
 (check-equal?
   (syntax-typed-datum 
     (typed-field-syntax `foo null))
-  (typed #f (field-type `foo (struct-type-body null))))
+  (typed null-value `(foo)))
 
 (check-equal?
   (syntax-typed-datum 
-    (typed-field-syntax `x 
+    (typed-field-syntax `x
       (list 
         (syntax-with-type #`1 number-type))))
   (typed 
-    1 
-    (field-type `x
-      (struct-type-body 
-        (list number-type)))))
+    1
+    `(x ,number-type)))
 
 (check-equal?
   (syntax-typed-datum 
@@ -116,9 +75,7 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    (field-type `tuple 
-      (struct-type-body 
-        (list number-type string-type)))))
+    `(tuple ,number-type ,string-type)))
 
 (check-equal?
   (syntax-typed-datum 
@@ -129,9 +86,7 @@
         (syntax-with-type #`c boolean-type))))
   (typed 
     `(vector a b c) 
-    (field-type `tuple 
-      (struct-type-body 
-        (list number-type string-type boolean-type)))))
+    `(tuple ,number-type ,string-type ,boolean-type)))
 
 (check-equal?
   (syntax-typed-datum 
@@ -141,6 +96,4 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    (field-type `tuple 
-      (struct-type-body 
-        (list number-type string-type)))))
+    `(tuple ,number-type ,string-type)))

@@ -3,26 +3,28 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/typed/type
   leo/typed/types
   leo/typed/testing)
 
 (define (type-symbol ($type : Type)) : (Option Symbol)
   (cond
+    ((null? $type) #f)
+    ((symbol? $type) $type)
     ((native-type? $type) 
       (define $any (native-type-any $type))
       (if (symbol? $any) $any #f))
-    ((symbol-type? $type) (symbol-type-symbol $type))
-    ((field-type? $type)
-      (field-type-symbol $type))
-    ((arrow-type? $type) `function)
+    ((list? $type) (let-in $car (car $type) (and (symbol? $car) $car)))
+    ((arrow-type? $type) `giving)
     ((type-type? $type) `any)
-    ((thing-type? $type) `thing)))
+    ((thing-type? $type) `thing)
+    (else #f)))
 
 (check-equal? (type-symbol (native-type `foo)) `foo)
 (check-equal? (type-symbol (native-type "non-symbol")) #f)
-(check-equal? (type-symbol (symbol-type `foo)) `foo)
-(check-equal? (type-symbol (void-field-type `foo)) `foo)
-(check-equal? (type-symbol (arrow-type null null)) `function)
+(check-equal? (type-symbol `foo) `foo)
+(check-equal? (type-symbol `(foo)) `foo)
+(check-equal? (type-symbol (arrow-type null null)) `giving)
 (check-equal? (type-symbol (type-type number-type)) `any)
 (check-equal? (type-symbol (thing-type)) `thing)

@@ -15,20 +15,13 @@
     ((equal? $type boolean-type)
       (if (cast $any Boolean) `true `false))
     ((native-type? $type) $any)
-    ((symbol-type? $type)
-      (symbol-type-symbol $type))
+    ((symbol? $type) $type)
     ((arrow-type? $type) 
       (type-any $type))
-    ((field-type? $type)
-      (cons
-        (field-type-symbol $type)
-        (let (($type-body (field-type-body $type)))
-          (cond
-            ((struct-type-body? $type-body) 
-              (anys-types-decompile
-                (any-types-anys $any (struct-type-body-type-list $type-body))
-                (struct-type-body-type-list $type-body)))
-            ((choice-type-body? $type-body) `(TODO))))))
+    ((list? $type)
+      (anys-types-decompile
+        (any-types-anys $any $type)
+        $type))
     ((type-type? $type) 
       (type-any $type))
     ((thing-type? $type)
@@ -72,15 +65,13 @@
   `anything)
 
 (check-equal? 
-  (any-type-decompile `anything (symbol-type `foo)) 
+  (any-type-decompile `anything `foo)
   `foo)
 
 (check-equal? 
   (any-type-decompile 
     (cons `a `b)
-    (field-type `foo 
-      (struct-type-body 
-        (list number-type (symbol-type `bar) string-type))))
+    `(foo ,number-type bar ,string-type))
   `(foo a bar b))
 
 (check-equal? 

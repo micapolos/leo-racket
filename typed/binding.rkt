@@ -80,7 +80,7 @@
     (equal? 
       $symbol 
       (function-binding-symbol $function-binding))
-    (types-match? 
+    (types-match?
       (map syntax-type $args)
       (function-binding-param-types $function-binding))
     (syntax-with-type
@@ -104,11 +104,11 @@
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type (symbol-type `empty) number-type) boolean-type #`fn)
+      (function-binding `foo (list string-type `foo number-type) boolean-type #`fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
-        (syntax-with-type #`b (symbol-type `empty))
+        (syntax-with-type #`b `foo)
         (syntax-with-type #`c number-type)))
     syntax-typed-datum)
   (typed `(#%app fn a c) boolean-type))
@@ -143,11 +143,11 @@
     ($symbol : Symbol)) 
   : (Option Syntax)
   (define $type (argument-binding-type $argument-binding))
-  (define $given-type (field-type `given (struct-type-body (list $type))))
+  (define $given-type `(given ,$type))
   (define $syntax (argument-binding-syntax $argument-binding))
   (syntax-get 
     (syntax-with-type $syntax $given-type)
-    (symbol-type $symbol)))
+    $symbol))
 
 (check-equal?
   (option-map
@@ -249,7 +249,7 @@
         (constant-binding `foo string-type #`foo-string)
         (constant-binding `bar string-type #`foo-string))
       `not-foo))
-  (typed #f (symbol-type `not-foo)))
+  (typed #f `not-foo))
 
 ; --------------------------------------------------------------------
 
@@ -273,7 +273,7 @@
       `string
       (list 
         (syntax-with-type #`x 
-          (field-type `id (struct-type-body (list number-type string-type)))))))
+          `(id ,number-type ,string-type)))))
   (typed `(unsafe-cdr x) string-type))
 
 (check-equal?
@@ -300,4 +300,4 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    (field-type `not-plus (struct-type-body (list string-type string-type)))))
+    `(not-plus ,string-type ,string-type)))

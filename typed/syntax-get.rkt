@@ -18,11 +18,12 @@
   (define $type (syntax-type $syntax))
   (define $ctx $syntax)
   (and
-    (field-type? $type)
-    (struct-type-body? (field-type-body $type))
-    (let* (($struct-type-body (field-type-body $type))
-           ($size (struct-type-body-size $struct-type-body))
-           ($indexed (struct-type-body-select $struct-type-body $selector)))
+    (not (null? $type))
+    (list? $type)
+    (symbol? (car $type))
+    (let* (($type-list (cdr $type))
+           ($size (type-list-size $type-list))
+           ($indexed (type-list-select $type-list $selector)))
       (and $indexed
         (let (($index (car $indexed))
               ($type (cdr $indexed)))
@@ -55,8 +56,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list number-type))))
-      (symbol-type `number))
+        `(foo ,number-type))
+      `number)
     syntax-typed-datum)
   (typed `foo number-type))
 
@@ -65,8 +66,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list number-type string-type))))
-      (symbol-type `string))
+        `(foo ,number-type ,string-type))
+      `string)
     syntax-typed-datum)
   (typed `(unsafe-cdr foo) string-type))
 
@@ -75,8 +76,8 @@
     (syntax-get
       (syntax-with-type 
         #`(cons a b)
-        (field-type `foo (struct-type-body (list number-type string-type))))
-      (symbol-type `string))
+        `(foo ,number-type ,string-type))
+      `string)
     syntax-typed-datum)
   (typed `b string-type))
 
@@ -85,8 +86,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list number-type string-type boolean-type))))
-      (symbol-type `string))
+        `(foo ,number-type ,string-type ,boolean-type))
+      `string)
     syntax-typed-datum)
   (typed `(unsafe-vector-ref foo 1) string-type))
 
@@ -95,8 +96,8 @@
     (syntax-get
       (syntax-with-type 
         #`(vector a b c)
-        (field-type `foo (struct-type-body (list number-type string-type boolean-type))))
-      (symbol-type `string))
+        `(foo ,number-type ,string-type ,boolean-type))
+      `string)
     syntax-typed-datum)
   (typed `b string-type))
 
@@ -105,18 +106,18 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list number-type (symbol-type `foo) string-type))))
-      (symbol-type `foo))
+        `(foo ,number-type foo ,string-type))
+      `foo)
     syntax-typed-datum)
-  (typed #f (symbol-type `foo)))
+  (typed #f `foo))
 
 (check-equal?
   (option-map
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `foo (struct-type-body (list number-type (symbol-type `foo) string-type))))
-      (symbol-type `string))
+        `(foo ,number-type foo ,string-type))
+      `string)
     syntax-typed-datum)
   (typed `(unsafe-cdr foo) string-type))
 
@@ -125,21 +126,19 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        (field-type `point 
-          (struct-type-body 
-            (list 
-              (field-type `x (struct-type-body (list number-type)))
-              (field-type `y (struct-type-body (list number-type)))))))
-      (symbol-type `y))
+        `(point 
+          (x ,number-type)
+          (y ,number-type)))
+      `y)
     syntax-typed-datum)
-  (typed `(unsafe-cdr foo) (field-type `y (struct-type-body (list number-type)))))
+  (typed `(unsafe-cdr foo) `(y ,number-type)))
 
 (check-equal?
   (option-map
     (syntax-get
       (syntax-with-type 
         #`(cons a b)
-        (field-type `foo (struct-type-body (list number-type string-type))))
-      (symbol-type `first))
+        `(foo ,number-type ,string-type))
+      `first)
     syntax-typed-datum)
-  (typed `a (field-type `first (struct-type-body (list number-type)))))
+  (typed `a `(first ,number-type)))

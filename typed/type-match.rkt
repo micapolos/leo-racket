@@ -11,78 +11,19 @@
     (thing-type? $expected)
     (cond
       ((native-type? $actual) (equal? $actual $expected))
-      ((symbol-type? $actual) (equal? $actual $expected))
-      ((field-type? $actual) 
-        (and 
-          (field-type? $expected)
-          (equal? (field-type-symbol $actual) (field-type-symbol $expected))
-          (type-body-matches? (field-type-body $actual) (field-type-body $expected))))
+      ((and (list? $actual) (list? $expected)) (types-match? $actual $expected))
       ((arrow-type? $actual) (equal? $actual $expected))
       ((type-type? $actual) (equal? $actual $expected))
-      ((thing-type? $actual) (equal? $actual $expected)))))
+      ((thing-type? $actual) (equal? $actual $expected))
+      (else (equal? $actual $expected)))))
 
-(define (type-body-matches? ($actual : TypeBody) ($expected : TypeBody)) : Boolean
-  (cond
-    ((struct-type-body? $actual)
-      (and
-        (struct-type-body? $expected)
-        (=
-          (length (struct-type-body-type-list $actual))
-          (length (struct-type-body-type-list $expected)))
-        (andmap type-matches? 
-          (struct-type-body-type-list $actual)
-          (struct-type-body-type-list $expected))))
-    ((choice-type-body? $actual)
-      (error "TODO: Choice"))))
-
-(define (type-match (actual : Type) (expected : Type))
-  (if (type-matches? actual expected) 
-    (void)
-    (error (format "Type mismatch, actual: ~a, expected: ~a" actual expected))))
-
-(define (type-matching (actual : Type) (expected : Type)) : Type
-  (if (type-matches? actual expected) 
-    actual
-    (error (format "Type mismatch, actual: ~a, expected: ~a" actual expected))))
-
-(check-equal? (type-matches? (native-type `foo) (thing-type)) #t)
-(check-equal? (type-matches? (symbol-type `foo) (thing-type)) #t)
-(check-equal? (type-matches? (field-type `foo (struct-type-body null)) (thing-type)) #t)
-(check-equal? (type-matches? (arrow-type null null) (thing-type)) #t)
-(check-equal? (type-matches? (type-type (native-type `foo)) (thing-type)) #t)
-(check-equal? (type-matches? (thing-type) (thing-type)) #t)
-
-(check-equal? (type-matches? (native-type `foo) (native-type `foo)) #t)
-(check-equal? (type-matches? (native-type `foo) (native-type `not-foo)) #f)
-
-(check-equal? 
-  (type-matches? 
-    (field-type `foo (struct-type-body (list (native-type `foo))))
-    (field-type `foo (struct-type-body (list (native-type `foo)))))
-  #t)
-
-(check-equal?
-  (type-matches? 
-    (field-type `foo (struct-type-body (list (native-type `foo))))
-    (field-type `not-foo (struct-type-body (list (native-type `foo)))))
-  #f)
-
-(check-equal?
-  (type-matches? 
-    (field-type `foo (struct-type-body (list (native-type `foo))))
-    (field-type `foo (struct-type-body (list (native-type `not-foo)))))
-  #f)
-
-(check-equal?
-  (type-matches? 
-    (field-type `foo (struct-type-body (list (native-type `foo))))
-    (field-type `foo (struct-type-body (list (native-type `foo) (native-type `bar)))))
-  #f)
-
-; ------------------------------------------------------------
+(define (types-match? ($actual : (Listof Type)) ($expected : (Listof Type))) : Boolean
+  (and
+    (= (length $actual) (length $expected))
+    (andmap type-matches? $actual $expected)))
 
 (define
-  (types-match? 
+  (type-list-match? 
     ($types : (Listof Type)) 
     ($other-types : (Listof Type)))
   : Boolean
@@ -95,4 +36,50 @@
     ($arg-types : (Listof Type)) 
     ($arrow-type : ArrowType))
   : Boolean
-  (types-match? $arg-types (arrow-type-lhs-types $arrow-type)))
+  (type-list-match? $arg-types (arrow-type-lhs-types $arrow-type)))
+
+(check-equal? (type-matches? (native-type `foo) (thing-type)) #t)
+(check-equal? (type-matches? `foo (thing-type)) #t)
+(check-equal? (type-matches? `(foo ,(native-type `number)) (thing-type)) #t)
+(check-equal? (type-matches? (arrow-type null null) (thing-type)) #t)
+(check-equal? (type-matches? (type-type (native-type `foo)) (thing-type)) #t)
+(check-equal? (type-matches? (thing-type) (thing-type)) #t)
+
+(check-equal? (type-matches? (native-type `foo) (native-type `foo)) #t)
+(check-equal? (type-matches? (native-type `foo) (native-type `not-foo)) #f)
+
+(check-equal? 
+  (type-matches? 
+    `(foo ,(native-type `foo))
+    `(foo ,(native-type `foo)))
+  #t)
+
+(check-equal?
+  (type-matches? 
+    `(foo ,(native-type `foo))
+    `(not-foo ,(native-type `foo)))
+  #f)
+
+(check-equal?
+  (type-matches? 
+    `(foo ,(native-type `foo))
+    `(foo ,(native-type `not-foo)))
+  #f)
+
+(check-equal?
+  (type-matches? 
+    `(foo ,(native-type `foo))
+    `(foo ,(native-type `foo) ,(native-type `bar)))
+  #f)
+
+; -----------------------------------------------------------------------
+
+(define (type-match (actual : Type) (expected : Type))
+  (if (type-matches? actual expected) 
+    (void)
+    (error (format "Type mismatch, actual: ~a, expected: ~a" actual expected))))
+
+(define (type-matching (actual : Type) (expected : Type)) : Type
+  (if (type-matches? actual expected) 
+    actual
+    (error (format "Type mismatch, actual: ~a, expected: ~a" actual expected))))

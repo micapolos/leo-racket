@@ -243,9 +243,9 @@
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
     (define $param-type (car $param-types))
-    (unless (symbol-type? $param-type)
+    (unless (symbol? $param-type)
       (error "expected symbol-type"))
-    (define $symbol (symbol-type-symbol $param-type))
+    (define $symbol $param-type)
     (define $body $is-rhs)
     (or
       (syntax-symbol-match-args $body `racket $native-args
@@ -308,13 +308,14 @@
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
     (define $param-type (car $param-types))
-    (unless (field-type? $param-type)
-      (error "expected field param type"))
-    (define $param-field-type-body (field-type-body $param-type))
-    (unless (struct-type-body? $param-field-type-body)
-      (error "expected field with struct"))
-    (define $symbol (field-type-symbol $param-type))
-    (define $field-param-types (struct-type-body-type-list $param-field-type-body))
+    (unless 
+      (and 
+        (list? $param-type) 
+        (not (null? $param-type)) 
+        (symbol? (car $param-type)))
+      (error (format "expected field param type: ~a" $lhs-type)))
+    (define $symbol (car $param-type))
+    (define $field-param-types (cdr $param-type))
     (define $dynamic-param-types (filter type-is-dynamic? $field-param-types))
     (define $param-tmps
       (map type-generate-temporary $dynamic-param-types))
@@ -533,7 +534,14 @@
   (check-equal? (function-binding-param-types $binding) (list number-type))
   (check-equal? 
     (function-binding-return-type $binding) 
-    (field-type `done (struct-type-body (list number-type)))))
+    `(done ,number-type)))
+
+(let-in
+  $binding (compile-binding #`(does (any (giving (plus number number) number)) (racket +)))
+  (unless (function-binding? $binding) (error "not a function binding"))
+  (check-equal? (function-binding-symbol $binding) `plus)
+  (check-equal? (function-binding-param-types $binding) (list number-type number-type))
+  (check-equal? (function-binding-return-type $binding) number-type))
 
 (let-in
   $binding (compile-binding #`(does (any (giving (stringify number) string)) "foo"))

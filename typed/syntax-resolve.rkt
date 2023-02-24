@@ -15,10 +15,8 @@
   leo/typed/type-parse
   leo/typed/testing)
 
-(define 
-  (symbol-make 
-    ($symbol : Symbol)) : Syntax
-  (syntax-with-type #`#f (symbol-type $symbol)))
+(define (symbol-make ($symbol : Symbol)) : Syntax
+  (syntax-with-type #`#f $symbol))
 
 (define
   (symbol-args-resolve 
@@ -27,7 +25,7 @@
   (cond
     ((= (length $args) 1)
       (define $arg (car $args))
-      (syntax-get $arg (symbol-type $symbol)))
+      (syntax-get $arg $symbol))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
     ((and (equal? $symbol `check-equal?) (= (length $args) 2))

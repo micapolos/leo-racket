@@ -10,9 +10,3 @@
 (define fixnum-type (native-type `fixnum))
 (define flonum-type (native-type `flonum))
 (define string-type (native-type `string))
-
-(define void-type-body (struct-type-body null))
-(define nothing-type-body (choice-type-body null))
-
-(define (void-field-type ($symbol : Symbol))
-  (field-type $symbol void-type-body))

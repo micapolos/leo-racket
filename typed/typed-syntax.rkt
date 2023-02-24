@@ -40,7 +40,7 @@
 (define (symbol-typed-syntax ($symbol : Symbol))
   (syntax-with-type 
     null-syntax
-    (symbol-type $symbol)))
+    $symbol))
 
 (define (field-typed-syntax ($symbol : Symbol) ($typed-syntaxes : (Listof Syntax)))
   (typed-field-syntax $symbol $typed-syntaxes))
@@ -76,7 +76,7 @@
 
 (check-equal? 
   (syntax-typed-datum (symbol-typed-syntax `foo))
-  (typed null-value (symbol-type `foo)))
+  (typed null-value `foo))
 
 (check-equal? 
   (syntax-typed-datum 
@@ -87,9 +87,7 @@
         (string-typed-syntax "foo"))))
   (typed 
     `(cons 1 "foo") 
-    (field-type `foo 
-      (struct-type-body 
-        (list number-type (symbol-type `bar) string-type)))))
+    `(foo ,number-type bar ,string-type)))
 
 (check-equal? 
   (syntax-typed-datum (type-typed-syntax number-type))
