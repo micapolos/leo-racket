@@ -29,7 +29,7 @@
       (syntax-get $arg $symbol))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
-    ((and (equal? $symbol `check-equal) (= (length $args) 2))
+    ((and (equal? $symbol `check-equals) (= (length $args) 2))
       (unless (equal? (syntax-type (car $args)) (syntax-type (cadr $args)))
         (error 
           (format 
