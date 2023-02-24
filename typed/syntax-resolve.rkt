@@ -13,6 +13,7 @@
   leo/typed/syntax-type
   leo/typed/syntax-typed
   leo/typed/type-parse
+  leo/typed/type-decompile
   leo/typed/testing)
 
 (define (symbol-make ($symbol : Symbol)) : Syntax
@@ -28,10 +29,13 @@
       (syntax-get $arg $symbol))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
-    ((and 
-      (equal? $symbol `check-equal?)
-      (= (length $args) 2)
-      (equal? (syntax-type (car $args)) (syntax-type (cadr $args))))
+    ((and (equal? $symbol `check-equal?) (= (length $args) 2))
+      (unless (equal? (syntax-type (car $args)) (syntax-type (cadr $args)))
+        (error 
+          (format 
+            "check-equal? type mismatch: ~a ~a" 
+            (type-decompile (syntax-type (car $args)))
+            (type-decompile (syntax-type (cadr $args))))))
       (syntax-with-type
         (datum->syntax #f `(,$symbol ,@$args))
         void-type))
