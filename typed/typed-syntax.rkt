@@ -45,7 +45,7 @@
 (define (field-typed-syntax ($symbol : Symbol) ($typed-syntaxes : (Listof Syntax)))
   (typed-field-syntax $symbol $typed-syntaxes))
 
-(define (anyd-syntax ($type : Type))
+(define (any-syntax ($type : Type))
   (syntax-with-type
     null-syntax
     (any $type)))
@@ -90,5 +90,5 @@
     `(foo ,number-type bar ,string-type)))
 
 (check-equal? 
-  (syntax-typed-datum (anyd-syntax number-type))
+  (syntax-typed-datum (any-syntax number-type))
   (typed null-value (any number-type)))

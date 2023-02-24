@@ -100,7 +100,7 @@
       ((syntax-symbol-arg? $syntax `any)
         (compiled-plus-syntax
           $compiled
-          (anyd-syntax (syntax-parse-type (cadr $syntax-e)))))
+          (any-syntax (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
           (let-in $racket-syntax (syntax-parse-racket $syntax)
