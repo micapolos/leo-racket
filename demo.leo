@@ -170,12 +170,12 @@ pi.number
 less-than 3.15
 check-equals true
 
-define zero 0
+define:
+  zero 0
+  one 1
 
 zero.number
 check-equals 0
-
-define one 1
 
 one.number
 check-equals 1

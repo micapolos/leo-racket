@@ -380,16 +380,20 @@
     ($compiled : Compiled)
     ($syntax : Syntax))
   : (Option Compiled)
-  (syntax-symbol-match-arg $syntax `define $arg
-    (define $binding-list (compiled-binding-list $compiled))
-    (define $value (binding-list-syntax $binding-list $arg))
-    (define $type (syntax-type $value))
-    (define $tmp (type-generate-temporary $type))
-    (compiled-plus-syntax
-      (compiled-plus-binding
-        $compiled
-        (argument-binding $type $tmp))
-      (datum->syntax #f `(define ,$tmp ,$value)))))
+  (syntax-symbol-match-args $syntax `define $args
+    (foldl
+      (lambda (($arg : Syntax) ($compiled : Compiled))
+        (define $binding-list (compiled-binding-list $compiled))
+        (define $value (binding-list-syntax $binding-list $arg))
+        (define $type (syntax-type $value))
+        (define $tmp (type-generate-temporary $type))
+        (compiled-plus-syntax
+          (compiled-plus-binding
+            $compiled
+            (argument-binding $type $tmp))
+          (datum->syntax #f `(define ,$tmp ,$value))))
+      $compiled
+      $args)))
 
 ; --------------------------------------------------------------------
 
