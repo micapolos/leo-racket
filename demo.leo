@@ -173,16 +173,15 @@ check-equals true
 define:
   zero 0
   one 1
+  two
+    one.number
+    plus one.number
 
 zero.number
 check-equals 0
 
 one.number
 check-equals 1
-
-define two
-  one.number
-  plus one.number
 
 two.number
 check-equals 2
