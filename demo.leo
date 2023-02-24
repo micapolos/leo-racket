@@ -291,13 +291,3 @@ doing
   append string
 apply: 10 "apples"
 check-equal? "10 apples"
-
-comment: top level expression
-circle:
-  center point:
-    x 10
-    y 20
-  radius 2
-  area
-    pi.number
-    times squared 2
