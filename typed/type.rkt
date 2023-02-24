@@ -4,6 +4,7 @@
 
 (require leo/typed/testing)
 
+; TODO: Do we need this?
 (define-type Type Any)
 
 (struct racket ((any : Any))
@@ -16,7 +17,7 @@
 
 (struct any ((type : Type))
   #:transparent
-  #:type-name TypeType)
+  #:type-name AnyType)
 
 (struct thing ()
   #:transparent
