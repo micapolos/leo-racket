@@ -4,7 +4,7 @@
 
 (require leo/typed/testing)
 
-; TODO: Do we need this?
+; TODO: Refactor to (struct type ((any : Any)))
 (define-type Type Any)
 
 (struct racket ((any : Any))
@@ -17,7 +17,7 @@
 
 (struct any ((type : Type))
   #:transparent
-  #:type-name AnyType)
+  #:type-name TypeAny)
 
 (struct thing ()
   #:transparent
