@@ -158,7 +158,7 @@ does racket number->string
 to-string
 check-equals "128"
 
-make pi
+define pi
   racket pi
   as number
 
@@ -170,17 +170,17 @@ pi.number
 less-than 3.15
 check-equals true
 
-make zero 0
+define zero 0
 
 zero.number
 check-equals 0
 
-make one 1
+define one 1
 
 one.number
 check-equals 1
 
-make two
+define two
   one.number
   plus one.number
 

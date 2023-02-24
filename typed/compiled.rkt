@@ -380,7 +380,7 @@
     ($compiled : Compiled)
     ($syntax : Syntax))
   : (Option Compiled)
-  (syntax-symbol-match-arg $syntax `make $arg
+  (syntax-symbol-match-arg $syntax `define $arg
     (define $binding-list (compiled-binding-list $compiled))
     (define $value (binding-list-syntax $binding-list $arg))
     (define $type (syntax-type $value))
