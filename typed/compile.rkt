@@ -11,7 +11,7 @@
   leo/typed/types
   leo/typed/any-leo-string
   leo/typed/syntax-type
-  leo/typed/type-any
+  leo/typed/type-decompile
   leo/typed/syntax-match
   leo/typed/compiled)
 

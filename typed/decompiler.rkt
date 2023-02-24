@@ -5,7 +5,7 @@
 (require 
   leo/typed/type
   leo/typed/types
-  leo/typed/type-any
+  leo/typed/type-decompile
   leo/typed/type-utils
   leo/typed/typed
   leo/typed/testing)
@@ -17,13 +17,13 @@
     ((racket? $type) $any)
     ((symbol? $type) $type)
     ((giving? $type) 
-      (type-any $type))
+      (type-decompile $type))
     ((list? $type)
       (anys-types-decompile
         (any-types-anys $any $type)
         $type))
     ((any? $type) 
-      (type-any $type))
+      (type-decompile $type))
     ((thing? $type)
       `(thing ,$any))))
 
