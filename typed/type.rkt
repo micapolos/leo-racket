@@ -6,23 +6,23 @@
 
 (define-type Type Any)
 
-(struct native-type ((any : Any))
-  #:type-name NativeType
+(struct racket ((any : Any))
+  #:type-name Racket
   #:transparent)
 
-(struct arrow-type ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
+(struct giving ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
   #:transparent
-  #:type-name ArrowType)
+  #:type-name Arrow)
 
-(struct type-type ((type : Type))
+(struct any ((type : Type))
   #:transparent
   #:type-name TypeType)
 
-(struct thing-type ()
+(struct thing ()
   #:transparent
-  #:type-name ThingType)
+  #:type-name Thing)
 
-(define (type-arrow $type) : ArrowType
+(define (type-arrow ($type : Type)) : Arrow
   (cond
-    ((arrow-type? $type) $type)
+    ((giving? $type) $type)
     (else (error (format "not arrow ~v" $type)))))

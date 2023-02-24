@@ -4,9 +4,9 @@
 
 (require leo/typed/type)
 
-(define void-type (native-type `void))
-(define boolean-type (native-type `boolean))
-(define number-type (native-type `number))
-(define fixnum-type (native-type `fixnum))
-(define flonum-type (native-type `flonum))
-(define string-type (native-type `string))
+(define void-type (racket `void))
+(define boolean-type (racket `boolean))
+(define number-type (racket `number))
+(define fixnum-type (racket `fixnum))
+(define flonum-type (racket `flonum))
+(define string-type (racket `string))

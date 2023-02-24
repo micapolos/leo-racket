@@ -100,7 +100,7 @@
       ((syntax-symbol-arg? $syntax `any)
         (compiled-plus-syntax
           $compiled
-          (type-typed-syntax (syntax-parse-type (cadr $syntax-e)))))
+          (anyd-syntax (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
           (let-in $racket-syntax (syntax-parse-racket $syntax)
@@ -226,18 +226,18 @@
     (define $binding-list (compiled-binding-list $compiled))
     (define $is-lhs-value (binding-list-syntax $binding-list $is-lhs))
     (define $is-lhs-type (syntax-type $is-lhs-value))
-    (unless (type-type? $is-lhs-type)
+    (unless (any? $is-lhs-type)
       (error "is lhs not a type"))
-    (define $lhs-type (type-type-type $is-lhs-type))
+    (define $lhs-type (any-type $is-lhs-type))
     (define-values
       ($param-types $return-type)
       (cond
-        ((arrow-type? $lhs-type)
-          (define $return-types (arrow-type-rhs-types $lhs-type))
+        ((giving? $lhs-type)
+          (define $return-types (giving-rhs-types $lhs-type))
           (unless (= (length $return-types) 1)
             (error "expected single return type"))
           (values 
-            (arrow-type-lhs-types $lhs-type)
+            (giving-lhs-types $lhs-type)
             (car $return-types)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
@@ -291,18 +291,18 @@
     (define $binding-list (compiled-binding-list $compiled))
     (define $does-lhs-value (binding-list-syntax $binding-list $does-lhs))
     (define $does-lhs-type (syntax-type $does-lhs-value))
-    (unless (type-type? $does-lhs-type)
+    (unless (any? $does-lhs-type)
       (error "does lhs not a type"))
-    (define $lhs-type (type-type-type $does-lhs-type))
+    (define $lhs-type (any-type $does-lhs-type))
     (define-values
       ($param-types $return-type)
       (cond
-        ((arrow-type? $lhs-type)
-          (define $return-types (arrow-type-rhs-types $lhs-type))
+        ((giving? $lhs-type)
+          (define $return-types (giving-rhs-types $lhs-type))
           (unless (= (length $return-types) 1)
             (error "expected single return type"))
           (values 
-            (arrow-type-lhs-types $lhs-type)
+            (giving-lhs-types $lhs-type)
             (car $return-types)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
@@ -439,10 +439,10 @@
           (define $native-body (car $native-args))
           (unless (identifier? $native-body)
             (error "native must be identifier"))
-          (define $native-type $return-type) ; the is a lie
+          (define $racket $return-type) ; the is a lie
           (syntax-with-type
             $native-body
-            (arrow-type $arg-types (list $return-type))))
+            (giving $arg-types (list $return-type))))
         (else 
           (define $body-binding-list (append $argument-bindings $binding-list))
           (define $typed-body (binding-list-syntax $body-binding-list $body))
@@ -459,7 +459,7 @@
                 $return-type)))
           (syntax-with-type
             (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
-            (arrow-type $arg-types (list $body-return-type))))))
+            (giving $arg-types (list $body-return-type))))))
     (else #f)))
 
 ; ----------------------------------------------------------------------
@@ -525,7 +525,7 @@
 
 (check-equal?
   (compile-typed #`(any number))
-  (typed null-value (type-type number-type)))
+  (typed null-value (any number-type)))
 
 (let-in
   $binding (compile-binding #`(does (any (increment number)) (done number)))
@@ -571,6 +571,6 @@
 ;   (compile-typed #`(doing number string number))
 ;   (typed 
 ;     `(#%plain-lambda (number2 string3) number2)
-;     (arrow-type
+;     (giving
 ;       (list number-type string-type)
 ;       (list number-type))))

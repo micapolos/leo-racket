@@ -17,7 +17,7 @@
     ((equal? $selector `boolean)
       (equal? $type boolean-type))
     ((equal? $selector `thing)
-      (equal? $type (thing-type)))
+      (equal? $type (thing)))
     ((equal? $selector `number)
       (equal? $type number-type))
     ((equal? $selector `fixnum)
@@ -27,9 +27,9 @@
     ((equal? $selector `string)
       (equal? $type string-type))
     ((equal? $selector `giving)
-      (arrow-type? $type))
+      (giving? $type))
     ((equal? $selector `any)
-      (type-type? $type))
+      (any? $type))
     (else 
       (type-selects-field? $type $selector))))
 
@@ -52,17 +52,17 @@
 (check-equal? (type-selects? string-type `string) #t)
 (check-equal? (type-selects? string-type `not-string) #f)
 
-(check-equal? (type-selects? (thing-type) `thing) #t)
-(check-equal? (type-selects? (thing-type) `not-thing) #f)
+(check-equal? (type-selects? (thing) `thing) #t)
+(check-equal? (type-selects? (thing) `not-thing) #f)
 
 (check-equal? 
   (type-selects?
-    (arrow-type (list number-type) (list string-type))
+    (giving (list number-type) (list string-type))
     `giving)
   #t)
 (check-equal? 
   (type-selects?
-    (arrow-type (list number-type) (list string-type))
+    (giving (list number-type) (list string-type))
     `not-giving)
   #f)
 
@@ -77,12 +77,12 @@
 
 (check-equal? 
   (type-selects? 
-    (type-type number-type)
+    (any number-type)
     `any) #t)
 
 (check-equal? 
   (type-selects? 
-    (type-type number-type)
+    (any number-type)
     `not-any) #f)
 
 ; ------------------------------------------------------------------

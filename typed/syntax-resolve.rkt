@@ -57,19 +57,19 @@
           (define $fn-syntax (car $args))
           (define $fn-args (cdr $args))
           (define $fn-type (syntax-type $fn-syntax))
-          (unless (arrow-type? $fn-type)
+          (unless (giving? $fn-type)
             (error "apply not a function"))
-          (define $param-types (arrow-type-lhs-types $fn-type))
+          (define $param-types (giving-lhs-types $fn-type))
           (define $fn-arg-types (map syntax-type $fn-args))
-          (unless (arg-types-match-arrow-type? $fn-arg-types $fn-type)
+          (unless (arg-types-match-giving? $fn-arg-types $fn-type)
             (error 
               (format 
                 "apply type type mismatch: ~a ~a"
                 $fn-type
                 $fn-arg-types)))
-          (unless (= (length (arrow-type-rhs-types $fn-type)) 1)
+          (unless (= (length (giving-rhs-types $fn-type)) 1)
             (error "arrow multi-return not supported"))
           (syntax-with-type
             (datum->syntax #f `(#%app ,@$args))
-            (car (arrow-type-rhs-types $fn-type))))))
+            (car (giving-rhs-types $fn-type))))))
     (else #f)))

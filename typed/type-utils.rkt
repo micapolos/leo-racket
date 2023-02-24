@@ -16,18 +16,18 @@
   (cond
     ((symbol? $type) #t)
     ((list? $type) (andmap type-is-static? $type))
-    ((native-type? $type) #f)
-    ((arrow-type? $type) 
-      (andmap type-is-static? (arrow-type-rhs-types $type)))
-    ((type-type? $type) #t)
-    ((thing-type? $type) #f)
+    ((racket? $type) #f)
+    ((giving? $type) 
+      (andmap type-is-static? (giving-rhs-types $type)))
+    ((any? $type) #t)
+    ((thing? $type) #f)
     (else #t)))
 
 (let ()
   (define static-type `(foo))
   (define non-static-type number-type)
 
-  (check-equal? (type-is-static? (native-type `foo)) #f)
+  (check-equal? (type-is-static? (racket `foo)) #f)
   (check-equal? (type-is-static? boolean-type) #f)
   (check-equal? (type-is-static? string-type) #f)
   (check-equal? (type-is-static? number-type) #f)
@@ -35,14 +35,14 @@
   (check-equal? (type-is-static? `(foo)) #t)
   (check-equal? (type-is-static? `(foo ,number-type)) #f)
 
-  (check-equal? (type-is-static? (arrow-type (list static-type) (list static-type))) #t)
-  (check-equal? (type-is-static? (arrow-type (list non-static-type) (list static-type))) #t)
-  (check-equal? (type-is-static? (arrow-type (list static-type) (list non-static-type))) #f)
-  (check-equal? (type-is-static? (arrow-type (list non-static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (giving (list static-type) (list static-type))) #t)
+  (check-equal? (type-is-static? (giving (list non-static-type) (list static-type))) #t)
+  (check-equal? (type-is-static? (giving (list static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (giving (list non-static-type) (list non-static-type))) #f)
 
-  (check-equal? (type-is-static? (type-type number-type)) #t)
+  (check-equal? (type-is-static? (any number-type)) #t)
 
-  (check-equal? (type-is-static? (thing-type)) #f))
+  (check-equal? (type-is-static? (thing)) #f))
 
 ; ---------------------------------------------------------
 

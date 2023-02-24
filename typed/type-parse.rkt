@@ -15,7 +15,7 @@
 (define (syntax-parse-type ($syntax : Syntax)) : Type
   (let (($syntax-e (syntax-e $syntax)))
     (cond
-      ((equal? $syntax-e `thing) (thing-type))
+      ((equal? $syntax-e `thing) (thing))
       ((equal? $syntax-e `boolean) boolean-type)
       ((equal? $syntax-e `string) string-type)
       ((equal? $syntax-e `number) number-type)
@@ -24,21 +24,21 @@
       ((symbol? $syntax-e) $syntax-e)
       (else
         (or
-          (syntax-parse-arrow-type $syntax)
-          (syntax-parse-type-type $syntax)
+          (syntax-parse-giving $syntax)
+          (syntax-parse-any $syntax)
           (cond
             ((list? $syntax-e) (map syntax-parse-type $syntax-e))
             (else $syntax-e)))))))
 
-(define (syntax-parse-arrow-type ($syntax : Syntax)) : (Option Type)
+(define (syntax-parse-giving ($syntax : Syntax)) : (Option Type)
   (syntax-symbol-match-args-arg $syntax `giving args arg
-    (arrow-type
+    (giving
       (map syntax-parse-type args)
       (list (syntax-parse-type arg)))))
 
-(define (syntax-parse-type-type ($syntax : Syntax)) : (Option Type)
+(define (syntax-parse-any ($syntax : Syntax)) : (Option Type)
   (syntax-symbol-match-arg $syntax `any arg
-    (type-type (syntax-parse-type arg))))
+    (any (syntax-parse-type arg))))
 
 (check-equal? (syntax-parse-type #`boolean) boolean-type)
 (check-equal? (syntax-parse-type #`number) number-type)
@@ -59,12 +59,12 @@
 
 (check-equal?
   (syntax-parse-type #`(giving number string boolean))
-  (arrow-type (list number-type string-type) (list boolean-type)))
+  (giving (list number-type string-type) (list boolean-type)))
 
 (check-equal?
   (any-parse-type `(giving number string boolean))
-  (arrow-type (list number-type string-type) (list boolean-type)))
+  (giving (list number-type string-type) (list boolean-type)))
 
 (check-equal?
   (any-parse-type `(any number))
-  (type-type number-type))
+  (any number-type))

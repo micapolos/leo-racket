@@ -8,13 +8,13 @@
 
 (define (type-matches? ($actual : Type) ($expected : Type)) : Boolean
   (or
-    (thing-type? $expected)
+    (thing? $expected)
     (cond
-      ((native-type? $actual) (equal? $actual $expected))
+      ((racket? $actual) (equal? $actual $expected))
       ((and (list? $actual) (list? $expected)) (types-match? $actual $expected))
-      ((arrow-type? $actual) (equal? $actual $expected))
-      ((type-type? $actual) (equal? $actual $expected))
-      ((thing-type? $actual) (equal? $actual $expected))
+      ((giving? $actual) (equal? $actual $expected))
+      ((any? $actual) (equal? $actual $expected))
+      ((thing? $actual) (equal? $actual $expected))
       (else (equal? $actual $expected)))))
 
 (define (types-match? ($actual : (Listof Type)) ($expected : (Listof Type))) : Boolean
@@ -32,44 +32,44 @@
     (andmap type-matches? $types $other-types)))
 
 (define
-  (arg-types-match-arrow-type?
+  (arg-types-match-giving?
     ($arg-types : (Listof Type)) 
-    ($arrow-type : ArrowType))
+    ($giving : Arrow))
   : Boolean
-  (type-list-match? $arg-types (arrow-type-lhs-types $arrow-type)))
+  (type-list-match? $arg-types (giving-lhs-types $giving)))
 
-(check-equal? (type-matches? (native-type `foo) (thing-type)) #t)
-(check-equal? (type-matches? `foo (thing-type)) #t)
-(check-equal? (type-matches? `(foo ,(native-type `number)) (thing-type)) #t)
-(check-equal? (type-matches? (arrow-type null null) (thing-type)) #t)
-(check-equal? (type-matches? (type-type (native-type `foo)) (thing-type)) #t)
-(check-equal? (type-matches? (thing-type) (thing-type)) #t)
+(check-equal? (type-matches? (racket `foo) (thing)) #t)
+(check-equal? (type-matches? `foo (thing)) #t)
+(check-equal? (type-matches? `(foo ,(racket `number)) (thing)) #t)
+(check-equal? (type-matches? (giving null null) (thing)) #t)
+(check-equal? (type-matches? (any (racket `foo)) (thing)) #t)
+(check-equal? (type-matches? (thing) (thing)) #t)
 
-(check-equal? (type-matches? (native-type `foo) (native-type `foo)) #t)
-(check-equal? (type-matches? (native-type `foo) (native-type `not-foo)) #f)
+(check-equal? (type-matches? (racket `foo) (racket `foo)) #t)
+(check-equal? (type-matches? (racket `foo) (racket `not-foo)) #f)
 
 (check-equal? 
   (type-matches? 
-    `(foo ,(native-type `foo))
-    `(foo ,(native-type `foo)))
+    `(foo ,(racket `foo))
+    `(foo ,(racket `foo)))
   #t)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(native-type `foo))
-    `(not-foo ,(native-type `foo)))
+    `(foo ,(racket `foo))
+    `(not-foo ,(racket `foo)))
   #f)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(native-type `foo))
-    `(foo ,(native-type `not-foo)))
+    `(foo ,(racket `foo))
+    `(foo ,(racket `not-foo)))
   #f)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(native-type `foo))
-    `(foo ,(native-type `foo) ,(native-type `bar)))
+    `(foo ,(racket `foo))
+    `(foo ,(racket `foo) ,(racket `bar)))
   #f)
 
 ; -----------------------------------------------------------------------

@@ -14,17 +14,17 @@
   (cond
     ((equal? $type boolean-type)
       (if (cast $any Boolean) `true `false))
-    ((native-type? $type) $any)
+    ((racket? $type) $any)
     ((symbol? $type) $type)
-    ((arrow-type? $type) 
+    ((giving? $type) 
       (type-any $type))
     ((list? $type)
       (anys-types-decompile
         (any-types-anys $any $type)
         $type))
-    ((type-type? $type) 
+    ((any? $type) 
       (type-any $type))
-    ((thing-type? $type)
+    ((thing? $type)
       `(thing ,$any))))
 
 (define 
@@ -61,7 +61,7 @@
 (check-equal? (any-type-decompile #f boolean-type) `false)
 
 (check-equal? 
-  (any-type-decompile `anything (native-type `number)) 
+  (any-type-decompile `anything (racket `number)) 
   `anything)
 
 (check-equal? 
@@ -77,11 +77,11 @@
 (check-equal? 
   (any-type-decompile 
     `anything 
-    (arrow-type (list number-type string-type) (list boolean-type)))
+    (giving (list number-type string-type) (list boolean-type)))
   `(giving number string boolean))
 
 (check-equal? 
   (any-type-decompile 
     `anything 
-    (type-type number-type))
+    (any number-type))
   `(any number))
