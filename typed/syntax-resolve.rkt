@@ -29,7 +29,7 @@
       (syntax-get $arg $symbol))
     ((and (equal? $symbol `get) (= (length $args) 2))
       (syntax-get (car $args) (syntax-type (cadr $args))))
-    ((and (equal? $symbol `check-equal?) (= (length $args) 2))
+    ((and (equal? $symbol `check-equal) (= (length $args) 2))
       (unless (equal? (syntax-type (car $args)) (syntax-type (cadr $args)))
         (error 
           (format 
@@ -37,7 +37,7 @@
             (type-decompile (syntax-type (car $args)))
             (type-decompile (syntax-type (cadr $args))))))
       (syntax-with-type
-        (datum->syntax #f `(,$symbol ,@$args))
+        (datum->syntax #f `(check-equal? ,@$args))
         void-type))
     ((and (equal? $symbol `kind) (= (length $args) 1))
       (error "TODO: kind"))

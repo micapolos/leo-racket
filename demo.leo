@@ -12,7 +12,7 @@ does racket unsafe-fx+
 
 fixnum 2
 plus fixnum 3
-check-equal? fixnum 5
+check-equal fixnum 5
 
 any
   fixnum
@@ -22,7 +22,7 @@ does racket unsafe-fx-
 
 fixnum 5
 minus fixnum 3
-check-equal? fixnum 2
+check-equal fixnum 2
 
 any
   fixnum
@@ -32,7 +32,7 @@ does racket unsafe-fx*
 
 fixnum 2
 times fixnum 3
-check-equal? fixnum 6
+check-equal fixnum 6
 
 any
   flonum
@@ -42,7 +42,7 @@ does racket unsafe-fl+
 
 flonum 2.25
 plus flonum 3.5
-check-equal? flonum 5.75
+check-equal flonum 5.75
 
 any
   flonum
@@ -52,7 +52,7 @@ does racket unsafe-fl-
 
 flonum 5.75
 minus flonum 3.5
-check-equal? flonum 2.25
+check-equal flonum 2.25
 
 any
   flonum
@@ -62,7 +62,7 @@ does racket unsafe-fl*
 
 flonum 2.5
 times flonum 1.25
-check-equal? flonum 3.125
+check-equal flonum 3.125
 
 any
   number
@@ -72,23 +72,23 @@ does racket: =
 
 2
 equals 2
-check-equal? true
+check-equal true
 
 2
 equals 3
-check-equal? false
+check-equal false
 
 2
 equals 2
 then "equal"
 else "not equal"
-check-equal? "equal"
+check-equal "equal"
 
 2
 equals 3
 then "equal"
 else "not equal"
-check-equal? "not equal"
+check-equal "not equal"
 
 any
   number
@@ -98,7 +98,7 @@ does racket +
 
 2
 plus 3
-check-equal? 5
+check-equal 5
 
 any
   number
@@ -108,7 +108,7 @@ does racket -
 
 5
 minus 3
-check-equal? 2
+check-equal 2
 
 any
   number
@@ -118,7 +118,7 @@ does racket *
 
 2
 times 3
-check-equal? 6
+check-equal 6
 
 any
   number
@@ -128,11 +128,11 @@ does racket <
 
 2
 less-than 3
-check-equal? true
+check-equal true
 
 3
 less-than 3
-check-equal? false
+check-equal false
 
 any
   number
@@ -142,11 +142,11 @@ does racket >
 
 4
 greater-than 3
-check-equal? true
+check-equal true
 
 4
 greater-than 4
-check-equal? false
+check-equal false
 
 any
   number
@@ -156,7 +156,7 @@ does racket number->string
 
 128
 to-string
-check-equal? "128"
+check-equal "128"
 
 make pi
   racket pi
@@ -164,28 +164,28 @@ make pi
 
 pi.number
 greater-than 3.14
-check-equal? true
+check-equal true
 
 pi.number
 less-than 3.15
-check-equal? true
+check-equal true
 
 make zero 0
 
 zero.number
-check-equal? 0
+check-equal 0
 
 make one 1
 
 one.number
-check-equal? 1
+check-equal 1
 
 make two
   one.number
   plus one.number
 
 two.number
-check-equal? 2
+check-equal 2
 
 any number.squared
 does
@@ -194,7 +194,7 @@ does
 
 16
 squared
-check-equal? 256
+check-equal 256
 
 any
   circle radius number
@@ -205,7 +205,7 @@ does
 
 circle radius 10
 area
-check-equal?
+check-equal
   pi.number
   times 100
 
@@ -217,7 +217,7 @@ does racket string-append
 
 "Hello, "
 append "world!"
-check-equal? "Hello, world!"
+check-equal "Hello, world!"
 
 any
   string.length
@@ -226,7 +226,7 @@ does racket string-length
 
 "foo"
 length
-check-equal? 3
+check-equal 3
 
 any
   string.exclamate
@@ -237,7 +237,7 @@ does
 
 "Hello"
 exclamate
-check-equal? "Hello!!!"
+check-equal "Hello!!!"
 
 comment: local binding
 "Hello, "
@@ -248,7 +248,7 @@ do
   append " ("
   append string.length.to-string
   append ")"
-check-equal? "Hello, world!!! (15)"
+check-equal "Hello, world!!! (15)"
 
 comment: local bindings
 the: 10 "apples"
@@ -256,7 +256,7 @@ do
   number.to-string
   append " "
   append string
-check-equal? "10 apples"
+check-equal "10 apples"
 
 comment: function with one argument
 number
@@ -264,7 +264,7 @@ doing
   number
   plus 1
 apply 10
-check-equal? 11
+check-equal 11
 
 comment: function with two arguments
 the: number string
@@ -273,7 +273,7 @@ doing
   append " "
   append string
 apply: 10 "apples"
-check-equal? "10 apples"
+check-equal "10 apples"
 
 any
   number
@@ -294,4 +294,4 @@ does recursively
 
 10
 fibonacci
-check-equal? 55
+check-equal 55
