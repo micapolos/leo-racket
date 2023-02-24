@@ -7,7 +7,7 @@
 ; TODO: Refactor to (struct type ((any : Any)))
 (define-type Type Any)
 
-; everything matches this type
+; type of everything
 (struct thing ()
   #:transparent
   #:type-name Thing)
