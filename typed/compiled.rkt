@@ -435,7 +435,6 @@
             (values 
               (map syntax-parse-type $doing-lhss) 
               #f))))
-      (define $body $doing-rhs)
       (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
       (define $arg-tmps
         (map type-generate-temporary $dynamic-arg-types))
@@ -446,9 +445,9 @@
           argument-binding
           $dynamic-arg-types $typed-arg-tmps))
       (cond 
-        ((syntax-symbol-arg? $body `racket)
+        ((syntax-symbol-arg? $doing-rhs `racket)
           (unless $return-type (error "native requires type"))
-          (define $native-args (cdr (syntax-e $body)))
+          (define $native-args (cdr (syntax-e $doing-rhs)))
           (define $native-body (car $native-args))
           (unless (identifier? $native-body)
             (error "native must be identifier"))
@@ -456,23 +455,29 @@
           (syntax-with-type
             $native-body
             (giving $arg-types (list $return-type))))
-        (else 
-          (define $body-binding-list (append $argument-bindings $binding-list))
-          (define $typed-body (binding-list-syntax $body-binding-list $body))
-          (define $body-return-type (syntax-type $typed-body))
-          (when 
-            (and
-              $return-type 
-              (not (equal? $body-return-type $return-type)))
-            (error 
-              (format 
-                "Expression: ~a, type: ~a, expected type: ~a"
-                (syntax-e $body)
-                $body-return-type 
-                $return-type)))
-          (syntax-with-type
-            (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
-            (giving $arg-types (list $body-return-type))))))
+        (else
+          (or
+            (syntax-symbol-match-args $doing-rhs `recursively $args
+              (unless (= (length $args) 1) (error "recursive multi-body"))
+              (error "TODO: recursive"))
+            (let ()
+              (define $body $doing-rhs)
+              (define $body-binding-list (append $argument-bindings $binding-list))
+              (define $typed-body (binding-list-syntax $body-binding-list $body))
+              (define $body-return-type (syntax-type $typed-body))
+              (when 
+                (and
+                  $return-type 
+                  (not (equal? $body-return-type $return-type)))
+                (error 
+                  (format 
+                    "Expression: ~a, type: ~a, expected type: ~a"
+                    (syntax-e $body)
+                    $body-return-type 
+                    $return-type)))
+              (syntax-with-type
+                (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
+                (giving $arg-types (list $body-return-type))))))))
     (else #f)))
 
 ; ----------------------------------------------------------------------
