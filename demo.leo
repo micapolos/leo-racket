@@ -122,30 +122,30 @@ check-equal? 6
 
 any
   number
-  less-than? number
+  less-than number
   giving boolean
 does racket <
 
 2
-less-than? 3
+less-than 3
 check-equal? true
 
 3
-less-than? 3
+less-than 3
 check-equal? false
 
 any
   number
-  greater-than? number
+  greater-than number
   giving boolean
 does racket >
 
 4
-greater-than? 3
+greater-than 3
 check-equal? true
 
 4
-greater-than? 4
+greater-than 4
 check-equal? false
 
 any
@@ -163,11 +163,11 @@ make pi
   as number
 
 pi.number
-greater-than? 3.14
+greater-than 3.14
 check-equal? true
 
 pi.number
-less-than? 3.15
+less-than 3.15
 check-equal? true
 
 make zero 0
@@ -274,3 +274,24 @@ doing
   append string
 apply: 10 "apples"
 check-equal? "10 apples"
+
+any
+  number
+  fibonacci
+  giving number
+does recursively
+  number
+  less-than 2
+  then number
+  else
+    number
+    minus 2
+    fibonacci
+    plus
+      number
+      minus 1
+      fibonacci
+
+10
+fibonacci
+check-equal? 55

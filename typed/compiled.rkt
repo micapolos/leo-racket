@@ -325,9 +325,8 @@
       (map
         argument-binding
         $dynamic-param-types $typed-param-tmps))
-    (define $body $does-rhs)
     (or
-      (syntax-symbol-match-args $body `racket $native-args
+      (syntax-symbol-match-args $does-rhs `racket $native-args
         (unless (= (length $native-args) 1)
           (error "expected 1 native arg"))
         (unless $return-type (error "native requires type"))
@@ -338,7 +337,22 @@
           (function-binding $symbol $field-param-types $return-type $native-body))
         (compiled-plus-binding $compiled $binding))
       (let ()
-        (define $body-binding-list (append $argument-bindings $binding-list))
+        (define $fn (type-generate-temporary $param-type))
+        (define $body
+          (or
+            (syntax-symbol-match-args $does-rhs `recursively $args
+              (unless (= (length $args) 1) (error "recursive multi-body"))
+              (car $args))
+            $does-rhs))
+        (define $final-bindings
+          (or
+            (syntax-symbol-match-args $does-rhs `recursively $args
+              (unless $return-type (error "recursive must have return type"))
+              (cons
+                (function-binding $symbol $field-param-types $return-type $fn)
+                $argument-bindings))
+            $argument-bindings))
+        (define $body-binding-list (append $final-bindings $binding-list))
         (define $typed-body (binding-list-syntax $body-binding-list $body))
         (define $body-return-type (syntax-type $typed-body))
         (when 
@@ -351,8 +365,7 @@
               (syntax-e $body)
               $body-return-type 
               $return-type)))
-        (define $fn (type-generate-temporary $param-type))
-        (define $binding 
+        (define $binding
           (function-binding $symbol $field-param-types $body-return-type $fn))
         (define $compiled-syntax 
           (datum->syntax #f `(define (,$fn ,@$param-tmps) ,$typed-body)))
