@@ -387,11 +387,35 @@
         (define $value (binding-list-syntax $binding-list $arg))
         (define $type (syntax-type $value))
         (define $tmp (type-generate-temporary $type))
-        (compiled-plus-syntax
-          (compiled-plus-binding
-            $compiled
-            (argument-binding $type $tmp))
-          (datum->syntax #f `(define ,$tmp ,$value))))
+        (cond
+          ((giving? $type)
+            (define $param-types (giving-lhs-types $type))
+            (unless (= (length $param-types) 1)
+              (error "multi-param not supported"))
+            (define $param-type (car $param-types))
+            (unless (list? $param-type)
+              (error "list param type expected"))
+            (unless (not (null? $param-type))
+              (error "expected non-empty list"))
+            (define $symbol (car $param-type))
+            (unless (symbol? $symbol)
+              (error "symbol expected"))
+            (define $fn-param-types (cdr $param-type))
+            (define $body-types (giving-lhs-types $type))
+            (unless (= (length $body-types) 1)
+              (error "multi-retirn not supproted"))
+            (define $return-type (car $body-types))
+            (compiled-plus-syntax
+              (compiled-plus-binding
+                $compiled
+                (function-binding $symbol $fn-param-types $return-type $tmp))
+              (datum->syntax #f `(define ,$tmp ,$value))))
+          (else 
+            (compiled-plus-syntax
+              (compiled-plus-binding
+                $compiled
+                (argument-binding $type $tmp))
+              (datum->syntax #f `(define ,$tmp ,$value))))))
       $compiled
       $args)))
 
