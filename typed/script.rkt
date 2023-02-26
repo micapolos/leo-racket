@@ -5,7 +5,7 @@
 (require leo/typed/base)
 
 (define-type Line (U Field Native))
-(define-type Script (Listof Line))
 
-(data field (symbol : Symbol) (script : Script))
+(data field (symbol : Symbol) (line-list : (Listof Line)))
+
 (data native (any : Any))
