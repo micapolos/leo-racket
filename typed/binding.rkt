@@ -4,6 +4,7 @@
 
 (require 
   racket/function
+  leo/typed/base
   leo/typed/option
   leo/typed/syntax-type
   leo/typed/syntax-typed
