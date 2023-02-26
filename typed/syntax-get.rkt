@@ -18,10 +18,8 @@
   (define $type (syntax-type $syntax))
   (define $ctx $syntax)
   (and
-    (not (null? $type))
-    (list? $type)
-    (symbol? (car $type))
-    (let* (($type-list (cdr $type))
+    (tuple? $type)
+    (let* (($type-list (tuple-type-list $type))
            ($size (type-list-size $type-list))
            ($indexed (type-list-select $type-list $selector)))
       (and $indexed
@@ -56,8 +54,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(foo ,number-type))
-      `number)
+        (tuple `foo (list number-type)))
+      (tuple `number null))
     syntax-typed-datum)
   (typed `foo number-type))
 
@@ -66,8 +64,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(foo ,number-type ,string-type))
-      `string)
+        (tuple `foo (list number-type string-type)))
+      (tuple `string null))
     syntax-typed-datum)
   (typed `(unsafe-cdr foo) string-type))
 
@@ -76,8 +74,8 @@
     (syntax-get
       (syntax-with-type 
         #`(cons a b)
-        `(foo ,number-type ,string-type))
-      `string)
+        (tuple `foo (list number-type string-type)))
+      (tuple `string null))
     syntax-typed-datum)
   (typed `b string-type))
 
@@ -86,8 +84,8 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(foo ,number-type ,string-type ,boolean-type))
-      `string)
+        (tuple `foo (list number-type string-type boolean-type)))
+      (tuple `string null))
     syntax-typed-datum)
   (typed `(unsafe-vector-ref foo 1) string-type))
 
@@ -96,8 +94,8 @@
     (syntax-get
       (syntax-with-type 
         #`(vector a b c)
-        `(foo ,number-type ,string-type ,boolean-type))
-      `string)
+        (tuple `foo (list number-type string-type boolean-type)))
+      (tuple `string null))
     syntax-typed-datum)
   (typed `b string-type))
 
@@ -106,18 +104,18 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(foo ,number-type foo ,string-type))
-      `foo)
+        (tuple `foo (list number-type (tuple `foo null) string-type)))
+      (tuple `foo null))
     syntax-typed-datum)
-  (typed #f `foo))
+  (typed #f (tuple `foo null)))
 
 (check-equal?
   (option-map
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(foo ,number-type foo ,string-type))
-      `string)
+        (tuple `foo (list number-type (tuple `foo null) string-type)))
+      (tuple `string null))
     syntax-typed-datum)
   (typed `(unsafe-cdr foo) string-type))
 
@@ -126,19 +124,20 @@
     (syntax-get
       (syntax-with-type 
         #`foo
-        `(point 
-          (x ,number-type)
-          (y ,number-type)))
-      `y)
+        (tuple `point 
+          (list
+            (tuple `x (list number-type))
+            (tuple `y (list number-type)))))
+      (tuple `y null))
     syntax-typed-datum)
-  (typed `(unsafe-cdr foo) `(y ,number-type)))
+  (typed `(unsafe-cdr foo) (tuple `y (list number-type))))
 
 (check-equal?
   (option-map
     (syntax-get
       (syntax-with-type 
         #`(cons a b)
-        `(foo ,number-type ,string-type))
-      `first)
+        (tuple `foo (list number-type string-type)))
+      (tuple `first null))
     syntax-typed-datum)
-  (typed `a `(first ,number-type)))
+  (typed `a (tuple `first (list number-type))))

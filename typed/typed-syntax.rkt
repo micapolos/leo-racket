@@ -40,7 +40,7 @@
 (define (symbol-typed-syntax ($symbol : Symbol))
   (syntax-with-type 
     null-syntax
-    $symbol))
+    (tuple $symbol null)))
 
 (define (field-typed-syntax ($symbol : Symbol) ($typed-syntaxes : (Listof Syntax)))
   (typed-field-syntax $symbol $typed-syntaxes))
@@ -74,7 +74,7 @@
 
 (check-equal? 
   (syntax-typed-datum (symbol-typed-syntax `foo))
-  (typed null-value `foo))
+  (typed null-value (tuple `foo null)))
 
 (check-equal? 
   (syntax-typed-datum 
@@ -85,7 +85,7 @@
         (string-typed-syntax "foo"))))
   (typed 
     `(cons 1 "foo") 
-    `(foo ,number-type bar ,string-type)))
+    (tuple `foo (list number-type (tuple `bar null) string-type))))
 
 (check-equal? 
   (syntax-typed-datum (type-typed-syntax number-type))

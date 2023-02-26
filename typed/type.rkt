@@ -5,7 +5,7 @@
 (require leo/typed/base)
 
 ; TODO: Refactor to (struct type ((any : Any)))
-(define-type Type Any)
+(define-type Type (U Thing Racket Tuple Arrow TypeAny))
 
 ; type of everything
 (data thing)
@@ -16,8 +16,11 @@
 ; function type
 (data arrow (lhs-types : (Listof Type)) (rhs-type : Type))
 
-; field type
-(data field (symbol : Symbol) (type-list : (Listof Type)))
+; tuple type
+(data tuple (symbol : Symbol) (type-list : (Listof Type)))
+
+; choice type
+(data choice (symbol : Symbol) (type-list : (Listof Type)))
 
 ; type of types
 (struct any ((type : Type))

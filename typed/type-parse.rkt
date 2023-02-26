@@ -21,14 +21,17 @@
       ((equal? $syntax-e `number) number-type)
       ((equal? $syntax-e `fixnum) fixnum-type)
       ((equal? $syntax-e `flonum) flonum-type)
-      ((symbol? $syntax-e) $syntax-e)
+      ((symbol? $syntax-e) (tuple $syntax-e null))
       (else
         (or
           (syntax-parse-giving $syntax)
           (syntax-parse-any $syntax)
           (cond
-            ((list? $syntax-e) (map syntax-parse-type $syntax-e))
-            (else $syntax-e)))))))
+            ((and (list? $syntax-e) (not (null? $syntax-e)) (identifier? (car $syntax-e)))
+              (tuple 
+                (syntax-e (car $syntax-e))
+                (map syntax-parse-type (cdr $syntax-e))))
+            (else (racket $syntax-e))))))))
 
 (define (syntax-parse-giving ($syntax : Syntax)) : (Option Type)
   (syntax-symbol-match-args-arg $syntax `giving args arg
@@ -45,17 +48,18 @@
 (check-equal? (syntax-parse-type #`fixnum) fixnum-type)
 (check-equal? (syntax-parse-type #`flonum) flonum-type)
 (check-equal? (syntax-parse-type #`string) string-type)
-(check-equal? (syntax-parse-type #`foo) `foo)
+(check-equal? (syntax-parse-type #`foo) (tuple `foo null))
 
 (check-equal? 
   (syntax-parse-type #`(foo boolean number string)) 
-  `(foo ,boolean-type ,number-type ,string-type))
+  (tuple `foo (list boolean-type number-type string-type)))
 
 (check-equal?
   (syntax-parse-type #`(id (first number) (second string)))
-  `(id
-    (first ,number-type)
-    (second ,string-type)))
+  (tuple `id
+    (list 
+      (tuple `first (list number-type))
+      (tuple `second (list string-type)))))
 
 (check-equal?
   (syntax-parse-type #`(giving number string boolean))

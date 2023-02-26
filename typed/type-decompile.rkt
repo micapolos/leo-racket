@@ -9,18 +9,23 @@
 
 (define (type-decompile ($type : Type)) : Any
   (cond
-    ((racket? $type) 
-      (racket-any $type))
-    ((symbol? $type) $type)
+    ((racket? $type) (racket-any $type))
     ((arrow? $type) 
       `(giving 
         ,@(map type-decompile (arrow-lhs-types $type))
         ,(type-decompile (arrow-rhs-type $type))))
-    ((list? $type) (map type-decompile $type))
+    ((tuple? $type) 
+      (let (($symbol (tuple-symbol $type))
+            ($type-list (tuple-type-list $type)))
+      (cond 
+        ((null? $type-list) $symbol)
+        (else 
+          `(
+            ,$symbol
+            ,@(map type-decompile $type-list))))))
     ((any? $type)
       `(any ,(type-decompile (any-type $type))))
-    ((thing? $type) `thing)
-    (else $type)))
+    ((thing? $type) `thing)))
 
 (check-equal? (type-decompile string-type) `string)
 (check-equal? (type-decompile number-type) `number)
@@ -28,11 +33,14 @@
 (check-equal? (type-decompile flonum-type) `flonum)
 (check-equal? (type-decompile boolean-type) `boolean)
 (check-equal? (type-decompile (racket `foo)) `foo)
-(check-equal? (type-decompile `foo) `foo)
 (check-equal? (type-decompile (thing)) `thing)
 
 (check-equal? 
-  (type-decompile `(foo ,number-type ,string-type))
+  (type-decompile (tuple `foo null)) 
+  `foo)
+
+(check-equal? 
+  (type-decompile (tuple `foo (list number-type string-type)))
   `(foo number string))
 
 (check-equal? 

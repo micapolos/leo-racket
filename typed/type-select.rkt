@@ -14,76 +14,81 @@
 (define (type-selects? ($type : Type) ($selector : Type)) : Boolean
   (cond
     ((equal? $type $selector) #t)
-    ((equal? $selector `boolean)
+    ((equal? $selector (tuple `boolean null))
       (equal? $type boolean-type))
-    ((equal? $selector `thing)
+    ((equal? $selector (tuple `thing null))
       (equal? $type (thing)))
-    ((equal? $selector `number)
+    ((equal? $selector (tuple `number null))
       (equal? $type number-type))
-    ((equal? $selector `fixnum)
+    ((equal? $selector (tuple `fixnum null))
       (equal? $type fixnum-type))
-    ((equal? $selector `flonum)
+    ((equal? $selector (tuple `flonum null))
       (equal? $type flonum-type))
-    ((equal? $selector `string)
+    ((equal? $selector (tuple `string null))
       (equal? $type string-type))
-    ((equal? $selector `giving)
+    ((equal? $selector (tuple `giving null))
       (arrow? $type))
-    ((equal? $selector `any)
+    ((equal? $selector (tuple `any null))
       (any? $type))
     (else 
       (type-selects-field? $type $selector))))
 
 (define (type-selects-field? ($type : Type) ($selector : Type)) : Boolean
   (and 
-    (symbol? $selector)
-    (not (null? $type))
-    (list? $type)
-    (equal? (car $type) $selector)))
+    (tuple? $type)
+    (tuple? $selector)
+    (null? (tuple-type-list $selector))
+    (equal? (tuple-symbol $type) (tuple-symbol $selector))))
 
-(check-equal? (type-selects? `foo `foo) #t)
-(check-equal? (type-selects? `foo `not-foo) #f)
+(check-equal? (type-selects? (tuple `foo null) (tuple `foo null)) #t)
+(check-equal? (type-selects? (tuple `foo null) (tuple `not-foo null)) #f)
 
-(check-equal? (type-selects? boolean-type `boolean) #t)
-(check-equal? (type-selects? boolean-type `not-boolean) #f)
+(check-equal? (type-selects? boolean-type (tuple `boolean null)) #t)
+(check-equal? (type-selects? boolean-type (tuple `not-boolean null)) #f)
 
-(check-equal? (type-selects? number-type `number) #t)
-(check-equal? (type-selects? number-type `not-number) #f)
+(check-equal? (type-selects? number-type (tuple `number null)) #t)
+(check-equal? (type-selects? number-type (tuple `not-number null)) #f)
 
-(check-equal? (type-selects? string-type `string) #t)
-(check-equal? (type-selects? string-type `not-string) #f)
+(check-equal? (type-selects? string-type (tuple `string null)) #t)
+(check-equal? (type-selects? string-type (tuple `not-string null)) #f)
 
-(check-equal? (type-selects? (thing) `thing) #t)
-(check-equal? (type-selects? (thing) `not-thing) #f)
+(check-equal? (type-selects? (thing) (tuple `thing null)) #t)
+(check-equal? (type-selects? (thing) (tuple `not-thing null)) #f)
 
 (check-equal? 
   (type-selects?
-    (arrow (list number-type) (list string-type))
-    `giving)
+    (arrow (list number-type) string-type)
+    (tuple `giving null))
   #t)
+
 (check-equal? 
   (type-selects?
-    (arrow (list number-type) (list string-type))
-    `not-giving)
+    (arrow (list number-type) string-type)
+    (tuple `not-giving null))
   #f)
 
 (check-equal? 
   (type-selects? 
-    `(foo)
-    `foo) #t)
+    (tuple `foo null)
+    (tuple `foo null)) #t)
+
 (check-equal? 
   (type-selects? 
-    `(foo)
-    `not-foo) #f)
+    (tuple `foo null)
+    (tuple `not-foo null)) 
+  #f)
 
 (check-equal? 
   (type-selects? 
     (any number-type)
-    `any) #t)
+    (tuple `any null))
+  #t)
 
 (check-equal? 
   (type-selects? 
     (any number-type)
-    `not-any) #f)
+    (tuple `not-any null))
+  #f)
 
 ; ------------------------------------------------------------------
 
@@ -112,60 +117,60 @@
     ($type-list : (Listof Type))
     ($selector : Type)) : (Option (Pairof (Option Exact-Nonnegative-Integer) Type))
   (cond
-    ((and (equal? $selector `first) (>= (length $type-list) 1))
+    ((and (equal? $selector (tuple `first null)) (>= (length $type-list) 1))
       (cons 
         0 
-        `(first ,(list-ref $type-list 0))))
-    ((and (equal? $selector `second) (>= (length $type-list) 2))
+        (tuple `first (list (list-ref $type-list 0)))))
+    ((and (equal? $selector (tuple `second null)) (>= (length $type-list) 2))
       (cons 
         1 
-        `(second ,(list-ref $type-list 1))))
+        (tuple `second (list (list-ref $type-list 1)))))
     (else (type-list-select-from $type-list $selector 0))))
 
 (check-equal?
   (type-list-select
-    (list number-type `foo string-type)
-    `number)
+    (list number-type (tuple `foo null) string-type)
+    (tuple `number null))
   (cons 0 number-type))
 
 (check-equal?
   (type-list-select
-    (list number-type `foo string-type)
-    `foo)
-  (cons #f `foo))
+    (list number-type (tuple `foo null) string-type)
+    (tuple `foo null))
+  (cons #f (tuple `foo null)))
 
 (check-equal?
   (type-list-select
-    (list number-type `foo string-type)
-    `string)
+    (list number-type (tuple `foo null) string-type)
+    (tuple `string null))
   (cons 1 string-type))
 
 (check-equal?
   (type-list-select
-    (list number-type `foo string-type)
-    `boolean)
+    (list number-type (tuple `foo null) string-type)
+    (tuple `boolean null))
   #f)
 
 (check-equal?
   (type-list-select
     (list number-type)
-    `number)
+    (tuple `number null))
   (cons 0 number-type))
 
 (check-equal?
   (type-list-select
-    (list number-type `foo)
-    `number)
+    (list number-type (tuple `foo null))
+    (tuple `number null))
   (cons 0 number-type))
 
 (check-equal?
   (type-list-select
     (list number-type string-type)
-    `first)
-  (cons 0 `(first ,number-type)))
+    (tuple `first null))
+  (cons 0 (tuple `first (list number-type))))
 
 (check-equal?
   (type-list-select
     (list number-type string-type)
-    `second)
-  (cons 1 `(second ,string-type)))
+    (tuple `second null))
+  (cons 1 (tuple `second (list string-type))))

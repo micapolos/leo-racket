@@ -35,28 +35,25 @@
   (typed-field-syntax
     ($symbol : Symbol) 
     ($syntaxes : (Listof Syntax))) : Syntax
-  (syntax-list-typed-syntax 
-    (cons 
-      (syntax-with-type (datum->syntax #f $symbol) $symbol)
-      $syntaxes)))
-
-(define (syntax-list-typed-syntax ($syntax-list : (Listof Syntax))) : Syntax
   (syntax-with-type
-    (let* (($dynamic-syntax-list (filter syntax-is-dynamic? $syntax-list))
-           ($size (length $dynamic-syntax-list)))
-      (case $size
-        ((0) null-syntax)
-        ((1) (car $dynamic-syntax-list))
-        ((2) 
-          (datum->syntax #f 
-            (list #`cons (car $dynamic-syntax-list) (cadr $dynamic-syntax-list))))
-        (else (datum->syntax #f (cons #`vector $dynamic-syntax-list)))))
-    (map syntax-type $syntax-list)))
+    (syntax-list-syntax $syntaxes)
+    (tuple $symbol (map syntax-type $syntaxes))))
+
+(define (syntax-list-syntax ($syntax-list : (Listof Syntax))) : Syntax
+  (let* (($dynamic-syntax-list (filter syntax-is-dynamic? $syntax-list))
+         ($size (length $dynamic-syntax-list)))
+    (case $size
+      ((0) null-syntax)
+      ((1) (car $dynamic-syntax-list))
+      ((2) 
+        (datum->syntax #f 
+          (list #`cons (car $dynamic-syntax-list) (cadr $dynamic-syntax-list))))
+      (else (datum->syntax #f (cons #`vector $dynamic-syntax-list))))))
 
 (check-equal?
   (syntax-typed-datum 
     (typed-field-syntax `foo null))
-  (typed null-value `(foo)))
+  (typed null-value (tuple `foo null)))
 
 (check-equal?
   (syntax-typed-datum 
@@ -65,7 +62,7 @@
         (syntax-with-type #`1 number-type))))
   (typed 
     1
-    `(x ,number-type)))
+    (tuple `x (list number-type))))
 
 (check-equal?
   (syntax-typed-datum 
@@ -75,7 +72,7 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    `(tuple ,number-type ,string-type)))
+    (tuple `tuple (list number-type string-type))))
 
 (check-equal?
   (syntax-typed-datum 
@@ -86,7 +83,7 @@
         (syntax-with-type #`c boolean-type))))
   (typed 
     `(vector a b c) 
-    `(tuple ,number-type ,string-type ,boolean-type)))
+    (tuple `tuple (list number-type string-type boolean-type))))
 
 (check-equal?
   (syntax-typed-datum 
@@ -96,4 +93,4 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    `(tuple ,number-type ,string-type)))
+    (tuple `tuple (list number-type string-type))))

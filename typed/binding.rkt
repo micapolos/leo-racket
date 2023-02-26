@@ -105,11 +105,11 @@
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type `foo number-type) boolean-type #`fn)
+      (function-binding `foo (list string-type (tuple `foo null) number-type) boolean-type #`fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
-        (syntax-with-type #`b `foo)
+        (syntax-with-type #`b (tuple `foo null))
         (syntax-with-type #`c number-type)))
     syntax-typed-datum)
   (typed `(#%app fn a c) boolean-type))
@@ -144,11 +144,11 @@
     ($symbol : Symbol)) 
   : (Option Syntax)
   (define $type (argument-binding-type $argument-binding))
-  (define $given-type `(given ,$type))
+  (define $given-type (tuple `given (list $type)))
   (define $syntax (argument-binding-syntax $argument-binding))
   (syntax-get 
     (syntax-with-type $syntax $given-type)
-    $symbol))
+    (tuple $symbol null)))
 
 (check-equal?
   (option-map
@@ -250,7 +250,7 @@
         (constant-binding `foo string-type #`foo-string)
         (constant-binding `bar string-type #`foo-string))
       `not-foo))
-  (typed #f `not-foo))
+  (typed #f (tuple `not-foo null)))
 
 ; --------------------------------------------------------------------
 
@@ -274,7 +274,7 @@
       `string
       (list 
         (syntax-with-type #`x 
-          `(id ,number-type ,string-type)))))
+          (tuple `id (list number-type string-type))))))
   (typed `(unsafe-cdr x) string-type))
 
 (check-equal?
@@ -301,4 +301,4 @@
         (syntax-with-type #`b string-type))))
   (typed 
     `(cons a b) 
-    `(not-plus ,string-type ,string-type)))
+    (tuple `not-plus (list string-type string-type))))

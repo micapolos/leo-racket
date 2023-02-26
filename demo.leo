@@ -150,12 +150,12 @@ check-equals false
 
 any
   number
-  to-string
+  string
   giving string
 does racket number->string
 
 128
-to-string
+string
 check-equals "128"
 
 define pi
@@ -245,14 +245,14 @@ exclamate
 do
   string
   append " ("
-  append string.length.to-string
+  append string.length.string
   append ")"
 check-equals "Hello, world!!! (15)"
 
 comment: local bindings
 the: 10 "apples"
 do
-  number.to-string
+  number.string
   append " "
   append string
 check-equals "10 apples"
@@ -268,7 +268,7 @@ check-equals 11
 comment: function with two arguments
 the: number string
 doing
-  number.to-string
+  number.string
   append " "
   append string
 apply: 10 "apples"

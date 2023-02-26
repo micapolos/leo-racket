@@ -15,13 +15,16 @@
     ((equal? $type boolean-type)
       (if (cast $any Boolean) `true `false))
     ((racket? $type) $any)
-    ((symbol? $type) $type)
     ((arrow? $type) 
       (type-decompile $type))
-    ((list? $type)
-      (anys-types-decompile
-        (any-types-anys $any $type)
-        $type))
+    ((tuple? $type)
+      (define $decompiled-list
+        (anys-types-decompile
+          (any-types-anys $any (tuple-type-list $type))
+          (tuple-type-list $type)))
+      (cond 
+        ((null? $decompiled-list) (tuple-symbol $type))
+        (else (cons (tuple-symbol $type) $decompiled-list))))
     ((any? $type) 
       (type-decompile $type))
     ((thing? $type)
@@ -65,13 +68,13 @@
   `anything)
 
 (check-equal? 
-  (any-type-decompile `anything `foo)
+  (any-type-decompile `anything (tuple `foo null))
   `foo)
 
 (check-equal? 
   (any-type-decompile 
     (cons `a `b)
-    `(foo ,number-type bar ,string-type))
+    (tuple `foo (list number-type (tuple `bar null) string-type)))
   `(foo a bar b))
 
 (check-equal? 

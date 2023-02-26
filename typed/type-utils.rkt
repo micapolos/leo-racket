@@ -14,27 +14,28 @@
 
 (define (type-is-static? ($type : Type)) : Boolean
   (cond
-    ((symbol? $type) #t)
-    ((list? $type) (andmap type-is-static? $type))
-    ((any? $type) #t)
-    (else #f)))
+    ((thing? $type) #f)
+    ((racket? $type) #f)
+    ((tuple? $type) (andmap type-is-static? (tuple-type-list $type)))
+    ((arrow? $type) #f)
+    ((any? $type) #t)))
+
+(define static-type (tuple `foo null))
+(define non-static-type number-type)
 
 (let ()
-  (define static-type `(foo))
-  (define non-static-type number-type)
-
   (check-equal? (type-is-static? (racket `foo)) #f)
   (check-equal? (type-is-static? boolean-type) #f)
   (check-equal? (type-is-static? string-type) #f)
   (check-equal? (type-is-static? number-type) #f)
 
-  (check-equal? (type-is-static? `(foo)) #t)
-  (check-equal? (type-is-static? `(foo ,number-type)) #f)
+  (check-equal? (type-is-static? (tuple `foo null)) #t)
+  (check-equal? (type-is-static? (tuple `foo (list number-type))) #f)
 
-  (check-equal? (type-is-static? (arrow (list static-type) (list static-type))) #f)
-  (check-equal? (type-is-static? (arrow (list non-static-type) (list static-type))) #f)
-  (check-equal? (type-is-static? (arrow (list static-type) (list non-static-type))) #f)
-  (check-equal? (type-is-static? (arrow (list non-static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (arrow (list static-type) static-type)) #f)
+  (check-equal? (type-is-static? (arrow (list non-static-type) static-type)) #f)
+  (check-equal? (type-is-static? (arrow (list static-type) non-static-type)) #f)
+  (check-equal? (type-is-static? (arrow (list non-static-type) non-static-type)) #f)
 
   (check-equal? (type-is-static? (any number-type)) #t)
 
@@ -46,19 +47,5 @@
   (length (filter type-is-dynamic? $type-list)))
 
 (check-equal?
-  (type-list-size (list number-type `foo string-type))
+  (type-list-size (list number-type static-type string-type))
   2)
-
-; ---------------------------------------------------------
-
-(define (field-type? ($type : Type)) : Boolean
-  (and
-    (not (null? $type))
-    (list? $type)
-    (symbol? (car $type))))
-
-(check-equal? (field-type? `foo) #f)
-(check-equal? (field-type? `()) #f)
-(check-equal? (field-type? `(foo)) #t)
-(check-equal? (field-type? `(foo 1)) #t)
-(check-equal? (field-type? `(1 2)) #f)

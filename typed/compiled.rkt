@@ -240,9 +240,9 @@
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
     (define $param-type (car $param-types))
-    (unless (symbol? $param-type)
+    (unless (and (tuple? $param-type) (null? (tuple-type-list $param-type)))
       (error "expected symbol-type"))
-    (define $symbol $param-type)
+    (define $symbol (tuple-symbol $param-type))
     (define $body $is-rhs)
     (or
       (syntax-symbol-match-args $body `racket $native-args
@@ -302,14 +302,10 @@
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
     (define $param-type (car $param-types))
-    (unless 
-      (and 
-        (list? $param-type) 
-        (not (null? $param-type)) 
-        (symbol? (car $param-type)))
-      (error (format "expected field param type: ~a" $lhs-type)))
-    (define $symbol (car $param-type))
-    (define $field-param-types (cdr $param-type))
+    (unless (tuple? $param-type)
+      (error (format "expected tuple param type: ~a" $lhs-type)))
+    (define $symbol (tuple-symbol $param-type))
+    (define $field-param-types (tuple-type-list $param-type))
     (define $dynamic-param-types (filter type-is-dynamic? $field-param-types))
     (define $param-tmps
       (map type-generate-temporary $dynamic-param-types))
@@ -574,7 +570,7 @@
   (check-equal? (function-binding-param-types $binding) (list number-type))
   (check-equal? 
     (function-binding-return-type $binding) 
-    `(done ,number-type)))
+    (tuple `done (list number-type))))
 
 (let-in
   $binding (compile-binding #`(does (any (giving (plus number number) number)) (racket +)))

@@ -11,11 +11,14 @@
     (thing? $expected)
     (cond
       ((racket? $actual) (equal? $actual $expected))
-      ((and (list? $actual) (list? $expected)) (types-match? $actual $expected))
+      ((tuple? $actual) 
+        (and 
+          (tuple? $expected) 
+          (equal? (tuple-symbol $actual) (tuple-symbol $expected))
+          (types-match? (tuple-type-list $actual) (tuple-type-list $expected))))
       ((arrow? $actual) (equal? $actual $expected))
       ((any? $actual) (equal? $actual $expected))
-      ((thing? $actual) (equal? $actual $expected))
-      (else (equal? $actual $expected)))))
+      ((thing? $actual) (equal? $actual $expected)))))
 
 (define (types-match? ($actual : (Listof Type)) ($expected : (Listof Type))) : Boolean
   (and
@@ -39,9 +42,9 @@
   (type-list-match? $arg-types (arrow-lhs-types $giving)))
 
 (check-equal? (type-matches? (racket `foo) (thing)) #t)
-(check-equal? (type-matches? `foo (thing)) #t)
-(check-equal? (type-matches? `(foo ,(racket `number)) (thing)) #t)
-(check-equal? (type-matches? (arrow null null) (thing)) #t)
+(check-equal? (type-matches? (tuple `foo null) (thing)) #t)
+(check-equal? (type-matches? (tuple `foo (list (racket `number))) (thing)) #t)
+(check-equal? (type-matches? (arrow null (racket `number)) (thing)) #t)
 (check-equal? (type-matches? (any (racket `foo)) (thing)) #t)
 (check-equal? (type-matches? (thing) (thing)) #t)
 
@@ -50,26 +53,26 @@
 
 (check-equal? 
   (type-matches? 
-    `(foo ,(racket `foo))
-    `(foo ,(racket `foo)))
+    (tuple `foo (list (racket `foo)))
+    (tuple `foo (list (racket `foo))))
   #t)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(racket `foo))
-    `(not-foo ,(racket `foo)))
+    (tuple `foo (list (racket `foo)))
+    (tuple `not-foo (list (racket `foo))))
   #f)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(racket `foo))
-    `(foo ,(racket `not-foo)))
+    (tuple `foo (list (racket `foo)))
+    (tuple `foo (list (racket `not-foo))))
   #f)
 
 (check-equal?
   (type-matches? 
-    `(foo ,(racket `foo))
-    `(foo ,(racket `foo) ,(racket `bar)))
+    (tuple `foo (list (racket `foo)))
+    (tuple `foo (list (racket `foo) (racket `bar))))
   #f)
 
 ; -----------------------------------------------------------------------
