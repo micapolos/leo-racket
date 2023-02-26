@@ -20,6 +20,8 @@
   (identifier : Identifier)
   (function? : Boolean))
 
+; ----------------------------------------------------------------------------
+
 (define 
   (binding2-resolve 
     ($binding : Binding2) 
@@ -41,11 +43,7 @@
 (check-equal?
   (option-map
     (binding2-resolve 
-      (binding2 
-        (list number-type string-type)
-        boolean-type
-        #`foo
-        #f)
+      (binding2 (list number-type string-type) boolean-type #`foo #f)
       (list (syntax-with-type #`a number-type) (syntax-with-type #`b string-type)))
     syntax-typed-datum)
   (typed `foo boolean-type))
@@ -53,24 +51,54 @@
 (check-equal?
   (option-map
     (binding2-resolve 
-      (binding2 
-        (list number-type string-type)
-        boolean-type
-        #`foo
-        #t)
+      (binding2 (list number-type string-type) boolean-type #`foo #t)
       (list (syntax-with-type #`a number-type) (syntax-with-type #`b string-type)))
     syntax-typed-datum)
   (typed `(#%app foo a b) boolean-type))
 
 (check-equal?
-  (option-map
-    (binding2-resolve 
-      (binding2
-        (list number-type string-type)
-        boolean-type
-        #`foo
-        #f)
-      (list (syntax-with-type #`a number-type) (syntax-with-type #`b number-type)))
-    syntax->datum)
+  (binding2-resolve 
+    (binding2 (list number-type string-type) boolean-type #`foo #f)
+    (list (syntax-with-type #`a number-type) (syntax-with-type #`b number-type)))
   #f)
 
+; ----------------------------------------------------------------------------
+
+(define
+  (binding2-list-resolve
+    ($binding-list : (Listof Binding2))
+    ($syntax-list : (Listof Syntax)))
+  : (Option Syntax)
+  (and
+    (not (null? $binding-list))
+    (or
+      (binding2-resolve (car $binding-list) $syntax-list)
+      (binding2-list-resolve (cdr $binding-list) $syntax-list))))
+
+(check-equal?
+  (option-map
+    (binding2-list-resolve 
+      (list 
+        (binding2 (list number-type) boolean-type #`number->boolean #t)
+        (binding2 (list string-type) boolean-type #`string->boolean #t))
+      (list (syntax-with-type #`a number-type)))
+    syntax-typed-datum)
+  (typed `(#%app number->boolean a) boolean-type))
+
+(check-equal?
+  (option-map
+    (binding2-list-resolve 
+      (list 
+        (binding2 (list number-type) boolean-type #`number->boolean #t)
+        (binding2 (list string-type) boolean-type #`string->boolean #t))
+      (list (syntax-with-type #`a string-type)))
+    syntax-typed-datum)
+  (typed `(#%app string->boolean a) boolean-type))
+
+(check-equal?
+  (binding2-list-resolve 
+    (list 
+      (binding2 (list number-type) boolean-type #`number->boolean #t)
+      (binding2 (list string-type) boolean-type #`string->boolean #t))
+    (list (syntax-with-type #`a boolean-type)))
+  #f)
