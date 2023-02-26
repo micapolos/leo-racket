@@ -39,7 +39,7 @@
             ((just? #,$maybe) (just-value #,$maybe))
             (else body ...)))))))
 
-(check-equal? 
+(check-equal?
   (maybe-bind $number (just 123) (just (+ $number 1)))
   (just 124))
 
