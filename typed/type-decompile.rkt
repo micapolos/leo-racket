@@ -15,7 +15,7 @@
     ((arrow? $type) 
       `(giving 
         ,@(map type-decompile (arrow-lhs-types $type))
-        ,@(map type-decompile (arrow-rhs-types $type))))
+        ,(type-decompile (arrow-rhs-type $type))))
     ((list? $type) (map type-decompile $type))
     ((any? $type)
       `(any ,(type-decompile (any-type $type))))
@@ -36,7 +36,7 @@
   `(foo number string))
 
 (check-equal? 
-  (type-decompile (arrow (list number-type string-type) (list boolean-type)))
+  (type-decompile (arrow (list number-type string-type) boolean-type))
   `(giving number string boolean))
 
 (check-equal? (type-decompile (any number-type)) `(any number))

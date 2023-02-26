@@ -74,9 +74,7 @@
                 "apply type type mismatch: ~a ~a"
                 $fn-type
                 $fn-arg-types)))
-          (unless (= (length (arrow-rhs-types $fn-type)) 1)
-            (error "arrow multi-return not supported"))
           (syntax-with-type
             (datum->syntax #f `(#%app ,@$args))
-            (car (arrow-rhs-types $fn-type))))))
+            (arrow-rhs-type $fn-type)))))
     (else #f)))

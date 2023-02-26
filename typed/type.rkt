@@ -14,7 +14,7 @@
 (data racket (any : Any))
 
 ; function type
-(data arrow (lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
+(data arrow (lhs-types : (Listof Type)) (rhs-type : Type))
 
 ; field type
 (data field (symbol : Symbol) (type-list : (Listof Type)))

@@ -77,7 +77,7 @@
 (check-equal? 
   (any-type-decompile 
     `anything 
-    (arrow (list number-type string-type) (list boolean-type)))
+    (arrow (list number-type string-type) boolean-type))
   `(giving number string boolean))
 
 (check-equal? 

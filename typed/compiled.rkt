@@ -233,12 +233,9 @@
       ($param-types $return-type)
       (cond
         ((arrow? $lhs-type)
-          (define $return-types (arrow-rhs-types $lhs-type))
-          (unless (= (length $return-types) 1)
-            (error "expected single return type"))
           (values 
             (arrow-lhs-types $lhs-type)
-            (car $return-types)))
+            (arrow-rhs-type $lhs-type)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
@@ -298,12 +295,9 @@
       ($param-types $return-type)
       (cond
         ((arrow? $lhs-type)
-          (define $return-types (arrow-rhs-types $lhs-type))
-          (unless (= (length $return-types) 1)
-            (error "expected single return type"))
           (values 
             (arrow-lhs-types $lhs-type)
-            (car $return-types)))
+            (arrow-rhs-type $lhs-type)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
       (error "expected single param type"))
@@ -482,7 +476,7 @@
           (define $racket $return-type) ; the is a lie
           (syntax-with-type
             $native-body
-            (arrow $arg-types (list $return-type))))
+            (arrow $arg-types $return-type)))
         (else
           (or
             (syntax-symbol-match-args $doing-rhs `recursively $args
@@ -505,7 +499,7 @@
                     $return-type)))
               (syntax-with-type
                 (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
-                (arrow $arg-types (list $body-return-type))))))))
+                (arrow $arg-types $body-return-type)))))))
     (else #f)))
 
 ; ----------------------------------------------------------------------
