@@ -4,6 +4,7 @@
 
 (require
   leo/typed/option
+  leo/typed/racket
   leo/typed/type
   leo/typed/types
   leo/typed/syntax-match

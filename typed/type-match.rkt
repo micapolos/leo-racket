@@ -4,6 +4,7 @@
 
 (require 
   leo/typed/type 
+  leo/typed/racket
   leo/typed/testing)
 
 (define (type-matches? ($actual : Type) ($expected : Type)) : Boolean

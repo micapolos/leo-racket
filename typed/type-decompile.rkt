@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/racket
   leo/typed/type
   leo/typed/types
   leo/typed/testing)

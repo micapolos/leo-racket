@@ -4,6 +4,7 @@
 
 (require 
   leo/typed/base
+  leo/typed/racket
   leo/typed/type
   leo/typed/types
   leo/typed/testing)

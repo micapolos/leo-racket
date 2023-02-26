@@ -2,7 +2,9 @@
 
 (provide (all-defined-out))
 
-(require leo/typed/type)
+(require 
+  leo/typed/type 
+  leo/typed/racket)
 
 (define void-type (racket `void))
 (define boolean-type (racket `boolean))

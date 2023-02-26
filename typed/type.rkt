@@ -2,16 +2,15 @@
 
 (provide (all-defined-out))
 
-(require leo/typed/base)
+(require 
+  leo/typed/base
+  leo/typed/racket)
 
 ; TODO: Refactor to (struct type ((any : Any)))
 (define-type Type (U Thing Racket Tuple Arrow TypeAny))
 
 ; type of everything
 (data thing)
-
-; native racket type
-(data racket (any : Any))
 
 ; function type
 (data arrow (lhs-types : (Listof Type)) (rhs-type : Type))

@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/racket
   leo/typed/script
   leo/typed/testing)
 
@@ -16,19 +17,19 @@
         (field
           (syntax-e (car $any)) 
           (map syntax-line (cdr $any))))
-      (else (native (syntax->datum $syntax))))))
+      (else (racket (syntax->datum $syntax))))))
    
 (check-equal? 
   (syntax-line #`1) 
-  (native 1))
+  (racket 1))
 
 (check-equal? 
   (syntax-line #`"foo") 
-  (native "foo"))
+  (racket "foo"))
 
 (check-equal? 
   (syntax-line #`()) 
-  (native `()))
+  (racket `()))
 
 (check-equal? 
   (syntax-line #`(foo)) 
@@ -36,4 +37,4 @@
 
 (check-equal? 
   (syntax-line #`(foo 1 "foo")) 
-  (field `foo (list (native 1) (native "foo"))))
+  (field `foo (list (racket 1) (racket "foo"))))
