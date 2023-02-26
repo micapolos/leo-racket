@@ -17,20 +17,27 @@
     ((_ arg expr body ...)
       (let (($maybe (car (generate-temporaries `(maybe)))))
         #`(let ((#,$maybe expr))
-          (cond
-            ((just? #,$maybe) 
-              (let ((arg (just-value #,$maybe))) body ...))
-            (else #f)))))))
+          (and
+            (just? #,$maybe) 
+            (let ((arg (just-value #,$maybe))) body ...)))))))
 
 (define-syntax (maybe-map $syntax)
   (syntax-case $syntax ()
     ((_ arg expr body ...)
       (let (($maybe (car (generate-temporaries `(maybe)))))
         #`(let ((#,$maybe expr))
+          (and
+            (just? #,$maybe) 
+            (just (let ((arg (just-value #,$maybe))) body ...))))))))
+
+(define-syntax (maybe-or $syntax)
+  (syntax-case $syntax ()
+    ((_ expr body ...)
+      (let (($maybe (car (generate-temporaries `(maybe)))))
+        #`(let ((#,$maybe expr))
           (cond
-            ((just? #,$maybe) 
-              (just (let ((arg (just-value #,$maybe))) body ...)))
-            (else #f)))))))
+            ((just? #,$maybe) (just-value #,$maybe))
+            (else body ...)))))))
 
 (check-equal? 
   (maybe-bind $number (just 123) (just (+ $number 1)))
@@ -47,3 +54,11 @@
 (check-equal? 
   (maybe-map $number #f (+ $number 1))
   #f)
+
+(check-equal? 
+  (maybe-or (just 123) "foo")
+  123)
+
+(check-equal? 
+  (maybe-or #f "foo")
+  "foo")
