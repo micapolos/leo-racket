@@ -19,8 +19,26 @@
         (field (syntax-e (car $any)) (syntax-script (cdr $any))))
       (else (native (syntax->datum $syntax))))))
    
-(check-equal? (syntax-line #`1) (native 1))
-(check-equal? (syntax-line #`"foo") (native "foo"))
-(check-equal? (syntax-line #`()) (native `()))
-(check-equal? (syntax-line #`(foo)) (field `foo (script null)))
-(check-equal? (syntax-line #`(foo 1 "foo")) (field `foo (script (list (native 1) (native "foo")))))
+(check-equal? 
+  (syntax-line #`1) 
+  (native 1))
+
+(check-equal? 
+  (syntax-line #`"foo") 
+  (native "foo"))
+
+(check-equal? 
+  (syntax-line #`()) 
+  (native `()))
+
+(check-equal? 
+  (syntax-script (list #`1 #`"foo")) 
+  (script (list (native 1) (native "foo"))))
+
+(check-equal? 
+  (syntax-line #`(foo)) 
+  (field `foo (script null)))
+
+(check-equal? 
+  (syntax-line #`(foo 1 "foo")) 
+  (field `foo (script (list (native 1) (native "foo")))))
