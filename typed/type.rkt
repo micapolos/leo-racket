@@ -2,25 +2,19 @@
 
 (provide (all-defined-out))
 
-(require leo/typed/testing)
+(require leo/typed/base)
 
 ; TODO: Refactor to (struct type ((any : Any)))
 (define-type Type Any)
 
 ; type of everything
-(struct thing ()
-  #:transparent
-  #:type-name Thing)
+(data thing)
 
 ; native racket type
-(struct racket ((any : Any))
-  #:type-name Racket
-  #:transparent)
+(data racket (any : Any))
 
 ; function type
-(struct arrow ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
-  #:transparent
-  #:type-name Arrow)
+(data arrow (lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
 
 ; type of types
 (struct any ((type : Type))
