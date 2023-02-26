@@ -16,7 +16,7 @@
       (if (cast $any Boolean) `true `false))
     ((racket? $type) $any)
     ((symbol? $type) $type)
-    ((giving? $type) 
+    ((arrow? $type) 
       (type-decompile $type))
     ((list? $type)
       (anys-types-decompile
@@ -77,7 +77,7 @@
 (check-equal? 
   (any-type-decompile 
     `anything 
-    (giving (list number-type string-type) (list boolean-type)))
+    (arrow (list number-type string-type) (list boolean-type)))
   `(giving number string boolean))
 
 (check-equal? 

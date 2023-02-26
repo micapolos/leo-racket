@@ -32,7 +32,7 @@
 
 (define (syntax-parse-giving ($syntax : Syntax)) : (Option Type)
   (syntax-symbol-match-args-arg $syntax `giving args arg
-    (giving
+    (arrow
       (map syntax-parse-type args)
       (list (syntax-parse-type arg)))))
 
@@ -59,11 +59,11 @@
 
 (check-equal?
   (syntax-parse-type #`(giving number string boolean))
-  (giving (list number-type string-type) (list boolean-type)))
+  (arrow (list number-type string-type) (list boolean-type)))
 
 (check-equal?
   (any-parse-type `(giving number string boolean))
-  (giving (list number-type string-type) (list boolean-type)))
+  (arrow (list number-type string-type) (list boolean-type)))
 
 (check-equal?
   (any-parse-type `(any number))

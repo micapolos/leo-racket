@@ -31,10 +31,10 @@
   (check-equal? (type-is-static? `(foo)) #t)
   (check-equal? (type-is-static? `(foo ,number-type)) #f)
 
-  (check-equal? (type-is-static? (giving (list static-type) (list static-type))) #f)
-  (check-equal? (type-is-static? (giving (list non-static-type) (list static-type))) #f)
-  (check-equal? (type-is-static? (giving (list static-type) (list non-static-type))) #f)
-  (check-equal? (type-is-static? (giving (list non-static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (arrow (list static-type) (list static-type))) #f)
+  (check-equal? (type-is-static? (arrow (list non-static-type) (list static-type))) #f)
+  (check-equal? (type-is-static? (arrow (list static-type) (list non-static-type))) #f)
+  (check-equal? (type-is-static? (arrow (list non-static-type) (list non-static-type))) #f)
 
   (check-equal? (type-is-static? (any number-type)) #t)
 

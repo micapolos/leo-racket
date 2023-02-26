@@ -232,12 +232,12 @@
     (define-values
       ($param-types $return-type)
       (cond
-        ((giving? $lhs-type)
-          (define $return-types (giving-rhs-types $lhs-type))
+        ((arrow? $lhs-type)
+          (define $return-types (arrow-rhs-types $lhs-type))
           (unless (= (length $return-types) 1)
             (error "expected single return type"))
           (values 
-            (giving-lhs-types $lhs-type)
+            (arrow-lhs-types $lhs-type)
             (car $return-types)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
@@ -297,12 +297,12 @@
     (define-values
       ($param-types $return-type)
       (cond
-        ((giving? $lhs-type)
-          (define $return-types (giving-rhs-types $lhs-type))
+        ((arrow? $lhs-type)
+          (define $return-types (arrow-rhs-types $lhs-type))
           (unless (= (length $return-types) 1)
             (error "expected single return type"))
           (values 
-            (giving-lhs-types $lhs-type)
+            (arrow-lhs-types $lhs-type)
             (car $return-types)))
         (else (values (list $lhs-type) #f))))
     (unless (= (length $param-types) 1)
@@ -388,8 +388,8 @@
         (define $type (syntax-type $value))
         (define $tmp (type-generate-temporary $type))
         (cond
-          ((giving? $type)
-            (define $param-types (giving-lhs-types $type))
+          ((arrow? $type)
+            (define $param-types (arrow-lhs-types $type))
             (unless (= (length $param-types) 1)
               (error "multi-param not supported"))
             (define $param-type (car $param-types))
@@ -401,7 +401,7 @@
             (unless (symbol? $symbol)
               (error "symbol expected"))
             (define $fn-param-types (cdr $param-type))
-            (define $body-types (giving-lhs-types $type))
+            (define $body-types (arrow-lhs-types $type))
             (unless (= (length $body-types) 1)
               (error "multi-retirn not supproted"))
             (define $return-type (car $body-types))
@@ -482,7 +482,7 @@
           (define $racket $return-type) ; the is a lie
           (syntax-with-type
             $native-body
-            (giving $arg-types (list $return-type))))
+            (arrow $arg-types (list $return-type))))
         (else
           (or
             (syntax-symbol-match-args $doing-rhs `recursively $args
@@ -505,7 +505,7 @@
                     $return-type)))
               (syntax-with-type
                 (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
-                (giving $arg-types (list $body-return-type))))))))
+                (arrow $arg-types (list $body-return-type))))))))
     (else #f)))
 
 ; ----------------------------------------------------------------------

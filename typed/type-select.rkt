@@ -27,7 +27,7 @@
     ((equal? $selector `string)
       (equal? $type string-type))
     ((equal? $selector `giving)
-      (giving? $type))
+      (arrow? $type))
     ((equal? $selector `any)
       (any? $type))
     (else 
@@ -57,12 +57,12 @@
 
 (check-equal? 
   (type-selects?
-    (giving (list number-type) (list string-type))
+    (arrow (list number-type) (list string-type))
     `giving)
   #t)
 (check-equal? 
   (type-selects?
-    (giving (list number-type) (list string-type))
+    (arrow (list number-type) (list string-type))
     `not-giving)
   #f)
 

@@ -18,7 +18,7 @@
   #:transparent)
 
 ; function type
-(struct giving ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
+(struct arrow ((lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
   #:transparent
   #:type-name Arrow)
 
@@ -29,5 +29,5 @@
 
 (define (type-arrow ($type : Type)) : Arrow
   (cond
-    ((giving? $type) $type)
+    ((arrow? $type) $type)
     (else (error (format "not arrow ~v" $type)))))

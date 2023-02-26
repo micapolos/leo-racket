@@ -12,7 +12,7 @@
     (cond
       ((racket? $actual) (equal? $actual $expected))
       ((and (list? $actual) (list? $expected)) (types-match? $actual $expected))
-      ((giving? $actual) (equal? $actual $expected))
+      ((arrow? $actual) (equal? $actual $expected))
       ((any? $actual) (equal? $actual $expected))
       ((thing? $actual) (equal? $actual $expected))
       (else (equal? $actual $expected)))))
@@ -32,16 +32,16 @@
     (andmap type-matches? $types $other-types)))
 
 (define
-  (arg-types-match-giving?
+  (arg-types-match-arrow?
     ($arg-types : (Listof Type)) 
     ($giving : Arrow))
   : Boolean
-  (type-list-match? $arg-types (giving-lhs-types $giving)))
+  (type-list-match? $arg-types (arrow-lhs-types $giving)))
 
 (check-equal? (type-matches? (racket `foo) (thing)) #t)
 (check-equal? (type-matches? `foo (thing)) #t)
 (check-equal? (type-matches? `(foo ,(racket `number)) (thing)) #t)
-(check-equal? (type-matches? (giving null null) (thing)) #t)
+(check-equal? (type-matches? (arrow null null) (thing)) #t)
 (check-equal? (type-matches? (any (racket `foo)) (thing)) #t)
 (check-equal? (type-matches? (thing) (thing)) #t)
 
