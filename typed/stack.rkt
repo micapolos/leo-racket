@@ -19,6 +19,9 @@
 
 ; ----------------------------------------------------------------------
 
+(define #:forall (A) (push ($stack : (Stackof A)) ($value : A)) : (Stackof A)
+  (cons $value $stack))
+
 (define top car)
 (define pop cdr)
 (define pop-top cadr)
