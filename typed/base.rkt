@@ -20,7 +20,7 @@
                 (string-split (symbol->string (syntax->datum #`name)) "-"))
               "")))))))
 
-(define-syntax (let-in $syntax)
+(define-syntax (bind $syntax)
   (syntax-case $syntax ()
     ((_ var expr body ...)
       #`(let ((var expr)) body ...))))

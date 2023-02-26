@@ -4,12 +4,14 @@
 
 (require 
   racket/function
+  leo/typed/option
   leo/typed/type
   leo/typed/typed
   leo/typed/types
   leo/typed/stack
   leo/typed/type-match
   leo/typed/syntax-get
+  leo/typed/syntaxes
   leo/typed/syntax-match
   leo/typed/syntax-type
   leo/typed/syntax-typed

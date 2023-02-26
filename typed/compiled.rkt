@@ -103,7 +103,7 @@
           (type-typed-syntax (syntax-parse-type (cadr $syntax-e)))))
       (else
         (or
-          (let-in $racket-syntax (syntax-parse-racket $syntax)
+          (bind $racket-syntax (syntax-parse-racket $syntax)
             (and $racket-syntax (compiled-plus-syntax $compiled $racket-syntax)))
           (let (($do-syntax (binding-list-parse-do $binding-list $syntax)))
             (and 
@@ -117,7 +117,7 @@
             (and 
               $doing-syntax
               (compiled-plus-syntax $compiled $doing-syntax)))
-          (let-in $as-syntax (binding-list-parse-as $binding-list $syntax)
+          (bind $as-syntax (binding-list-parse-as $binding-list $syntax)
             (and 
               $as-syntax 
               (compiled-plus-syntax $compiled $as-syntax)))
@@ -162,7 +162,7 @@
   (syntax-typed-datum (compile-syntax $syntax)))
 
 (define (compile-binding ($syntax : Syntax))
-  (let-in $binding-list (compiled-binding-list (compiled-parse-syntax null-compiled $syntax))
+  (bind $binding-list (compiled-binding-list (compiled-parse-syntax null-compiled $syntax))
     (when (null? $binding-list) (error "No bindings"))
     (car $binding-list)))
 
@@ -563,7 +563,7 @@
   (compile-typed #`(any number))
   (typed null-value (any number-type)))
 
-(let-in
+(bind
   $binding (compile-binding #`(does (any (increment number)) (done number)))
   (unless (function-binding? $binding) (error "not a function binding"))
   (check-equal? (function-binding-symbol $binding) `increment)
@@ -572,27 +572,27 @@
     (function-binding-return-type $binding) 
     (tuple `done (list number-type))))
 
-(let-in
+(bind
   $binding (compile-binding #`(does (any (giving (plus number number) number)) (racket +)))
   (unless (function-binding? $binding) (error "not a function binding"))
   (check-equal? (function-binding-symbol $binding) `plus)
   (check-equal? (function-binding-param-types $binding) (list number-type number-type))
   (check-equal? (function-binding-return-type $binding) number-type))
 
-(let-in
+(bind
   $binding (compile-binding #`(does (any (giving (stringify number) string)) "foo"))
   (unless (function-binding? $binding) (error "not a function binding"))
   (check-equal? (function-binding-symbol $binding) `stringify)
   (check-equal? (function-binding-param-types $binding) (list number-type))
   (check-equal? (function-binding-return-type $binding) string-type))
 
-(let-in
+(bind
   $binding (compile-binding #`(is (any magic) 128))
   (unless (constant-binding? $binding) (error "not a constant binding"))
   (check-equal? (constant-binding-symbol $binding) `magic)
   (check-equal? (constant-binding-type $binding) number-type))
 
-(let-in
+(bind
   $binding (compile-binding #`(is (any (giving magic number)) 128))
   (unless (constant-binding? $binding) (error "not a constant binding"))
   (check-equal? (constant-binding-symbol $binding) `magic)

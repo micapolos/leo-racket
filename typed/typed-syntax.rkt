@@ -14,7 +14,7 @@
 
 (define (boolean-typed-syntax ($boolean : Boolean))
   (syntax-with-type 
-    (datum->syntax #f (if $boolean `true `false)) 
+    (datum->syntax #f $boolean)
     boolean-type))
 
 (define (string-typed-syntax ($string : String))
@@ -50,11 +50,11 @@
 
 (check-equal? 
   (syntax-typed-datum (boolean-typed-syntax #f))
-  (typed `false boolean-type))
+  (typed #f boolean-type))
 
 (check-equal? 
   (syntax-typed-datum (boolean-typed-syntax #t))
-  (typed `true boolean-type))
+  (typed #t boolean-type))
 
 (check-equal? 
   (syntax-typed-datum (string-typed-syntax "foo"))
