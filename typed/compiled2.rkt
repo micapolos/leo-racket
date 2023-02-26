@@ -33,10 +33,19 @@
         (compiled2-compiled-syntax-stack $compiled) 
         $syntax))))
 
-(define (compiled2-parse-syntax 
+(define (compiled2-parse-syntax
   ($compiled : Compiled2)
   ($syntax : Syntax)) : Compiled2
   (or
     (option-bind (syntax-expand $syntax) $syntax
       (compiled2-push-value-syntax $compiled $syntax))
     (compiled2-push-compiled-syntax $compiled $syntax)))
+
+(define (compiled2-parse-syntax-list
+  ($compiled : Compiled2)
+  ($syntax-list : (Listof Syntax))) : Compiled2
+  (foldl
+    (lambda (($syntax : Syntax) ($compiled : Compiled2))
+      (compiled2-parse-syntax $compiled $syntax))
+    $compiled
+    $syntax-list))
