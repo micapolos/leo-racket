@@ -6,9 +6,6 @@
   leo/typed/script
   leo/typed/testing)
 
-(define (syntax-script ($syntax-list : (Listof Syntax))) : Script
-  (script (map syntax-line $syntax-list)))
-
 (define (syntax-line ($syntax : Syntax)) : Line
   (let (($any (syntax-e $syntax)))
     (cond
@@ -16,7 +13,9 @@
         (list? $any)
         (not (null? $any))
         (symbol? (syntax-e (car $any))))
-        (field (syntax-e (car $any)) (syntax-script (cdr $any))))
+        (field
+          (syntax-e (car $any)) 
+          (map syntax-line (cdr $any))))
       (else (native (syntax->datum $syntax))))))
    
 (check-equal? 
@@ -32,13 +31,9 @@
   (native `()))
 
 (check-equal? 
-  (syntax-script (list #`1 #`"foo")) 
-  (script (list (native 1) (native "foo"))))
-
-(check-equal? 
   (syntax-line #`(foo)) 
-  (field `foo (script null)))
+  (field `foo null))
 
 (check-equal? 
   (syntax-line #`(foo 1 "foo")) 
-  (field `foo (script (list (native 1) (native "foo")))))
+  (field `foo (list (native 1) (native "foo"))))

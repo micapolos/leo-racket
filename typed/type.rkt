@@ -16,6 +16,9 @@
 ; function type
 (data arrow (lhs-types : (Listof Type)) (rhs-types : (Listof Type)))
 
+; field type
+(data field (symbol : Symbol) (type-list : (Listof Type)))
+
 ; type of types
 (struct any ((type : Type))
   #:transparent
