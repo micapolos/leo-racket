@@ -12,8 +12,7 @@
   leo/typed/any-leo-string
   leo/typed/syntax-type
   leo/typed/type-decompile
-  leo/typed/syntax-match
-  leo/typed/compiled)
+  leo/typed/syntax-match)
 
 (define (syntax-top-level ($syntax : Syntax)) : Syntax
   (define $type (syntax-type-option $syntax))

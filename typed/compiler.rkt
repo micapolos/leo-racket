@@ -18,11 +18,11 @@
   #:transparent
   #:type-name SyntaxStackProcessor)
 
-(struct syntax-stack-processor-resolver (
+(struct syntax-stack-processor-plus-parent (
   (syntax-stack-processor : SyntaxStackProcessor)
   (symbol : Symbol))
   #:transparent
-  #:type-name SyntaxStackProcessorResolver)
+  #:type-name SyntaxStackProcessorPlusParent)
 
 (define (syntax-stack-processor-push 
   ($processor : SyntaxStackProcessor)

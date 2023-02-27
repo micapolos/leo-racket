@@ -10,9 +10,11 @@
   leo/typed/syntax-typed
   leo/typed/syntax-get
   leo/typed/type
+  leo/typed/type-decompile
   leo/typed/types
   leo/typed/typed
   leo/typed/type-match
+  leo/typed/syntax-match
   leo/typed/syntax-resolve
   leo/typed/syntax-typed
   leo/typed/testing)
@@ -302,3 +304,48 @@
   (typed 
     `(cons a b) 
     (tuple `not-plus (list string-type string-type))))
+
+; --------------------------------------------------------------------
+
+(define (binding-list-type-module-syntax ($binding-list : (Listof Binding))) : Syntax
+  (cast-syntax
+    (datum->syntax #f
+      `(module+ types
+        (provide (all-defined-out))
+        (require leo/typed/type-parse)
+        ,@(binding-list-type-syntaxes $binding-list)))))
+
+(define (binding-list-type-syntaxes ($binding-list : (Listof Binding))) : (Listof Syntax)
+  (map binding-type-syntax $binding-list))
+
+(define (binding-type-syntax ($binding : Binding)) : Syntax
+  (cond
+    ((argument-binding? $binding) #`(void))
+    ((constant-binding? $binding) (constant-binding-type-syntax $binding))
+    ((function-binding? $binding) (function-binding-type-syntax $binding))))
+
+(define (constant-binding-type-syntax ($constant-binding : ConstantBinding)) : Syntax
+  (cast-syntax
+    #`(define
+      #,(constant-binding-identifier $constant-binding)
+      (any-parse-type
+        (quote 
+          #,(type-decompile (constant-binding-type $constant-binding)))))))
+     
+(define (function-binding-type-syntax ($function-binding : FunctionBinding)) : Syntax
+  (cast-syntax 
+    #`(define
+      #,(function-binding-identifier $function-binding)
+      (any-parse-type
+        (quote
+          #,(type-decompile
+            (arrow 
+              (function-binding-param-types $function-binding)
+              (function-binding-return-type $function-binding))))))))
+
+; (check-equal?
+;   (binding-list-type-module-syntax
+;     (list
+;       (function-binding `plus (list string-type string-type) string-type #`string-append)
+;       (constant-binding `bar string-type #`foo-string)))
+;   #f)

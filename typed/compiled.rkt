@@ -17,6 +17,7 @@
   leo/typed/syntaxes
   leo/typed/syntax-match
   leo/typed/syntax-typed
+  leo/typed/syntax-top-level
   leo/typed/syntax-resolve
   leo/typed/type-parse
   leo/typed/syntax-parse
@@ -32,6 +33,13 @@
   #:type-name Compiled)
 
 (define null-compiled (compiled null null))
+
+(define (compiled-body-syntax-list ($compiled : Compiled)) : (Listof Syntax)
+  (reverse
+    (cons 
+      (binding-list-type-module-syntax (compiled-binding-list $compiled))
+      (map syntax-top-level
+        (compiled-syntax-list $compiled)))))
 
 (define 
   (compiled-with-syntax-list

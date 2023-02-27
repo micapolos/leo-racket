@@ -19,12 +19,10 @@
   (syntaxes-compile (map any-syntax $anys)))
 
 (define (syntaxes-compile ($syntax-list : (Listof Syntax))) : (Listof Syntax)
-  (reverse
-    (map syntax-top-level
-      (compiled-syntax-list
-        (compiled-parse-syntax-list
-          null-compiled 
-          $syntax-list)))))
+  (compiled-body-syntax-list
+    (compiled-parse-syntax-list
+      null-compiled 
+      $syntax-list)))
 
 (define (sexps-compile ($sexps : (Listof Sexp))) : (Listof Sexp)
   (map
