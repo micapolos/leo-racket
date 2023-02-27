@@ -10,6 +10,7 @@
   leo/typed/syntax-typed
   leo/typed/syntax-get
   leo/typed/type
+  leo/typed/type-syntax
   leo/typed/type-decompile
   leo/typed/types
   leo/typed/typed
@@ -312,7 +313,7 @@
     (datum->syntax #f
       `(module+ types
         (provide (all-defined-out))
-        (require leo/typed/type-parse)
+        (require leo/type-runtime)
         ,@(binding-list-type-syntaxes $binding-list)))))
 
 (define (binding-list-type-syntaxes ($binding-list : (Listof Binding))) : (Listof Syntax)
@@ -328,20 +329,16 @@
   (cast-syntax
     #`(define
       #,(constant-binding-identifier $constant-binding)
-      (any-parse-type
-        (quote 
-          #,(type-decompile (constant-binding-type $constant-binding)))))))
+      #,(type-syntax (constant-binding-type $constant-binding)))))
      
 (define (function-binding-type-syntax ($function-binding : FunctionBinding)) : Syntax
   (cast-syntax 
     #`(define
       #,(function-binding-identifier $function-binding)
-      (any-parse-type
-        (quote
-          #,(type-decompile
-            (arrow 
-              (function-binding-param-types $function-binding)
-              (function-binding-return-type $function-binding))))))))
+      #,(type-syntax
+        (arrow 
+          (function-binding-param-types $function-binding)
+          (function-binding-return-type $function-binding))))))
 
 ; (check-equal?
 ;   (binding-list-type-module-syntax
