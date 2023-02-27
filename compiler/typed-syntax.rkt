@@ -11,6 +11,9 @@
   leo/compiler/type-utils
   leo/compiler/typed)
 
+(define (typed-syntax->typed-sexp ($typed-syntax : (Typed Syntax Type))) : (Typed Sexp Type)
+  (typed (syntax->datum (typed-value $typed-syntax)) (typed-type $typed-syntax)))
+
 (define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
   (type-is-dynamic? (typed-type $typed-syntax)))
 
@@ -99,3 +102,37 @@
   (check-equal? 
     (syntax->datum (typed-value $typed-syntax))
     `(cons b c)))
+
+; ------------------------------------------------------------------
+
+; TODO: This is wrong!!!
+(define (typed-syntax-field-size-ref
+  ($typed-syntax : (Typed Syntax Field))
+  ($size : Exact-Nonnegative-Integer)
+  ($index : Exact-Nonnegative-Integer))
+  : (Typed Syntax Type)
+  (define $syntax (typed-value $typed-syntax))
+  (define $field (typed-type $typed-syntax))
+  (define $type-stack (field-type-stack $field))
+  (typed
+    (case $size
+      ((0) (error "impossible"))
+      ((1) $syntax)
+      ((2)
+        (datum->syntax #f 
+          `(
+            ,(if (= $index 0) #`unsafe-cdr #`unsafe-car)
+            ,$syntax)))
+      (else 
+        (datum->syntax #f
+          `(unsafe-vector-ref ,$syntax ,(- $size $index)))))
+    (list-ref $type-stack $index)))
+
+(define (typed-syntax-field-ref
+  ($typed-syntax : (Typed Syntax Field))
+  ($index : Exact-Nonnegative-Integer))
+  : (Typed Syntax Type)
+  (typed-syntax-field-size-ref
+    $typed-syntax
+    (type-stack-size (field-type-stack (typed-type $typed-syntax)))
+    $index))
