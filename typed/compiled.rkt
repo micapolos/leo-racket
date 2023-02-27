@@ -40,7 +40,7 @@
 (define (compiled-body-syntax-list ($compiled : Compiled)) : (Listof Syntax)
   (reverse
     (cons 
-      (binding-list-module-syntax (compiled-provided-binding-list $compiled))
+      (binding-list-meta-module-syntax (compiled-provided-binding-list $compiled))
       (map syntax-top-level
         (compiled-syntax-list $compiled)))))
 

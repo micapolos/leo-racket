@@ -48,16 +48,18 @@
 
 ; ------------------------------------------------------------------------
 
+(define meta-submod-name `meta)
+
 (define (binding-list-syntax
   ($binding-list : (Listof Binding))) : Syntax
   (datum->syntax #f 
     `(list ,@(reverse (filter-false (map binding-syntax $binding-list))))))
 
-(define (binding-list-module-syntax ($binding-list : (Listof Binding))) : Syntax
+(define (binding-list-meta-module-syntax ($binding-list : (Listof Binding))) : Syntax
   (cast-syntax
     (datum->syntax #f
       `(module* 
-        ,types-submod-name
+        ,meta-submod-name
         typed/racket/base
         (provide (all-defined-out))
         (require leo/type-runtime)
