@@ -457,11 +457,19 @@
   (syntax-symbol-match-args $syntax `require $args
     (foldl
       (lambda (($arg : Syntax) ($compiled : Compiled))
-        (compiled-plus-syntax 
-          $compiled 
-          (datum->syntax #f `(require #,$syntax))))
+        (unless (identifier? $arg) (error "Require must be identifier"))
+        (compiled-plus-require $compiled (syntax-e $arg)))
       $compiled
       $args)))
+
+(define 
+  (compiled-plus-require
+    ($compiled : Compiled)
+    ($module-symbol : Symbol))
+  : Compiled
+  (compiled-plus-syntax 
+    $compiled
+    (datum->syntax #f `(require ,$module-symbol))))
 
 ; --------------------------------------------------------------------
 
