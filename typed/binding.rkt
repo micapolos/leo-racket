@@ -314,7 +314,7 @@
       `(module+ types
         (provide (all-defined-out))
         (require leo/type-runtime)
-        ,@(binding-list-type-syntaxes $binding-list)))))
+        ,@(reverse (binding-list-type-syntaxes $binding-list))))))
 
 (define (binding-list-type-syntaxes ($binding-list : (Listof Binding))) : (Listof Syntax)
   (map binding-type-syntax $binding-list))

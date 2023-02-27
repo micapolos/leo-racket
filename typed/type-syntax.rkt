@@ -14,21 +14,17 @@
       #`(thing))
     ((racket? $type) 
       (cast-syntax
-        (datum->syntax #f 
-          `(racket (quote ,(datum->syntax #f (racket-any $type)))))))
+        #`(racket (quote #,(racket-any $type)))))
     ((tuple? $type)
       (cast-syntax
-        (datum->syntax #f
-          `(tuple 
-            (quote ,(tuple-symbol $type))
-            (list ,@(map type-syntax (tuple-type-list $type)))))))
+        #`(tuple 
+          (quote #,(tuple-symbol $type))
+          (list #,@(map type-syntax (tuple-type-list $type))))))
     ((arrow? $type) 
       (cast-syntax
-        (datum->syntax #f
-          `(arrow 
-            ,@(map type-syntax (arrow-lhs-types $type))
-            ,(type-syntax (arrow-rhs-type $type))))))
+        #`(arrow 
+          (list #,@(map type-syntax (arrow-lhs-types $type)))
+          #,(type-syntax (arrow-rhs-type $type)))))
     ((any? $type) 
       (cast-syntax
-        (datum->syntax #f
-          `(any ,(type-syntax (any-type $type))))))))
+        #`(any #,(type-syntax (any-type $type)))))))

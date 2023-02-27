@@ -33,10 +33,15 @@
       ((symbol? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
       ((number? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
       ((string? $syntax-e) (datum->syntax $ctx $syntax-e $srcloc))
-      ((list? $syntax-e)
+      ((pair? $syntax-e)
         (datum->syntax 
           $ctx 
-          (map cast-syntax (map cast-syntax-any $syntax-e))
+          (cons 
+            (cast-syntax (cast-syntax-any (car $syntax-e)))
+            (cond
+              ((list? (cdr $syntax-e)) 
+                (map cast-syntax (map cast-syntax-any (cdr $syntax-e))))
+              (else (cast-syntax (cast-syntax-any (cdr $syntax-e))))))
           $srcloc))
       (else (error (format "not a syntax ~v" $syntax))))))
 
