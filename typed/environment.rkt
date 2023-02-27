@@ -92,19 +92,26 @@
 (define (environment-eval-values ($environment : Environment) ($any : Any)) : AnyValues
   (eval $any (environment-namespace $environment)))
 
+(define (environment-eval-list ($environment : Environment) ($any : Any)) : (Listof Any)
+  (call-with-values
+    (lambda () (environment-eval-values $environment $any))
+    (ann list (-> Any * (Listof Any)))))
+
 (define (environment-eval ($environment : Environment) ($any : Any)) : Any
   (bind $list
-    (call-with-values
-      (lambda () (environment-eval-values $environment $any))
-      (ann list (-> Any * (Listof Any))))
+    (environment-eval-list $environment $any)
     (if (null? list) (void) (car (reverse $list)))))
 
 (check-equal?
-  (environment-eval base-environment `(+ 1 2))
-  3)
+  (environment-eval-list base-environment `(values 1 2 3))
+  (list 1 2 3))
 
 (check-equal?
   (environment-eval base-environment `(values 1 2 3))
+  3)
+
+(check-equal?
+  (environment-eval base-environment `(+ 1 2))
   3)
 
 (check-equal?
