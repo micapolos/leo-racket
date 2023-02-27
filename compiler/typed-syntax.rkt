@@ -103,6 +103,106 @@
     (syntax->datum (typed-value $typed-syntax))
     `(cons b c)))
 
-(define (typed-syntax-field-ref
-  ($typed-syntax-field : (Typed Syntax Field))
+; -------------------------------------------------------------------
+
+(define (syntax-type-stack-ref
+  ($syntax : Syntax)
+  ($type-stack : (Stackof Type))
   ($index : Exact-Nonnegative-Integer))
+  : (Typed Syntax Type)
+  (define $type-stack-size (type-stack-size $type-stack))
+  (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
+  (typed 
+    (datum->syntax #f
+      (and
+        $dynamic-index
+        (case $type-stack-size
+          ((0) (error "impossible"))
+          ((1) $syntax)
+          ((2)
+            `(,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr) ,$syntax))
+          (else
+            `(unsafe-vector-ref 
+              ,$syntax
+              ,(- $type-stack-size $dynamic-index 1))))))
+    (list-ref $type-stack $index)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (field `t2 null))
+      0)) 
+  (typed #f (field `t2 null)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (field `t2 null))
+      0)) 
+  (typed #f (field `t2 null)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (field `t2 null))
+      1)) 
+  (typed `a (racket `t1)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (field `t2 null) (racket `t3))
+      0)) 
+  (typed `(unsafe-cdr a) (racket `t3)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (field `t2 null) (racket `t3))
+      1)) 
+  (typed #f (field `t2 null)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (field `t2 null) (racket `t3))
+      2)) 
+  (typed `(unsafe-car a) (racket `t1)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
+      0)) 
+  (typed `(unsafe-vector-ref a 2) (racket `t4)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
+      1)) 
+  (typed #f (field `t3 null) ))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
+      2)) 
+  (typed `(unsafe-vector-ref a 1) (racket `t2)))
+
+(check-equal? 
+  (typed-syntax->typed-sexp 
+    (syntax-type-stack-ref 
+      #`a 
+      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
+      3)) 
+  (typed `(unsafe-vector-ref a 0) (racket `t1)))
