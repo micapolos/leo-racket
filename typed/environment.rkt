@@ -76,11 +76,11 @@
 
 (define (environment-require
   ($environment : Environment) 
-  ($module-symbol : Symbol))
+  ($spec : Any))
   : Environment
   (environment-with-updated-current-namespace
     $environment
-    (lambda () (namespace-require $module-symbol))))
+    (lambda () (namespace-require $spec))))
 
 (check-equal?
   (environment-ref 
