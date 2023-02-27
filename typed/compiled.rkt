@@ -12,6 +12,7 @@
   leo/typed/typed
   leo/typed/typed-syntax
   leo/typed/types
+  leo/typed/type-symbol
   leo/typed/type-generate-temporary
   leo/typed/binding
   leo/typed/syntaxes
@@ -73,6 +74,14 @@
     ($binding : Binding)) : Compiled
   (compiled-with-provided-binding-list $compiled 
     (cons $binding (compiled-provided-binding-list $compiled))))
+
+(define 
+  (compiled-plus-exported-binding
+    ($compiled : Compiled)
+    ($binding : Binding)) : Compiled
+  (compiled-plus-provided-binding 
+    (compiled-plus-binding $compiled $binding)
+    $binding))
 
 (define 
   (compiled-plus-syntax 
@@ -422,15 +431,17 @@
               (error "multi-retirn not supproted"))
             (define $return-type (car $body-types))
             (compiled-plus-syntax
-              (compiled-plus-binding
+              (compiled-plus-exported-binding
                 $compiled
                 (function-binding $symbol $fn-param-types $return-type $tmp))
               (datum->syntax #f `(define ,$tmp ,$value))))
           (else 
+            (define $symbol (type-symbol $type))
+            (unless $symbol (error "not a symbol"))
             (compiled-plus-syntax
-              (compiled-plus-binding
+              (compiled-plus-exported-binding
                 $compiled
-                (argument-binding $type $tmp))
+                (constant-binding $symbol $type $tmp))
               (datum->syntax #f `(define ,$tmp ,$value))))))
       $compiled
       $args)))
