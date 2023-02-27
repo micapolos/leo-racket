@@ -455,7 +455,10 @@
     (foldl
       (lambda (($arg : Syntax) ($compiled : Compiled))
         (unless (identifier? $arg) (error "require must be symbol"))
-        (compiled-plus-require $compiled (syntax-e $arg)))
+        (compiled-plus-require $compiled 
+          (map 
+            string->symbol
+            (string-split (symbol->string (syntax-e $arg)) "/"))))
       $compiled
       $args)))
 
@@ -464,19 +467,32 @@
 (define 
   (compiled-plus-require
     ($compiled : Compiled)
-    ($module-symbol : Symbol))
+    ($module-path : (Listof Symbol)))
   : Compiled
+  (define-values ($leo? $module-spec)
+    (cond
+      ((and (not (null? $module-path)) (equal? (car $module-path) `leo))
+        (values #t
+          `(lib
+            ,(string-append 
+              (string-join (map symbol->string $module-path) "/") 
+              ".leo"))))
+      (else 
+        (values #f
+          (string->symbol 
+            (string-join 
+              (map symbol->string $module-path) "/"))))))
   (define $compiled-plus-require
     (compiled-plus-syntax
       $compiled
-      (datum->syntax #f `(require ,$module-symbol))))
+      (datum->syntax #f `(require ,$module-spec))))
   (define $bindings
     (and
-      (string-prefix? (symbol->string $module-symbol) "leo/")
+      $leo?
       (parameterize 
         ((current-namespace (namespace-anchor->namespace namespace-anchor)))
         (dynamic-require 
-          `(submod ,$module-symbol meta) 
+          `(submod ,$module-spec meta)
           `bindings 
           (lambda () #f)))))
   (if $bindings
@@ -487,7 +503,7 @@
         (compiled-binding-list $compiled-plus-require)))
     $compiled-plus-require))
 
-(bind $compiled (compiled-plus-require null-compiled `leo/mini)
+(bind $compiled (compiled-plus-require null-compiled (list `leo `mini))
   (check-equal? 
     (length (compiled-binding-list $compiled))
     2))
