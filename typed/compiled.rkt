@@ -28,16 +28,17 @@
 (struct compiled 
   (
     (binding-list : (Listof Binding))
+    (provided-binding-list : (Listof Binding))
     (syntax-list : (Listof Syntax)))
   #:transparent
   #:type-name Compiled)
 
-(define null-compiled (compiled null null))
+(define null-compiled (compiled null null null))
 
 (define (compiled-body-syntax-list ($compiled : Compiled)) : (Listof Syntax)
   (reverse
     (cons 
-      (binding-list-type-module-syntax (compiled-binding-list $compiled))
+      (binding-list-type-module-syntax (compiled-provided-binding-list $compiled))
       (map syntax-top-level
         (compiled-syntax-list $compiled)))))
 
@@ -54,11 +55,24 @@
   (struct-copy compiled $compiled (binding-list $binding-list)))
 
 (define 
+  (compiled-with-provided-binding-list
+    ($compiled : Compiled)
+    ($binding-list : (Listof Binding))) : Compiled
+  (struct-copy compiled $compiled (provided-binding-list $binding-list)))
+
+(define 
   (compiled-plus-binding
     ($compiled : Compiled)
     ($binding : Binding)) : Compiled
   (compiled-with-binding-list $compiled 
     (cons $binding (compiled-binding-list $compiled))))
+
+(define 
+  (compiled-plus-provided-binding
+    ($compiled : Compiled)
+    ($binding : Binding)) : Compiled
+  (compiled-with-provided-binding-list $compiled 
+    (cons $binding (compiled-provided-binding-list $compiled))))
 
 (define 
   (compiled-plus-syntax 
@@ -180,7 +194,7 @@
     ($syntax : Syntax)) : Syntax
   (compiled-syntax
     (compiled-parse-syntax
-      (compiled $binding-list null)
+      (compiled $binding-list null null)
       $syntax)))
 
 ; ---------------------------------------------------------------
@@ -282,7 +296,9 @@
         (define $compiled-syntax 
           (datum->syntax #f `(define ,$fn ,$typed-body)))
         (compiled-plus-syntax
-          (compiled-plus-binding $compiled $binding)
+          (compiled-plus-provided-binding
+            (compiled-plus-binding $compiled $binding)
+            $binding)
           $compiled-syntax)))))
 
 ; ----------------------------------------------------------------------
@@ -368,7 +384,9 @@
         (define $compiled-syntax 
           (datum->syntax #f `(define (,$fn ,@$param-tmps) ,$typed-body)))
         (compiled-plus-syntax
-          (compiled-plus-binding $compiled $binding)
+          (compiled-plus-provided-binding 
+            (compiled-plus-binding $compiled $binding)
+            $binding)
           $compiled-syntax)))))
 
 ; ---------------------------------------------------------------------
