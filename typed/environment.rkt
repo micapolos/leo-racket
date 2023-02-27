@@ -18,16 +18,35 @@
 (define base-environment
   (environment-with-namespace-procedure make-base-namespace))
 
+(define (environment-with-updated-namespace
+  ($environment : Environment) 
+  ($fn : (-> Namespace Void)))
+  : Environment
+  (environment-with-namespace-procedure 
+    (lambda ()
+      (define $namespace ((environment-namespace-procedure $environment)))
+      ($fn $namespace)
+      $namespace)))
+
+(define (environment-with-updated-current-namespace
+  ($environment : Environment) 
+  ($fn : (-> Void)))
+  : Environment
+  (environment-with-updated-namespace
+    $environment
+    (lambda (($namespace : Namespace))
+      (parameterize ((current-namespace $namespace)) ($fn)))))
+
 (define (environment-set
   ($environment : Environment) 
   ($symbol : Symbol) 
   ($value : Any))
   : Environment
-  (environment-with-namespace-procedure 
-    (lambda ()
-      (define $namespace ((environment-namespace-procedure $environment)))
-      (namespace-set-variable-value! $symbol $value #f $namespace)
-      $namespace)))
+  (environment-with-updated-current-namespace
+    $environment
+    (lambda () (namespace-set-variable-value! $symbol $value))))
+
+; -----------------------------------------------------------------------------
 
 (define namespace-absent-value (gensym))
 
@@ -52,10 +71,44 @@
   (environment-ref (environment-set base-environment `foo "foo") `bar) 
   #f)
 
+; -----------------------------------------------------------------------------
+
+(define (environment-require
+  ($environment : Environment) 
+  ($module-symbol : Symbol)) 
+  : Environment
+  (environment-with-updated-current-namespace
+    $environment
+    (lambda () (dynamic-require $module-symbol #f))))
+
+(check-equal?
+  (environment-ref 
+    (environment-require base-environment `racket/unsafe/ops)
+    `unsafe-fx+)
+  #f) ; TODO: Why it does not work?
+
+; -----------------------------------------------------------------------------
+
 (define (environment-eval-values ($environment : Environment) ($any : Any)) : AnyValues
   (eval $any (environment-namespace $environment)))
 
-; (define (environment-eval ($environment : Environment) ($any : Any))
-;   (call-with-values
-;     (lambda () (environment-eval-values $environment $any))
-;     list))
+(define (environment-eval ($environment : Environment) ($any : Any)) : Any
+  (bind $list
+    (call-with-values
+      (lambda () (environment-eval-values $environment $any))
+      (ann list (-> Any * (Listof Any))))
+    (if (null? list) (void) (car (reverse $list)))))
+
+(check-equal?
+  (environment-eval base-environment `(+ 1 2))
+  3)
+
+(check-equal?
+  (environment-eval base-environment `(values 1 2 3))
+  3)
+
+(check-equal?
+  (environment-eval 
+    (environment-set base-environment `plus +)
+    `(+ 1 2))
+  3)
