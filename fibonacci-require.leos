@@ -1,0 +1,6 @@
+#lang leo/script
+
+require leo/fibonacci
+
+10
+fibonacci
