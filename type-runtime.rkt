@@ -2,10 +2,12 @@
 
 (provide 
   (all-defined-out)
+  (all-from-out leo/typed/binding)
   (all-from-out leo/typed/type)
   (all-from-out leo/typed/racket))
 
 (require 
+  leo/typed/binding
   leo/typed/racket
   leo/typed/type
   leo/typed/types)

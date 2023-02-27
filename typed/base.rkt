@@ -24,3 +24,8 @@
   (syntax-case $syntax ()
     ((_ var expr body ...)
       #`(let ((var expr)) body ...))))
+
+(define #:forall (A) (filter-false ($list : (Listof (Option A)))) : (Listof A)
+  (filter 
+    (ann (lambda (x) x) ((Option A) -> (Option A) : #:+ A)) 
+    $list))

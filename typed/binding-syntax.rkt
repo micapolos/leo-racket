@@ -4,11 +4,14 @@
 
 (require 
   leo/type-runtime
+  leo/typed/base
   leo/typed/option
   leo/typed/binding
   leo/typed/type-syntax
   leo/typed/syntax-match
   leo/typed/testing)
+
+; ----------------------------------------------------------------
 
 (define (binding-syntax ($binding : Binding)) : (Option Syntax)
   (option-map
@@ -42,3 +45,21 @@
 (check-equal?
   (binding-syntax (argument-binding number #`foo))
   #f)
+
+; ------------------------------------------------------------------------
+
+(define (binding-list-syntax
+  ($binding-list : (Listof Binding))) : Syntax
+  (datum->syntax #f 
+    `(list ,@(reverse (filter-false (map binding-syntax $binding-list))))))
+
+(define (binding-list-module-syntax ($binding-list : (Listof Binding))) : Syntax
+  (cast-syntax
+    (datum->syntax #f
+      `(module* 
+        ,types-submod-name
+        typed/racket/base
+        (provide (all-defined-out))
+        (require leo/type-runtime)
+        (define bindings ,(binding-list-syntax $binding-list))))))
+

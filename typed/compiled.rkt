@@ -15,6 +15,7 @@
   leo/typed/type-symbol
   leo/typed/type-generate-temporary
   leo/typed/binding
+  leo/typed/binding-syntax
   leo/typed/syntaxes
   leo/typed/syntax-match
   leo/typed/syntax-typed
@@ -39,7 +40,7 @@
 (define (compiled-body-syntax-list ($compiled : Compiled)) : (Listof Syntax)
   (reverse
     (cons 
-      (binding-list-type-module-syntax (compiled-provided-binding-list $compiled))
+      (binding-list-module-syntax (compiled-provided-binding-list $compiled))
       (map syntax-top-level
         (compiled-syntax-list $compiled)))))
 
