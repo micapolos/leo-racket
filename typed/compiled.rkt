@@ -5,6 +5,7 @@
 (require
   racket/function
   racket/list
+  racket/string
   leo/typed/base
   leo/typed/option
   leo/typed/type-utils
@@ -457,19 +458,43 @@
   (syntax-symbol-match-args $syntax `require $args
     (foldl
       (lambda (($arg : Syntax) ($compiled : Compiled))
-        (unless (identifier? $arg) (error "Require must be identifier"))
+        (unless (identifier? $arg) (error "require must be symbol"))
         (compiled-plus-require $compiled (syntax-e $arg)))
       $compiled
       $args)))
+
+(define-namespace-anchor namespace-anchor)
 
 (define 
   (compiled-plus-require
     ($compiled : Compiled)
     ($module-symbol : Symbol))
   : Compiled
-  (compiled-plus-syntax 
-    $compiled
-    (datum->syntax #f `(require ,$module-symbol))))
+  (define $compiled-plus-require
+    (compiled-plus-syntax
+      $compiled
+      (datum->syntax #f `(require ,$module-symbol))))
+  (define $bindings
+    (and
+      (string-prefix? (symbol->string $module-symbol) "leo/")
+      (parameterize 
+        ((current-namespace (namespace-anchor->namespace namespace-anchor)))
+        (dynamic-require 
+          `(submod ,$module-symbol meta) 
+          `bindings 
+          (lambda () #f)))))
+  (if $bindings
+    (compiled-with-binding-list
+      $compiled-plus-require
+      (append 
+        (reverse (cast $bindings (Listof Binding)))
+        (compiled-binding-list $compiled-plus-require)))
+    $compiled-plus-require))
+
+(bind $compiled (compiled-plus-require null-compiled `leo/mini)
+  (check-equal? 
+    (length (compiled-binding-list $compiled))
+    2))
 
 ; --------------------------------------------------------------------
 
