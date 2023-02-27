@@ -287,7 +287,7 @@
           (error "native must be identifier"))
         (define $binding 
           (constant-binding $symbol $return-type (syntax-e $native-body)))
-        (compiled-plus-binding $compiled $binding))
+        (compiled-plus-exported-binding $compiled $binding))
       (let ()
         (define $typed-body (binding-list-syntax $binding-list $body))
         (define $body-return-type (syntax-type $typed-body))
@@ -307,9 +307,7 @@
         (define $compiled-syntax 
           (datum->syntax #f `(define ,$fn ,$typed-body)))
         (compiled-plus-syntax
-          (compiled-plus-provided-binding
-            (compiled-plus-binding $compiled $binding)
-            $binding)
+          (compiled-plus-exported-binding $compiled $binding)
           $compiled-syntax)))))
 
 ; ----------------------------------------------------------------------
@@ -360,7 +358,7 @@
           (error "native must be identifier"))
         (define $binding 
           (function-binding $symbol $field-param-types $return-type (syntax-e $native-body)))
-        (compiled-plus-binding $compiled $binding))
+        (compiled-plus-exported-binding $compiled $binding))
       (let ()
         (define $fn (type-generate-temporary $param-type))
         (define $body
@@ -395,9 +393,7 @@
         (define $compiled-syntax 
           (datum->syntax #f `(define (,$fn ,@$param-tmps) ,$typed-body)))
         (compiled-plus-syntax
-          (compiled-plus-provided-binding 
-            (compiled-plus-binding $compiled $binding)
-            $binding)
+          (compiled-plus-exported-binding $compiled $binding)
           $compiled-syntax)))))
 
 ; ---------------------------------------------------------------------
