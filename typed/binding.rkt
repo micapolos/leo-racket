@@ -307,10 +307,13 @@
 
 ; --------------------------------------------------------------------
 
+(define types-submod-name `types)
+
 (define (binding-list-type-module-syntax ($binding-list : (Listof Binding))) : Syntax
   (cast-syntax
     (datum->syntax #f
-      `(module+ types
+      `(module+ 
+        ,types-submod-name
         (provide (all-defined-out))
         (require leo/type-runtime)
         ,@(reverse (binding-list-type-syntaxes $binding-list))))))
