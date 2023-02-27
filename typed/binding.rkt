@@ -312,8 +312,9 @@
 (define (binding-list-type-module-syntax ($binding-list : (Listof Binding))) : Syntax
   (cast-syntax
     (datum->syntax #f
-      `(module+ 
+      `(module* 
         ,types-submod-name
+        typed/racket/base
         (provide (all-defined-out))
         (require leo/type-runtime)
         ,@(reverse (binding-list-type-syntaxes $binding-list))))))
