@@ -454,10 +454,14 @@
     ($compiled : Compiled)
     ($syntax : Syntax))
   : (Option Compiled)
-  (cond
-    ((syntax-symbol-args? $syntax `require)
-      (compiled-plus-syntax $compiled $syntax))
-    (else #f)))
+  (syntax-symbol-match-args $syntax `require $args
+    (foldl
+      (lambda (($arg : Syntax) ($compiled : Compiled))
+        (compiled-plus-syntax 
+          $compiled 
+          (datum->syntax #f `(require #,$syntax))))
+      $compiled
+      $args)))
 
 ; --------------------------------------------------------------------
 
