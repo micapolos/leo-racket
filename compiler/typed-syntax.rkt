@@ -102,3 +102,7 @@
   (check-equal? 
     (syntax->datum (typed-value $typed-syntax))
     `(cons b c)))
+
+(define (typed-syntax-field-ref
+  ($typed-syntax-field : (Typed Syntax Field))
+  ($index : Exact-Nonnegative-Integer))
