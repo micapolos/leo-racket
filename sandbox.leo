@@ -7,3 +7,4 @@ point:
   y 20
 x.number
 plus 30
+plus 40
