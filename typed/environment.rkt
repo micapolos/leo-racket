@@ -5,7 +5,8 @@
 (require 
   leo/typed/maybe
   leo/typed/base
-  leo/typed/testing)
+  leo/typed/testing
+  (only-in racket/unsafe/ops unsafe-fx+))
 
 (data environment 
   (namespace : Namespace)
@@ -75,17 +76,17 @@
 
 (define (environment-require
   ($environment : Environment) 
-  ($module-symbol : Symbol)) 
+  ($module-symbol : Symbol))
   : Environment
   (environment-with-updated-current-namespace
     $environment
-    (lambda () (dynamic-require $module-symbol #f))))
+    (lambda () (namespace-require $module-symbol))))
 
 (check-equal?
   (environment-ref 
     (environment-require base-environment `racket/unsafe/ops)
     `unsafe-fx+)
-  #f) ; TODO: Why it does not work?
+  (just unsafe-fx+))
 
 ; -----------------------------------------------------------------------------
 
@@ -118,4 +119,10 @@
   (environment-eval 
     (environment-set base-environment `plus +)
     `(+ 1 2))
+  3)
+
+(check-equal?
+  (environment-eval 
+    (environment-require base-environment `racket/unsafe/ops)
+    `(unsafe-fx+ 1 2))
   3)
