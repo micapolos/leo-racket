@@ -10,6 +10,12 @@
 
 (define (type-syntax ($type : Type)) : Syntax
   (cond
+    ((equal? $type boolean-type) #`boolean)
+    ((equal? $type number-type) #`number)
+    ((equal? $type fixnum-type) #`fixnum)
+    ((equal? $type flonum-type) #`flonum)
+    ((equal? $type string-type) #`string)
+
     ((thing? $type) 
       #`(thing))
     ((racket? $type) 
