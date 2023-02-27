@@ -34,8 +34,7 @@
     (syntax-with-type
       (datum->syntax #f
         (if (binding2-function? $binding)
-          `(#%app
-            ,(binding2-identifier $binding)
+          `(,(binding2-identifier $binding)
             ,@(filter syntax-is-dynamic? $syntax-list))
           (binding2-identifier $binding)))
       (binding2-return-type $binding))))
@@ -54,7 +53,7 @@
       (binding2 (list number-type string-type) boolean-type #`foo #t)
       (list (syntax-with-type #`a number-type) (syntax-with-type #`b string-type)))
     syntax-typed-datum)
-  (typed `(#%app foo a b) boolean-type))
+  (typed `(foo a b) boolean-type))
 
 (check-equal?
   (binding2-resolve 
@@ -83,7 +82,7 @@
         (binding2 (list string-type) boolean-type #`string->boolean #t))
       (list (syntax-with-type #`a number-type)))
     syntax-typed-datum)
-  (typed `(#%app number->boolean a) boolean-type))
+  (typed `(number->boolean a) boolean-type))
 
 (check-equal?
   (option-map
@@ -93,7 +92,7 @@
         (binding2 (list string-type) boolean-type #`string->boolean #t))
       (list (syntax-with-type #`a string-type)))
     syntax-typed-datum)
-  (typed `(#%app string->boolean a) boolean-type))
+  (typed `(string->boolean a) boolean-type))
 
 (check-equal?
   (binding2-list-resolve 

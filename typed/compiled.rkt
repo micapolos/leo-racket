@@ -531,7 +531,7 @@
                     $body-return-type 
                     $return-type)))
               (syntax-with-type
-                (datum->syntax #f `(#%plain-lambda (,@$arg-tmps) ,$typed-body))
+                (datum->syntax #f `(lambda (,@$arg-tmps) ,$typed-body))
                 (arrow $arg-types $body-return-type)))))))
     (else #f)))
 
@@ -643,7 +643,7 @@
 ; (check-equal?
 ;   (compile-typed #`(doing number string number))
 ;   (typed 
-;     `(#%plain-lambda (number2 string3) number2)
+;     `(lambda (number2 string3) number2)
 ;     (giving
 ;       (list number-type string-type)
 ;       (list number-type))))

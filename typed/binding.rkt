@@ -89,8 +89,7 @@
       (function-binding-param-types $function-binding))
     (syntax-with-type
       (datum->syntax #f 
-        `(#%app
-          ,(function-binding-identifier $function-binding)
+        `(,(function-binding-identifier $function-binding)
           ,@(filter syntax-is-dynamic? $args)))
       (function-binding-return-type $function-binding))))
 
@@ -103,7 +102,7 @@
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b number-type)))
     syntax-typed-datum)
-  (typed `(#%app fn a b) boolean-type))
+  (typed `(fn a b) boolean-type))
 
 (check-equal?
   (option-map
@@ -115,7 +114,7 @@
         (syntax-with-type #`b (tuple `foo null))
         (syntax-with-type #`c number-type)))
     syntax-typed-datum)
-  (typed `(#%app fn a c) boolean-type))
+  (typed `(fn a c) boolean-type))
 
 (check-equal?
   (option-map
@@ -224,7 +223,7 @@
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b string-type)))
     syntax-typed-datum)
-  (typed `(#%app string-append a b) string-type))
+  (typed `(string-append a b) string-type))
 
 ; --------------------------------------------------------------------
 
@@ -290,7 +289,7 @@
       (list
         (syntax-with-type #`a string-type)
         (syntax-with-type #`b string-type))))
-  (typed `(#%app string-append a b) string-type))
+  (typed `(string-append a b) string-type))
 
 (check-equal?
   (syntax-typed-datum

@@ -78,6 +78,6 @@
                 $fn-type
                 $fn-arg-types)))
           (syntax-with-type
-            (datum->syntax #f `(#%app ,@$args))
+            (datum->syntax #f $args)
             (arrow-rhs-type $fn-type)))))
     (else #f)))
