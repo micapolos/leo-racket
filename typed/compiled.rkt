@@ -284,7 +284,7 @@
         (unless (identifier? $native-body)
           (error "native must be identifier"))
         (define $binding 
-          (constant-binding $symbol $return-type $native-body))
+          (constant-binding $symbol $return-type (syntax-e $native-body)))
         (compiled-plus-binding $compiled $binding))
       (let ()
         (define $typed-body (binding-list-syntax $binding-list $body))
@@ -301,7 +301,7 @@
               $return-type)))
         (define $fn (type-generate-temporary $param-type))
         (define $binding 
-          (constant-binding $symbol $body-return-type $fn))
+          (constant-binding $symbol $body-return-type (syntax-e $fn)))
         (define $compiled-syntax 
           (datum->syntax #f `(define ,$fn ,$typed-body)))
         (compiled-plus-syntax
@@ -357,7 +357,7 @@
         (unless (identifier? $native-body)
           (error "native must be identifier"))
         (define $binding 
-          (function-binding $symbol $field-param-types $return-type $native-body))
+          (function-binding $symbol $field-param-types $return-type (syntax-e $native-body)))
         (compiled-plus-binding $compiled $binding))
       (let ()
         (define $fn (type-generate-temporary $param-type))
@@ -372,7 +372,7 @@
             (syntax-symbol-match-args $does-rhs `recursively $args
               (unless $return-type (error "recursive must have return type"))
               (cons
-                (function-binding $symbol $field-param-types $return-type $fn)
+                (function-binding $symbol $field-param-types $return-type (syntax-e $fn))
                 $argument-bindings))
             $argument-bindings))
         (define $body-binding-list (append $final-bindings $binding-list))
@@ -389,7 +389,7 @@
               $body-return-type 
               $return-type)))
         (define $binding
-          (function-binding $symbol $field-param-types $body-return-type $fn))
+          (function-binding $symbol $field-param-types $body-return-type (syntax-e $fn)))
         (define $compiled-syntax 
           (datum->syntax #f `(define (,$fn ,@$param-tmps) ,$typed-body)))
         (compiled-plus-syntax
@@ -433,7 +433,7 @@
             (compiled-plus-syntax
               (compiled-plus-exported-binding
                 $compiled
-                (function-binding $symbol $fn-param-types $return-type $tmp))
+                (function-binding $symbol $fn-param-types $return-type (syntax-e $tmp)))
               (datum->syntax #f `(define ,$tmp ,$value))))
           (else 
             (define $symbol (type-symbol $type))
@@ -441,7 +441,7 @@
             (compiled-plus-syntax
               (compiled-plus-exported-binding
                 $compiled
-                (constant-binding $symbol $type $tmp))
+                (constant-binding $symbol $type (syntax-e $tmp)))
               (datum->syntax #f `(define ,$tmp ,$value))))))
       $compiled
       $args)))

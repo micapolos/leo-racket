@@ -29,7 +29,7 @@
 (struct constant-binding (
   (symbol : Symbol)
   (type : Type)
-  (identifier : Identifier))
+  (bound-symbol : Symbol))
   #:transparent
   #:type-name ConstantBinding)
 
@@ -37,7 +37,7 @@
   (symbol : Symbol) 
   (param-types : (Listof Type))
   (return-type : Type) 
-  (identifier : Identifier))
+  (bound-symbol : Symbol))
   #:transparent
   #:type-name FunctionBinding)
 
@@ -53,13 +53,13 @@
   (and
     (equal? $symbol (constant-binding-symbol $constant-binding))
     (syntax-with-type
-      (constant-binding-identifier $constant-binding)
+      (datum->syntax #f (constant-binding-bound-symbol $constant-binding))
       (constant-binding-type $constant-binding))))
 
 (check-equal?
   (option-map
     (constant-binding-resolve
-      (constant-binding `foo string-type #`foo-string)
+      (constant-binding `foo string-type `foo-string)
       `foo)
     syntax-typed-datum)
   (typed `foo-string string-type))
@@ -67,7 +67,7 @@
 (check-equal?
   (option-map
     (constant-binding-resolve
-      (constant-binding `foo string-type #`foo-string)
+      (constant-binding `foo string-type `foo-string)
       `not-foo)
     syntax-typed-datum)
   #f)
@@ -89,14 +89,14 @@
       (function-binding-param-types $function-binding))
     (syntax-with-type
       (datum->syntax #f 
-        `(,(function-binding-identifier $function-binding)
+        `(,(function-binding-bound-symbol $function-binding)
           ,@(filter syntax-is-dynamic? $args)))
       (function-binding-return-type $function-binding))))
 
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type number-type) boolean-type #`fn)
+      (function-binding `foo (list string-type number-type) boolean-type `fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
@@ -107,7 +107,7 @@
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type (tuple `foo null) number-type) boolean-type #`fn)
+      (function-binding `foo (list string-type (tuple `foo null) number-type) boolean-type `fn)
       `foo
       (list 
         (syntax-with-type #`a string-type)
@@ -119,7 +119,7 @@
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type number-type) boolean-type #`fn)
+      (function-binding `foo (list string-type number-type) boolean-type `fn)
       `foo
       (list 
         (syntax-with-type #`a number-type)
@@ -130,7 +130,7 @@
 (check-equal?
   (option-map
     (function-binding-resolve
-      (function-binding `foo (list string-type number-type) boolean-type #`bool)
+      (function-binding `foo (list string-type number-type) boolean-type `bool)
       `not-foo
       (list 
         (syntax-with-type #`a string-type)
@@ -190,8 +190,8 @@
   (option-map
     (binding-list-resolve-symbol
       (list
-        (constant-binding `foo string-type #`foo-string)
-        (constant-binding `bar string-type #`foo-string))
+        (constant-binding `foo string-type `foo-string)
+        (constant-binding `bar string-type `foo-string))
       `foo)
     syntax-typed-datum)
   (typed `foo-string string-type))
@@ -216,8 +216,8 @@
   (option-map
     (binding-list-resolve-symbol-args
       (list
-        (function-binding `plus (list string-type string-type) string-type #`string-append)
-        (constant-binding `bar string-type #`foo-string))
+        (function-binding `plus (list string-type string-type) string-type `string-append)
+        (constant-binding `bar string-type `foo-string))
       `plus
       (list
         (syntax-with-type #`a string-type)
@@ -240,8 +240,8 @@
   (syntax-typed-datum
     (binding-list-apply-symbol
       (list
-        (constant-binding `foo string-type #`foo-string)
-        (constant-binding `bar string-type #`foo-string))
+        (constant-binding `foo string-type `foo-string)
+        (constant-binding `bar string-type `foo-string))
       `foo))
   (typed `foo-string string-type))
 
@@ -249,8 +249,8 @@
   (syntax-typed-datum
     (binding-list-apply-symbol
       (list
-        (constant-binding `foo string-type #`foo-string)
-        (constant-binding `bar string-type #`foo-string))
+        (constant-binding `foo string-type `foo-string)
+        (constant-binding `bar string-type `foo-string))
       `not-foo))
   (typed #f (tuple `not-foo null)))
 
@@ -271,8 +271,8 @@
   (syntax-typed-datum
     (binding-list-apply-symbol-args
       (list
-        (function-binding `plus (list string-type string-type) string-type #`string-append)
-        (constant-binding `bar string-type #`foo-string))
+        (function-binding `plus (list string-type string-type) string-type `string-append)
+        (constant-binding `bar string-type `foo-string))
       `string
       (list 
         (syntax-with-type #`x 
@@ -283,8 +283,8 @@
   (syntax-typed-datum
     (binding-list-apply-symbol-args
       (list
-        (function-binding `plus (list string-type string-type) string-type #`string-append)
-        (constant-binding `bar string-type #`foo-string))
+        (function-binding `plus (list string-type string-type) string-type `string-append)
+        (constant-binding `bar string-type `foo-string))
       `plus
       (list
         (syntax-with-type #`a string-type)
@@ -295,8 +295,8 @@
   (syntax-typed-datum
     (binding-list-apply-symbol-args
       (list
-        (function-binding `plus (list string-type string-type) string-type #`string-append)
-        (constant-binding `bar string-type #`foo-string))
+        (function-binding `plus (list string-type string-type) string-type `string-append)
+        (constant-binding `bar string-type `foo-string))
       `not-plus
       (list
         (syntax-with-type #`a string-type)
@@ -331,13 +331,13 @@
 (define (constant-binding-type-syntax ($constant-binding : ConstantBinding)) : Syntax
   (cast-syntax
     #`(define
-      #,(constant-binding-identifier $constant-binding)
+      #,(constant-binding-bound-symbol $constant-binding)
       #,(type-syntax (constant-binding-type $constant-binding)))))
      
 (define (function-binding-type-syntax ($function-binding : FunctionBinding)) : Syntax
   (cast-syntax 
     #`(define
-      #,(function-binding-identifier $function-binding)
+      #,(function-binding-bound-symbol $function-binding)
       #,(type-syntax
         (arrow 
           (function-binding-param-types $function-binding)
