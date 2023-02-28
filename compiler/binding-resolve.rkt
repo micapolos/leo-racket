@@ -89,6 +89,14 @@
 
 ; -----------------------------------------------------------------------
 
+(define (binding-resolve-typed-syntax
+  ($binding : Binding)
+  ($typed-syntax : Typed-Syntax))
+  : (Option Typed-Syntax)
+  (binding-resolve-get-typed-syntax $binding $typed-syntax))
+
+; -----------------------------------------------------------------------
+
 (define (arrow-binding-resolve-sourced-typed-syntax-stack
   ($binding : Binding)
   ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
@@ -140,77 +148,7 @@
   (or
     (and 
       $single-typed-syntax 
-      (binding-resolve-get-typed-syntax $binding $single-typed-syntax))
+      (binding-resolve-typed-syntax $binding $single-typed-syntax))
     (arrow-binding-resolve-sourced-typed-syntax-stack 
       $binding 
       $sourced-typed-syntax-stack)))
-
-; (check-equal?
-;   (bind $resolved
-;     (binding-resolve 
-;       (binding (stack type-a type-b) type-c identifier-d #f)
-;       (stack (typed syntax-a type-a) (typed syntax-b type-b))
-;       test-srcloc)
-;     (and $resolved (typed-syntax->typed-sourced $resolved)))
-;   (typed (sourced `d srcloc-d) type-c))
-
-; (check-equal?
-;   (bind $resolved
-;     (binding-resolve 
-;       (binding (stack type-a type-b) type-c identifier-d #t)
-;       (stack (typed syntax-a type-a) (typed syntax-b type-b))
-;       test-srcloc)
-;     (and $resolved (typed-syntax->typed-sourced $resolved)))
-;   (typed (sourced `(d a b) test-srcloc) type-c))
-
-; (check-equal?
-;   (binding-resolve 
-;     (binding (stack type-a type-b) type-c identifier-d #t)
-;     (stack (typed syntax-a type-a) (typed syntax-c type-c))
-;     test-srcloc)
-;   #f)
-
-; ; ----------------------------------------------------------------------------
-
-; (define
-;   (binding-stack-resolve
-;     ($binding-stack : (Stackof Binding))
-;     ($typed-syntax-stack : (Stackof (Typed Syntax Type)))
-;     ($srcloc : srcloc))
-;   : (Option (Typed Syntax Type))
-;   (and
-;     (not (null? $binding-stack))
-;     (or
-;       (binding-resolve (car $binding-stack) $typed-syntax-stack $srcloc)
-;       (binding-stack-resolve (cdr $binding-stack) $typed-syntax-stack $srcloc))))
-
-; (check-equal?
-;   (bind $resolved
-;     (binding-stack-resolve 
-;       (stack 
-;         (binding (stack type-a) type-b identifier-b #t)
-;         (binding (stack type-c) type-d identifier-d #t))
-;       (stack typed-syntax-a)
-;       test-srcloc)
-;     (and $resolved (typed-syntax->typed-sourced $resolved)))
-;   (typed (sourced `(b a) test-srcloc) type-b))
-
-; (check-equal?
-;   (bind $resolved
-;     (binding-stack-resolve 
-;       (stack 
-;         (binding (stack type-a) type-b identifier-b #t)
-;         (binding (stack type-c) type-d identifier-d #t))
-;       (stack typed-syntax-c)
-;       test-srcloc)
-;     (and $resolved (typed-syntax->typed-sourced $resolved)))
-;   (typed (sourced `(d c) test-srcloc) type-d))
-
-; (check-equal?
-;   (binding-stack-resolve 
-;     (stack 
-;       (binding (stack type-a) type-b identifier-b #t)
-;       (binding (stack type-c) type-d identifier-d #t))
-;     (stack typed-syntax-d)
-;     test-srcloc)
-;   #f)
