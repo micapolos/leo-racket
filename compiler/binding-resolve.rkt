@@ -235,3 +235,19 @@
     (arrow-binding-resolve-sourced-typed-syntax-stack 
       $binding 
       $sourced-typed-syntax-stack)))
+
+; -----------------------------------------------------------------------
+
+(define (binding-stack-resolve-sourced-typed-syntax-stack
+  ($binding-stack : (Stackof Binding))
+  ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
+  : (Option Typed-Syntax)
+  (and 
+    (not (null? $binding-stack))
+    (or
+      (binding-resolve-sourced-typed-syntax-stack 
+        (top $binding-stack)
+        $sourced-typed-syntax-stack)
+      (binding-stack-resolve-sourced-typed-syntax-stack
+        (pop $binding-stack)
+        $sourced-typed-syntax-stack))))
