@@ -273,26 +273,26 @@
 (bind $option
   (typed-syntax-stack-resolve-apply
     (stack 
-      (typed #`fn
+      (typed test-syntax
         (arrow 
-          (stack (racket `t1) (field `foo null) (racket `t2))
-          (racket `t3))))
+          (stack dynamic-type-a static-type-b dynamic-type-c)
+          dynamic-type-d)))
     (stack 
-      (typed #`arg1 (racket `t1))
-      (typed #`#f (field `foo null))
-      (typed #`arg2 (racket `t2)))
+      (typed syntax-a dynamic-type-a)
+      (typed syntax-b static-type-b)
+      (typed syntax-c dynamic-type-c))
     test-srcloc)
   (option-bind $option $result
     (check-equal? 
       (syntax->datum (typed-value $result)) 
-      `(fn arg1 arg2))
+      `(test a c))
     (check-equal? 
       (typed-type $result) 
-      (racket `t3))))
+      dynamic-type-d)))
 
 (check-equal?
   (typed-syntax-stack-resolve-apply
-    (stack (typed #`fn (arrow (stack (racket `t1)) (racket `t2))))
-    (stack (typed #`arg1 (racket `not-t1)))
+    (stack (typed syntax-a (arrow (stack dynamic-type-a) dynamic-type-b)))
+    (stack (typed syntax-b dynamic-type-c))
     test-srcloc)
   #f)
