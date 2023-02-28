@@ -8,12 +8,12 @@
   leo/compiler/sourced
   leo/compiler/racket)
 
-(define-type Line (U Phrase Racket))
+(define-type Line (Sourced (U Phrase Racket)))
 
-(define-type Script (Stackof (Sourced Line)))
+(define-type Script (Stackof Line))
 
 (struct phrase (
   (sourced-symbol : (Sourced Symbol)) 
-  (line-stack : (Stackof Line)))
+  (script : Script))
   #:transparent
   #:type-name Phrase)
