@@ -16,6 +16,11 @@
   leo/compiler/generate-temporary
   leo/compiler/typed)
 
+(define typed-syntax-a (typed syntax-a type-a))
+(define typed-syntax-b (typed syntax-b type-b))
+(define typed-syntax-c (typed syntax-c type-c))
+(define typed-syntax-d (typed syntax-d type-d))
+
 (define #:forall (T) (typed-syntax->typed-sexp 
   ($typed-syntax : (Typed Syntax T))) : (Typed Sexp T)
   (typed (syntax->datum (typed-value $typed-syntax)) (typed-type $typed-syntax)))
