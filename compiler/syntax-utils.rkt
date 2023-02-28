@@ -6,7 +6,7 @@
   leo/compiler/sourced
   racket/syntax-srcloc)
 
-(define (make-syntax ($srcloc : srcloc) ($datum : Datum)) : Syntax
+(define (make-syntax ($srcloc : srcloc) ($datum : (Sexpof Syntax))) : Syntax
   (datum->syntax #f $datum 
     (vector
       (srcloc-source $srcloc)
