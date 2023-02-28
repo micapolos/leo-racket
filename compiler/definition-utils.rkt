@@ -15,9 +15,7 @@
   leo/typed/option
   leo/typed/base)
 
-(define (typed-syntax-definition
-  ($typed-syntax : Typed-Syntax) 
-  ($srcloc : srcloc)) : Definition
+(define (typed-syntax-definition ($typed-syntax : Typed-Syntax)) : Definition
   (define $type (typed-type $typed-syntax))
   (define $syntax (typed-value $typed-syntax))
   (define $temporary
@@ -29,11 +27,11 @@
   (define $definition-syntax-option
     (and 
       $temporary
-      (make-syntax $srcloc `(define ,$temporary ,$syntax))))
+      (make-syntax empty-srcloc `(define ,$temporary ,$syntax))))
   (definition $binding $definition-syntax-option))
 
 (bind $definition
-  (typed-syntax-definition typed-syntax-a srcloc-b)
+  (typed-syntax-definition typed-syntax-a)
   (define $binding (definition-binding $definition))
   (define $tmp-symbol (syntax-e (binding-syntax $binding)))
   (check-equal? (binding-type $binding) type-a)
@@ -44,10 +42,10 @@
     (option-map
       (definition-syntax-option $definition) 
       syntax-sourced)
-    (sourced `(define ,$tmp-symbol a) srcloc-b)))
+    (sourced `(define ,$tmp-symbol a) empty-srcloc)))
 
 (bind $definition
-  (typed-syntax-definition (typed syntax-a static-type-a) srcloc-b)
+  (typed-syntax-definition (typed syntax-a static-type-a))
   (define $binding (definition-binding $definition))
   (define $tmp-symbol (syntax-e (binding-syntax $binding)))
   (check-equal? (binding-type $binding) static-type-a)
