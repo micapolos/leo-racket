@@ -55,4 +55,3 @@
     (syntax-sourced (binding-syntax $binding))
     (sourced $tmp-symbol empty-srcloc))
   (check-equal? (definition-syntax-option $definition) #f))
-
