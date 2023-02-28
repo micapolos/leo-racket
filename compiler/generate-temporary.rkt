@@ -29,4 +29,3 @@
   ($typed-syntax-stack : (Stackof (Typed Syntax Type)))) 
   : (Stackof Identifier)
   (map typed-syntax-generate-temporary $typed-syntax-stack))
-
