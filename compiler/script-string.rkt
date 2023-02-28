@@ -77,12 +77,20 @@
   "foo")
 
 (check-equal? 
-  (line-string (datum-line `(foo 1)))
-  "foo 1")
+  (line-string (datum-line `(foo bar)))
+  "foo bar")
+
+(check-equal? 
+  (line-string (datum-line `(foo (bar zoo))))
+  "foo bar zoo")
+
+(check-equal? 
+  (line-string (datum-line `(foo bar)))
+  "foo bar")
 
 (check-equal?
-  (line-string (datum-line `(foo 1 2)))
-  "foo: 1 2")
+  (line-string (datum-line `(foo bar zoo)))
+  "foo: bar zoo")
 
 (check-equal?
   (line-string (datum-line `(foo (x 1) (y 2))))
