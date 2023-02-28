@@ -48,8 +48,3 @@
 (define syntax-b (make-syntax srcloc-b `b))
 (define syntax-c (make-syntax srcloc-c `c))
 (define syntax-d (make-syntax srcloc-d `d))
-
-(define identifier-a (make-identifier srcloc-a `a))
-(define identifier-b (make-identifier srcloc-b `b))
-(define identifier-c (make-identifier srcloc-c `c))
-(define identifier-d (make-identifier srcloc-d `d))

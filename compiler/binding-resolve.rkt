@@ -32,14 +32,14 @@
 (check-equal?
   (option-bind
     (binding-resolve-symbol
-      (binding (field `a (stack type-b)) identifier-b) `a srcloc-a)
+      (binding (field `a (stack type-b)) syntax-b) `a srcloc-a)
     $resolved
     (typed-syntax->typed-sourced $resolved))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
   (binding-resolve-symbol
-    (binding (field `a (stack type-b)) identifier-b) `b srcloc-a)
+    (binding (field `a (stack type-b)) syntax-b) `b srcloc-a)
   #f)
 
 ; -----------------------------------------------------------------------
@@ -58,14 +58,14 @@
 (check-equal?
   (option-bind
     (binding-resolve-type
-      (binding type-a identifier-a) type-a srcloc-a)
+      (binding type-a syntax-a) type-a srcloc-a)
     $resolved
     (typed-syntax->typed-sourced $resolved))
   (typed (sourced `a srcloc-a) type-a))
 
 (check-equal?
   (binding-resolve-type
-    (binding type-a identifier-a) type-b srcloc-a)
+    (binding type-a syntax-a) type-b srcloc-a)
   #f)
 
 ; -----------------------------------------------------------------------
@@ -91,7 +91,7 @@
 (check-equal?
   (option-bind
     (binding-resolve-get-a-typed-syntax
-      (binding type-a identifier-b)
+      (binding type-a syntax-b)
       (typed syntax-a (field `get (stack (a type-a)))))
     $resolved
     (typed-syntax->typed-sourced $resolved))
@@ -99,19 +99,19 @@
 
 (check-equal?
   (binding-resolve-get-a-typed-syntax
-    (binding type-a identifier-b)
+    (binding type-a syntax-b)
     (typed syntax-a (field `not-get (stack (a type-a)))))
   #f)
 
 (check-equal?
   (binding-resolve-get-a-typed-syntax
-    (binding type-a identifier-b)
+    (binding type-a syntax-b)
     (typed syntax-a (field `get (stack type-a))))
   #f)
 
 (check-equal?
   (binding-resolve-get-a-typed-syntax
-    (binding type-a identifier-b)
+    (binding type-a syntax-b)
     (typed syntax-a (field `get (stack (a type-b)))))
   #f)
 
@@ -139,7 +139,7 @@
 (check-equal?
   (option-bind
     (binding-resolve-get-symbol-typed-syntax
-      (binding (field `a (stack type-b)) identifier-b) 
+      (binding (field `a (stack type-b)) syntax-b) 
       (typed syntax-a (field `get (stack (field `a null)))))
     $resolved
     (typed-syntax->typed-sourced $resolved))
@@ -147,25 +147,25 @@
 
 (check-equal?
   (binding-resolve-get-symbol-typed-syntax
-    (binding (field `a (stack type-b)) identifier-b) 
+    (binding (field `a (stack type-b)) syntax-b) 
     (typed syntax-a type-a))
   #f)
 
 (check-equal?
   (binding-resolve-get-symbol-typed-syntax
-    (binding (field `a (stack type-b)) identifier-b) 
+    (binding (field `a (stack type-b)) syntax-b) 
     (typed syntax-a (field `not-get (stack (field `a null)))))
   #f)
 
 (check-equal?
   (binding-resolve-get-symbol-typed-syntax
-    (binding (field `a (stack type-b)) identifier-b) 
+    (binding (field `a (stack type-b)) syntax-b) 
     (typed syntax-a (field `get (stack (field `b null)))))
   #f)
 
 (check-equal?
   (binding-resolve-get-symbol-typed-syntax
-    (binding (field `a (stack type-b)) identifier-b) 
+    (binding (field `a (stack type-b)) syntax-b) 
     (typed syntax-a (field `get (stack (field `a (stack type-a))))))
   #f)
 
@@ -209,7 +209,7 @@
 (check-equal?
   (option-bind
     (arrow-binding-resolve-args
-      (binding (arrow (stack type-a type-b) type-c) identifier-d)
+      (binding (arrow (stack type-a type-b) type-c) syntax-d)
       (sourced (stack typed-syntax-a typed-syntax-b) srcloc-c))
     $resolved
     (typed-syntax->typed-sourced $resolved))
@@ -217,7 +217,7 @@
 
 (check-equal?
   (arrow-binding-resolve-args
-    (binding (arrow (stack type-a type-b) type-c) identifier-d)
+    (binding (arrow (stack type-a type-b) type-c) syntax-d)
     (sourced (stack typed-syntax-b typed-syntax-a) srcloc-c))
   #f)
 
