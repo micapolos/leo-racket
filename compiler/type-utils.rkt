@@ -11,6 +11,21 @@
   leo/typed/stack
   leo/typed/testing)
 
+(define dynamic-type-a (racket `a))
+(define dynamic-type-b (racket `b))
+(define dynamic-type-c (racket `c))
+(define dynamic-type-d (racket `d))
+
+(define static-type-a (field `a null))
+(define static-type-b (field `b null))
+(define static-type-c (field `c null))
+(define static-type-d (field `d null))
+
+(define type-a dynamic-type-a)
+(define type-b dynamic-type-b)
+(define type-c dynamic-type-c)
+(define type-d dynamic-type-d)
+
 (define (type-is-dynamic? ($type : Type)) : Boolean
   (cond
     ((racket? $type) #t)

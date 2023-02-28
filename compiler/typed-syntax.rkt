@@ -8,14 +8,23 @@
   leo/typed/option
   leo/typed/testing
   leo/compiler/racket
+  leo/compiler/sourced
+  leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-check
   leo/compiler/type-utils
+  leo/compiler/generate-temporary
   leo/compiler/typed)
 
 (define #:forall (T) (typed-syntax->typed-sexp 
   ($typed-syntax : (Typed Syntax T))) : (Typed Sexp T)
   (typed (syntax->datum (typed-value $typed-syntax)) (typed-type $typed-syntax)))
+
+(define #:forall (T) (typed-syntax->typed-sourced
+  ($typed-syntax : (Typed Syntax T))) : (Typed (Sourced Sexp) T)
+  (typed 
+    (syntax-sourced (typed-value $typed-syntax))
+    (typed-type $typed-syntax)))
 
 (define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
   (type-is-dynamic? (typed-type $typed-syntax)))
@@ -30,7 +39,8 @@
 ; ------------------------------------------------------------------
 
 (define (typed-syntax-stack->syntax
-  ($typed-syntax-stack : (Stackof (Typed Syntax Type))))
+  ($typed-syntax-stack : (Stackof (Typed Syntax Type)))
+  ($srcloc : srcloc))
   : Syntax
   (define $dynamic-typed-syntax-stack 
     (filter typed-syntax-is-dynamic? $typed-syntax-stack))
@@ -39,57 +49,64 @@
   (define $dynamic-length 
     (length $dynamic-syntax-stack))
   (case $dynamic-length
-    ((0) (datum->syntax #f #f))
+    ((0) (make-syntax $srcloc #f))
     ((1) (top $dynamic-syntax-stack))
     ((2) 
-      (datum->syntax #f 
+      (make-syntax $srcloc
         `(cons ,(pop-top $dynamic-syntax-stack) ,(top $dynamic-syntax-stack))))
     (else 
-      (datum->syntax #f 
+      (make-syntax $srcloc
         `(vector ,@(reverse $dynamic-syntax-stack))))))
 
 (check-equal?
-  (syntax->datum
+  (syntax-sourced
     (typed-syntax-stack->syntax 
       (stack
-        (typed #`a (field `foo null)))))
-  #f)
+        (typed test-syntax (field `foo null)))
+      test-srcloc))
+  (sourced #f test-srcloc))
 
 (check-equal?
-  (syntax->datum
+  (syntax-sourced
     (typed-syntax-stack->syntax 
       (stack
-        (typed #`a (field `foo null))
-        (typed #`b (racket `number)))))
-  `b)
+        (typed syntax-a (field `foo null))
+        (typed syntax-b (racket `number)))
+      test-srcloc))
+  (sourced `b srcloc-b))
 
 (check-equal?
-  (syntax->datum
+  (syntax-sourced
     (typed-syntax-stack->syntax 
       (stack
-        (typed #`a (field `foo null))
-        (typed #`b (racket `number))
-        (typed #`c (racket `string)))))
-  `(cons b c))
+        (typed syntax-a (field `foo null))
+        (typed syntax-b (racket `number))
+        (typed syntax-c (racket `string)))
+      test-srcloc))
+  (sourced `(cons b c) test-srcloc))
 
 (check-equal?
-  (syntax->datum
+  (syntax-sourced
     (typed-syntax-stack->syntax 
       (stack
-        (typed #`a (field `foo null))
-        (typed #`b (racket `number))
-        (typed #`c (racket `string))
-        (typed #`d (racket `boolean)))))
-  `(vector b c d))
+        (typed syntax-a static-type-a)
+        (typed syntax-b dynamic-type-b)
+        (typed syntax-c dynamic-type-c)
+        (typed syntax-d dynamic-type-d))
+      test-srcloc))
+  (sourced `(vector b c d) test-srcloc))
 
 ; ------------------------------------------------------------------
 
 (define (typed-syntax-stack-make
   ($typed-syntax-stack : (Stackof (Typed Syntax Type)))
-  ($symbol : Symbol))
+  ($symbol : Symbol)
+  ($srcloc : srcloc))
   : (Typed Syntax Field)
   (typed
-    (typed-syntax-stack->syntax $typed-syntax-stack)
+    (typed-syntax-stack->syntax 
+      $typed-syntax-stack 
+      $srcloc)
     (field $symbol 
       (map 
         (ann typed-type (-> (Typed Syntax Type) Type)) 
@@ -98,32 +115,30 @@
 (bind $typed-syntax
   (typed-syntax-stack-make
     (stack
-      (typed #`a (field `foo null))
-      (typed #`b (racket `number))
-      (typed #`c (racket `string)))
-    `tuple)
+      (typed syntax-a static-type-a)
+      (typed syntax-b dynamic-type-b)
+      (typed syntax-c dynamic-type-c))
+    `tuple
+    test-srcloc)
   (check-equal? 
     (typed-type $typed-syntax) 
-    (field `tuple 
-      (stack 
-        (field `foo null)
-        (racket `number)
-        (racket `string))))
+    (field `tuple (stack static-type-a dynamic-type-b dynamic-type-c)))
   (check-equal? 
-    (syntax->datum (typed-value $typed-syntax))
-    `(cons b c)))
+    (syntax-sourced (typed-value $typed-syntax))
+    (sourced `(cons b c) test-srcloc)))
 
 ; -------------------------------------------------------------------
 
 (define (syntax-type-stack-ref
   ($syntax : Syntax)
   ($type-stack : (Stackof Type))
-  ($index : Exact-Nonnegative-Integer))
+  ($index : Exact-Nonnegative-Integer)
+  ($srcloc : srcloc))
   : (Typed Syntax Type)
   (define $type-stack-size (type-stack-size $type-stack))
   (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
   (typed 
-    (datum->syntax #f
+    (make-syntax $srcloc
       (and
         $dynamic-index
         (case $type-stack-size
@@ -138,90 +153,101 @@
     (list-ref $type-stack $index)))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (field `t2 null))
-      0)) 
-  (typed #f (field `t2 null)))
+      syntax-a
+      (stack static-type-a)
+      0
+      test-srcloc))
+  (typed (sourced #f test-srcloc) static-type-a))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (field `t2 null))
-      0)) 
-  (typed #f (field `t2 null)))
+      syntax-a
+      (stack dynamic-type-a static-type-b)
+      0
+      test-srcloc)) 
+  (typed (sourced #f test-srcloc) static-type-b))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (field `t2 null))
-      1)) 
-  (typed `a (racket `t1)))
+      syntax-a
+      (stack dynamic-type-a static-type-b)
+      1
+      test-srcloc)) 
+  (typed (sourced `a srcloc-a) dynamic-type-a))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (field `t2 null) (racket `t3))
-      0)) 
-  (typed `(unsafe-cdr a) (racket `t3)))
+      syntax-a
+      (stack dynamic-type-a static-type-b dynamic-type-c)
+      0
+      test-srcloc)) 
+  (typed (sourced `(unsafe-cdr a) test-srcloc) dynamic-type-c))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (field `t2 null) (racket `t3))
-      1)) 
-  (typed #f (field `t2 null)))
+      syntax-a
+      (stack dynamic-type-a static-type-b dynamic-type-c)
+      1
+      test-srcloc)) 
+  (typed (sourced #f test-srcloc) static-type-b))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced 
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (field `t2 null) (racket `t3))
-      2)) 
-  (typed `(unsafe-car a) (racket `t1)))
+      syntax-a 
+      (stack dynamic-type-a static-type-b dynamic-type-c)
+      2
+      test-srcloc)) 
+  (typed (sourced `(unsafe-car a) test-srcloc) dynamic-type-a))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
-      0)) 
-  (typed `(unsafe-vector-ref a 2) (racket `t4)))
+      syntax-a 
+      (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
+      0
+      test-srcloc)) 
+  (typed (sourced `(unsafe-vector-ref a 2) test-srcloc) dynamic-type-d))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
-      1)) 
-  (typed #f (field `t3 null) ))
+      syntax-a 
+      (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
+      1
+      test-srcloc)) 
+  (typed (sourced #f test-srcloc) static-type-c))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
-      2)) 
-  (typed `(unsafe-vector-ref a 1) (racket `t2)))
+      syntax-a 
+      (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
+      2
+      test-srcloc)) 
+  (typed (sourced `(unsafe-vector-ref a 1) test-srcloc) dynamic-type-b))
 
 (check-equal? 
-  (typed-syntax->typed-sexp 
+  (typed-syntax->typed-sourced
     (syntax-type-stack-ref 
-      #`a 
-      (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
-      3)) 
-  (typed `(unsafe-vector-ref a 0) (racket `t1)))
+      syntax-a 
+      (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
+      3
+      test-srcloc)) 
+  (typed (sourced `(unsafe-vector-ref a 0) test-srcloc) dynamic-type-a))
 
 ; -------------------------------------------------------------------
 
 (define (typed-syntax-stack-resolve-apply
   ($lhs-typed-syntax-stack : (Stackof (Typed Syntax Type)))
-  ($rhs-typed-syntax-stack : (Stackof (Typed Syntax Type))))
+  ($rhs-typed-syntax-stack : (Stackof (Typed Syntax Type)))
+  ($srcloc : srcloc))
   : (Option (Typed Syntax Type))
   (and (= (length $lhs-typed-syntax-stack) 1)
     (bind $lhs-typed-syntax (top $lhs-typed-syntax-stack)
@@ -241,7 +267,7 @@
                 (map (ann typed-value (-> (Typed Syntax Type) Syntax)) 
                 $arg-typed-syntax-stack))
               (typed
-                (datum->syntax #f `(,$lhs-syntax ,@(reverse $arg-syntax-stack)))
+                (make-syntax $srcloc `(,$lhs-syntax ,@(reverse $arg-syntax-stack)))
                 $arrow-rhs-type))))))))
 
 (bind $option
@@ -254,7 +280,8 @@
     (stack 
       (typed #`arg1 (racket `t1))
       (typed #`#f (field `foo null))
-      (typed #`arg2 (racket `t2))))
+      (typed #`arg2 (racket `t2)))
+    test-srcloc)
   (option-bind $option $result
     (check-equal? 
       (syntax->datum (typed-value $result)) 
@@ -266,5 +293,6 @@
 (check-equal?
   (typed-syntax-stack-resolve-apply
     (stack (typed #`fn (arrow (stack (racket `t1)) (racket `t2))))
-    (stack (typed #`arg1 (racket `not-t1))))
+    (stack (typed #`arg1 (racket `not-t1)))
+    test-srcloc)
   #f)
