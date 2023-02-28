@@ -8,3 +8,11 @@
   leo/compiler/typed-syntax)
 
 (define-type Args (Sourced (Stackof Typed-Syntax)))
+
+(define args sourced)
+
+(define (args-srcloc ($args : Args)) : srcloc
+  (sourced-srcloc $args))
+
+(define (args-typed-syntax-stack ($args : Args)) : (Stackof Typed-Syntax)
+  (sourced-value $args))

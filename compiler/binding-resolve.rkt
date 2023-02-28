@@ -186,8 +186,8 @@
   ($args : Args))
   : (Option Typed-Syntax)
   (define $binding-type (binding-type $binding))
-  (define $srcloc (sourced-srcloc $args))
-  (define $typed-syntax-stack (sourced-value $args))
+  (define $srcloc (args-srcloc $args))
+  (define $typed-syntax-stack (args-typed-syntax-stack $args))
   (define $type-stack (typed-stack->type-stack $typed-syntax-stack))
   (define $dynamic-syntax-stack (typed-syntax-stack->dynamic-syntax-stack $typed-syntax-stack))
   (and 
@@ -227,7 +227,7 @@
   ($binding : Binding)
   ($args : Args))
   : (Option Typed-Syntax)
-  (define $typed-syntax-stack (sourced-value $args))
+  (define $typed-syntax-stack (args-typed-syntax-stack $args))
   (define $single-typed-syntax (single $typed-syntax-stack))
   (or
     (and 
