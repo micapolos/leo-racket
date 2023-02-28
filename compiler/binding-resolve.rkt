@@ -89,7 +89,7 @@
 
 ; -----------------------------------------------------------------------
 
-(define (binding-resolve-sourced-typed-syntax-stack
+(define (arrow-binding-resolve-sourced-typed-syntax-stack
   ($binding : Binding)
   ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
   : (Option Typed-Syntax)
@@ -116,7 +116,7 @@
 
 (check-equal?
   (option-bind
-    (binding-resolve-sourced-typed-syntax-stack
+    (arrow-binding-resolve-sourced-typed-syntax-stack
       (binding (arrow (stack type-a type-b) type-c) identifier-d)
       (sourced (stack typed-syntax-a typed-syntax-b) srcloc-c))
     $resolved
@@ -124,10 +124,26 @@
   (typed (sourced `(d a b) srcloc-c) type-c))
 
 (check-equal?
-  (binding-resolve-sourced-typed-syntax-stack
+  (arrow-binding-resolve-sourced-typed-syntax-stack
     (binding (arrow (stack type-a type-b) type-c) identifier-d)
     (sourced (stack typed-syntax-b typed-syntax-a) srcloc-c))
   #f)
+
+; ------------------------------------------------------------------------
+
+(define (binding-resolve-sourced-typed-syntax-stack
+  ($binding : Binding)
+  ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
+  : (Option Typed-Syntax)
+  (define $typed-syntax-stack (sourced-value $sourced-typed-syntax-stack))
+  (define $single-typed-syntax (single $typed-syntax-stack))
+  (or
+    (and 
+      $single-typed-syntax 
+      (binding-resolve-get-typed-syntax $binding $single-typed-syntax))
+    (arrow-binding-resolve-sourced-typed-syntax-stack 
+      $binding 
+      $sourced-typed-syntax-stack)))
 
 ; (check-equal?
 ;   (bind $resolved
