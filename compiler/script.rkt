@@ -5,10 +5,15 @@
 (require 
   leo/typed/base
   leo/typed/stack
+  leo/compiler/sourced
   leo/compiler/racket)
 
 (define-type Line (U Phrase Racket))
 
-(struct phrase ((symbol : Symbol) (line-stack : (Stackof Line)))
+(define-type Script (Stackof (Sourced Line)))
+
+(struct phrase (
+  (sourced-symbol : (Sourced Symbol)) 
+  (line-stack : (Stackof Line)))
   #:transparent
   #:type-name Phrase)
