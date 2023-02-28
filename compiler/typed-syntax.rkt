@@ -14,22 +14,31 @@
   leo/compiler/type-check
   leo/compiler/type-utils
   leo/compiler/generate-temporary
-  leo/compiler/typed)
+  leo/compiler/typed
+  (for-syntax racket/base))
+
+(define-type Typed-Syntax (Typed Syntax Type))
 
 (define typed-syntax-a (typed syntax-a type-a))
 (define typed-syntax-b (typed syntax-b type-b))
 (define typed-syntax-c (typed syntax-c type-c))
 (define typed-syntax-d (typed syntax-d type-d))
 
-(define #:forall (T) (typed-syntax->typed-sexp 
-  ($typed-syntax : (Typed Syntax T))) : (Typed Sexp T)
-  (typed (syntax->datum (typed-value $typed-syntax)) (typed-type $typed-syntax)))
+(define-syntax (typed-syntax->typed-sexp $syntax)
+  (syntax-case $syntax ()
+    ((_ expr)
+      #`(bind $typed-syntax expr
+        (typed 
+          (syntax->datum (typed-value $typed-syntax)) 
+          (typed-type $typed-syntax))))))
 
-(define #:forall (T) (typed-syntax->typed-sourced
-  ($typed-syntax : (Typed Syntax T))) : (Typed (Sourced Sexp) T)
-  (typed 
-    (syntax-sourced (typed-value $typed-syntax))
-    (typed-type $typed-syntax)))
+(define-syntax (typed-syntax->typed-sourced $syntax)
+  (syntax-case $syntax ()
+    ((_ expr)
+      #`(bind $typed-syntax expr
+        (typed 
+          (syntax-sourced (typed-value $typed-syntax))
+          (typed-type $typed-syntax))))))
 
 (define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
   (type-is-dynamic? (typed-type $typed-syntax)))
@@ -40,6 +49,33 @@
   (unless (= (length $typed-syntax-stack) 1)
     (error "typed-syntax-stack->typed-syntax"))
   (top $typed-syntax-stack))
+
+(define-syntax (typed-stack->type-stack $syntax)
+  (syntax-case $syntax ()
+    ((_ $typed-stack)
+      #`(map 
+        (ann typed-type (-> (Typed Any Type) Type))
+        $typed-stack))))
+
+(define-syntax (typed-syntax-stack->syntax-stack $syntax)
+  (syntax-case $syntax ()
+    ((_ $typed-syntax-stack)
+      #`(map 
+        (ann typed-value (-> (Typed Syntax Any) Syntax))
+        $typed-syntax-stack))))
+
+(define-syntax (typed-syntax-stack->dynamic-syntax-stack $syntax)
+  (syntax-case $syntax ()
+    ((_ $typed-syntax-stack)
+      #`(typed-syntax-stack->syntax-stack
+        (filter 
+          (ann typed-syntax-is-dynamic? (-> Typed-Syntax Boolean))
+          $typed-syntax-stack)))))
+
+(check-equal?
+  (typed-stack->type-stack
+    (stack typed-syntax-a typed-syntax-b))
+  (stack type-a type-b))
 
 ; ------------------------------------------------------------------
 

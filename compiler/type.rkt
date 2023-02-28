@@ -6,7 +6,7 @@
   leo/compiler/racket
   leo/typed/stack)
 
-(define-type Type (U Racket Field Arrow))
+(define-type Type (U Racket Field Arrow A))
 
 (struct arrow ((lhs-type-stack : (Stackof Type)) (rhs-type : Type))
   #:transparent
@@ -15,3 +15,7 @@
 (struct field ((symbol : Symbol) (type-stack : (Stackof Type)))
   #:transparent
   #:type-name Field)
+
+(struct a ((type : Type))
+  #:transparent
+  #:type-name A)

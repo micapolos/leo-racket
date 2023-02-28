@@ -27,12 +27,15 @@
 (define (syntax-sourced ($syntax : Syntax)) : (Sourced Sexp)
   (sourced 
     (syntax->datum $syntax) 
-    (srcloc
-      (syntax-source $syntax)
-      (syntax-line $syntax)
-      (syntax-column $syntax)
-      (syntax-position $syntax)
-      (syntax-span $syntax))))
+    (syntax-srcloc $syntax)))
+
+(define (syntax-srcloc ($syntax : Syntax)) : srcloc
+  (srcloc
+    (syntax-source $syntax)
+    (syntax-line $syntax)
+    (syntax-column $syntax)
+    (syntax-position $syntax)
+    (syntax-span $syntax)))
 
 (define test-srcloc (srcloc "test.leo" 1 2 3 4))
 (define srcloc-a (srcloc "a.leo" 1 2 3 4))

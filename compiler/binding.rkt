@@ -8,7 +8,5 @@
   leo/typed/base)
 
 (data binding
-  (param-type-stack : (Stackof Type))
-  (return-type : Type)
-  (identifier : Identifier)
-  (function? : Boolean))
+  (type : Type)
+  (identifier : Identifier))
