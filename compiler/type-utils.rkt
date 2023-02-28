@@ -79,3 +79,8 @@
   (check-equal? (type-stack-dynamic-ref $type-stack 2) 1)
   (check-equal? (type-stack-dynamic-ref $type-stack 3) 2)
   (check-equal? (type-stack-dynamic-ref $type-stack 4) #f))
+
+(define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
+  (and
+    (field? $type)
+    (equal? (field-symbol $type) $symbol)))

@@ -16,6 +16,33 @@
   leo/compiler/type-check
   leo/compiler/binding)
 
+(define (binding-resolve-symbol
+  ($binding : Binding)
+  ($symbol : Symbol)
+  ($srcloc : srcloc))
+  : (Option Typed-Syntax)
+  (define $binding-type (binding-type $binding))
+  (and
+    (type-check-symbol? $binding-type $symbol)
+    (typed
+      (make-syntax $srcloc (syntax-e (binding-identifier $binding)))
+      $binding-type)))
+
+(check-equal?
+  (option-bind
+    (binding-resolve-symbol
+      (binding (field `a (stack type-b)) identifier-b) `a srcloc-a)
+    $resolved
+    (typed-syntax->typed-sourced $resolved))
+  (typed (sourced `b srcloc-a) (field `a (stack type-b))))
+
+(check-equal?
+  (binding-resolve-symbol
+    (binding (field `a (stack type-b)) identifier-b) `b srcloc-a)
+  #f)
+
+; -----------------------------------------------------------------------
+
 (define (binding-resolve-type
   ($binding : Binding)
   ($type : Type)
@@ -42,7 +69,7 @@
 
 ; -----------------------------------------------------------------------
 
-(define (binding-resolve-get-typed-syntax
+(define (binding-resolve-get-a-typed-syntax
   ($binding : Binding)
   ($typed-syntax : Typed-Syntax))
   : (Option Typed-Syntax)
@@ -62,7 +89,7 @@
 
 (check-equal?
   (option-bind
-    (binding-resolve-get-typed-syntax
+    (binding-resolve-get-a-typed-syntax
       (binding type-a identifier-b)
       (typed syntax-a (field `get (stack (a type-a)))))
     $resolved
@@ -70,21 +97,75 @@
   (typed (sourced `b srcloc-a) type-a))
 
 (check-equal?
-  (binding-resolve-get-typed-syntax
+  (binding-resolve-get-a-typed-syntax
     (binding type-a identifier-b)
     (typed syntax-a (field `not-get (stack (a type-a)))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-typed-syntax
+  (binding-resolve-get-a-typed-syntax
     (binding type-a identifier-b)
     (typed syntax-a (field `get (stack type-a))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-typed-syntax
+  (binding-resolve-get-a-typed-syntax
     (binding type-a identifier-b)
     (typed syntax-a (field `get (stack (a type-b)))))
+  #f)
+
+; -----------------------------------------------------------------------
+
+(define (binding-resolve-get-symbol-typed-syntax
+  ($binding : Binding)
+  ($typed-syntax : Typed-Syntax))
+  : (Option Typed-Syntax)
+  (define $type (typed-type $typed-syntax))
+  (and 
+    (field? $type) 
+    (equal? (field-symbol $type) `get)
+    (= (length (field-type-stack $type)) 1)
+    (let ()
+      (define $field-type (top (field-type-stack $type)))
+      (and
+        (field? $field-type)
+        (null? (field-type-stack $field-type))
+        (binding-resolve-symbol
+          $binding 
+          (field-symbol $field-type)
+          (syntax-srcloc (typed-value $typed-syntax)))))))
+
+(check-equal?
+  (option-bind
+    (binding-resolve-get-symbol-typed-syntax
+      (binding (field `a (stack type-b)) identifier-b) 
+      (typed syntax-a (field `get (stack (field `a null)))))
+    $resolved
+    (typed-syntax->typed-sourced $resolved))
+  (typed (sourced `b srcloc-a) (field `a (stack type-b))))
+
+(check-equal?
+  (binding-resolve-get-symbol-typed-syntax
+    (binding (field `a (stack type-b)) identifier-b) 
+    (typed syntax-a type-a))
+  #f)
+
+(check-equal?
+  (binding-resolve-get-symbol-typed-syntax
+    (binding (field `a (stack type-b)) identifier-b) 
+    (typed syntax-a (field `not-get (stack (field `a null)))))
+  #f)
+
+(check-equal?
+  (binding-resolve-get-symbol-typed-syntax
+    (binding (field `a (stack type-b)) identifier-b) 
+    (typed syntax-a (field `get (stack (field `b null)))))
+  #f)
+
+(check-equal?
+  (binding-resolve-get-symbol-typed-syntax
+    (binding (field `a (stack type-b)) identifier-b) 
+    (typed syntax-a (field `get (stack (field `a (stack type-a))))))
   #f)
 
 ; -----------------------------------------------------------------------
@@ -93,7 +174,9 @@
   ($binding : Binding)
   ($typed-syntax : Typed-Syntax))
   : (Option Typed-Syntax)
-  (binding-resolve-get-typed-syntax $binding $typed-syntax))
+  (or
+    (binding-resolve-get-a-typed-syntax $binding $typed-syntax)
+    (binding-resolve-get-symbol-typed-syntax $binding $typed-syntax)))
 
 ; -----------------------------------------------------------------------
 
