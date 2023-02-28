@@ -37,6 +37,7 @@
     (syntax-position $syntax)
     (syntax-span $syntax)))
 
+(define empty-srcloc (srcloc #f #f #f #f #f))
 (define test-srcloc (srcloc "test.leo" 1 2 3 4))
 (define srcloc-a (srcloc "a.leo" 1 2 3 4))
 (define srcloc-b (srcloc "b.leo" 1 2 3 4))
