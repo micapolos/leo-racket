@@ -97,9 +97,13 @@
   "foo\n  x 1\n  y 2")
 
 (check-equal?
-  (script-string (datum-list-script `()))
+  (script-string (datum-script `()))
   "")
 
 (check-equal?
-  (script-string (datum-list-script `(1)))
+  (script-string (datum-script 1))
   "1\n")
+
+(check-equal?
+  (script-string (datum-script `(1 2)))
+  "1\n2\n")

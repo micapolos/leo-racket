@@ -4,6 +4,7 @@
 
 (require
   racket/function
+  leo/typed/stack
   leo/compiler/script
   leo/compiler/syntax-script)
 
@@ -15,3 +16,8 @@
     (map 
       (lambda (($datum : Datum)) (datum->syntax #f $datum))
       $datum-list)))
+
+(define (datum-script ($datum : Datum)) : Script
+  (cond
+    ((list? $datum) (datum-list-script $datum))
+    (else (stack (datum-line $datum)))))
