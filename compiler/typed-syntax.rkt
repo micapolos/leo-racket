@@ -20,6 +20,13 @@
 (define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
   (type-is-dynamic? (typed-type $typed-syntax)))
 
+(define (typed-syntax-stack->typed-syntax
+  ($typed-syntax-stack : (Stackof (Typed Syntax Type))))
+  : (Typed Syntax Type)
+  (unless (= (length $typed-syntax-stack) 1)
+    (error "typed-syntax-stack->typed-syntax"))
+  (top $typed-syntax-stack))
+
 ; ------------------------------------------------------------------
 
 (define (typed-syntax-stack->syntax
