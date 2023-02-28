@@ -7,6 +7,7 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
+  leo/compiler/args
   leo/compiler/syntax-utils
   leo/compiler/sourced
   leo/compiler/type
@@ -180,13 +181,13 @@
 
 ; -----------------------------------------------------------------------
 
-(define (arrow-binding-resolve-sourced-typed-syntax-stack
+(define (arrow-binding-resolve-args
   ($binding : Binding)
-  ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
+  ($args : Args))
   : (Option Typed-Syntax)
   (define $binding-type (binding-type $binding))
-  (define $srcloc (sourced-srcloc $sourced-typed-syntax-stack))
-  (define $typed-syntax-stack (sourced-value $sourced-typed-syntax-stack))
+  (define $srcloc (sourced-srcloc $args))
+  (define $typed-syntax-stack (sourced-value $args))
   (define $type-stack (typed-stack->type-stack $typed-syntax-stack))
   (define $dynamic-syntax-stack (typed-syntax-stack->dynamic-syntax-stack $typed-syntax-stack))
   (and 
@@ -207,7 +208,7 @@
 
 (check-equal?
   (option-bind
-    (arrow-binding-resolve-sourced-typed-syntax-stack
+    (arrow-binding-resolve-args
       (binding (arrow (stack type-a type-b) type-c) identifier-d)
       (sourced (stack typed-syntax-a typed-syntax-b) srcloc-c))
     $resolved
@@ -215,39 +216,35 @@
   (typed (sourced `(d a b) srcloc-c) type-c))
 
 (check-equal?
-  (arrow-binding-resolve-sourced-typed-syntax-stack
+  (arrow-binding-resolve-args
     (binding (arrow (stack type-a type-b) type-c) identifier-d)
     (sourced (stack typed-syntax-b typed-syntax-a) srcloc-c))
   #f)
 
 ; ------------------------------------------------------------------------
 
-(define (binding-resolve-sourced-typed-syntax-stack
+(define (binding-resolve-args
   ($binding : Binding)
-  ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
+  ($args : Args))
   : (Option Typed-Syntax)
-  (define $typed-syntax-stack (sourced-value $sourced-typed-syntax-stack))
+  (define $typed-syntax-stack (sourced-value $args))
   (define $single-typed-syntax (single $typed-syntax-stack))
   (or
     (and 
       $single-typed-syntax 
       (binding-resolve-typed-syntax $binding $single-typed-syntax))
-    (arrow-binding-resolve-sourced-typed-syntax-stack 
+    (arrow-binding-resolve-args 
       $binding 
-      $sourced-typed-syntax-stack)))
+      $args)))
 
 ; -----------------------------------------------------------------------
 
-(define (binding-stack-resolve-sourced-typed-syntax-stack
+(define (binding-stack-resolve-args
   ($binding-stack : (Stackof Binding))
-  ($sourced-typed-syntax-stack : (Sourced (Stackof Typed-Syntax))))
+  ($args : Args))
   : (Option Typed-Syntax)
   (and 
     (not (null? $binding-stack))
     (or
-      (binding-resolve-sourced-typed-syntax-stack 
-        (top $binding-stack)
-        $sourced-typed-syntax-stack)
-      (binding-stack-resolve-sourced-typed-syntax-stack
-        (pop $binding-stack)
-        $sourced-typed-syntax-stack))))
+      (binding-resolve-args (top $binding-stack) $args)
+      (binding-stack-resolve-args (pop $binding-stack) $args))))
