@@ -8,6 +8,7 @@
   leo/typed/testing
   leo/compiler/script
   leo/compiler/racket
+  leo/compiler/datum-script
   leo/compiler/syntax-utils
   leo/compiler/sourced)
 
@@ -35,75 +36,62 @@
             " " 
             (line-string (car $script))))
         (else 
-          (string-append 
+          (string-append
             $name
-            (string-indent (string-append "\n" (script-rhs-string $script)))))))))
+            (cond
+              ((script-atoms? $script)
+                (string-indent 
+                  (string-append ": " (script-atoms-rhs-string $script))))
+              (else 
+                (string-indent 
+                  (string-append "\n" (script-rhs-string $script)))))))))))
 
 (define (script-rhs-string ($script : Script)) : String
   (string-join (map line-string (reverse $script)) "\n"))
+
+(define (script-atoms-rhs-string ($script : Script)) : String
+  (string-join (map line-string (reverse $script)) " "))
+
+(define (line-atom? ($line : Line)) : Boolean
+  (define $value (sourced-value $line))
+  (cond
+    ((racket? $value) #t)
+    ((phrase? $value) (null? (phrase-script $value)))))
+
+(define (script-atoms? ($script : Script)) : Boolean
+  (andmap line-atom? $script))
 
 (define (string-indent ($string : String)) : String
   (string-replace $string "\n" "\n  "))
 
 (check-equal? 
-  (line-string (sourced (racket 1) srcloc-a))
+  (line-string (datum-line 1))
   "1")
 
 (check-equal? 
-  (line-string (sourced (racket "foo") srcloc-a))
+  (line-string (datum-line "foo"))
   "\"foo\"")
 
 (check-equal? 
-  (line-string (sourced (racket `foo) srcloc-a))
-  "'foo")
-
-(check-equal? 
-  (line-string (sourced (phrase (sourced `foo srcloc-a) null) srcloc-a))
+  (line-string (datum-line `foo))
   "foo")
 
 (check-equal? 
-  (line-string 
-    (sourced 
-      (phrase 
-        (sourced `foo srcloc-a) 
-        (stack 
-          (sourced (racket 1) srcloc-a)))
-      srcloc-a))
-  "foo 1")
-
-(check-equal? 
-  (line-string 
-    (sourced 
-      (phrase 
-        (sourced `foo srcloc-a) 
-        (stack 
-          (sourced (racket 1) srcloc-a)))
-      srcloc-a))
+  (line-string (datum-line `(foo 1)))
   "foo 1")
 
 (check-equal?
-  (line-string 
-    (sourced 
-      (phrase 
-        (sourced `foo srcloc-a) 
-        (stack 
-          (sourced (racket 1) srcloc-a)
-          (sourced (racket 2) srcloc-a)))
-      srcloc-a))
-  "foo\n  1\n  2")
+  (line-string (datum-line `(foo 1 2)))
+  "foo: 1 2")
 
 (check-equal?
-  (script-string null)
+  (line-string (datum-line `(foo (x 1) (y 2))))
+  "foo\n  x 1\n  y 2")
+
+(check-equal?
+  (script-string (datum-list-script `()))
   "")
 
 (check-equal?
-  (script-string 
-    (stack
-      (sourced 
-        (phrase 
-          (sourced `foo srcloc-a) 
-          (stack 
-            (sourced (racket 1) srcloc-a)
-            (sourced (racket 2) srcloc-a)))
-        srcloc-a)))
-  "foo\n  1\n  2\n")
+  (script-string (datum-list-script `(1)))
+  "1\n")
