@@ -5,13 +5,16 @@
 (require
   leo/typed/stack
   leo/typed/base
+  leo/typed/option
   leo/typed/testing
   leo/compiler/racket
   leo/compiler/type
+  leo/compiler/type-check
   leo/compiler/type-utils
   leo/compiler/typed)
 
-(define (typed-syntax->typed-sexp ($typed-syntax : (Typed Syntax Type))) : (Typed Sexp Type)
+(define #:forall (T) (typed-syntax->typed-sexp 
+  ($typed-syntax : (Typed Syntax T))) : (Typed Sexp T)
   (typed (syntax->datum (typed-value $typed-syntax)) (typed-type $typed-syntax)))
 
 (define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
@@ -206,3 +209,55 @@
       (stack (racket `t1) (racket `t2) (field `t3 null) (racket `t4))
       3)) 
   (typed `(unsafe-vector-ref a 0) (racket `t1)))
+
+; -------------------------------------------------------------------
+
+(define (typed-syntax-stack-resolve-apply
+  ($lhs-typed-syntax-stack : (Stackof (Typed Syntax Type)))
+  ($rhs-typed-syntax-stack : (Stackof (Typed Syntax Type))))
+  : (Option (Typed Syntax (Stackof Type)))
+  (and (= (length $lhs-typed-syntax-stack) 1)
+    (bind $lhs-typed-syntax (top $lhs-typed-syntax-stack)
+      (define $lhs-type (typed-type $lhs-typed-syntax))
+      (and (arrow? $lhs-type)
+        (let (($arrow-lhs-type-stack (arrow-lhs-type-stack $lhs-type))
+              ($arrow-rhs-type-stack (arrow-rhs-type-stack $lhs-type))
+              ($rhs-type-stack (map 
+                (ann typed-type (-> (Typed Syntax Type) Type)) 
+                $rhs-typed-syntax-stack)))
+          (and (type-stack-check? $rhs-type-stack $arrow-lhs-type-stack)
+            (let ()
+              (define $lhs-syntax (typed-value $lhs-typed-syntax))
+              (define $arg-typed-syntax-stack 
+                (filter typed-syntax-is-dynamic? $rhs-typed-syntax-stack))
+              (define $arg-syntax-stack 
+                (map (ann typed-value (-> (Typed Syntax Type) Syntax)) 
+                $arg-typed-syntax-stack))
+              (typed
+                (datum->syntax #f `(,$lhs-syntax ,@(reverse $arg-syntax-stack)))
+                $arrow-rhs-type-stack))))))))
+
+(bind $option
+  (typed-syntax-stack-resolve-apply
+    (stack 
+      (typed #`fn
+        (arrow 
+          (stack (racket `t1) (field `foo null) (racket `t2))
+          (stack (racket `t3) (field `foo2 null) (racket `t4)))))
+    (stack 
+      (typed #`arg1 (racket `t1))
+      (typed #`#f (field `foo null))
+      (typed #`arg2 (racket `t2))))
+  (option-bind $option $result
+    (check-equal? 
+      (syntax->datum (typed-value $result)) 
+      `(fn arg1 arg2))
+    (check-equal? 
+      (typed-type $result) 
+      (stack (racket `t3) (field `foo2 null) (racket `t4)))))
+
+(check-equal?
+  (typed-syntax-stack-resolve-apply
+    (stack (typed #`fn (arrow (stack (racket `t1)) (stack (racket `t2)))))
+    (stack (typed #`arg1 (racket `not-t1))))
+  #f)
