@@ -9,4 +9,4 @@
 
 (data binding
   (type : Type)
-  (identifier : Identifier))
+  (syntax : Syntax))

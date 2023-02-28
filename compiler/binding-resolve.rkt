@@ -26,7 +26,7 @@
   (and
     (type-check-symbol? $binding-type $symbol)
     (typed
-      (make-syntax $srcloc (syntax-e (binding-identifier $binding)))
+      (binding-syntax $binding)
       $binding-type)))
 
 (check-equal?
@@ -35,7 +35,7 @@
       (binding (field `a (stack type-b)) identifier-b) `a srcloc-a)
     $resolved
     (typed-syntax->typed-sourced $resolved))
-  (typed (sourced `b srcloc-a) (field `a (stack type-b))))
+  (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
   (binding-resolve-symbol
@@ -52,7 +52,7 @@
   (and
     (type-check? $type (binding-type $binding))
     (typed
-      (make-syntax $srcloc (syntax-e (binding-identifier $binding)))
+      (binding-syntax $binding)
       $type)))
 
 (check-equal?
@@ -95,7 +95,7 @@
       (typed syntax-a (field `get (stack (a type-a)))))
     $resolved
     (typed-syntax->typed-sourced $resolved))
-  (typed (sourced `b srcloc-a) type-a))
+  (typed (sourced `b srcloc-b) type-a))
 
 (check-equal?
   (binding-resolve-get-a-typed-syntax
@@ -143,7 +143,7 @@
       (typed syntax-a (field `get (stack (field `a null)))))
     $resolved
     (typed-syntax->typed-sourced $resolved))
-  (typed (sourced `b srcloc-a) (field `a (stack type-b))))
+  (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
   (binding-resolve-get-symbol-typed-syntax
@@ -202,7 +202,7 @@
           (make-syntax 
             $srcloc 
             `(
-              ,(binding-identifier $binding)
+              ,(binding-syntax $binding)
               ,@(reverse $dynamic-syntax-stack)))
           $arrow-rhs-type)))))
 
