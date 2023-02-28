@@ -8,7 +8,7 @@
 
 (define-type Type (U Racket Field Arrow))
 
-(struct arrow ((lhs-type-stack : (Stackof Type)) (rhs-type-stack : (Stackof Type)))
+(struct arrow ((lhs-type-stack : (Stackof Type)) (rhs-type : Type))
   #:transparent
   #:type-name Arrow)
 

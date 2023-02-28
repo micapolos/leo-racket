@@ -18,7 +18,7 @@
     ((field? $type) (ormap type-is-dynamic? (field-type-stack $type)))))
 
 (check-equal? (type-is-dynamic? (racket `number)) #t)
-(check-equal? (type-is-dynamic? (arrow null null)) #t)
+(check-equal? (type-is-dynamic? (arrow null (racket `foo))) #t)
 (check-equal? (type-is-dynamic? (field `foo null)) #f)
 (check-equal? (type-is-dynamic? (field `foo (list (field `foo null)))) #f)
 (check-equal? (type-is-dynamic? (field `foo (list (racket `number)))) #t)

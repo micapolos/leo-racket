@@ -215,13 +215,13 @@
 (define (typed-syntax-stack-resolve-apply
   ($lhs-typed-syntax-stack : (Stackof (Typed Syntax Type)))
   ($rhs-typed-syntax-stack : (Stackof (Typed Syntax Type))))
-  : (Option (Typed Syntax (Stackof Type)))
+  : (Option (Typed Syntax Type))
   (and (= (length $lhs-typed-syntax-stack) 1)
     (bind $lhs-typed-syntax (top $lhs-typed-syntax-stack)
       (define $lhs-type (typed-type $lhs-typed-syntax))
       (and (arrow? $lhs-type)
         (let (($arrow-lhs-type-stack (arrow-lhs-type-stack $lhs-type))
-              ($arrow-rhs-type-stack (arrow-rhs-type-stack $lhs-type))
+              ($arrow-rhs-type (arrow-rhs-type $lhs-type))
               ($rhs-type-stack (map 
                 (ann typed-type (-> (Typed Syntax Type) Type)) 
                 $rhs-typed-syntax-stack)))
@@ -235,7 +235,7 @@
                 $arg-typed-syntax-stack))
               (typed
                 (datum->syntax #f `(,$lhs-syntax ,@(reverse $arg-syntax-stack)))
-                $arrow-rhs-type-stack))))))))
+                $arrow-rhs-type))))))))
 
 (bind $option
   (typed-syntax-stack-resolve-apply
@@ -243,7 +243,7 @@
       (typed #`fn
         (arrow 
           (stack (racket `t1) (field `foo null) (racket `t2))
-          (stack (racket `t3) (field `foo2 null) (racket `t4)))))
+          (racket `t3))))
     (stack 
       (typed #`arg1 (racket `t1))
       (typed #`#f (field `foo null))
@@ -254,10 +254,10 @@
       `(fn arg1 arg2))
     (check-equal? 
       (typed-type $result) 
-      (stack (racket `t3) (field `foo2 null) (racket `t4)))))
+      (racket `t3))))
 
 (check-equal?
   (typed-syntax-stack-resolve-apply
-    (stack (typed #`fn (arrow (stack (racket `t1)) (stack (racket `t2)))))
+    (stack (typed #`fn (arrow (stack (racket `t1)) (racket `t2))))
     (stack (typed #`arg1 (racket `not-t1))))
   #f)

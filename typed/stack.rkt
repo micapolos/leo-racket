@@ -25,3 +25,4 @@
 (define top car)
 (define pop cdr)
 (define pop-top cadr)
+(define stack? list?)
