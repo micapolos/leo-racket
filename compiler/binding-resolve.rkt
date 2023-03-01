@@ -7,7 +7,6 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
-  leo/compiler/args
   leo/compiler/syntax-utils
   leo/compiler/sourced
   leo/compiler/srcloc
@@ -182,13 +181,12 @@
 
 ; -----------------------------------------------------------------------
 
-(define (arrow-binding-resolve-args
+(define (arrow-binding-resolve-typed-syntax-stack
   ($binding : Binding)
-  ($args : Args))
+  ($typed-syntax-stack : (Stackof Typed-Syntax)))
   : (Option Typed-Syntax)
   (define $binding-type (binding-type $binding))
-  (define $srcloc (args-srcloc $args))
-  (define $typed-syntax-stack (args-typed-syntax-stack $args))
+  (define $srcloc empty-srcloc)
   (define $type-stack (typed-stack->type-stack $typed-syntax-stack))
   (define $dynamic-syntax-stack (typed-syntax-stack->dynamic-syntax-stack $typed-syntax-stack))
   (and 
@@ -209,43 +207,44 @@
 
 (check-equal?
   (option-bind
-    (arrow-binding-resolve-args
+    (arrow-binding-resolve-typed-syntax-stack
       (binding (arrow (stack type-a type-b) type-c) syntax-d)
-      (sourced (stack typed-syntax-a typed-syntax-b) srcloc-c))
+      (stack typed-syntax-a typed-syntax-b))
     $resolved
     (typed-syntax->typed-sourced $resolved))
-  (typed (sourced `(d a b) srcloc-c) type-c))
+  (typed (sourced `(d a b) empty-srcloc) type-c))
 
 (check-equal?
-  (arrow-binding-resolve-args
+  (arrow-binding-resolve-typed-syntax-stack
     (binding (arrow (stack type-a type-b) type-c) syntax-d)
-    (sourced (stack typed-syntax-b typed-syntax-a) srcloc-c))
+    (stack typed-syntax-b typed-syntax-a))
   #f)
 
 ; ------------------------------------------------------------------------
 
-(define (binding-resolve-args
+(define (binding-resolve-typed-syntax-stack
   ($binding : Binding)
-  ($args : Args))
+  ($typed-syntax-stack : (Stackof Typed-Syntax)))
   : (Option Typed-Syntax)
-  (define $typed-syntax-stack (args-typed-syntax-stack $args))
   (define $single-typed-syntax (single $typed-syntax-stack))
   (or
     (and 
-      $single-typed-syntax 
+      $single-typed-syntax
       (binding-resolve-typed-syntax $binding $single-typed-syntax))
-    (arrow-binding-resolve-args 
-      $binding 
-      $args)))
+    (arrow-binding-resolve-typed-syntax-stack $binding $typed-syntax-stack)))
 
 ; -----------------------------------------------------------------------
 
-(define (binding-stack-resolve-args
+(define (binding-stack-resolve-typed-syntax-stack
   ($binding-stack : (Stackof Binding))
-  ($args : Args))
+  ($typed-syntax-stack : (Stackof Typed-Syntax)))
   : (Option Typed-Syntax)
   (and 
     (not (null? $binding-stack))
     (or
-      (binding-resolve-args (top $binding-stack) $args)
-      (binding-stack-resolve-args (pop $binding-stack) $args))))
+      (binding-resolve-typed-syntax-stack 
+        (top $binding-stack) 
+        $typed-syntax-stack)
+      (binding-stack-resolve-typed-syntax-stack 
+        (pop $binding-stack) 
+        $typed-syntax-stack))))
