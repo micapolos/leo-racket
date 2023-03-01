@@ -10,6 +10,7 @@
   leo/compiler/racket
   leo/compiler/sourced
   leo/compiler/syntax-utils
+  leo/compiler/srcloc
   leo/compiler/type
   leo/compiler/type-check
   leo/compiler/type-utils

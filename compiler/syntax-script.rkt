@@ -7,6 +7,7 @@
   leo/typed/testing
   leo/compiler/syntax-utils
   leo/compiler/racket
+  leo/compiler/srcloc
   leo/compiler/syntax-utils
   leo/compiler/sourced
   leo/compiler/script)

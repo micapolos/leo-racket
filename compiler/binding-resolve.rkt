@@ -10,6 +10,7 @@
   leo/compiler/args
   leo/compiler/syntax-utils
   leo/compiler/sourced
+  leo/compiler/srcloc
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/typed

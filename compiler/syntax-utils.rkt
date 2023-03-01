@@ -4,6 +4,7 @@
 
 (require 
   leo/compiler/sourced
+  leo/compiler/srcloc
   racket/syntax-srcloc)
 
 (define (make-syntax ($srcloc : srcloc) ($datum : (Sexpof Syntax))) : Syntax
@@ -36,13 +37,6 @@
     (syntax-column $syntax)
     (syntax-position $syntax)
     (syntax-span $syntax)))
-
-(define empty-srcloc (srcloc #f #f #f #f #f))
-(define test-srcloc (srcloc "test.leo" 1 2 3 4))
-(define srcloc-a (srcloc "a.leo" 1 2 3 4))
-(define srcloc-b (srcloc "b.leo" 1 2 3 4))
-(define srcloc-c (srcloc "c.leo" 1 2 3 4))
-(define srcloc-d (srcloc "d.leo" 1 2 3 4))
 
 (define test-syntax (make-syntax test-srcloc `test))
 (define syntax-a (make-syntax srcloc-a `a))

@@ -11,6 +11,7 @@
   leo/compiler/sourced
   leo/compiler/syntax-utils
   leo/compiler/typed
+  leo/compiler/srcloc
   leo/compiler/type-utils
   leo/typed/testing
   leo/typed/option
