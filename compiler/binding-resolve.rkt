@@ -180,7 +180,6 @@
   ($typed-syntax-stack : (Stackof Typed-Syntax)))
   : (Option Typed-Syntax)
   (define $binding-type (binding-type $binding))
-  (define $srcloc empty-srcloc)
   (define $type-stack (typed-stack->type-stack $typed-syntax-stack))
   (define $dynamic-syntax-stack (typed-syntax-stack->dynamic-syntax-stack $typed-syntax-stack))
   (and 
@@ -193,7 +192,7 @@
         (type-stack-check? $type-stack $arrow-lhs-type-stack)
         (typed
           (make-syntax 
-            $srcloc 
+            empty-srcloc
             `(
               ,(binding-syntax $binding)
               ,@(reverse $dynamic-syntax-stack)))
