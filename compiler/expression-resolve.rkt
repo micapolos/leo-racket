@@ -61,7 +61,7 @@
       (stack
         (expression syntax-a 
           (field `point 
-            (stack 
+            (stack
               (field `b (stack (racket `b2))) 
               (field `c (stack (racket `c2))) 
               (field `d (stack (racket `d2))))))
@@ -69,3 +69,16 @@
           (field `get (stack (field `b null))))))
     expression-typed-datum)
   (typed `(unsafe-vector-ref a 0) (field `b (stack (racket `b2)))))
+
+(check-equal?
+  (expression-stack-resolve-field
+    (stack
+      (expression syntax-a 
+        (field `point 
+          (stack
+            (field `b (stack (racket `b2))) 
+            (field `c (stack (racket `c2))) 
+            (field `d (stack (racket `d2))))))
+      (expression syntax-b
+        (field `get (stack (field `e null))))))
+  #f)
