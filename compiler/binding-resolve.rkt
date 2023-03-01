@@ -19,8 +19,7 @@
 
 (define (binding-resolve-symbol
   ($binding : Binding)
-  ($symbol : Symbol)
-  ($srcloc : srcloc))
+  ($symbol : Symbol))
   : (Option Typed-Syntax)
   (define $binding-type (binding-type $binding))
   (and
@@ -32,14 +31,14 @@
 (check-equal?
   (option-bind
     (binding-resolve-symbol
-      (binding (field `a (stack type-b)) syntax-b) `a srcloc-a)
+      (binding (field `a (stack type-b)) syntax-b) `a)
     $resolved
     (typed-syntax->typed-sourced $resolved))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
   (binding-resolve-symbol
-    (binding (field `a (stack type-b)) syntax-b) `b srcloc-a)
+    (binding (field `a (stack type-b)) syntax-b) `b)
   #f)
 
 ; -----------------------------------------------------------------------
@@ -133,8 +132,7 @@
         (null? (field-type-stack $field-type))
         (binding-resolve-symbol
           $binding 
-          (field-symbol $field-type)
-          (syntax-srcloc (typed-value $typed-syntax)))))))
+          (field-symbol $field-type))))))
 
 (check-equal?
   (option-bind
