@@ -3,6 +3,8 @@
 (provide (all-defined-out))
 
 (require
+  racket/function
+  racket/list
   leo/typed/stack
   leo/typed/testing
   leo/compiler/expression
@@ -23,6 +25,11 @@
 (define (expression-typed-sourced ($expression : Expression))
   (typed
     (syntax-sourced (expression-syntax $expression))
+    (expression-type $expression)))
+
+(define (expression-typed-datum ($expression : Expression))
+  (typed
+    (syntax->datum (expression-syntax $expression))
     (expression-type $expression)))
 
 (define (expression-stack-type-stack 
@@ -48,3 +55,50 @@
 (check-equal?
   (expression-stack-syntax-stack (stack expression-a expression-b))
   (stack syntax-a syntax-b))
+
+; ----------------------------------------------------------------------------
+
+(define (syntax-type-stack-index-expression
+  ($syntax : Syntax)
+  ($type-stack : (Stackof Type))
+  ($index : Exact-Nonnegative-Integer))
+  : Expression
+  (define $type-stack-size (type-stack-size $type-stack))
+  (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
+  (define $type (list-ref $type-stack $index))
+  (expression
+    (make-syntax
+      (and
+        $dynamic-index
+        (case $type-stack-size
+          ((0) #f)
+          ((1) $syntax)
+          ((2)
+            `(
+              ,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr)
+              ,$syntax))
+          (else
+            `(unsafe-vector-ref 
+              ,$syntax
+              ,(- $type-stack-size $dynamic-index 1))))))
+    $type))
+
+(define (syntax-type-stack-expression-stack
+  ($syntax : Syntax)
+  ($type-stack : (Stackof Type)))
+  : (Stackof Expression)
+  (map 
+    (curry (curry syntax-type-stack-index-expression $syntax) $type-stack)
+    (range (length $type-stack))))
+
+(check-equal?
+  (map
+    expression-typed-datum
+    (syntax-type-stack-expression-stack
+      syntax-a
+      (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)))
+  (stack
+    (typed `(unsafe-vector-ref a 0) dynamic-type-a)
+    (typed `(unsafe-vector-ref a 1) dynamic-type-b)
+    (typed `#f static-type-c)
+    (typed `(unsafe-vector-ref a 2) dynamic-type-d)))
