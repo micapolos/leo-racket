@@ -12,21 +12,14 @@
   leo/compiler/type
   leo/compiler/typed
   leo/compiler/type-utils
-  leo/compiler/binding
-  leo/compiler/binding-resolve
+  leo/compiler/expression-binding-resolve
   leo/compiler/expression
   leo/compiler/expression-utils)
-
-; TODO: unify Binding and Expression
-(define (expression-binding ($expression : Expression)) : Binding
-  (binding 
-    (expression-type $expression)
-    (expression-syntax $expression)))
 
 (define (expression-stack-resolve 
   ($expression-stack : (Stackof Expression)))
   : (Option Expression)
-  (expression-stack-resolve-field $expression-stack))
+  (expression-stack-resolve-field-selector $expression-stack))
 
 ; ---------------------------------------------------------------------
 
@@ -46,13 +39,11 @@
           (define $lhs-type-stack (field-type-stack $lhs-type))
           (define $lhs-expression-stack 
             (syntax-type-stack-expression-stack $lhs-syntax $lhs-type-stack))
-          (define $lhs-binding-stack 
-            (map expression-binding $lhs-expression-stack))
           (define $resolved-expression-stack 
             (map 
-              (lambda (($binding : Binding)) 
-                (binding-resolve-expression $binding $rhs-expression))
-              $lhs-binding-stack))
+              (lambda (($expression : Expression)) 
+                (expression-resolve-expression $expression $rhs-expression))
+              $lhs-expression-stack))
           (option-stack-first $resolved-expression-stack))))))
 
 (check-equal?

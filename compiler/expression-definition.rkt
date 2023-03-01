@@ -3,7 +3,6 @@
 (provide (all-defined-out))
 
 (require 
-  leo/compiler/binding
   leo/compiler/definition
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -24,21 +23,21 @@
     (and 
       (type-is-dynamic? $type) 
       (type-generate-temporary $type)))
-  (define $binding 
-    (binding $type (or $temporary (make-syntax #f))))
+  (define $definition-expression
+    (expression (or $temporary (make-syntax #f)) $type))
   (define $definition-syntax-option
     (and 
       $temporary
       (make-syntax `(define ,$temporary ,$syntax))))
-  (definition $binding $definition-syntax-option))
+  (definition $definition-expression $definition-syntax-option))
 
 (bind $definition
   (expression-definition expression-a)
-  (define $binding (definition-binding $definition))
-  (define $tmp-symbol (syntax-e (binding-syntax $binding)))
-  (check-equal? (binding-type $binding) type-a)
+  (define $expression (definition-expression $definition))
+  (define $tmp-symbol (syntax-e (expression-syntax $expression)))
+  (check-equal? (expression-type $expression) type-a)
   (check-equal? 
-    (syntax-sourced (binding-syntax $binding))
+    (syntax-sourced (expression-syntax $expression))
     (sourced $tmp-symbol empty-srcloc))
   (check-equal?
     (option-map
@@ -48,10 +47,10 @@
 
 (bind $definition
   (expression-definition (expression syntax-a static-type-a))
-  (define $binding (definition-binding $definition))
-  (define $tmp-symbol (syntax-e (binding-syntax $binding)))
-  (check-equal? (binding-type $binding) static-type-a)
+  (define $expression (definition-expression $definition))
+  (define $tmp-symbol (syntax-e (expression-syntax $expression)))
+  (check-equal? (expression-type $expression) static-type-a)
   (check-equal? 
-    (syntax-sourced (binding-syntax $binding))
+    (syntax-sourced (expression-syntax $expression))
     (sourced $tmp-symbol empty-srcloc))
   (check-equal? (definition-syntax-option $definition) #f))
