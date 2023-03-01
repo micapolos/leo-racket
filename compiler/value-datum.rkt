@@ -7,6 +7,8 @@
   racket/unsafe/ops
   leo/typed/testing
   leo/typed/stack
+  leo/compiler/any-datum
+  leo/compiler/type-datum
   leo/compiler/value
   leo/compiler/type
   leo/compiler/type-utils
@@ -29,7 +31,7 @@
           `(flonum ,(cast $any Flonum)))
         ((equal? $type-any `string) 
           (cast $any String))
-        (else `(racket ...))))
+        (else (type-datum $type))))
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $type-stack (field-type-stack $type))
@@ -43,8 +45,8 @@
                 (lambda (($index : Exact-Nonnegative-Integer))
                   (value-datum (any-type-stack-ref $any $type-stack $index)))
                 (range (length $type-stack))))))))
-    ((arrow? $type) `(function ...))
-    ((a? $type) `(a ...))))
+    ((arrow? $type) (type-datum $type))
+    ((a? $type) `(a ,(type-datum (a-type $type))))))
 
 (define (any-type-stack-ref
   ($any : Any)
@@ -92,16 +94,16 @@
   "foo")
 
 (check-equal?
-  (value-datum (value `foo (racket `foo)))
-  `(racket ...))
+  (value-datum (value `foo (racket `bar)))
+  `(racket bar))
 
 (check-equal?
-  (value-datum (value `foo (arrow null (racket `number))))
-  `(function ...))
+  (value-datum (value `foo (arrow (stack (racket `string)) (racket `number))))
+  `(function string (giving number)))
 
 (check-equal?
   (value-datum (value `foo (a (racket `number))))
-  `(a ...))
+  `(a number))
 
 (check-equal?
   (value-datum (value "foo" (field `foo (stack (racket `string)))))
