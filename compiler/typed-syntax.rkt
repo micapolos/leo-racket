@@ -91,14 +91,16 @@
   (define $dynamic-length 
     (length $dynamic-syntax-stack))
   (case $dynamic-length
-    ((0) (make-syntax $srcloc #f))
+    ((0) (make-syntax #f $srcloc))
     ((1) (top $dynamic-syntax-stack))
     ((2) 
-      (make-syntax $srcloc
-        `(cons ,(pop-top $dynamic-syntax-stack) ,(top $dynamic-syntax-stack))))
+      (make-syntax
+        `(cons ,(pop-top $dynamic-syntax-stack) ,(top $dynamic-syntax-stack))
+        $srcloc))
     (else 
-      (make-syntax $srcloc
-        `(vector ,@(reverse $dynamic-syntax-stack))))))
+      (make-syntax
+        `(vector ,@(reverse $dynamic-syntax-stack))
+        $srcloc))))
 
 (check-equal?
   (syntax-sourced
@@ -180,7 +182,7 @@
   (define $type-stack-size (type-stack-size $type-stack))
   (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
   (typed 
-    (make-syntax $srcloc
+    (make-syntax
       (and
         $dynamic-index
         (case $type-stack-size
@@ -191,7 +193,8 @@
           (else
             `(unsafe-vector-ref 
               ,$syntax
-              ,(- $type-stack-size $dynamic-index 1))))))
+              ,(- $type-stack-size $dynamic-index 1)))))
+       $srcloc)
     (list-ref $type-stack $index)))
 
 (check-equal? 
@@ -309,7 +312,7 @@
                 (map (ann typed-value (-> (Typed Syntax Type) Syntax)) 
                 $arg-typed-syntax-stack))
               (typed
-                (make-syntax $srcloc `(,$lhs-syntax ,@(reverse $arg-syntax-stack)))
+                (make-syntax `(,$lhs-syntax ,@(reverse $arg-syntax-stack)) $srcloc)
                 $arrow-rhs-type))))))))
 
 (bind $option

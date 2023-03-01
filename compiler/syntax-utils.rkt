@@ -7,7 +7,7 @@
   leo/compiler/srcloc
   racket/syntax-srcloc)
 
-(define (make-syntax ($srcloc : (Option srcloc)) ($datum : (Sexpof Syntax))) : Syntax
+(define (make-syntax ($datum : (Sexpof Syntax)) ($srcloc : (Option srcloc) #f)) : Syntax
   (datum->syntax #f $datum 
     (and $srcloc
       (vector
@@ -42,8 +42,8 @@
 (define (syntax-e-with-srcloc ($syntax : Syntax))
   (with-srcloc (syntax-srcloc $syntax) (lambda () (syntax-e $syntax))))
 
-(define test-syntax (make-syntax test-srcloc `test))
-(define syntax-a (make-syntax srcloc-a `a))
-(define syntax-b (make-syntax srcloc-b `b))
-(define syntax-c (make-syntax srcloc-c `c))
-(define syntax-d (make-syntax srcloc-d `d))
+(define test-syntax (make-syntax `test test-srcloc))
+(define syntax-a (make-syntax `a srcloc-a))
+(define syntax-b (make-syntax `b srcloc-b))
+(define syntax-c (make-syntax `c srcloc-c))
+(define syntax-d (make-syntax `d srcloc-d))

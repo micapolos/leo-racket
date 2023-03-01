@@ -25,11 +25,11 @@
       (type-is-dynamic? $type) 
       (type-generate-temporary $type)))
   (define $binding 
-    (binding $type (or $temporary (make-syntax empty-srcloc #f))))
+    (binding $type (or $temporary (make-syntax #f))))
   (define $definition-syntax-option
     (and 
       $temporary
-      (make-syntax empty-srcloc `(define ,$temporary ,$syntax))))
+      (make-syntax `(define ,$temporary ,$syntax))))
   (definition $binding $definition-syntax-option))
 
 (bind $definition

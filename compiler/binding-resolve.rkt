@@ -192,7 +192,6 @@
         (type-stack-check? $type-stack $arrow-lhs-type-stack)
         (typed
           (make-syntax 
-            empty-srcloc
             `(
               ,(binding-syntax $binding)
               ,@(reverse $dynamic-syntax-stack)))

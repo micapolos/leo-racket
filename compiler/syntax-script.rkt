@@ -36,27 +36,29 @@
   (map syntax-line (reverse $syntax-list)))
 
 (check-equal?
-  (syntax-line (make-syntax srcloc-a 123))
+  (syntax-line (make-syntax 123 srcloc-a))
   (racket 123))
 
 (check-equal?
-  (syntax-line (make-syntax srcloc-a "foo"))
+  (syntax-line (make-syntax "foo" srcloc-a))
   (racket "foo"))
 
 (check-equal?
-  (syntax-line (make-syntax srcloc-a `foo))
+  (syntax-line (make-syntax `foo srcloc-a))
   (phrase `foo null))
 
 (check-equal?
-  (syntax-line (make-syntax srcloc-a `(,(make-syntax srcloc-b `foo))))
+  (syntax-line (make-syntax `(,(make-syntax `foo srcloc-b)) srcloc-a))
   (phrase `foo null))
 
 (check-equal?
   (syntax-line 
-    (make-syntax srcloc-a `(
-      ,(make-syntax srcloc-b `foo)
-      ,(make-syntax srcloc-c 1)
-      ,(make-syntax srcloc-d "foo"))))
+    (make-syntax 
+      `(
+        ,(make-syntax `foo srcloc-b)
+        ,(make-syntax 1 srcloc-c)
+        ,(make-syntax "foo" srcloc-d))
+      srcloc-a))
   (phrase `foo
     (stack 
       (racket 1)
