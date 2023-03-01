@@ -5,6 +5,6 @@
 (require 
   leo/compiler/type)
 
-(struct value ((type : Type) (any : Any))
+(struct value ((any : Any) (type : Type))
   #:transparent
   #:type-name Value)
