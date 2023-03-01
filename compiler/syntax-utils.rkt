@@ -39,6 +39,9 @@
     (syntax-position $syntax)
     (syntax-span $syntax)))
 
+(define (syntax-e-with-srcloc ($syntax : Syntax))
+  (with-srcloc (syntax-srcloc $syntax) (lambda () (syntax-e $syntax))))
+
 (define test-syntax (make-syntax test-srcloc `test))
 (define syntax-a (make-syntax srcloc-a `a))
 (define syntax-b (make-syntax srcloc-b `b))

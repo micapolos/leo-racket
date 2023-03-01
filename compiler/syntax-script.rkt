@@ -15,7 +15,7 @@
 
 (define (syntax-line ($syntax : Syntax)) : Line
   (define $srcloc (syntax-srcloc $syntax))
-  (define $syntax-e (with-srcloc $srcloc (lambda () (syntax-e $syntax))))
+  (define $syntax-e (syntax-e-with-srcloc $syntax))
   (unless (not (null? $syntax-e)) (error "null syntax"))
   (with-srcloc
     (syntax-srcloc $syntax)
@@ -25,9 +25,10 @@
           (phrase $syntax-e null))
         ((list? $syntax-e)
           (define $car (car $syntax-e))
-          (unless (identifier? $car) (error "not identifier"))
+          (define $car-syntax-e (syntax-e-with-srcloc $car))
+          (unless (symbol? $car-syntax-e) (error "not identifier"))
           (phrase 
-            (with-srcloc (syntax-srcloc $car) (lambda () (syntax-e $car)))
+            $car-syntax-e
             (syntax-list-script (cdr $syntax-e))))
         (else (racket (syntax->datum $syntax)))))))
 
