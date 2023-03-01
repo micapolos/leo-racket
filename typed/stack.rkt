@@ -36,3 +36,13 @@
 (check-equal? (single (stack)) #f)
 (check-equal? (single (stack 1)) 1)
 (check-equal? (single (stack 1 2)) #f)
+
+; --------------------------------------------------------------------
+
+(: option-stack-first (All (V) (-> (Stackof V) (Option V))))
+(define (option-stack-first $stack)
+  (and
+    (not (null? $stack))
+    (or
+      (top $stack)
+      (option-stack-first (pop $stack)))))
