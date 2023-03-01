@@ -37,6 +37,7 @@
 (define (type-stack-datum-list ($type-stack : (Stackof Type))) : (Listof Datum)
   (reverse (map type-datum $type-stack)))
 
+(check-equal? (type-datum (racket `void)) `void)
 (check-equal? (type-datum (racket `boolean)) `boolean)
 (check-equal? (type-datum (racket `number)) `number)
 (check-equal? (type-datum (racket `fixnum)) `fixnum)

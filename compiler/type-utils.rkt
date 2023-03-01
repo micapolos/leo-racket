@@ -4,7 +4,6 @@
 
 (require 
   racket/function
-  leo/compiler/indexed
   leo/compiler/type
   leo/compiler/racket
   leo/typed/base
