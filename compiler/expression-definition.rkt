@@ -5,19 +5,20 @@
 (require 
   leo/compiler/binding
   leo/compiler/definition
+  leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/generate-temporary
   leo/compiler/sourced
   leo/compiler/syntax-utils
   leo/compiler/typed
-  leo/compiler/typed-syntax
   leo/compiler/type-utils
   leo/typed/testing
   leo/typed/option
   leo/typed/base)
 
-(define (typed-syntax-definition ($typed-syntax : Typed-Syntax)) : Definition
-  (define $type (typed-type $typed-syntax))
-  (define $syntax (typed-value $typed-syntax))
+(define (expression-definition ($expression : Expression)) : Definition
+  (define $type (expression-type $expression))
+  (define $syntax (expression-syntax $expression))
   (define $temporary
     (and 
       (type-is-dynamic? $type) 
@@ -31,7 +32,7 @@
   (definition $binding $definition-syntax-option))
 
 (bind $definition
-  (typed-syntax-definition typed-syntax-a)
+  (expression-definition expression-a)
   (define $binding (definition-binding $definition))
   (define $tmp-symbol (syntax-e (binding-syntax $binding)))
   (check-equal? (binding-type $binding) type-a)
@@ -45,7 +46,7 @@
     (sourced `(define ,$tmp-symbol a) empty-srcloc)))
 
 (bind $definition
-  (typed-syntax-definition (typed syntax-a static-type-a))
+  (expression-definition (expression syntax-a static-type-a))
   (define $binding (definition-binding $definition))
   (define $tmp-symbol (syntax-e (binding-syntax $binding)))
   (check-equal? (binding-type $binding) static-type-a)
