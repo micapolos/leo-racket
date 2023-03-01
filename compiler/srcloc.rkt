@@ -16,16 +16,16 @@
 
 (define srcloc-weak-hash : (Weak-HashTable Any srcloc) (make-weak-hash))
 
-(define #:forall (V) (with-srcloc ($value : V) ($srcloc : srcloc)) : V
+(define #:forall (V) (with-srcloc ($srcloc : srcloc) ($fn : (-> V))) : V
+  (define $value ($fn))
   (hash-set! srcloc-weak-hash $value $srcloc)
   $value)
 
 (define (any-srcloc ($any : Any)) : (Option srcloc)
   (hash-ref srcloc-weak-hash $any (lambda () #f)))
 
-(bind $obj (gensym)
-  (check-equal? (any-srcloc $obj) #f)
-  (check-equal? (any-srcloc (with-srcloc $obj srcloc-a)) srcloc-a))
+(check-equal? (any-srcloc (gensym)) #f)
+(check-equal? (any-srcloc (with-srcloc srcloc-a (lambda () (gensym)))) srcloc-a)
 
 (define #:forall (V) (any-sourced ($value : V)) : (Sourced V)
   (sourced $value (any-srcloc $value)))

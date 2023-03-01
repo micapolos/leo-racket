@@ -14,20 +14,22 @@
   leo/compiler/script)
 
 (define (syntax-line ($syntax : Syntax)) : Line
-  (define $syntax-e (syntax-e $syntax))
+  (define $srcloc (syntax-srcloc $syntax))
+  (define $syntax-e (with-srcloc $srcloc (lambda () (syntax-e $syntax))))
   (unless (not (null? $syntax-e)) (error "null syntax"))
   (with-srcloc
-    (cond
-      ((symbol? $syntax-e) 
-        (phrase (with-srcloc $syntax-e (syntax-srcloc $syntax)) null))
-      ((list? $syntax-e)
-        (define $car (car $syntax-e))
-        (unless (identifier? $car) (error "not identifier"))
-        (phrase 
-          (with-srcloc (syntax-e $car) (syntax-srcloc $car))
-          (syntax-list-script (cdr $syntax-e))))
-      (else (racket (syntax->datum $syntax))))
-    (syntax-srcloc $syntax)))
+    (syntax-srcloc $syntax)
+    (lambda ()
+      (cond
+        ((symbol? $syntax-e) 
+          (phrase $syntax-e null))
+        ((list? $syntax-e)
+          (define $car (car $syntax-e))
+          (unless (identifier? $car) (error "not identifier"))
+          (phrase 
+            (with-srcloc (syntax-srcloc $car) (lambda () (syntax-e $car)))
+            (syntax-list-script (cdr $syntax-e))))
+        (else (racket (syntax->datum $syntax)))))))
 
 (define (syntax-list-script ($syntax-list : (Listof Syntax))) : Script
   (map syntax-line (reverse $syntax-list)))
