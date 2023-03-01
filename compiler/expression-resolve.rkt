@@ -30,7 +30,7 @@
 
 ; ---------------------------------------------------------------------
 
-(define (expression-stack-resolve-field
+(define (expression-stack-resolve-field-selector
   ($expression-stack : (Stackof Expression)))
   : (Option Expression)
   (and
@@ -57,7 +57,7 @@
 
 (check-equal?
   (option-map
-    (expression-stack-resolve-field
+    (expression-stack-resolve-field-selector
       (stack
         (expression syntax-a 
           (field `point 
@@ -71,7 +71,7 @@
   (typed `(unsafe-vector-ref a 0) (field `b (stack (racket `b2)))))
 
 (check-equal?
-  (expression-stack-resolve-field
+  (expression-stack-resolve-field-selector
     (stack
       (expression syntax-a 
         (field `point 
