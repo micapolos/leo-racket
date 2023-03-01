@@ -7,6 +7,8 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
+  leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/syntax-utils
   leo/compiler/sourced
   leo/compiler/srcloc
@@ -20,20 +22,18 @@
 (define (binding-resolve-symbol
   ($binding : Binding)
   ($symbol : Symbol))
-  : (Option Typed-Syntax)
+  : (Option Expression)
   (define $binding-type (binding-type $binding))
   (and
     (type-check-symbol? $binding-type $symbol)
-    (typed
-      (binding-syntax $binding)
-      $binding-type)))
+    (expression (binding-syntax $binding) $binding-type)))
 
 (check-equal?
   (option-bind
     (binding-resolve-symbol
       (binding (field `a (stack type-b)) syntax-b) `a)
     $resolved
-    (typed-syntax->typed-sourced $resolved))
+    (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
@@ -46,18 +46,16 @@
 (define (binding-resolve-type
   ($binding : Binding)
   ($type : Type))
-  : (Option Typed-Syntax)
+  : (Option Expression)
   (and
     (type-check? $type (binding-type $binding))
-    (typed
-      (binding-syntax $binding)
-      $type)))
+    (expression (binding-syntax $binding) $type)))
 
 (check-equal?
   (option-bind
     (binding-resolve-type (binding type-a syntax-a) type-a)
     $resolved
-    (typed-syntax->typed-sourced $resolved))
+    (expression-typed-sourced $resolved))
   (typed (sourced `a srcloc-a) type-a))
 
 (check-equal?
@@ -66,11 +64,11 @@
 
 ; -----------------------------------------------------------------------
 
-(define (binding-resolve-get-a-typed-syntax
+(define (binding-resolve-get-a-expression
   ($binding : Binding)
-  ($typed-syntax : Typed-Syntax))
-  : (Option Typed-Syntax)
-  (define $type (typed-type $typed-syntax))
+  ($expression : Expression))
+  : (Option Expression)
+  (define $type (expression-type $expression))
   (and 
     (field? $type) 
     (equal? (field-symbol $type) `get)
@@ -85,38 +83,38 @@
 
 (check-equal?
   (option-bind
-    (binding-resolve-get-a-typed-syntax
+    (binding-resolve-get-a-expression
       (binding type-a syntax-b)
-      (typed syntax-a (field `get (stack (a type-a)))))
+      (expression syntax-a (field `get (stack (a type-a)))))
     $resolved
-    (typed-syntax->typed-sourced $resolved))
+    (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) type-a))
 
 (check-equal?
-  (binding-resolve-get-a-typed-syntax
+  (binding-resolve-get-a-expression
     (binding type-a syntax-b)
-    (typed syntax-a (field `not-get (stack (a type-a)))))
+    (expression syntax-a (field `not-get (stack (a type-a)))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-a-typed-syntax
+  (binding-resolve-get-a-expression
     (binding type-a syntax-b)
-    (typed syntax-a (field `get (stack type-a))))
+    (expression syntax-a (field `get (stack type-a))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-a-typed-syntax
+  (binding-resolve-get-a-expression
     (binding type-a syntax-b)
-    (typed syntax-a (field `get (stack (a type-b)))))
+    (expression syntax-a (field `get (stack (a type-b)))))
   #f)
 
 ; -----------------------------------------------------------------------
 
-(define (binding-resolve-get-symbol-typed-syntax
+(define (binding-resolve-get-symbol-expression
   ($binding : Binding)
-  ($typed-syntax : Typed-Syntax))
-  : (Option Typed-Syntax)
-  (define $type (typed-type $typed-syntax))
+  ($expression : Expression))
+  : (Option Expression)
+  (define $type (expression-type $expression))
   (and 
     (field? $type) 
     (equal? (field-symbol $type) `get)
@@ -132,56 +130,56 @@
 
 (check-equal?
   (option-bind
-    (binding-resolve-get-symbol-typed-syntax
+    (binding-resolve-get-symbol-expression
       (binding (field `a (stack type-b)) syntax-b) 
-      (typed syntax-a (field `get (stack (field `a null)))))
+      (expression syntax-a (field `get (stack (field `a null)))))
     $resolved
-    (typed-syntax->typed-sourced $resolved))
+    (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
-  (binding-resolve-get-symbol-typed-syntax
+  (binding-resolve-get-symbol-expression
     (binding (field `a (stack type-b)) syntax-b) 
-    (typed syntax-a type-a))
+    (expression syntax-a type-a))
   #f)
 
 (check-equal?
-  (binding-resolve-get-symbol-typed-syntax
+  (binding-resolve-get-symbol-expression
     (binding (field `a (stack type-b)) syntax-b) 
-    (typed syntax-a (field `not-get (stack (field `a null)))))
+    (expression syntax-a (field `not-get (stack (field `a null)))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-symbol-typed-syntax
+  (binding-resolve-get-symbol-expression
     (binding (field `a (stack type-b)) syntax-b) 
-    (typed syntax-a (field `get (stack (field `b null)))))
+    (expression syntax-a (field `get (stack (field `b null)))))
   #f)
 
 (check-equal?
-  (binding-resolve-get-symbol-typed-syntax
+  (binding-resolve-get-symbol-expression
     (binding (field `a (stack type-b)) syntax-b) 
-    (typed syntax-a (field `get (stack (field `a (stack type-a))))))
+    (expression syntax-a (field `get (stack (field `a (stack type-a))))))
   #f)
 
 ; -----------------------------------------------------------------------
 
-(define (binding-resolve-typed-syntax
+(define (binding-resolve-expression
   ($binding : Binding)
-  ($typed-syntax : Typed-Syntax))
-  : (Option Typed-Syntax)
+  ($expression : Expression))
+  : (Option Expression)
   (or
-    (binding-resolve-get-a-typed-syntax $binding $typed-syntax)
-    (binding-resolve-get-symbol-typed-syntax $binding $typed-syntax)))
+    (binding-resolve-get-a-expression $binding $expression)
+    (binding-resolve-get-symbol-expression $binding $expression)))
 
 ; -----------------------------------------------------------------------
 
-(define (arrow-binding-resolve-typed-syntax-stack
+(define (arrow-binding-resolve-expression-stack
   ($binding : Binding)
-  ($typed-syntax-stack : (Stackof Typed-Syntax)))
-  : (Option Typed-Syntax)
+  ($expression-stack : (Stackof Expression)))
+  : (Option Expression)
   (define $binding-type (binding-type $binding))
-  (define $type-stack (typed-stack->type-stack $typed-syntax-stack))
-  (define $dynamic-syntax-stack (typed-syntax-stack->dynamic-syntax-stack $typed-syntax-stack))
+  (define $type-stack (expression-stack-type-stack $expression-stack))
+  (define $dynamic-syntax-stack (expression-stack-dynamic-syntax-stack $expression-stack))
   (and 
     (arrow? $binding-type)
     (let ()
@@ -190,7 +188,7 @@
       (define $arrow-rhs-type (arrow-rhs-type $arrow))
       (and 
         (type-stack-check? $type-stack $arrow-lhs-type-stack)
-        (typed
+        (expression
           (make-syntax 
             `(
               ,(binding-syntax $binding)
@@ -199,44 +197,44 @@
 
 (check-equal?
   (option-bind
-    (arrow-binding-resolve-typed-syntax-stack
+    (arrow-binding-resolve-expression-stack
       (binding (arrow (stack type-a type-b) type-c) syntax-d)
-      (stack typed-syntax-a typed-syntax-b))
+      (stack expression-a expression-b))
     $resolved
-    (typed-syntax->typed-sourced $resolved))
+    (expression-typed-sourced $resolved))
   (typed (sourced `(d a b) empty-srcloc) type-c))
 
 (check-equal?
-  (arrow-binding-resolve-typed-syntax-stack
+  (arrow-binding-resolve-expression-stack
     (binding (arrow (stack type-a type-b) type-c) syntax-d)
-    (stack typed-syntax-b typed-syntax-a))
+    (stack expression-b expression-a))
   #f)
 
 ; ------------------------------------------------------------------------
 
-(define (binding-resolve-typed-syntax-stack
+(define (binding-resolve-expression-stack
   ($binding : Binding)
-  ($typed-syntax-stack : (Stackof Typed-Syntax)))
-  : (Option Typed-Syntax)
-  (define $single-typed-syntax (single $typed-syntax-stack))
+  ($expression-stack : (Stackof Expression)))
+  : (Option Expression)
+  (define $single-expression (single $expression-stack))
   (or
     (and 
-      $single-typed-syntax
-      (binding-resolve-typed-syntax $binding $single-typed-syntax))
-    (arrow-binding-resolve-typed-syntax-stack $binding $typed-syntax-stack)))
+      $single-expression
+      (binding-resolve-expression $binding $single-expression))
+    (arrow-binding-resolve-expression-stack $binding $expression-stack)))
 
 ; -----------------------------------------------------------------------
 
-(define (binding-stack-resolve-typed-syntax-stack
+(define (binding-stack-resolve-expression-stack
   ($binding-stack : (Stackof Binding))
-  ($typed-syntax-stack : (Stackof Typed-Syntax)))
-  : (Option Typed-Syntax)
+  ($expression-stack : (Stackof Expression)))
+  : (Option Expression)
   (and 
     (not (null? $binding-stack))
     (or
-      (binding-resolve-typed-syntax-stack 
+      (binding-resolve-expression-stack
         (top $binding-stack) 
-        $typed-syntax-stack)
-      (binding-stack-resolve-typed-syntax-stack 
+        $expression-stack)
+      (binding-stack-resolve-expression-stack 
         (pop $binding-stack) 
-        $typed-syntax-stack))))
+        $expression-stack))))

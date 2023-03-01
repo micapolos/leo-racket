@@ -8,6 +8,8 @@
   leo/compiler/expression
   leo/compiler/syntax-utils
   leo/compiler/type
+  leo/compiler/typed
+  leo/compiler/sourced
   leo/compiler/type-utils)
 
 (define expression-a (expression syntax-a type-a))
@@ -17,6 +19,11 @@
 
 (define (expression-is-dynamic? ($expression : Expression)) : Boolean
   (type-is-dynamic? (expression-type $expression)))
+
+(define (expression-typed-sourced ($expression : Expression))
+  (typed
+    (syntax-sourced (expression-syntax $expression))
+    (expression-type $expression)))
 
 (define (expression-stack-type-stack 
   ($expression-stack : (Stackof Expression)))
