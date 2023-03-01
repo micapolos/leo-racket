@@ -10,12 +10,12 @@
   (private : (Stackof Expression))
   (public : (Stackof Expression)))
   #:transparent
-  #:type-name Expression-Context)
+  #:type-name Expression-Stacks)
 
 (define (expression-stacks-push-private 
-  ($expression-stacks : Expression-Context)
+  ($expression-stacks : Expression-Stacks)
   ($expression : Expression))
-  : Expression-Context
+  : Expression-Stacks
   (struct-copy expression-stacks $expression-stacks
     (private
       (push
@@ -23,9 +23,9 @@
         $expression))))
 
 (define (expression-stacks-push-public 
-  ($expression-stacks : Expression-Context)
+  ($expression-stacks : Expression-Stacks)
   ($expression : Expression))
-  : Expression-Context
+  : Expression-Stacks
   (struct-copy expression-stacks $expression-stacks
     (public
       (push
@@ -33,9 +33,9 @@
         $expression))))
 
 (define (expression-stacks-push 
-  ($expression-stacks : Expression-Context)
+  ($expression-stacks : Expression-Stacks)
   ($expression : Expression))
-  : Expression-Context
+  : Expression-Stacks
   (expression-stacks-push-public
     (expression-stacks-push-private $expression-stacks $expression)
     $expression))
