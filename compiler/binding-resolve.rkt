@@ -45,8 +45,7 @@
 
 (define (binding-resolve-type
   ($binding : Binding)
-  ($type : Type)
-  ($srcloc : srcloc))
+  ($type : Type))
   : (Option Typed-Syntax)
   (and
     (type-check? $type (binding-type $binding))
@@ -56,15 +55,13 @@
 
 (check-equal?
   (option-bind
-    (binding-resolve-type
-      (binding type-a syntax-a) type-a srcloc-a)
+    (binding-resolve-type (binding type-a syntax-a) type-a)
     $resolved
     (typed-syntax->typed-sourced $resolved))
   (typed (sourced `a srcloc-a) type-a))
 
 (check-equal?
-  (binding-resolve-type
-    (binding type-a syntax-a) type-b srcloc-a)
+  (binding-resolve-type (binding type-a syntax-a) type-b)
   #f)
 
 ; -----------------------------------------------------------------------
@@ -84,8 +81,7 @@
         (a? $field-type)
         (binding-resolve-type 
           $binding 
-          (a-type $field-type)
-          (syntax-srcloc (typed-value $typed-syntax)))))))
+          (a-type $field-type))))))
 
 (check-equal?
   (option-bind
