@@ -9,8 +9,7 @@
   leo/compiler/script
   leo/compiler/racket
   leo/compiler/datum-script
-  leo/compiler/syntax-utils
-  leo/compiler/sourced)
+  leo/compiler/syntax-utils)
 
 (define (script-string ($script : Script)) : String
   (cond
@@ -18,14 +17,14 @@
     (else (string-append (script-rhs-string $script) "\n"))))
 
 (define (line-string ($line : Line)) : String
-  (define $value (sourced-value $line))
+  (define $value $line)
   (cond
     ((racket? $value)
       (define $racket $value) 
       (format "~v" (racket-any $racket)))
     ((phrase? $value)
       (define $phrase $value)
-      (define $symbol (sourced-value (phrase-sourced-symbol $phrase)))
+      (define $symbol (phrase-symbol $phrase))
       (define $name (symbol->string $symbol))
       (define $script (phrase-script $phrase))
       (cond
@@ -53,7 +52,7 @@
   (string-join (map line-string (reverse $script)) " "))
 
 (define (line-atom? ($line : Line)) : Boolean
-  (define $value (sourced-value $line))
+  (define $value $line)
   (cond
     ((racket? $value) #t)
     ((phrase? $value) (null? (phrase-script $value)))))

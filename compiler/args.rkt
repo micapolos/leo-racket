@@ -11,7 +11,7 @@
 
 (define args sourced)
 
-(define (args-srcloc ($args : Args)) : srcloc
+(define (args-srcloc ($args : Args)) : (Option srcloc)
   (sourced-srcloc $args))
 
 (define (args-typed-syntax-stack ($args : Args)) : (Stackof Typed-Syntax)

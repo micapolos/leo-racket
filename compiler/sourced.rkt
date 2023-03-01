@@ -2,6 +2,6 @@
 
 (provide (all-defined-out))
 
-(struct (Value) sourced ((value : Value) (srcloc : srcloc))
+(struct (Value) sourced ((value : Value) (srcloc : (Option srcloc)))
   #:transparent
   #:type-name Sourced)

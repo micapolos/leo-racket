@@ -9,22 +9,22 @@
   leo/compiler/racket
   leo/compiler/srcloc
   leo/compiler/syntax-utils
+  leo/compiler/srcloc
   leo/compiler/sourced
   leo/compiler/script)
 
 (define (syntax-line ($syntax : Syntax)) : Line
   (define $syntax-e (syntax-e $syntax))
-  (define $srcloc (syntax-srcloc $syntax))
   (unless (not (null? $syntax-e)) (error "null syntax"))
-  (sourced
+  (with-srcloc
     (cond
       ((symbol? $syntax-e) 
-        (phrase (sourced $syntax-e $srcloc) null))
+        (phrase (with-srcloc $syntax-e (syntax-srcloc $syntax)) null))
       ((list? $syntax-e)
         (define $car (car $syntax-e))
         (unless (identifier? $car) (error "not identifier"))
         (phrase 
-          (sourced (syntax-e $car) (syntax-srcloc $car))
+          (with-srcloc (syntax-e $car) (syntax-srcloc $car))
           (syntax-list-script (cdr $syntax-e))))
       (else (racket (syntax->datum $syntax))))
     (syntax-srcloc $syntax)))
@@ -34,19 +34,19 @@
 
 (check-equal?
   (syntax-line (make-syntax srcloc-a 123))
-  (sourced (racket 123) srcloc-a))
+  (racket 123))
 
 (check-equal?
   (syntax-line (make-syntax srcloc-a "foo"))
-  (sourced (racket "foo") srcloc-a))
+  (racket "foo"))
 
 (check-equal?
   (syntax-line (make-syntax srcloc-a `foo))
-  (sourced (phrase (sourced `foo srcloc-a) null) srcloc-a))
+  (phrase `foo null))
 
 (check-equal?
   (syntax-line (make-syntax srcloc-a `(,(make-syntax srcloc-b `foo))))
-  (sourced (phrase (sourced `foo srcloc-b) null) srcloc-a))
+  (phrase `foo null))
 
 (check-equal?
   (syntax-line 
@@ -54,10 +54,7 @@
       ,(make-syntax srcloc-b `foo)
       ,(make-syntax srcloc-c 1)
       ,(make-syntax srcloc-d "foo"))))
-  (sourced 
-    (phrase 
-      (sourced `foo srcloc-b) 
-      (stack 
-        (sourced (racket 1) srcloc-c)
-        (sourced (racket "foo") srcloc-d)))
-    srcloc-a))
+  (phrase `foo
+    (stack 
+      (racket 1)
+      (racket "foo"))))
