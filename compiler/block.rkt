@@ -5,12 +5,12 @@
 (require 
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/type
+  leo/compiler/binding
   leo/compiler/syntax-utils)
 
 (struct block (
   (syntax-stack : (Stackof Syntax))
-  (type-stack : (Stackof Type)))
+  (binding-stack : (Stackof Binding)))
   #:transparent
   #:type-name Block)
 
