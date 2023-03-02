@@ -35,6 +35,9 @@
 (define (expression-identifier? ($expression : Expression)) : Boolean
   (identifier? (expression-syntax $expression)))
 
+(define (expression-not-identifier? ($expression : Expression)) : Boolean
+  (not (identifier? (expression-syntax $expression))))
+
 (define (expression-typed-sourced ($expression : Expression))
   (typed
     (syntax-sourced (expression-syntax $expression))

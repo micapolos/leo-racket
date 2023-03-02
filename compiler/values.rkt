@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  racket/list
   leo/typed/base
   leo/typed/option
   leo/typed/stack
@@ -71,3 +72,13 @@
           dynamic-expression-c)))
     syntax->datum)
   `(values a c))
+
+; -----------------------------------------------------------------------
+
+(define (values-partition-identifiers ($values : Values)) : (Pairof Values Values)
+  (define $expression-stack (values-expression-stack $values))
+  (define-values ($identifier-expression-stack $not-identifier-expression-stack) 
+    (partition expression-identifier? $expression-stack))
+  (cons
+    (values $identifier-expression-stack) 
+    (values $not-identifier-expression-stack)))

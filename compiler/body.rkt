@@ -22,6 +22,11 @@
 
 ; --------------------------------------------------------------
 
+(define (body-commit ($body : Body)) : Body
+  (error "TODO"))
+
+; --------------------------------------------------------------
+
 (define (body-syntax-list ($body : Body)) : (Listof Syntax)
   (define $block (body-block $body))
   (define $values (body-values $body))
