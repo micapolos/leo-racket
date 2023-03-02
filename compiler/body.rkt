@@ -4,10 +4,11 @@
 
 (require 
   leo/typed/stack
-  leo/compiler/expression)
+  leo/compiler/block
+  leo/compiler/values)
 
 (struct body (
-  ($define-syntax-stack : (Stackof Syntax))
-  ($expression-stack : (Stackof Expression)))
+  ($block : Block)
+  ($values : Values))
   #:transparent
   #:type-name Body)
