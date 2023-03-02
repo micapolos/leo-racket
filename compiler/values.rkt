@@ -15,6 +15,12 @@
 
 (define null-values (values null))
 
+(define (values-append ($lhs-values : Values) ($rhs-values : Values)) : Values
+  (values 
+    (push-stack
+      (values-expression-stack $lhs-values)
+      (values-expression-stack $rhs-values))))
+
 (define (values-dynamic-expression-stack ($values : Values)) : (Stackof Expression)
   (filter expression-is-dynamic? (values-expression-stack $values)))
 

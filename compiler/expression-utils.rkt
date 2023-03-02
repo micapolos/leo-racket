@@ -32,6 +32,9 @@
 (define (expression-is-dynamic? ($expression : Expression)) : Boolean
   (type-is-dynamic? (expression-type $expression)))
 
+(define (expression-identifier? ($expression : Expression)) : Boolean
+  (identifier? (expression-syntax $expression)))
+
 (define (expression-typed-sourced ($expression : Expression))
   (typed
     (syntax-sourced (expression-syntax $expression))
