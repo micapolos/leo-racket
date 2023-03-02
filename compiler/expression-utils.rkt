@@ -14,10 +14,20 @@
   leo/compiler/sourced
   leo/compiler/type-utils)
 
-(define expression-a (expression syntax-a type-a))
-(define expression-b (expression syntax-b type-b))
-(define expression-c (expression syntax-c type-c))
-(define expression-d (expression syntax-d type-d))
+(define dynamic-expression-a (expression syntax-a dynamic-type-a))
+(define dynamic-expression-b (expression syntax-b dynamic-type-b))
+(define dynamic-expression-c (expression syntax-c dynamic-type-c))
+(define dynamic-expression-d (expression syntax-d dynamic-type-d))
+
+(define static-expression-a (expression syntax-a static-type-a))
+(define static-expression-b (expression syntax-b static-type-b))
+(define static-expression-c (expression syntax-c static-type-c))
+(define static-expression-d (expression syntax-d static-type-d))
+
+(define expression-a dynamic-expression-a)
+(define expression-b dynamic-expression-b)
+(define expression-c dynamic-expression-c)
+(define expression-d dynamic-expression-d)
 
 (define (expression-is-dynamic? ($expression : Expression)) : Boolean
   (type-is-dynamic? (expression-type $expression)))
