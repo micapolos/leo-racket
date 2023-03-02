@@ -11,14 +11,26 @@
   leo/compiler/type-symbol
   leo/compiler/typed)
 
+(define tmp-temporaries? (make-parameter (ann #f Boolean)))
+
 (define (type-generate-temporary ($type : Type)) : Identifier
-  (car (generate-temporaries (list (type-symbol $type)))))
+  (define $symbol (type-symbol $type))
+  (cond
+    ((tmp-temporaries?)
+      (datum->syntax #f 
+        (string->symbol (string-append "tmp-" (symbol->string $symbol)))))
+    (else (car (generate-temporaries (list (type-symbol $type)))))))
 
 (check-equal?
   (string-prefix?
     (symbol->string (syntax-e (type-generate-temporary type-a)))
     (symbol->string (type-symbol type-a)))
   #t)
+
+(check-equal?
+  (parameterize ((tmp-temporaries? #t))
+    (syntax->datum (type-generate-temporary type-a)))
+  `tmp-a)
 
 ; -------------------------------------------------------------------------
 

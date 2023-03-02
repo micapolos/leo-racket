@@ -43,18 +43,19 @@
               ,(values-syntax $values)))))))
   (block $syntax-stack $binding-stack))
 
-(bind $block
-  (values-block 
-    (values (stack dynamic-expression-a static-expression-b dynamic-expression-c)))
-  (check-equal? 
-    (match (map syntax->datum (block-syntax-stack $block))
-      ((list (list `define-values (list tmp1 tmp2) `(values a c))) 
-        ; TODO: Match tmp1 and tmp2 starts with a and c respectively
-        #t)
-      (else #f))
-    #t)
-  (check-equal?
-    (map binding-type (block-binding-stack $block))
-    (stack dynamic-type-a static-type-b dynamic-type-c))
-  ; TODO: Match binding stack
-)
+(parameterize ((tmp-temporaries? #t))
+  (bind $block
+    (values-block 
+      (values (stack dynamic-expression-a static-expression-b dynamic-expression-c)))
+    (check-equal?
+      (map syntax->datum (block-syntax-stack $block))
+      (stack `(define-values (tmp-a tmp-c) (values a c))))
+    (check-equal?
+      (map binding-type (block-binding-stack $block))
+      (stack dynamic-type-a static-type-b dynamic-type-c))
+    (check-equal?
+      (map
+        (lambda (($identifier-option : (Option Identifier)))
+          (and $identifier-option (syntax->datum $identifier-option)))
+        (map binding-identifier-option (block-binding-stack $block)))
+      (stack `tmp-a #f `tmp-c))))
