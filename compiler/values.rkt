@@ -14,9 +14,12 @@
   #:transparent
   #:type-name Values)
 
+(define (values-dynamic-expression-stack ($values : Values)) : (Stackof Expression)
+  (filter expression-is-dynamic? (values-expression-stack $values)))
+
 (define (values-syntax-list ($values : Values)) : (Listof Syntax)
   (reverse (map expression-syntax 
-    (filter expression-is-dynamic? (values-expression-stack $values)))))
+    (values-dynamic-expression-stack $values))))
 
 (check-equal?
   (map syntax->datum

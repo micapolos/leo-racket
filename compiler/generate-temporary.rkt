@@ -22,6 +22,13 @@
 
 ; -------------------------------------------------------------------------
 
+(define (type-generate-temporary-option ($type : Type)) : (Option Identifier)
+  (and 
+    (type-is-dynamic? $type)
+    (type-generate-temporary $type)))
+
+; -------------------------------------------------------------------------
+
 (define (typed-syntax-generate-temporary ($typed : (Typed Syntax Type))) : Identifier
   (type-generate-temporary (typed-type $typed)))
 
