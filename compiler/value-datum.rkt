@@ -98,7 +98,11 @@
   `(racket bar))
 
 (check-equal?
-  (value-datum (value `foo (arrow (stack (racket `string)) (racket `number))))
+  (value-datum 
+    (value `foo 
+      (arrow 
+        (stack (racket `string)) 
+        (stack (racket `number)))))
   `(function string (giving number)))
 
 (check-equal?

@@ -298,8 +298,11 @@
     (bind $lhs-typed-syntax (top $lhs-typed-syntax-stack)
       (define $lhs-type (typed-type $lhs-typed-syntax))
       (and (arrow? $lhs-type)
-        (let (($arrow-lhs-type-stack (arrow-lhs-type-stack $lhs-type))
-              ($arrow-rhs-type (arrow-rhs-type $lhs-type))
+        (let* (($arrow-lhs-type-stack (arrow-lhs-type-stack $lhs-type))
+              ($arrow-rhs-type-stack (arrow-rhs-type-stack $lhs-type))
+              ($arrow-rhs-type (let ()
+                (unless (= (length $arrow-rhs-type-stack) 1) (error "multi-rhs"))
+                (car $arrow-rhs-type-stack)))
               ($rhs-type-stack (map 
                 (ann typed-type (-> (Typed Syntax Type) Type)) 
                 $rhs-typed-syntax-stack)))
@@ -321,7 +324,7 @@
       (typed test-syntax
         (arrow 
           (stack dynamic-type-a static-type-b dynamic-type-c)
-          dynamic-type-d)))
+          (stack dynamic-type-d))))
     (stack 
       (typed syntax-a dynamic-type-a)
       (typed syntax-b static-type-b)
@@ -337,7 +340,7 @@
 
 (check-equal?
   (typed-syntax-stack-resolve-apply
-    (stack (typed syntax-a (arrow (stack dynamic-type-a) dynamic-type-b)))
+    (stack (typed syntax-a (arrow (stack dynamic-type-a) (stack dynamic-type-b))))
     (stack (typed syntax-b dynamic-type-c))
     test-srcloc)
   #f)

@@ -53,10 +53,9 @@
         ((symbol? $car-syntax-e) 
           (define $symbol $car-syntax-e)
           (define $rhs-type-stack (syntax-list-type-stack $cdr))
-          (define $rhs-type (single $rhs-type-stack))
           (cond
-            ((and (equal? $symbol `giving) $rhs-type)
-              (list (arrow $type-stack $rhs-type)))
+            ((equal? $symbol `giving)
+              (list (arrow $type-stack $rhs-type-stack)))
             (else (push $type-stack (syntax-type $syntax)))))
         (else (push $type-stack (syntax-type $syntax)))))
     (else (push $type-stack (syntax-type $syntax)))))
@@ -80,4 +79,4 @@
 
 (check-equal? 
   (syntax-list-type-stack (list #`foo #`bar #`(giving zoo)))
-  (list (arrow (stack (racket `foo) (racket `bar)) (racket `zoo))))
+  (list (arrow (stack (racket `foo) (racket `bar)) (stack (racket `zoo)))))

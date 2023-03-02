@@ -11,7 +11,7 @@
 
 (data arrow 
   (lhs-type-stack : (Stackof Type)) 
-  (rhs-type : Type))
+  (rhs-type-stack : (Stackof Type)))
 
 (data field 
   (symbol : Symbol) 

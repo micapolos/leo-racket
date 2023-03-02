@@ -28,16 +28,16 @@
         `(,$symbol ,@(type-stack-datum-list $type-stack))))
     ((arrow? $type) 
       (define $lhs-type-stack (arrow-lhs-type-stack $type))
-      (define $rhs-type (arrow-rhs-type $type))
+      (define $rhs-type-stack (arrow-rhs-type-stack $type))
       `(function 
         ,@(type-stack-datum-list $lhs-type-stack)
-        (giving ,(type-datum $rhs-type))))
+        (giving ,@(type-stack-datum-list $rhs-type-stack))))
     ((a? $type) `(a ,(type-datum (a-type $type))))))
 
 (define (type-stack-datum-list ($type-stack : (Stackof Type))) : (Listof Datum)
   (reverse (map type-datum $type-stack)))
 
-(check-equal? (type-datum (racket `void)) `void)
+(check-equal? (type-datum (racket `void)) `(racket void))
 (check-equal? (type-datum (racket `boolean)) `boolean)
 (check-equal? (type-datum (racket `number)) `number)
 (check-equal? (type-datum (racket `fixnum)) `fixnum)
@@ -60,8 +60,8 @@
 (check-equal? 
   (type-datum 
     (arrow 
-      (stack (racket `number) (racket `string)) 
-      (racket `boolean))) 
-  `(function number string (giving boolean)))
+      (stack (racket `number) (racket `string))
+      (stack (racket `boolean) (racket `fixnum)))) 
+  `(function number string (giving boolean fixnum)))
 
 (check-equal? (type-datum (a (racket `string))) `(a string))

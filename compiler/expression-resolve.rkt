@@ -184,7 +184,9 @@
     (let ()
       (define $arrow $expression-type)
       (define $arrow-lhs-type-stack (arrow-lhs-type-stack $arrow))
-      (define $arrow-rhs-type (arrow-rhs-type $arrow))
+      (define $arrow-rhs-type-stack (arrow-rhs-type-stack $arrow))
+      (define $arrow-rhs-type (single $arrow-rhs-type-stack))
+      (unless $arrow-rhs-type (error "TODO: arrow multi-rhs-type"))
       (and 
         (type-stack-check? $type-stack $arrow-lhs-type-stack)
         (expression
@@ -197,7 +199,7 @@
 (check-equal?
   (option-bind
     (arrow-expression-resolve-expression-stack
-      (expression syntax-d (arrow (stack type-a type-b) type-c))
+      (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
       (stack expression-a expression-b))
     $resolved
     (expression-typed-sourced $resolved))
@@ -205,7 +207,7 @@
 
 (check-equal?
   (arrow-expression-resolve-expression-stack
-    (expression syntax-d (arrow (stack type-a type-b) type-c))
+    (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
     (stack expression-b expression-a))
   #f)
 

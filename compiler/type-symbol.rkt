@@ -21,5 +21,5 @@
 (check-equal? (type-symbol (field `foo null)) `foo)
 (check-equal? (type-symbol (racket `foo)) `foo)
 (check-equal? (type-symbol (racket 123)) `any)
-(check-equal? (type-symbol (arrow null (racket `foo))) `function)
+(check-equal? (type-symbol (arrow null null)) `function)
 (check-equal? (type-symbol (a (racket `foo))) `type)
