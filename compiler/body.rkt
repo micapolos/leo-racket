@@ -14,9 +14,7 @@
   #:transparent
   #:type-name Body)
 
-(define (body-commit-values ($body : Body)) : Body
-  (body
-    (block-append-definition 
-      (body-block $body) 
-      (values-definition (body-values $body)))
-    null-values))
+(define (body-as-block ($body : Body)) : Block
+  (block-append-definition 
+    (body-block $body) 
+    (values-definition (body-values $body))))
