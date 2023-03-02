@@ -32,18 +32,22 @@
       (definition-binding-stack $definition))))
 
 (bind $block
-  (block 
-    (stack syntax-a syntax-b)
-    (stack (binding type-a identifier-c) (binding type-b #f)))
+  (block-append-definition
+    (block 
+      (stack syntax-a syntax-b)
+      (stack (binding type-a identifier-c) (binding type-b #f)))
+    (definition 
+      syntax-c
+      (stack (binding type-c identifier-d) (binding type-d #f))))
   (check-equal?
     (map syntax->datum (block-syntax-stack $block))
-    (stack `a `b))
+    (stack `a `b `c))
   (check-equal?
     (map binding-type (block-binding-stack $block))
-    (stack type-a type-b))
+    (stack type-a type-b type-c type-d))
   (check-equal?
     (map binding-identifier-option (block-binding-stack $block))
-    (stack identifier-c #f)))
+    (stack identifier-c #f identifier-d #f)))
 
 ; -------------------------------------------------------------------------
 
