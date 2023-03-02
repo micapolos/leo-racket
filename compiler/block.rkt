@@ -19,9 +19,9 @@
   (define $syntax-stack (block-syntax-stack $block))
   (define $syntax-option (definition-syntax-option $definition))
   (block
-    (or 
-      (and $syntax-option (push $syntax-stack $syntax-option))
-      $syntax-stack)
+    (push-option
+      (block-syntax-stack $block)
+      (definition-syntax-option $definition))
     (push-stack
       (block-binding-stack $block)
       (definition-binding-stack $definition))))
