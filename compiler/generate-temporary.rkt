@@ -11,7 +11,7 @@
   leo/compiler/type-symbol
   leo/compiler/typed)
 
-(define tmp-temporaries? (make-parameter (ann #f Boolean)))
+(define tmp-temporaries? : (Parameter Boolean) (make-parameter #f))
 
 (define (type-generate-temporary ($type : Type)) : Identifier
   (define $symbol (type-symbol $type))

@@ -2,10 +2,12 @@
 
 (provide (all-defined-out))
 
-(require leo/compiler/expression)
+(require 
+  leo/compiler/binding
+  leo/typed/stack)
 
 (struct definition (
-  (expression : Expression)
-  (syntax-option : (Option Syntax)))
+  (syntax-option : (Option Syntax))
+  (binding-stack : (Stackof Binding)))
   #:transparent
   #:type-name Definition)
