@@ -18,5 +18,5 @@
 (check-equal?
   (expression-typed-datum
     (binding-expression
-      (binding type-a #`a)))
-  (typed `a type-a))
+      (binding type-a #`b)))
+  (typed `b type-a))
