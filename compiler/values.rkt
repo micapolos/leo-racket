@@ -14,6 +14,8 @@
   #:transparent
   #:type-name Values)
 
+(define null-values (values null))
+
 (define (values-dynamic-expression-stack ($values : Values)) : (Stackof Expression)
   (filter expression-is-dynamic? (values-expression-stack $values)))
 
