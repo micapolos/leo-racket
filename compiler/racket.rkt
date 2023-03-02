@@ -2,6 +2,6 @@
 
 (provide (all-defined-out))
 
-(struct racket ((any : Any))
-  #:transparent
-  #:type-name Racket)
+(require leo/typed/base)
+
+(data racket (any : Any))

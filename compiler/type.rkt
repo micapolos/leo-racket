@@ -3,19 +3,18 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/compiler/racket
   leo/typed/stack)
 
 (define-type Type (U Racket Field Arrow A))
 
-(struct arrow ((lhs-type-stack : (Stackof Type)) (rhs-type : Type))
-  #:transparent
-  #:type-name Arrow)
+(data arrow 
+  (lhs-type-stack : (Stackof Type)) 
+  (rhs-type : Type))
 
-(struct field ((symbol : Symbol) (type-stack : (Stackof Type)))
-  #:transparent
-  #:type-name Field)
+(data field 
+  (symbol : Symbol) 
+  (type-stack : (Stackof Type)))
 
-(struct a ((type : Type))
-  #:transparent
-  #:type-name A)
+(data a (type : Type))

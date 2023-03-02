@@ -4,10 +4,9 @@
 
 (require 
   leo/compiler/binding
+  leo/typed/base
   leo/typed/stack)
 
-(struct definition (
+(data definition
   (syntax-option : (Option Syntax))
   (binding-stack : (Stackof Binding)))
-  #:transparent
-  #:type-name Definition)

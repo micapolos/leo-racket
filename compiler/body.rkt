@@ -16,11 +16,9 @@
   leo/compiler/values
   leo/compiler/values-definition)
 
-(struct body (
+(data body
   (block : Block)
   (values : Values))
-  #:transparent
-  #:type-name Body)
 
 ; --------------------------------------------------------------
 

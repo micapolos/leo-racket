@@ -4,10 +4,9 @@
 
 (require
   leo/typed/stack
+  leo/typed/base
   leo/compiler/expression)
 
-(struct expression-compiler (
+(data expression-compiler
   (bound-expression-stack : (Stackof Expression))
   (compiled-expression-stack : (Stackof Expression)))
-  #:transparent
-  #:type-name Expression-Compiler)

@@ -3,8 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/compiler/type)
 
-(struct value ((any : Any) (type : Type))
-  #:transparent
-  #:type-name Value)
+(data value (any : Any) (type : Type))

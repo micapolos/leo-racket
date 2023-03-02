@@ -12,11 +12,9 @@
   leo/compiler/definition
   leo/compiler/syntax-utils)
 
-(struct block (
+(data block
   (syntax-stack : (Stackof Syntax))
   (binding-stack : (Stackof Binding)))
-  #:transparent
-  #:type-name Block)
 
 ; -------------------------------------------------------------------------
 

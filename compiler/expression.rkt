@@ -3,8 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/base
   leo/compiler/type)
 
-(struct expression ((syntax : Syntax) (type : Type))
-  #:transparent
-  #:type-name Expression)
+(data expression (syntax : Syntax) (type : Type))

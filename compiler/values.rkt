@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
@@ -10,10 +11,7 @@
   leo/compiler/expression
   leo/compiler/expression-utils)
 
-(struct values (
-  (expression-stack : (Stackof Expression)))
-  #:transparent
-  #:type-name Values)
+(data values (expression-stack : (Stackof Expression)))
 
 (define null-values (values null))
 

@@ -5,20 +5,21 @@
 (require
   (for-syntax 
     racket/base
-    racket/string))
+    racket/string
+    leo/typed/symbol-type-name))
 
 (define-syntax (data syntax)
-  (syntax-case syntax ()
+  (syntax-case syntax (forall)
+    ((_ (vars ...) name fields ...)
+      #`(struct (vars ...) name (fields ...) 
+        #:transparent 
+        #:type-name 
+        #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))
     ((_ name fields ...)
       #`(struct name (fields ...) 
         #:transparent 
         #:type-name 
-        #,(datum->syntax syntax 
-          (string->symbol
-            (string-join 
-              (map string-titlecase 
-                (string-split (symbol->string (syntax->datum #`name)) "-"))
-              "")))))))
+        #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))))
 
 (define-syntax (bind $syntax)
   (syntax-case $syntax ()

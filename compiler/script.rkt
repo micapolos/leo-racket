@@ -12,6 +12,4 @@
 
 (define-type Script (Stackof Line))
 
-(struct phrase ((symbol : Symbol) (script : Script))
-  #:transparent
-  #:type-name Phrase)
+(data phrase (symbol : Symbol) (script : Script))

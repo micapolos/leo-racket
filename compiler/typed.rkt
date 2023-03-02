@@ -2,6 +2,6 @@
 
 (provide (all-defined-out))
 
-(struct (Value Type) typed ((value : Value) (type : Type))
-  #:transparent
-  #:type-name Typed)
+(require leo/typed/base)
+
+(data (Value Type) typed (value : Value) (type : Type))
