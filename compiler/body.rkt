@@ -22,13 +22,6 @@
 
 ; --------------------------------------------------------------
 
-(define (body-as-block ($body : Body)) : Block
-  (block-append-definition 
-    (body-block $body) 
-    (values-definition (body-values $body))))
-
-; --------------------------------------------------------------
-
 (define (body-syntax-list ($body : Body)) : (Listof Syntax)
   (define $block (body-block $body))
   (define $values (body-values $body))
@@ -53,26 +46,6 @@
     (define-values (zero pi) (values 0 3.14))
     (define (plus a b) (+ a b)) 
     (values pi (plus pi 2))))
-
-(parameterize ((tmp-temporaries? #t))
-  (check-equal?
-    (map syntax->datum
-      (block-syntax-list 
-        (body-as-block
-          (body
-            (block 
-              (stack 
-                (make-syntax `(define-values (zero pi) (values 0 3.14)))
-                (make-syntax `(define (plus a b) (+ a b))))
-              (stack (binding type-c identifier-c)))
-           (values 
-              (stack 
-                (expression (make-syntax `pi) type-a)
-                (expression (make-syntax `(plus pi 2)) type-b)))))))
-    `(
-      (define-values (zero pi) (values 0 3.14))
-      (define (plus a b) (+ a b)) 
-      (define-values (tmp-a tmp-b) (values pi (plus pi 2))))))
 
 ; --------------------------------------------------------------------
 
