@@ -8,7 +8,7 @@
   leo/compiler/values)
 
 (struct body (
-  ($block : Block)
-  ($values : Values))
+  (block : Block)
+  (values : Values))
   #:transparent
   #:type-name Body)
