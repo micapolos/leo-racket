@@ -36,7 +36,7 @@
 
 (define (type-generate-temporary-option ($type : Type)) : (Option Identifier)
   (and 
-    (type-is-dynamic? $type)
+    (type-dynamic? $type)
     (type-generate-temporary $type)))
 
 ; -------------------------------------------------------------------------

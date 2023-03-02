@@ -33,7 +33,7 @@
 
 (define 
   (any-types-anys ($any : Any) ($types : (Listof Type))) : (Listof Any)
-    (case (length (filter type-is-dynamic? $types))
+    (case (length (filter type-dynamic? $types))
       ((0) null)
       ((1) (list $any))
       ((2) 
@@ -48,7 +48,7 @@
   (anys-types-decompile ($anys : (Listof Any)) ($types : (Listof Type))) : (Listof Any)
     (cond
       ((null? $types) null)
-      ((type-is-static? (car $types))
+      ((type-static? (car $types))
         (cons 
           (any-type-decompile (void) (car $types))
           (anys-types-decompile $anys (cdr $types))))

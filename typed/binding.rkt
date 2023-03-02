@@ -90,7 +90,7 @@
     (syntax-with-type
       (datum->syntax #f 
         `(,(function-binding-bound-symbol $function-binding)
-          ,@(filter syntax-is-dynamic? $args)))
+          ,@(filter syntax-dynamic? $args)))
       (function-binding-return-type $function-binding))))
 
 (check-equal?

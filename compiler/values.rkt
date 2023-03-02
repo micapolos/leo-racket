@@ -22,7 +22,7 @@
       (values-expression-stack $rhs-values))))
 
 (define (values-dynamic-expression-stack ($values : Values)) : (Stackof Expression)
-  (filter expression-is-dynamic? (values-expression-stack $values)))
+  (filter expression-dynamic? (values-expression-stack $values)))
 
 (define (values-syntax-list ($values : Values)) : (Listof Syntax)
   (reverse (map expression-syntax 

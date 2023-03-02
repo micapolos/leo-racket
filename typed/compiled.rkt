@@ -339,7 +339,7 @@
       (error (format "expected tuple param type: ~a" $lhs-type)))
     (define $symbol (tuple-symbol $param-type))
     (define $field-param-types (tuple-type-list $param-type))
-    (define $dynamic-param-types (filter type-is-dynamic? $field-param-types))
+    (define $dynamic-param-types (filter type-dynamic? $field-param-types))
     (define $param-tmps
       (map type-generate-temporary $dynamic-param-types))
     (define $typed-param-tmps
@@ -540,7 +540,7 @@
             (values 
               (map syntax-parse-type $doing-lhss) 
               #f))))
-      (define $dynamic-arg-types (filter type-is-dynamic? $arg-types))
+      (define $dynamic-arg-types (filter type-dynamic? $arg-types))
       (define $arg-tmps
         (map type-generate-temporary $dynamic-arg-types))
       (define $typed-arg-tmps

@@ -29,8 +29,8 @@
 (define expression-c dynamic-expression-c)
 (define expression-d dynamic-expression-d)
 
-(define (expression-is-dynamic? ($expression : Expression)) : Boolean
-  (type-is-dynamic? (expression-type $expression)))
+(define (expression-dynamic? ($expression : Expression)) : Boolean
+  (type-dynamic? (expression-type $expression)))
 
 (define (expression-identifier? ($expression : Expression)) : Boolean
   (identifier? (expression-syntax $expression)))
@@ -62,7 +62,7 @@
   ($expression-stack : (Stackof Expression)))
   : (Stackof Syntax)
   (expression-stack-syntax-stack
-    (filter expression-is-dynamic? $expression-stack)))
+    (filter expression-dynamic? $expression-stack)))
 
 (check-equal?
   (expression-stack-type-stack (stack expression-a expression-b))

@@ -41,8 +41,8 @@
           (syntax-sourced (typed-value $typed-syntax))
           (typed-type $typed-syntax))))))
 
-(define (typed-syntax-is-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
-  (type-is-dynamic? (typed-type $typed-syntax)))
+(define (typed-syntax-dynamic? ($typed-syntax : (Typed Syntax Type))) : Boolean
+  (type-dynamic? (typed-type $typed-syntax)))
 
 (define (typed-syntax-stack->typed-syntax
   ($typed-syntax-stack : (Stackof (Typed Syntax Type))))
@@ -70,7 +70,7 @@
     ((_ $typed-syntax-stack)
       #`(typed-syntax-stack->syntax-stack
         (filter 
-          (ann typed-syntax-is-dynamic? (-> Typed-Syntax Boolean))
+          (ann typed-syntax-dynamic? (-> Typed-Syntax Boolean))
           $typed-syntax-stack)))))
 
 (check-equal?
@@ -85,7 +85,7 @@
   ($srcloc : srcloc))
   : Syntax
   (define $dynamic-typed-syntax-stack 
-    (filter typed-syntax-is-dynamic? $typed-syntax-stack))
+    (filter typed-syntax-dynamic? $typed-syntax-stack))
   (define $dynamic-syntax-stack
     (map (ann typed-value (-> (Typed Syntax Type) Syntax)) $dynamic-typed-syntax-stack))
   (define $dynamic-length 
@@ -310,7 +310,7 @@
             (let ()
               (define $lhs-syntax (typed-value $lhs-typed-syntax))
               (define $arg-typed-syntax-stack 
-                (filter typed-syntax-is-dynamic? $rhs-typed-syntax-stack))
+                (filter typed-syntax-dynamic? $rhs-typed-syntax-stack))
               (define $arg-syntax-stack 
                 (map (ann typed-value (-> (Typed Syntax Type) Syntax)) 
                 $arg-typed-syntax-stack))

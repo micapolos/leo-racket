@@ -14,11 +14,11 @@
   leo/typed/values
   leo/typed/types)
 
-(define (syntax-is-static? ($syntax : Syntax)) : Boolean
-  (type-is-static? (syntax-type $syntax)))
+(define (syntax-static? ($syntax : Syntax)) : Boolean
+  (type-static? (syntax-type $syntax)))
 
-(define (syntax-is-dynamic? ($syntax : Syntax)) : Boolean
-  (not (syntax-is-static? $syntax)))
+(define (syntax-dynamic? ($syntax : Syntax)) : Boolean
+  (not (syntax-static? $syntax)))
 
 (define (syntax-typed-datum ($syntax : Syntax))
   (typed (syntax->datum $syntax) (syntax-type $syntax)))
@@ -40,7 +40,7 @@
     (tuple $symbol (map syntax-type $syntaxes))))
 
 (define (syntax-list-syntax ($syntax-list : (Listof Syntax))) : Syntax
-  (let* (($dynamic-syntax-list (filter syntax-is-dynamic? $syntax-list))
+  (let* (($dynamic-syntax-list (filter syntax-dynamic? $syntax-list))
          ($size (length $dynamic-syntax-list)))
     (case $size
       ((0) null-syntax)

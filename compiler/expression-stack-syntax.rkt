@@ -15,7 +15,7 @@
   ($expression-stack : (Stackof Expression)))
   : Syntax
   (define $dynamic-expression-stack 
-    (filter expression-is-dynamic? $expression-stack))
+    (filter expression-dynamic? $expression-stack))
   (define $dynamic-syntax-stack
     (map expression-syntax $dynamic-expression-stack))
   (define $dynamic-length

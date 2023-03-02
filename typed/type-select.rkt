@@ -102,13 +102,13 @@
     ((null? $type-list) #f)
     ((type-selects? (car $type-list) $selector) 
       (cons 
-        (if (type-is-static? (car $type-list)) #f $index)
+        (if (type-static? (car $type-list)) #f $index)
         (car $type-list)))
     (else 
       (type-list-select-from
         (cdr $type-list)
         $selector
-        (if (type-is-static? (car $type-list))
+        (if (type-static? (car $type-list))
           $index
           (+ $index 1))))))
 

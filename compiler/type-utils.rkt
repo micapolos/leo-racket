@@ -25,23 +25,23 @@
 (define type-c dynamic-type-c)
 (define type-d dynamic-type-d)
 
-(define (type-is-dynamic? ($type : Type)) : Boolean
+(define (type-dynamic? ($type : Type)) : Boolean
   (cond
     ((racket? $type) #t)
     ((arrow? $type) #t)
-    ((field? $type) (ormap type-is-dynamic? (field-type-stack $type)))
+    ((field? $type) (ormap type-dynamic? (field-type-stack $type)))
     ((a? $type) #f)))
 
-(check-equal? (type-is-dynamic? (racket `number)) #t)
-(check-equal? (type-is-dynamic? (arrow null null)) #t)
-(check-equal? (type-is-dynamic? (field `foo null)) #f)
-(check-equal? (type-is-dynamic? (field `foo (list (field `foo null)))) #f)
-(check-equal? (type-is-dynamic? (field `foo (list (racket `number)))) #t)
-(check-equal? (type-is-dynamic? (field `foo (list (field `foo null) (racket `number)))) #t)
-(check-equal? (type-is-dynamic? (a dynamic-type-a)) #f)
+(check-equal? (type-dynamic? (racket `number)) #t)
+(check-equal? (type-dynamic? (arrow null null)) #t)
+(check-equal? (type-dynamic? (field `foo null)) #f)
+(check-equal? (type-dynamic? (field `foo (list (field `foo null)))) #f)
+(check-equal? (type-dynamic? (field `foo (list (racket `number)))) #t)
+(check-equal? (type-dynamic? (field `foo (list (field `foo null) (racket `number)))) #t)
+(check-equal? (type-dynamic? (a dynamic-type-a)) #f)
 
 (define (type-stack-size ($type-stack : (Stackof Type))) : Exact-Nonnegative-Integer
-  (length (filter type-is-dynamic? $type-stack)))
+  (length (filter type-dynamic? $type-stack)))
 
 ; -------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@
     ((null? $type-stack) #f)
     (else 
       (define $type (top $type-stack))
-      (define $is-dynamic? (type-is-dynamic? $type))
+      (define $is-dynamic? (type-dynamic? $type))
       (cond
         ((= $from-index $index)
           (if $is-dynamic? $from-dynamic-index #f))
