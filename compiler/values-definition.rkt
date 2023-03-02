@@ -39,7 +39,7 @@
         (make-syntax 
           `(define-values 
             (,@(reverse $identifier-stack))
-            ,(values-syntax $values))))))
+            ,(values-syntax-option $values))))))
   (definition $syntax-option $binding-stack))
 
 (parameterize ((tmp-temporaries? #t))

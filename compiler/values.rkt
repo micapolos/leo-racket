@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/option
   leo/typed/stack
   leo/typed/testing
   leo/compiler/syntax-utils
@@ -35,32 +36,34 @@
 
 ; -----------------------------------------------------------------
 
-(define (values-syntax ($values : Values)) : Syntax
+(define (values-syntax-option ($values : Values)) : (Option Syntax)
   (define $syntax-list (values-syntax-list $values))
   (make-syntax
     (case (length $syntax-list)
-      ((0) `(void))
+      ((0) #f)
       ((1) (car $syntax-list))
       (else `(values ,@$syntax-list)))))
 
 (check-equal?
-  (syntax->datum
-    (values-syntax
-      (values null)))
-  `(void))
+  (option-map
+    (values-syntax-option (values null))
+    syntax->datum)
+  #f)
 
 (check-equal?
-  (syntax->datum
-    (values-syntax
-      (values (stack dynamic-expression-a))))
+  (option-map
+    (values-syntax-option
+      (values (stack dynamic-expression-a)))
+    syntax->datum)
   `a)
 
 (check-equal?
-  (syntax->datum
-    (values-syntax
+  (option-map
+    (values-syntax-option
       (values
         (stack 
           dynamic-expression-a 
           static-expression-b 
-          dynamic-expression-c))))
+          dynamic-expression-c)))
+    syntax->datum)
   `(values a c))
