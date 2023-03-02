@@ -37,9 +37,12 @@
     (syntax-sourced (expression-syntax $expression))
     (expression-type $expression)))
 
+(define (expression-datum ($expression : Expression))
+  (syntax->datum (expression-syntax $expression)))
+
 (define (expression-typed-datum ($expression : Expression))
   (typed
-    (syntax->datum (expression-syntax $expression))
+    (expression-datum $expression)
     (expression-type $expression)))
 
 (define (expression-stack-type-stack 
