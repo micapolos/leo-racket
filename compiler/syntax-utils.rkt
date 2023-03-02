@@ -17,15 +17,6 @@
         (srcloc-position $srcloc)
         (srcloc-span $srcloc)))))
 
-(define (make-identifier ($srcloc : srcloc) ($symbol : Symbol)) : Identifier
-  (datum->syntax #f $symbol
-    (vector
-      (srcloc-source $srcloc)
-      (srcloc-line $srcloc)
-      (srcloc-column $srcloc)
-      (srcloc-position $srcloc)
-      (srcloc-span $srcloc))))
-
 (define (syntax-sourced ($syntax : Syntax)) : (Sourced Sexp)
   (sourced 
     (syntax->datum $syntax) 
