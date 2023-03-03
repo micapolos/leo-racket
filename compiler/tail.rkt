@@ -5,8 +5,8 @@
 (require
   leo/typed/stack
   leo/compiler/expression
-  leo/compiler/expressions)
+  leo/compiler/package)
 
-(define-type Tail (U (Stackof Expression) Expressions))
+(define-type Tail (U (Stackof Expression) Package))
 
 (define null-tail : (Stackof Expression) null)

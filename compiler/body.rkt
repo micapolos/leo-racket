@@ -18,7 +18,7 @@
 
 (data body
   (syntax-stack : (Stackof Syntax))
-  (tail : Tail))
+  (expression-stack : (Stackof Expression)))
 
 (define null-body (body null null-tail))
 

@@ -7,6 +7,6 @@
   leo/typed/stack
   leo/compiler/type)
 
-(data expressions 
+(data package 
   ($syntax : Syntax) 
   ($type-stack : (Stackof Type)))
