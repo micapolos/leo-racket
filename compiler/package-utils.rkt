@@ -5,8 +5,10 @@
 (require
   racket/function
   racket/list
+  leo/typed/option
   leo/typed/testing
   leo/typed/stack
+  leo/compiler/racket
   leo/compiler/package
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -69,3 +71,33 @@
   (package
     (expression-stack-syntax $expression-stack)
     (map expression-type $expression-stack)))
+
+; -------------------------------------------------------------------
+
+(define (package-rhs-option ($package : Package)) : (Option Package)
+  (option-bind (single (package-structure $package)) $type
+    (and (field? $type)
+      (package 
+        (package-syntax $package) 
+        (field-structure $type)))))
+
+(check-equal?
+  (package-rhs-option
+    (package syntax-a 
+      (structure 
+        (field `foo
+          (structure type-b type-c)))))
+  (package syntax-a (structure type-b type-c)))
+
+(check-equal?
+  (package-rhs-option
+    (package syntax-a 
+      (structure 
+        (field `foo null)
+        (field `bar null))))
+  #f)
+
+(check-equal?
+  (package-rhs-option
+    (package syntax-a (structure (racket `foo))))
+  #f)
