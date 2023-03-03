@@ -7,5 +7,5 @@
   leo/compiler/type)
 
 (data package 
-  ($syntax : Syntax)
-  ($structure : Structure))
+  (syntax : Syntax)
+  (structure : Structure))
