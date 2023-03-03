@@ -8,3 +8,5 @@
   leo/compiler/binding)
 
 (data scope (binding-stack : (Stackof Binding)))
+
+(define null-scope (scope null))
