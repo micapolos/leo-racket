@@ -4,9 +4,8 @@
 
 (require 
   leo/typed/base
-  leo/typed/stack
   leo/compiler/type)
 
 (data package 
-  ($syntax : Syntax) 
+  ($syntax : Syntax)
   ($structure : Structure))
