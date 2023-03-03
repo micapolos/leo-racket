@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/option
   leo/typed/stack
   leo/typed/testing
   leo/compiler/typed
@@ -90,3 +91,39 @@
         dynamic-expression-c 
         static-expression-d)))
   `(vector a b c))
+
+; -----------------------------------------------------------------
+
+(define (expression-stack-values-syntax-option 
+  ($expression-stack : (Stackof Expression)))
+  : (Option Syntax)
+  (define $dynamic-expression-stack (filter expression-dynamic? $expression-stack))
+  (define $dynamic-syntax-stack (map expression-syntax $dynamic-expression-stack))
+  (make-syntax
+    (case (length $dynamic-syntax-stack)
+      ((0) #f)
+      ((1) (top $dynamic-syntax-stack))
+      (else `(values ,@(reverse $dynamic-syntax-stack))))))
+
+(check-equal?
+  (option-map
+    (expression-stack-values-syntax-option null)
+    syntax->datum)
+  #f)
+
+(check-equal?
+  (option-map
+    (expression-stack-values-syntax-option
+      (stack dynamic-expression-a))
+    syntax->datum)
+  `a)
+
+(check-equal?
+  (option-map
+    (expression-stack-values-syntax-option
+      (stack 
+        dynamic-expression-a 
+        static-expression-b 
+        dynamic-expression-c))
+    syntax->datum)
+  `(values a c))

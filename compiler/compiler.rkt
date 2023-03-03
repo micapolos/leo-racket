@@ -6,8 +6,8 @@
   leo/typed/stack
   leo/typed/base
   leo/compiler/binding
-  leo/compiler/values)
+  leo/compiler/body)
 
 (data compiler
   (binding-stack : (Stackof Binding))
-  (values : Values))
+  (body : Body))

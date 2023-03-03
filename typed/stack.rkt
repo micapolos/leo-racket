@@ -70,3 +70,19 @@
 (check-equal?
   (push-option (stack 1 2 3) 4)
   (stack 1 2 3 4))
+
+; -------------------------------------------------------------------------
+
+(: fold-stack (All (A B) (-> A (Stackof B) (-> A B A) A)))
+(define (fold-stack $initial $stack $fn)
+  (cond
+    ((null? $stack) $initial)
+    (else (fold-stack ($fn $initial (top $stack)) (pop $stack) $fn))))
+
+(check-equal?
+  (fold-stack 
+    "numbers"
+    (stack 1 2 3)
+    (lambda (($string : String) ($number : Number))
+      (string-append $string ", " (number->string $number))))
+  "numbers, 3, 2, 1")
