@@ -67,6 +67,9 @@
     (typed `#f static-type-c)
     (typed `(unsafe-vector-ref a 2) dynamic-type-d)))
 
+(define (expression-package ($expression : Expression)) : Package
+  (expression-stack-package (stack $expression)))
+
 (define (expression-stack-package ($expression-stack : (Stackof Expression))) : Package
   (package
     (expression-stack-syntax $expression-stack)
@@ -101,3 +104,10 @@
   (package-rhs-option
     (package syntax-a (structure (racket `foo))))
   #f)
+
+; ------------------------------------------------------------------
+
+(define (package-typed-sexp ($package : Package)) : (Typed Sexp Structure)
+  (typed
+    (syntax->datum (package-syntax $package))
+    (package-structure $package)))

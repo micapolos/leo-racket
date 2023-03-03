@@ -21,7 +21,7 @@
 (define (package-resolve-expression
   ($package : Package)
   ($expression : Expression))
-  : (Option Expression)
+  : (Option Package)
   (package-rhs-resolve-expression $package $expression))
 
 ; ---------------------------------------------------------------------
@@ -29,13 +29,15 @@
 (define (package-rhs-resolve-expression
   ($package : Package)
   ($expression : Expression))
-  : (Option Expression)
+  : (Option Package)
   (option-bind (package-rhs-option $package) $rhs-package
-    (option-stack-first 
-      (map 
-        (lambda (($lhs-expression : Expression)) 
-          (expression-resolve-expression $lhs-expression $expression))
-        (package-expression-stack $rhs-package)))))
+    (option-map
+      (option-stack-first 
+        (map
+          (lambda (($lhs-expression : Expression)) 
+            (expression-resolve-expression $lhs-expression $expression))
+          (package-expression-stack $rhs-package)))
+      expression-package)))
 
 (check-equal?
   (option-map
@@ -49,8 +51,10 @@
               (field `c (stack (racket `c2))) 
               (field `d (stack (racket `d2)))))))
         (expression syntax-b (field `b null)))
-    expression-typed-datum)
-  (typed `(unsafe-vector-ref a 0) (field `b (stack (racket `b2)))))
+    package-typed-sexp)
+  (typed 
+    `(unsafe-vector-ref a 0)
+    (structure (field `b (stack (racket `b2))))))
 
 (check-equal?
   (package-rhs-resolve-expression
