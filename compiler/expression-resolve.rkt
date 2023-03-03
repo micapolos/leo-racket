@@ -63,104 +63,80 @@
 
 ; -----------------------------------------------------------------------
 
-(define (expression-resolve-get-a-expression
+(define (expression-resolve-a-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
   : (Option Expression)
   (define $type (expression-type $rhs-expression))
-  (and 
-    (field? $type) 
-    (equal? (field-symbol $type) `get)
-    (= (length (field-structure $type)) 1)
+  (and
+    (a? $type)
     (let ()
-      (define $field-type (top (field-structure $type)))
-      (and
-        (a? $field-type)
-        (let ()
-          (define $structure (a-structure $field-type))
-          (define $type-option (single $structure))
-          (and $type-option
-            (expression-resolve-type 
-              $lhs-expression $type-option)))))))
+      (define $structure (a-structure $type))
+      (define $type-option (single $structure))
+      (and $type-option
+        (expression-resolve-type 
+          $lhs-expression $type-option)))))
 
 (check-equal?
   (option-bind
-    (expression-resolve-get-a-expression
+    (expression-resolve-a-expression
       (expression syntax-b type-a)
-      (expression syntax-a (field `get (structure (a (structure type-a))))))
+      (expression syntax-a (a (structure type-a))))
     $resolved
     (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) type-a))
 
 (check-equal?
-  (expression-resolve-get-a-expression
-    (expression syntax-b type-a)
-    (expression syntax-a (field `not-get (structure (a (structure type-a))))))
-  #f)
-
-(check-equal?
-  (expression-resolve-get-a-expression
+  (expression-resolve-a-expression
     (expression syntax-b type-a)
     (expression syntax-a (field `get (stack type-a))))
   #f)
 
 (check-equal?
-  (expression-resolve-get-a-expression
+  (expression-resolve-a-expression
     (expression syntax-b type-a)
-    (expression syntax-a (field `get (structure (a (structure type-b))))))
+    (expression syntax-a (a (structure type-b))))
   #f)
 
 ; -----------------------------------------------------------------------
 
-(define (expression-resolve-get-symbol-expression
+(define (expression-resolve-symbol-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
   : (Option Expression)
   (define $type (expression-type $rhs-expression))
-  (and 
-    (field? $type) 
-    (equal? (field-symbol $type) `get)
-    (= (length (field-structure $type)) 1)
-    (let ()
-      (define $field-type (top (field-structure $type)))
-      (and
-        (field? $field-type)
-        (null? (field-structure $field-type))
-        (expression-resolve-symbol
-          $lhs-expression
-          (field-symbol $field-type))))))
+  (and
+    (field? $type)
+    (null? (field-structure $type))
+    (expression-resolve-symbol
+      $lhs-expression
+      (field-symbol $type))))
 
 (check-equal?
   (option-bind
-    (expression-resolve-get-symbol-expression
+    (expression-resolve-symbol-expression
       (expression syntax-b (field `a (stack type-b))) 
-      (expression syntax-a (field `get (stack (field `a null)))))
+      (expression syntax-a (field `a null)))
     $resolved
     (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
-  (expression-resolve-get-symbol-expression
+  (expression-resolve-symbol-expression
     (expression syntax-b (field `a (stack type-b))) 
     (expression syntax-a type-a))
   #f)
 
 (check-equal?
-  (expression-resolve-get-symbol-expression
+  (expression-resolve-symbol-expression
     (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `not-get (stack (field `a null)))))
+    (expression syntax-a (field `not-a null)))
   #f)
 
 (check-equal?
-  (expression-resolve-get-symbol-expression
+  (expression-resolve-symbol-expression
     (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `get (stack (field `b null)))))
-  #f)
-
-(check-equal?
-  (expression-resolve-get-symbol-expression
-    (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `get (stack (field `a (stack type-a))))))
+    (expression syntax-a (field `a (stack type-a))))
   #f)
 
 ; -----------------------------------------------------------------------
@@ -170,8 +146,8 @@
   ($rhs-expression : Expression))
   : (Option Expression)
   (or
-    (expression-resolve-get-a-expression $lhs-expression $rhs-expression)
-    (expression-resolve-get-symbol-expression $lhs-expression $rhs-expression)))
+    (expression-resolve-a-expression $lhs-expression $rhs-expression)
+    (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
 
 ; -----------------------------------------------------------------------
 
