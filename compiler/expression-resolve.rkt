@@ -76,15 +76,18 @@
       (define $field-type (top (field-structure $type)))
       (and
         (a? $field-type)
-        (expression-resolve-type 
-          $lhs-expression
-          (a-type $field-type))))))
+        (let ()
+          (define $structure (a-structure $field-type))
+          (define $type-option (single $structure))
+          (and $type-option
+            (expression-resolve-type 
+              $lhs-expression $type-option)))))))
 
 (check-equal?
   (option-bind
     (expression-resolve-get-a-expression
       (expression syntax-b type-a)
-      (expression syntax-a (field `get (stack (a type-a)))))
+      (expression syntax-a (field `get (structure (a (structure type-a))))))
     $resolved
     (expression-typed-sourced $resolved))
   (typed (sourced `b srcloc-b) type-a))
@@ -92,7 +95,7 @@
 (check-equal?
   (expression-resolve-get-a-expression
     (expression syntax-b type-a)
-    (expression syntax-a (field `not-get (stack (a type-a)))))
+    (expression syntax-a (field `not-get (structure (a (structure type-a))))))
   #f)
 
 (check-equal?
@@ -104,7 +107,7 @@
 (check-equal?
   (expression-resolve-get-a-expression
     (expression syntax-b type-a)
-    (expression syntax-a (field `get (stack (a type-b)))))
+    (expression syntax-a (field `get (structure (a (structure type-b))))))
   #f)
 
 ; -----------------------------------------------------------------------

@@ -32,7 +32,7 @@
       `(function 
         ,@(structure-datum-list $lhs-structure)
         (giving ,@(structure-datum-list $rhs-structure))))
-    ((a? $type) `(a ,(type-datum (a-type $type))))))
+    ((a? $type) `(a ,@(structure-datum-list (a-structure $type))))))
 
 (define (structure-datum-list ($structure : Structure)) : (Listof Datum)
   (reverse (map type-datum $structure)))
@@ -64,4 +64,6 @@
       (stack (racket `boolean) (racket `fixnum)))) 
   `(function number string (giving boolean fixnum)))
 
-(check-equal? (type-datum (a (racket `string))) `(a string))
+(check-equal? 
+  (type-datum (a (structure (racket `string) (racket `number)))) 
+  `(a string number))

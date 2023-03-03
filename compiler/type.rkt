@@ -11,8 +11,16 @@
 
 (define-type Structure (Stackof Type))
 
-(data arrow (lhs-structure : Structure) (rhs-structure : Structure))
+(data arrow 
+  (lhs-structure : Structure) 
+  (rhs-structure : Structure))
 
-(data field (symbol : Symbol) (structure : Structure))
+(data field 
+  (symbol : Symbol) 
+  (structure : Structure))
 
-(data a (type : Type))
+(data a 
+  (structure : Structure))
+
+(define structure stack)
+

@@ -46,7 +46,7 @@
                   (value-datum (any-structure-ref $any $structure $index)))
                 (range (length $structure))))))))
     ((arrow? $type) (type-datum $type))
-    ((a? $type) `(a ,(type-datum (a-type $type))))))
+    ((a? $type) `(a ,@(structure-datum-list (a-structure $type))))))
 
 (define (any-structure-ref
   ($any : Any)
@@ -106,8 +106,8 @@
   `(function string (giving number)))
 
 (check-equal?
-  (value-datum (value `foo (a (racket `number))))
-  `(a number))
+  (value-datum (value `foo (a (structure (racket `number) (racket `string)))))
+  `(a number string))
 
 (check-equal?
   (value-datum (value "foo" (field `foo (stack (racket `string)))))
