@@ -23,7 +23,7 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (package-unsafe-ref
+(define (package-ref
   ($package : Package)
   ($index : Exact-Nonnegative-Integer))
   : Expression
@@ -51,7 +51,7 @@
 
 (define (package-expression-stack ($package : Package)) : (Stackof Expression)
   (map 
-    (curry package-unsafe-ref $package)
+    (curry package-ref $package)
     (range (package-size $package))))
 
 (check-equal?

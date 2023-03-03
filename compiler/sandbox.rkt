@@ -6,7 +6,7 @@
   leo/compiler/expression-utils
   leo/compiler/package-utils)
 
-(option-app package-unsafe-ref
+(option-app package-ref
   (expression-field-rhs
     (field-expression `point
       (expression-stack-package
