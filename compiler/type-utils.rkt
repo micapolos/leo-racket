@@ -47,7 +47,7 @@
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null) (racket `number)))) #t)
 (check-equal? (type-dynamic? (a (structure dynamic-type-a))) #f)
 
-(define (structure-size ($structure : Structure)) : Exact-Nonnegative-Integer
+(define (structure-compiled-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))
 
 ; -------------------------------------------------------------------------

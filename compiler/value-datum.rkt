@@ -53,12 +53,12 @@
   ($structure : Structure)
   ($index : Exact-Nonnegative-Integer))
   : Value
-  (define $structure-size (structure-size $structure))
+  (define $structure-compiled-size (structure-compiled-size $structure))
   (define $dynamic-index (structure-dynamic-ref $structure $index))
   (value 
     (and
       $dynamic-index
-      (case $structure-size
+      (case $structure-compiled-size
         ((0) (error "impossible"))
         ((1) $any)
         ((2)
@@ -66,7 +66,7 @@
         (else
           (unsafe-vector-ref 
             (cast $any (Vectorof Any))
-            (- $structure-size $dynamic-index 1)))))
+            (- $structure-compiled-size $dynamic-index 1)))))
     (list-ref $structure $index)))
 
 (check-equal?

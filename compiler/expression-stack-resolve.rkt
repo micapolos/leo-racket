@@ -9,6 +9,8 @@
   leo/typed/stack
   leo/compiler/racket
   leo/compiler/syntax-utils
+  leo/compiler/package
+  leo/compiler/package-utils
   leo/compiler/type
   leo/compiler/typed
   leo/compiler/type-utils
@@ -38,7 +40,7 @@
           (define $lhs-syntax (expression-syntax $lhs-expression))
           (define $lhs-structure (field-structure $lhs-type))
           (define $lhs-expression-stack 
-            (syntax-structure-expression-stack $lhs-syntax $lhs-structure))
+            (package-expression-stack (package $lhs-syntax $lhs-structure)))
           (define $resolved-expression-stack 
             (map 
               (lambda (($expression : Expression)) 
@@ -57,7 +59,7 @@
               (field `c (stack (racket `c2))) 
               (field `d (stack (racket `d2))))))
         (expression syntax-b
-          (field `get (stack (field `b null))))))
+          (field `b null))))
     expression-typed-datum)
   (typed `(unsafe-vector-ref a 0) (field `b (stack (racket `b2)))))
 
