@@ -12,14 +12,15 @@
   leo/compiler/identifier-utils
   leo/compiler/expression
   leo/compiler/expression-stack-syntax
+  leo/compiler/tail
   leo/compiler/type-utils
   leo/compiler/binding)
 
 (data body
   (syntax-stack : (Stackof Syntax))
-  (expression-stack : (Stackof Expression)))
+  (tail : Tail))
 
-(define null-body (body null null))
+(define null-body (body null null-tail))
 
 ; --------------------------------------------------------------
 

@@ -8,3 +8,5 @@
   leo/compiler/expressions)
 
 (define-type Tail (U (Stackof Expression) Expressions))
+
+(define null-tail : (Stackof Expression) null)
