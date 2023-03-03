@@ -71,9 +71,9 @@
   (and 
     (field? $type) 
     (equal? (field-symbol $type) `get)
-    (= (length (field-type-stack $type)) 1)
+    (= (length (field-structure $type)) 1)
     (let ()
-      (define $field-type (top (field-type-stack $type)))
+      (define $field-type (top (field-structure $type)))
       (and
         (a? $field-type)
         (expression-resolve-type 
@@ -117,12 +117,12 @@
   (and 
     (field? $type) 
     (equal? (field-symbol $type) `get)
-    (= (length (field-type-stack $type)) 1)
+    (= (length (field-structure $type)) 1)
     (let ()
-      (define $field-type (top (field-type-stack $type)))
+      (define $field-type (top (field-structure $type)))
       (and
         (field? $field-type)
-        (null? (field-type-stack $field-type))
+        (null? (field-structure $field-type))
         (expression-resolve-symbol
           $lhs-expression
           (field-symbol $field-type))))))
@@ -177,18 +177,18 @@
   ($rhs-expression-stack : (Stackof Expression)))
   : (Option Expression)
   (define $expression-type (expression-type $lhs-expression))
-  (define $type-stack (expression-stack-type-stack $rhs-expression-stack))
+  (define $structure (expression-stack-structure $rhs-expression-stack))
   (define $dynamic-syntax-stack (expression-stack-dynamic-syntax-stack $rhs-expression-stack))
   (and 
     (arrow? $expression-type)
     (let ()
       (define $arrow $expression-type)
-      (define $arrow-lhs-type-stack (arrow-lhs-type-stack $arrow))
-      (define $arrow-rhs-type-stack (arrow-rhs-type-stack $arrow))
-      (define $arrow-rhs-type (single $arrow-rhs-type-stack))
+      (define $arrow-lhs-structure (arrow-lhs-structure $arrow))
+      (define $arrow-rhs-structure (arrow-rhs-structure $arrow))
+      (define $arrow-rhs-type (single $arrow-rhs-structure))
       (unless $arrow-rhs-type (error "TODO: arrow multi-rhs-type"))
       (and 
-        (type-stack-check? $type-stack $arrow-lhs-type-stack)
+        (structure-check? $structure $arrow-lhs-structure)
         (expression
           (make-syntax 
             `(

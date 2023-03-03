@@ -9,4 +9,4 @@
 
 (data package 
   ($syntax : Syntax) 
-  ($type-stack : (Stackof Type)))
+  ($structure : Structure))

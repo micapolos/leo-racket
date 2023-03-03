@@ -36,7 +36,7 @@
   (cond
     ((racket? $type) #t)
     ((arrow? $type) #t)
-    ((field? $type) (ormap type-dynamic? (field-type-stack $type)))
+    ((field? $type) (ormap type-dynamic? (field-structure $type)))
     ((a? $type) #f)))
 
 (check-equal? (type-dynamic? (racket `number)) #t)
@@ -47,44 +47,44 @@
 (check-equal? (type-dynamic? (field `foo (list (field `foo null) (racket `number)))) #t)
 (check-equal? (type-dynamic? (a dynamic-type-a)) #f)
 
-(define (type-stack-size ($type-stack : (Stackof Type))) : Exact-Nonnegative-Integer
-  (length (filter type-dynamic? $type-stack)))
+(define (structure-size ($structure : Structure)) : Exact-Nonnegative-Integer
+  (length (filter type-dynamic? $structure)))
 
 ; -------------------------------------------------------------------------
 
-(define (type-stack-dynamic-ref-from
-  ($type-stack : (Stackof Type))
+(define (structure-dynamic-ref-from
+  ($structure : Structure)
   ($index : Exact-Nonnegative-Integer)
   ($from-index : Exact-Nonnegative-Integer)
   ($from-dynamic-index : Exact-Nonnegative-Integer))
   : (Option Exact-Nonnegative-Integer)
   (cond
-    ((null? $type-stack) #f)
+    ((null? $structure) #f)
     (else 
-      (define $type (top $type-stack))
+      (define $type (top $structure))
       (define $is-dynamic? (type-dynamic? $type))
       (cond
         ((= $from-index $index)
           (if $is-dynamic? $from-dynamic-index #f))
         (else 
-          (type-stack-dynamic-ref-from
-            (pop $type-stack)
+          (structure-dynamic-ref-from
+            (pop $structure)
             $index
             (+ $from-index 1)
             (if $is-dynamic? (+ $from-dynamic-index 1) $from-dynamic-index)))))))
 
-(define (type-stack-dynamic-ref
-  ($type-stack : (Stackof Type))
+(define (structure-dynamic-ref
+  ($structure : Structure)
   ($index : Exact-Nonnegative-Integer))
   : (Option Exact-Nonnegative-Integer)
-  (type-stack-dynamic-ref-from $type-stack $index 0 0))
+  (structure-dynamic-ref-from $structure $index 0 0))
 
-(bind $type-stack (stack (racket `boolean) (racket `number) (field `foo null) (racket `string))
-  (check-equal? (type-stack-dynamic-ref $type-stack 0) 0)
-  (check-equal? (type-stack-dynamic-ref $type-stack 1) #f)
-  (check-equal? (type-stack-dynamic-ref $type-stack 2) 1)
-  (check-equal? (type-stack-dynamic-ref $type-stack 3) 2)
-  (check-equal? (type-stack-dynamic-ref $type-stack 4) #f))
+(bind $structure (stack (racket `boolean) (racket `number) (field `foo null) (racket `string))
+  (check-equal? (structure-dynamic-ref $structure 0) 0)
+  (check-equal? (structure-dynamic-ref $structure 1) #f)
+  (check-equal? (structure-dynamic-ref $structure 2) 1)
+  (check-equal? (structure-dynamic-ref $structure 3) 2)
+  (check-equal? (structure-dynamic-ref $structure 4) #f))
 
 (define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
   (and

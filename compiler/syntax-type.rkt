@@ -21,29 +21,29 @@
       (cond
         ((symbol? $car-syntax-e)
           (define $symbol $car-syntax-e)
-          (define $type-stack (syntax-list-type-stack $cdr))
-          (define $type (single $type-stack))
+          (define $structure (syntax-list-structure $cdr))
+          (define $type (single $structure))
           (cond
             ((and (equal? $symbol `a) $type) (a $type))
-            (else (field $symbol $type-stack))))
+            (else (field $symbol $structure))))
         (else (racket (syntax->datum $syntax)))))
     (else (racket (syntax->datum $syntax)))))
 
-(define (syntax-list-type-stack ($syntax-list : (Listof Syntax))) : (Stackof Type)
+(define (syntax-list-structure ($syntax-list : (Listof Syntax))) : Structure
   (foldl
-    (lambda (($syntax : Syntax) ($type-stack : (Stackof Type)))
-      (type-stack+syntax $type-stack $syntax))
+    (lambda (($syntax : Syntax) ($structure : Structure))
+      (structure+syntax $structure $syntax))
     null
     $syntax-list))
 
-(define (type-stack+syntax 
-  ($type-stack : (Stackof Type))
+(define (structure+syntax 
+  ($structure : Structure)
   ($syntax : Syntax)) 
-  : (Stackof Type)
+  : Structure
   (define $syntax-e (syntax-e $syntax))
   (cond
     ((null? $syntax-e) 
-      (push $type-stack (syntax-type $syntax)))
+      (push $structure (syntax-type $syntax)))
     ((list? $syntax-e)
       (define $list $syntax-e)
       (define $car (car $list))
@@ -52,13 +52,13 @@
       (cond
         ((symbol? $car-syntax-e) 
           (define $symbol $car-syntax-e)
-          (define $rhs-type-stack (syntax-list-type-stack $cdr))
+          (define $rhs-structure (syntax-list-structure $cdr))
           (cond
             ((equal? $symbol `giving)
-              (list (arrow $type-stack $rhs-type-stack)))
-            (else (push $type-stack (syntax-type $syntax)))))
-        (else (push $type-stack (syntax-type $syntax)))))
-    (else (push $type-stack (syntax-type $syntax)))))
+              (list (arrow $structure $rhs-structure)))
+            (else (push $structure (syntax-type $syntax)))))
+        (else (push $structure (syntax-type $syntax)))))
+    (else (push $structure (syntax-type $syntax)))))
 
 (check-equal? (syntax-type #`()) (racket `()))
 (check-equal? (syntax-type #`foo) (racket `foo))
@@ -74,9 +74,9 @@
   (field `foo (stack (racket `number) (racket `string))))
 
 (check-equal? 
-  (syntax-list-type-stack (list #`foo #`bar))
+  (syntax-list-structure (list #`foo #`bar))
   (stack (racket `foo) (racket `bar)))
 
 (check-equal? 
-  (syntax-list-type-stack (list #`foo #`bar #`(giving zoo)))
+  (syntax-list-structure (list #`foo #`bar #`(giving zoo)))
   (list (arrow (stack (racket `foo) (racket `bar)) (stack (racket `zoo)))))

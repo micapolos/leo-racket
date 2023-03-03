@@ -4,17 +4,15 @@
 
 (require 
   leo/typed/base
-  leo/compiler/racket
-  leo/typed/stack)
+  leo/typed/stack
+  leo/compiler/racket)
 
 (define-type Type (U Racket Field Arrow A))
 
-(data arrow 
-  (lhs-type-stack : (Stackof Type)) 
-  (rhs-type-stack : (Stackof Type)))
+(define-type Structure (Stackof Type))
 
-(data field 
-  (symbol : Symbol) 
-  (type-stack : (Stackof Type)))
+(data arrow (lhs-structure : Structure) (rhs-structure : Structure))
+
+(data field (symbol : Symbol) (structure : Structure))
 
 (data a (type : Type))

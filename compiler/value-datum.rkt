@@ -34,31 +34,31 @@
         (else (type-datum $type))))
     ((field? $type) 
       (define $symbol (field-symbol $type))
-      (define $type-stack (field-type-stack $type))
+      (define $structure (field-structure $type))
       (cond
-        ((null? $type-stack) $symbol)
+        ((null? $structure) $symbol)
         (else 
           `(
             ,$symbol
             ,@(reverse
               (map
                 (lambda (($index : Exact-Nonnegative-Integer))
-                  (value-datum (any-type-stack-ref $any $type-stack $index)))
-                (range (length $type-stack))))))))
+                  (value-datum (any-structure-ref $any $structure $index)))
+                (range (length $structure))))))))
     ((arrow? $type) (type-datum $type))
     ((a? $type) `(a ,(type-datum (a-type $type))))))
 
-(define (any-type-stack-ref
+(define (any-structure-ref
   ($any : Any)
-  ($type-stack : (Stackof Type))
+  ($structure : Structure)
   ($index : Exact-Nonnegative-Integer))
   : Value
-  (define $type-stack-size (type-stack-size $type-stack))
-  (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
+  (define $structure-size (structure-size $structure))
+  (define $dynamic-index (structure-dynamic-ref $structure $index))
   (value 
     (and
       $dynamic-index
-      (case $type-stack-size
+      (case $structure-size
         ((0) (error "impossible"))
         ((1) $any)
         ((2)
@@ -66,8 +66,8 @@
         (else
           (unsafe-vector-ref 
             (cast $any (Vectorof Any))
-            (- $type-stack-size $dynamic-index 1)))))
-    (list-ref $type-stack $index)))
+            (- $structure-size $dynamic-index 1)))))
+    (list-ref $structure $index)))
 
 (check-equal?
   (value-datum (value #t (racket `boolean)))

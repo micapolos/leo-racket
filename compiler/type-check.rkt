@@ -9,9 +9,9 @@
 (define (type-check? ($actual : Type) ($expected : Type)) : Boolean
   (equal? $actual $expected))
 
-(define (type-stack-check? 
-  ($actual : (Stackof Type))
-  ($expected : (Stackof Type))) 
+(define (structure-check? 
+  ($actual : Structure)
+  ($expected : Structure)) 
   : Boolean
   (and 
     (= (length $actual) (length $expected))

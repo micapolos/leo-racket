@@ -36,9 +36,9 @@
         (field? $lhs-type)
         (let ()
           (define $lhs-syntax (expression-syntax $lhs-expression))
-          (define $lhs-type-stack (field-type-stack $lhs-type))
+          (define $lhs-structure (field-structure $lhs-type))
           (define $lhs-expression-stack 
-            (syntax-type-stack-expression-stack $lhs-syntax $lhs-type-stack))
+            (syntax-structure-expression-stack $lhs-syntax $lhs-structure))
           (define $resolved-expression-stack 
             (map 
               (lambda (($expression : Expression)) 

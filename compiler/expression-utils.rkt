@@ -62,9 +62,9 @@
     (expression-datum $expression)
     (expression-type $expression)))
 
-(define (expression-stack-type-stack 
+(define (expression-stack-structure 
   ($expression-stack : (Stackof Expression)))
-  : (Stackof Type)
+  : Structure
   (map expression-type $expression-stack))
 
 (define (expression-stack-syntax-stack
@@ -79,7 +79,7 @@
     (filter expression-dynamic? $expression-stack)))
 
 (check-equal?
-  (expression-stack-type-stack (stack expression-a expression-b))
+  (expression-stack-structure (stack expression-a expression-b))
   (stack type-a type-b))
 
 (check-equal?
@@ -88,19 +88,19 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (syntax-type-stack-index-expression
+(define (syntax-structure-index-expression
   ($syntax : Syntax)
-  ($type-stack : (Stackof Type))
+  ($structure : Structure)
   ($index : Exact-Nonnegative-Integer))
   : Expression
-  (define $type-stack-size (type-stack-size $type-stack))
-  (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
-  (define $type (list-ref $type-stack $index))
+  (define $structure-size (structure-size $structure))
+  (define $dynamic-index (structure-dynamic-ref $structure $index))
+  (define $type (list-ref $structure $index))
   (expression
     (make-syntax
       (and
         $dynamic-index
-        (case $type-stack-size
+        (case $structure-size
           ((0) #f)
           ((1) $syntax)
           ((2)
@@ -110,21 +110,21 @@
           (else
             `(unsafe-vector-ref 
               ,$syntax
-              ,(- $type-stack-size $dynamic-index 1))))))
+              ,(- $structure-size $dynamic-index 1))))))
     $type))
 
-(define (syntax-type-stack-expression-stack
+(define (syntax-structure-expression-stack
   ($syntax : Syntax)
-  ($type-stack : (Stackof Type)))
+  ($structure : Structure))
   : (Stackof Expression)
   (map 
-    (curry (curry syntax-type-stack-index-expression $syntax) $type-stack)
-    (range (length $type-stack))))
+    (curry (curry syntax-structure-index-expression $syntax) $structure)
+    (range (length $structure))))
 
 (check-equal?
   (map
     expression-typed-datum
-    (syntax-type-stack-expression-stack
+    (syntax-structure-expression-stack
       syntax-a
       (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)))
   (stack

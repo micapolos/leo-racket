@@ -51,7 +51,7 @@
     (error "typed-syntax-stack->typed-syntax"))
   (top $typed-syntax-stack))
 
-(define-syntax (typed-stack->type-stack $syntax)
+(define-syntax (typed-stack->structure $syntax)
   (syntax-case $syntax ()
     ((_ $typed-stack)
       #`(map 
@@ -74,7 +74,7 @@
           $typed-syntax-stack)))))
 
 (check-equal?
-  (typed-stack->type-stack
+  (typed-stack->structure
     (stack typed-syntax-a typed-syntax-b))
   (stack type-a type-b))
 
@@ -173,19 +173,19 @@
 
 ; -------------------------------------------------------------------
 
-(define (syntax-type-stack-ref
+(define (syntax-structure-ref
   ($syntax : Syntax)
-  ($type-stack : (Stackof Type))
+  ($structure : Structure)
   ($index : Exact-Nonnegative-Integer)
   ($srcloc : srcloc))
   : (Typed Syntax Type)
-  (define $type-stack-size (type-stack-size $type-stack))
-  (define $dynamic-index (type-stack-dynamic-ref $type-stack $index))
+  (define $structure-size (structure-size $structure))
+  (define $dynamic-index (structure-dynamic-ref $structure $index))
   (typed 
     (make-syntax
       (and
         $dynamic-index
-        (case $type-stack-size
+        (case $structure-size
           ((0) (error "impossible"))
           ((1) $syntax)
           ((2)
@@ -193,13 +193,13 @@
           (else
             `(unsafe-vector-ref 
               ,$syntax
-              ,(- $type-stack-size $dynamic-index 1)))))
+              ,(- $structure-size $dynamic-index 1)))))
        $srcloc)
-    (list-ref $type-stack $index)))
+    (list-ref $structure $index)))
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a
       (stack static-type-a)
       0
@@ -208,7 +208,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a
       (stack dynamic-type-a static-type-b)
       0
@@ -217,7 +217,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a
       (stack dynamic-type-a static-type-b)
       1
@@ -226,7 +226,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a
       (stack dynamic-type-a static-type-b dynamic-type-c)
       0
@@ -235,7 +235,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a
       (stack dynamic-type-a static-type-b dynamic-type-c)
       1
@@ -244,7 +244,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced 
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a 
       (stack dynamic-type-a static-type-b dynamic-type-c)
       2
@@ -253,7 +253,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a 
       (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
       0
@@ -262,7 +262,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a 
       (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
       1
@@ -271,7 +271,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a 
       (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
       2
@@ -280,7 +280,7 @@
 
 (check-equal? 
   (typed-syntax->typed-sourced
-    (syntax-type-stack-ref 
+    (syntax-structure-ref 
       syntax-a 
       (stack dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)
       3
@@ -298,15 +298,15 @@
     (bind $lhs-typed-syntax (top $lhs-typed-syntax-stack)
       (define $lhs-type (typed-type $lhs-typed-syntax))
       (and (arrow? $lhs-type)
-        (let* (($arrow-lhs-type-stack (arrow-lhs-type-stack $lhs-type))
-              ($arrow-rhs-type-stack (arrow-rhs-type-stack $lhs-type))
+        (let* (($arrow-lhs-structure (arrow-lhs-structure $lhs-type))
+              ($arrow-rhs-structure (arrow-rhs-structure $lhs-type))
               ($arrow-rhs-type (let ()
-                (unless (= (length $arrow-rhs-type-stack) 1) (error "multi-rhs"))
-                (car $arrow-rhs-type-stack)))
-              ($rhs-type-stack (map 
+                (unless (= (length $arrow-rhs-structure) 1) (error "multi-rhs"))
+                (car $arrow-rhs-structure)))
+              ($rhs-structure (map 
                 (ann typed-type (-> (Typed Syntax Type) Type)) 
                 $rhs-typed-syntax-stack)))
-          (and (type-stack-check? $rhs-type-stack $arrow-lhs-type-stack)
+          (and (structure-check? $rhs-structure $arrow-lhs-structure)
             (let ()
               (define $lhs-syntax (typed-value $lhs-typed-syntax))
               (define $arg-typed-syntax-stack 
