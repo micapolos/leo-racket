@@ -31,3 +31,16 @@
 (define #:forall (V) (option-unsafe-ref ($option : (Option V))) : V
   (unless $option (error "empty option"))
   $option)
+
+(define-syntax (option-app $syntax)
+  (syntax-case $syntax ()
+    ((_ fn arg ...)
+      (let* (($args (syntax-e #`(arg ...)))
+             ($tmps (generate-temporaries $args))
+             ($let-entries (map list $tmps $args)))
+        #`(let (#,@$let-entries)
+          (and #,@$tmps (fn #,@$tmps)))))))
+
+(check-equal? (option-app +) 0)
+(check-equal? (option-app + 1 2 3) 6)
+(check-equal? (option-app + 1 #f 3) #f)
