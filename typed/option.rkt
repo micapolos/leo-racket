@@ -27,3 +27,7 @@
 
 (check-equal? (option-bind #f value value) #f)
 (check-equal? (option-bind (+ 1 2) value (+ value value)) 6)
+
+(define #:forall (V) (option-unsafe-ref ($option : (Option V))) : V
+  (unless $option (error "empty option"))
+  $option)
