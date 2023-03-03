@@ -22,11 +22,11 @@
   ($package : Package)
   ($expression : Expression))
   : (Option Expression)
-  (package-resolve-field-expression $package $expression))
+  (package-rhs-resolve-expression $package $expression))
 
 ; ---------------------------------------------------------------------
 
-(define (package-resolve-field-expression
+(define (package-rhs-resolve-expression
   ($package : Package)
   ($expression : Expression))
   : (Option Expression)
@@ -39,7 +39,7 @@
 
 (check-equal?
   (option-map
-    (package-resolve-field-expression
+    (package-rhs-resolve-expression
       (package
         syntax-a
         (structure
@@ -53,7 +53,7 @@
   (typed `(unsafe-vector-ref a 0) (field `b (stack (racket `b2)))))
 
 (check-equal?
-  (package-resolve-field-expression
+  (package-rhs-resolve-expression
     (package
       syntax-a
       (structure
