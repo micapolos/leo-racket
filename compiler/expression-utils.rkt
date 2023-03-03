@@ -7,6 +7,8 @@
   racket/list
   leo/typed/stack
   leo/typed/testing
+  leo/compiler/racket
+  leo/compiler/package
   leo/compiler/expression
   leo/compiler/syntax-utils
   leo/compiler/type
@@ -85,3 +87,23 @@
 (check-equal?
   (expression-stack-syntax-stack (stack expression-a expression-b))
   (stack syntax-a syntax-b))
+
+; ---------------------------------------------------------
+
+(define (expression-field-rhs ($expression : Expression)) : (Option Package)
+  (define $type (expression-type $expression))
+  (and (field? $type)
+    (package
+      (expression-syntax $expression) 
+      (field-structure $type))))
+
+(check-equal?
+  (expression-field-rhs
+    (expression syntax-a 
+      (field `foo
+        (structure type-b type-c))))
+  (package syntax-a (structure type-b type-c)))
+
+(check-equal?
+  (expression-field-rhs (expression syntax-a (racket `foo)))
+  #f)
