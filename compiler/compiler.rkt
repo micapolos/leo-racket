@@ -8,6 +8,7 @@
   leo/typed/base
   leo/typed/option
   leo/compiler/binding
+  leo/compiler/scope
   leo/compiler/expression
   leo/compiler/syntax-expression
   leo/compiler/type
@@ -15,10 +16,10 @@
   leo/compiler/body)
 
 (data compiler
-  (binding-stack : (Stackof Binding))
+  (scope : Scope)
   (body : Body))
 
-(define null-compiler (compiler null null-body))
+(define null-compiler (compiler null-scope null-body))
 
 ; -----------------------------------------------------------------
 
@@ -44,7 +45,7 @@
   ($expression : Expression))
   : Compiler
   (compiler
-    (compiler-binding-stack $compiler)
+    (compiler-scope $compiler)
     (body-append-expression (compiler-body $compiler) $expression)))
 
 (check-equal?
