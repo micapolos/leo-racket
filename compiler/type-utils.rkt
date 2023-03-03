@@ -6,6 +6,7 @@
   racket/function
   leo/compiler/type
   leo/compiler/racket
+  leo/compiler/racket-utils
   leo/typed/base
   leo/typed/stack
   leo/typed/testing)
@@ -24,6 +25,12 @@
 (define type-b dynamic-type-b)
 (define type-c dynamic-type-c)
 (define type-d dynamic-type-d)
+
+(define boolean-type (field `boolean (stack boolean-racket)))
+(define number-type (field `number (stack number-racket)))
+(define int-type (field `int (stack fixnum-racket)))
+(define float-type (field `float (stack flonum-racket)))
+(define text-type (field `text (stack string-racket)))
 
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond

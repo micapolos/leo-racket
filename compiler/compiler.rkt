@@ -6,8 +6,10 @@
   leo/typed/testing
   leo/typed/stack
   leo/typed/base
+  leo/typed/option
   leo/compiler/binding
   leo/compiler/expression
+  leo/compiler/syntax-expression
   leo/compiler/type
   leo/compiler/racket
   leo/compiler/body)
@@ -30,17 +32,12 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
-  (define $syntax-e (syntax-e $syntax))
-  (cond
-    ((number? $syntax-e) 
-      (compiler-append-expression $compiler
-        (expression $syntax 
-          (field `number (stack (racket `number))))))
-    ((string? $syntax-e)
-      (compiler-append-expression $compiler
-        (expression $syntax 
-          (field `text (stack (racket `string))))))
-    (else (error "TODO"))))
+  (or
+    (option-bind 
+      (syntax-expression-option $syntax)
+      $expression 
+      (compiler-append-expression $compiler $expression))
+    (error "TODO")))
 
 (define (compiler-append-expression 
   ($compiler : Compiler) 

@@ -29,6 +29,17 @@
 (define expression-c dynamic-expression-c)
 (define expression-d dynamic-expression-d)
 
+(define (boolean-expression ($boolean : Boolean)) 
+  (expression (make-syntax $boolean) boolean-type))
+(define (number-expression ($number : Number)) 
+  (expression (make-syntax $number) number-type))
+(define (int-expression ($fixnum : Fixnum)) 
+  (expression (make-syntax $fixnum) int-type))
+(define (float-expression ($flonum : Flonum)) 
+  (expression (make-syntax $flonum) float-type))
+(define (text-expression ($string : String)) 
+  (expression (make-syntax $string) text-type))
+
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 
