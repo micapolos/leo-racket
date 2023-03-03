@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/testing
   (for-syntax 
     racket/base
     racket/string
@@ -30,3 +31,19 @@
   (filter 
     (ann (lambda (x) x) ((Option A) -> (Option A) : #:+ A)) 
     $list))
+
+; -------------------------------------------------------------------------
+
+(: fold (All (A B) (-> A (Listof B) (-> A B A) A)))
+(define (fold $initial $list $fn)
+  (cond
+    ((null? $list) $initial)
+    (else (fold ($fn $initial (car $list)) (cdr $list) $fn))))
+
+(check-equal?
+  (fold 
+    "numbers"
+    (list 1 2 3)
+    (lambda (($string : String) ($number : Number))
+      (string-append $string ", " (number->string $number))))
+  "numbers, 1, 2, 3")

@@ -19,6 +19,8 @@
   (syntax-stack : (Stackof Syntax))
   (expression-stack : (Stackof Expression)))
 
+(define null-body (body null null))
+
 ; --------------------------------------------------------------
 
 (define (body-append-syntax ($body : Body) ($syntax : Syntax)) : Body
@@ -47,7 +49,7 @@
         (else (body-append-expression $body $expression))))))
 
 (define (body-commit ($body : Body)) : Body
-  (fold-stack
+  (fold
     (body (body-syntax-stack $body) null)
     (reverse (body-expression-stack $body))
     body-commit-expression))
