@@ -8,9 +8,18 @@
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expression-stack-syntax
+  leo/compiler/package
   leo/compiler/type
   leo/compiler/typed
   leo/compiler/type-utils)
+
+(define (symbol-package-expression 
+  ($symbol : Symbol)
+  ($package : Package)) 
+  : Expression
+  (expression
+    (package-syntax $package)
+    (field $symbol (package-structure $package))))
 
 (define (field-expression 
   ($symbol : Symbol) 
