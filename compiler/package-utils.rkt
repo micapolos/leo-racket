@@ -10,6 +10,7 @@
   leo/compiler/package
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/expression-stack-syntax
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/typed
@@ -63,3 +64,8 @@
     (typed `(unsafe-vector-ref a 1) dynamic-type-b)
     (typed `#f static-type-c)
     (typed `(unsafe-vector-ref a 2) dynamic-type-d)))
+
+(define (expression-stack-package ($expression-stack : (Stackof Expression))) : Package
+  (package
+    (expression-stack-syntax $expression-stack)
+    (map expression-type $expression-stack)))
