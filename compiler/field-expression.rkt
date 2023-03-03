@@ -9,6 +9,7 @@
   leo/compiler/expression-utils
   leo/compiler/expression-stack-syntax
   leo/compiler/package
+  leo/compiler/package-utils
   leo/compiler/type
   leo/compiler/typed
   leo/compiler/type-utils)
@@ -25,9 +26,9 @@
   ($symbol : Symbol) 
   ($expression-stack : (Stackof Expression)))
   : Expression
-  (expression
-    (expression-stack-syntax $expression-stack)
-    (field $symbol (map expression-type $expression-stack))))
+  (symbol-package-expression
+    $symbol
+    (expression-stack-package $expression-stack)))
 
 (check-equal?
   (expression-typed-datum
