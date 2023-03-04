@@ -128,12 +128,14 @@
 (check-equal?
   (option-app package-typed-sexp
     (expression-apply-package
-      (expression #`fn
-        (arrow
-          (structure type-a type-b)
-          (structure type-c type-d)))
-      (package #`pkg
-        (structure type-a type-b))))
+      (expression #`fn (arrow (structure type-a) (structure type-b)))
+      (package #`pkg (structure type-a))))
   (typed 
     `(call-with-values (lambda () pkg) fn)
-    (structure type-c type-d)))
+    (structure type-b)))
+
+(check-equal?
+  (expression-apply-package
+    (expression #`fn (arrow (structure type-a) (structure type-b)))
+    (package #`pkg (structure type-b)))
+  #f)
