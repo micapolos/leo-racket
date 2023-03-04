@@ -154,12 +154,43 @@
   (define $tmp-stack (scope-identifier-stack $scope))
   (package
     (make-syntax 
-      `(let-values 
-        ((,@(reverse $tmp-stack)) ,$syntax) 
-        ,$fn-syntax))
+      (case (length $tmp-stack)
+        ((0) $fn-syntax)
+        ((1) 
+          `(let
+            ((,(car $tmp-stack) ,$syntax))
+            ,$fn-syntax))
+        (else 
+          `(let-values 
+            ((,@(reverse $tmp-stack)) ,$syntax) 
+            ,$fn-syntax))))
     $fn-structure))
 
 (parameterize ((tmp-temporaries? #t))
+  (check-equal?
+    (package-sexp-structure
+      (package-do
+        (package #`pkg (structure static-type-a))
+        (lambda (($scope : Scope)) 
+          (package 
+            (make-syntax `(values ,@(scope-identifier-stack $scope)))
+            (reverse (scope-structure $scope))))))
+    (pair 
+      `(values)
+      (structure static-type-a)))
+
+  (check-equal?
+    (package-sexp-structure
+      (package-do
+        (package #`pkg (structure dynamic-type-a static-type-b))
+        (lambda (($scope : Scope)) 
+          (package 
+            (make-syntax `(values ,@(scope-identifier-stack $scope)))
+            (reverse (scope-structure $scope))))))
+    (pair 
+      `(let ((tmp-a pkg)) (values tmp-a)) 
+      (structure static-type-b dynamic-type-a)))
+
   (check-equal?
     (package-sexp-structure
       (package-do
@@ -172,5 +203,6 @@
           (package 
             (make-syntax `(values ,@(scope-identifier-stack $scope)))
             (reverse (scope-structure $scope))))))
-    (pair `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
+    (pair 
+      `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
       (structure dynamic-type-c static-type-b dynamic-type-a))))
