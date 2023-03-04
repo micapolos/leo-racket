@@ -15,6 +15,7 @@
   leo/compiler/expression-stack-syntax
   leo/compiler/syntax-utils
   leo/compiler/type
+  leo/compiler/type-check
   leo/compiler/typed
   leo/compiler/type-utils)
 
@@ -104,3 +105,35 @@
   (package-rhs-option
     (package syntax-a (structure (racket `foo))))
   #f)
+
+; --------------------------------------------------------------
+
+(define (expression-apply-package
+  ($lhs-expression : Expression)
+  ($rhs-package : Package))
+  : (Option Package)
+  (define $lhs-type (expression-type $lhs-expression))
+  (and 
+    (arrow? $lhs-type)
+    (structure-check? 
+      (package-structure $rhs-package)
+      (arrow-lhs-structure $lhs-type))
+    (package
+      (make-syntax
+        `(call-with-values
+          (lambda () ,(package-syntax $rhs-package))
+          ,(expression-syntax $lhs-expression)))
+      (arrow-rhs-structure $lhs-type))))
+
+(check-equal?
+  (option-app package-typed-sexp
+    (expression-apply-package
+      (expression #`fn
+        (arrow
+          (structure type-a type-b)
+          (structure type-c type-d)))
+      (package #`pkg
+        (structure type-a type-b))))
+  (typed 
+    `(call-with-values (lambda () pkg) fn)
+    (structure type-c type-d)))
