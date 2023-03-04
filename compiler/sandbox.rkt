@@ -3,15 +3,19 @@
 (require 
   leo/typed/option
   leo/typed/stack
+  leo/compiler/type
+  leo/compiler/type-utils
+  leo/compiler/syntax-utils
+  leo/compiler/expression
+  leo/compiler/expression-resolve
   leo/compiler/expression-utils
   leo/compiler/package-utils)
 
-(option-app package-ref
-  (expression-field-rhs
-    (field-expression `point
-      (tuple-package
-        (stack
-          (text-expression "foo")
-          (number-expression 123)
-          (boolean-expression #f)))))
-  0)
+(expression-resolve-tuple
+  (expression #`(lambda ($number) (number->string $number))
+    (arrow 
+      (structure number-type (field `string null))
+      (structure text-type)))
+  (tuple
+    (number-expression 3.14)
+    (field-expression `string null-package)))

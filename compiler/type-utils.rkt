@@ -32,6 +32,8 @@
 (define float-type (field `float (stack flonum-racket)))
 (define text-type (field `text (stack string-racket)))
 
+(define null-structure null)
+
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond
     ((racket? $type) #t)

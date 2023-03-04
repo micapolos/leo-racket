@@ -20,6 +20,8 @@
   leo/compiler/typed
   leo/compiler/type-utils)
 
+(define null-package (package null-syntax null-structure))
+
 (define (package-size ($package : Package)) : Exact-Nonnegative-Integer
   (length (package-structure $package)))
 
