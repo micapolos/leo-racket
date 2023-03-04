@@ -4,7 +4,8 @@
 
 (require 
   leo/typed/base
-  leo/compiler/type)
+  leo/compiler/type
+  leo/compiler/generate-temporary)
 
 (data binding
   (type : Type)

@@ -10,7 +10,10 @@
   leo/typed/testing
   leo/typed/stack
   leo/compiler/racket
+  leo/compiler/scope
+  leo/compiler/scope-utils
   leo/compiler/package
+  leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/tuple-syntax
@@ -138,3 +141,36 @@
     (expression #`fn (arrow (structure type-a) (structure type-b)))
     (package #`pkg (structure type-b)))
   #f)
+
+; ---------------------------------------------------------------
+
+(define (package-do ($package : Package) ($fn : (-> Scope Package))) : Package
+  (define $syntax (package-syntax $package))
+  (define $structure (package-structure $package))
+  (define $scope (structure-generate-scope $structure))
+  (define $fn-package ($fn $scope))
+  (define $fn-syntax (package-syntax $fn-package))
+  (define $fn-structure (package-structure $fn-package))
+  (define $tmp-stack (scope-identifier-stack $scope))
+  (package
+    (make-syntax 
+      `(let-values 
+        ((,@(reverse $tmp-stack)) ,$syntax) 
+        ,$fn-syntax))
+    $fn-structure))
+
+(parameterize ((tmp-temporaries? #t))
+  (check-equal?
+    (package-sexp-structure
+      (package-do
+        (package #`pkg 
+          (structure 
+            dynamic-type-a
+            static-type-b
+            dynamic-type-c))
+        (lambda (($scope : Scope)) 
+          (package 
+            (make-syntax `(values ,@(scope-identifier-stack $scope)))
+            (reverse (scope-structure $scope))))))
+    (pair `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
+      (structure dynamic-type-c static-type-b dynamic-type-a))))

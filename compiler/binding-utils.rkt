@@ -6,10 +6,12 @@
   leo/typed/base
   leo/typed/testing
   leo/compiler/binding
+  leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/typed
   leo/compiler/syntax-utils
   leo/compiler/expression
+  leo/compiler/generate-temporary
   leo/compiler/expression-utils)
 
 (define (binding-expression ($binding : Binding)) : Expression
@@ -23,3 +25,6 @@
     (binding-expression
       (binding type-a #`b)))
   (pair `b type-a))
+
+(define (type-generate-binding ($type : Type)) : Binding
+  (binding $type (type-generate-temporary-option $type)))

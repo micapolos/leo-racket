@@ -215,3 +215,22 @@
       (tuple-resolve-tuple 
         (pop $lhs-tuple) 
         $rhs-tuple))))
+
+; -----------------------------------------------------------------------
+
+(define (tuple-resolve-expression
+  ($lhs-tuple : Tuple)
+  ($rhs-expression : Expression))
+  : (Option Package)
+  (option-app expression-package
+    (option-app expression-resolve-expression
+      (single $lhs-tuple)
+      $rhs-expression)))
+
+; -----------------------------------------------------------------------
+
+(define (tuple-resolve ($tuple : Tuple)) : (Option Package)
+  (and
+    (>= (length $tuple) 2))
+    (tuple-resolve-expression (cdr $tuple) (car $tuple)))
+
