@@ -28,10 +28,10 @@
     (expression (expression-syntax $expression) $expression-type)))
 
 (check-equal?
-  (option-app expression-typed-sourced
+  (option-app expression-sexp-type
     (expression-resolve-symbol
       (expression syntax-b (field `a (stack type-b))) `a))
-  (typed (sourced `b srcloc-b) (field `a (stack type-b))))
+  (pair `b (field `a (stack type-b))))
 
 (check-equal?
   (expression-resolve-symbol
@@ -49,9 +49,9 @@
     (expression (expression-syntax $expression) $type)))
 
 (check-equal?
-  (option-app expression-typed-sourced
+  (option-app expression-sexp-type
     (expression-resolve-type (expression syntax-a type-a) type-a))
-  (typed (sourced `a srcloc-a) type-a))
+  (pair `a type-a))
 
 (check-equal?
   (expression-resolve-type (expression syntax-a type-a) type-b)
@@ -74,11 +74,11 @@
           $lhs-expression $type-option)))))
 
 (check-equal?
-  (option-app expression-typed-sourced
+  (option-app expression-sexp-type
     (expression-resolve-a-expression
       (expression syntax-b type-a)
       (expression syntax-a (a (structure type-a)))))
-  (typed (sourced `b srcloc-b) type-a))
+  (pair `b type-a))
 
 (check-equal?
   (expression-resolve-a-expression
@@ -107,11 +107,11 @@
       (field-symbol $type))))
 
 (check-equal?
-  (option-app expression-typed-sourced
+  (option-app expression-sexp-type
     (expression-resolve-symbol-expression
       (expression syntax-b (field `a (stack type-b))) 
       (expression syntax-a (field `a null))))
-  (typed (sourced `b srcloc-b) (field `a (stack type-b))))
+  (pair `b (field `a (stack type-b))))
 
 (check-equal?
   (expression-resolve-symbol-expression
@@ -168,11 +168,11 @@
           $arrow-rhs-type)))))
 
 (check-equal?
-  (option-app expression-typed-sourced
+  (option-app expression-sexp-type
     (arrow-expression-resolve-tuple
       (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
       (stack expression-a expression-b)))
-  (typed (sourced `(d a b) empty-srcloc) type-c))
+  (pair `(d a b) type-c))
 
 (check-equal?
   (arrow-expression-resolve-tuple

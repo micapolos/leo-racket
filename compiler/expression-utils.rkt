@@ -55,11 +55,6 @@
 (define (expression-identifier? ($expression : Expression)) : Boolean
   (identifier? (expression-syntax $expression)))
 
-(define (expression-typed-sourced ($expression : Expression))
-  (typed
-    (syntax-sourced (expression-syntax $expression))
-    (expression-type $expression)))
-
 (define (expression-sexp ($expression : Expression)) : Sexp
   (syntax->datum (expression-syntax $expression)))
 
