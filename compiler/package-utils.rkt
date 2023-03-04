@@ -104,10 +104,3 @@
   (package-rhs-option
     (package syntax-a (structure (racket `foo))))
   #f)
-
-; ------------------------------------------------------------------
-
-(define (package-typed-sexp ($package : Package)) : (Typed Sexp Structure)
-  (typed
-    (syntax->datum (package-syntax $package))
-    (package-structure $package)))

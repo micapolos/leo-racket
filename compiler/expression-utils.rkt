@@ -5,6 +5,7 @@
 (require
   racket/function
   racket/list
+  leo/typed/option
   leo/typed/stack
   leo/typed/testing
   leo/compiler/racket
@@ -12,6 +13,7 @@
   leo/compiler/expression
   leo/compiler/syntax-utils
   leo/compiler/type
+  leo/compiler/type-check
   leo/compiler/typed
   leo/compiler/sourced
   leo/compiler/type-utils)
@@ -134,3 +136,44 @@
 (check-equal?
   (expression-field-rhs (expression syntax-a (racket `foo)))
   #f)
+
+; ---------------------------------------------------------
+
+(define (expression-apply 
+  ($lhs-expression : Expression)
+  ($rhs-expression-stack : (Stackof Expression)))
+  : (Option Package)
+  (define $lhs-type (expression-type $lhs-expression))
+  (and 
+    (arrow? $lhs-type)
+    (structure-check? 
+      (expression-stack-structure $rhs-expression-stack)
+      (arrow-lhs-structure $lhs-type))
+    (package
+      (make-syntax
+        `(,(expression-syntax $lhs-expression)
+          ,@(reverse 
+            (expression-stack-dynamic-syntax-stack $rhs-expression-stack))))
+      (arrow-rhs-structure $lhs-type))))
+
+(check-equal?
+  (option-app package-typed-sexp
+    (expression-apply
+      (expression #`fn
+        (arrow 
+          (structure 
+            dynamic-type-a 
+            static-type-b 
+            dynamic-type-c)
+          (structure 
+            dynamic-type-c 
+            static-type-d)))
+      (stack 
+        dynamic-expression-a 
+        static-expression-b 
+        dynamic-expression-c)))
+  (typed 
+    `(fn a c) 
+    (stack 
+      dynamic-type-c 
+      static-type-d)))
