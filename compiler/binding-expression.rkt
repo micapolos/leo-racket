@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/typed/testing
   leo/compiler/binding
   leo/compiler/type-utils
@@ -18,7 +19,7 @@
     (binding-type $binding)))
 
 (check-equal?
-  (expression-typed-datum
+  (expression-sexp-type
     (binding-expression
       (binding type-a #`b)))
-  (typed `b type-a))
+  (pair `b type-a))

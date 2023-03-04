@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
   leo/typed/option
   leo/typed/testing
   leo/compiler/syntax-utils
@@ -20,11 +21,11 @@
 (check-equal?
   (option-map 
     (syntax-expression-option (make-syntax 1)) 
-    expression-typed-datum)
-  (typed 1 number-type))
+    expression-sexp-type)
+  (pair 1 number-type))
 
 (check-equal?
   (option-map 
     (syntax-expression-option (make-syntax "foo")) 
-    expression-typed-datum)
-  (typed "foo" text-type))
+    expression-sexp-type)
+  (pair "foo" text-type))

@@ -5,6 +5,7 @@
 (require
   racket/function
   racket/list
+  leo/typed/base
   leo/typed/option
   leo/typed/testing
   leo/typed/stack
@@ -57,16 +58,16 @@
 
 (check-equal?
   (map
-    expression-typed-datum
+    expression-sexp-type
     (package-tuple
       (package
         syntax-a
         (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d))))
   (stack
-    (typed `(unsafe-vector-ref a 0) dynamic-type-a)
-    (typed `(unsafe-vector-ref a 1) dynamic-type-b)
-    (typed `#f static-type-c)
-    (typed `(unsafe-vector-ref a 2) dynamic-type-d)))
+    (pair `(unsafe-vector-ref a 0) dynamic-type-a)
+    (pair `(unsafe-vector-ref a 1) dynamic-type-b)
+    (pair `#f static-type-c)
+    (pair `(unsafe-vector-ref a 2) dynamic-type-d)))
 
 (define (expression-package ($expression : Expression)) : Package
   (tuple-package (stack $expression)))

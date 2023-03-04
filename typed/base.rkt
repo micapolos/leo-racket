@@ -47,3 +47,9 @@
     (lambda (($string : String) ($number : Number))
       (string-append $string ", " (number->string $number))))
   "numbers, 1, 2, 3")
+
+; -------------------------------------------------------------------------
+
+(define pair cons)
+(define left car)
+(define right cdr)

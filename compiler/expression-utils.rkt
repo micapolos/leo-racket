@@ -5,6 +5,7 @@
 (require
   racket/function
   racket/list
+  leo/typed/base
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
@@ -35,12 +36,16 @@
 
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
+
 (define (number-expression ($number : Number)) 
   (expression (make-syntax $number) number-type))
+
 (define (int-expression ($fixnum : Fixnum)) 
   (expression (make-syntax $fixnum) int-type))
+
 (define (float-expression ($flonum : Flonum)) 
   (expression (make-syntax $flonum) float-type))
+
 (define (text-expression ($string : String)) 
   (expression (make-syntax $string) text-type))
 
@@ -50,9 +55,6 @@
 (define (expression-identifier? ($expression : Expression)) : Boolean
   (identifier? (expression-syntax $expression)))
 
-(define (expression-not-identifier? ($expression : Expression)) : Boolean
-  (not (identifier? (expression-syntax $expression))))
-
 (define (expression-typed-sourced ($expression : Expression))
   (typed
     (syntax-sourced (expression-syntax $expression))
@@ -61,8 +63,8 @@
 (define (expression-datum ($expression : Expression))
   (syntax->datum (expression-syntax $expression)))
 
-(define (expression-typed-datum ($expression : Expression))
-  (typed
+(define (expression-sexp-type ($expression : Expression)) : (Pairof Sexp Type)
+  (pair
     (expression-datum $expression)
     (expression-type $expression)))
 
@@ -101,7 +103,7 @@
     (field $symbol (package-structure $package))))
 
 (check-equal?
-  (expression-typed-datum
+  (expression-sexp-type
     (field-expression `point
       (package
         syntax-a
@@ -109,7 +111,7 @@
           dynamic-type-a 
           static-type-b 
           dynamic-type-c))))
-  (typed 
+  (pair
     `a
     (field `point 
       (stack 
