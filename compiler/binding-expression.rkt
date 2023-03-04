@@ -15,7 +15,7 @@
 (define (binding-expression ($binding : Binding)) : Expression
   (define $identifier-option (binding-identifier-option $binding))
   (expression
-    (or $identifier-option empty-syntax)
+    (or $identifier-option null-syntax)
     (binding-type $binding)))
 
 (check-equal?
