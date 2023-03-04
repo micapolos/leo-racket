@@ -34,10 +34,9 @@
   ($syntax : Syntax))
   : Compiler
   (or
-    (option-bind 
-      (syntax-expression-option $syntax)
-      $expression 
-      (compiler-append-expression $compiler $expression))
+    (option-app compiler-append-expression 
+      $compiler 
+      (syntax-expression-option $syntax))
     (error "TODO")))
 
 (define (compiler-append-expression 

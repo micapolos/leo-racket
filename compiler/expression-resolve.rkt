@@ -28,11 +28,9 @@
     (expression (expression-syntax $expression) $expression-type)))
 
 (check-equal?
-  (option-bind
+  (option-app expression-typed-sourced
     (expression-resolve-symbol
-      (expression syntax-b (field `a (stack type-b))) `a)
-    $resolved
-    (expression-typed-sourced $resolved))
+      (expression syntax-b (field `a (stack type-b))) `a))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
@@ -51,10 +49,8 @@
     (expression (expression-syntax $expression) $type)))
 
 (check-equal?
-  (option-bind
-    (expression-resolve-type (expression syntax-a type-a) type-a)
-    $resolved
-    (expression-typed-sourced $resolved))
+  (option-app expression-typed-sourced
+    (expression-resolve-type (expression syntax-a type-a) type-a))
   (typed (sourced `a srcloc-a) type-a))
 
 (check-equal?
@@ -78,12 +74,10 @@
           $lhs-expression $type-option)))))
 
 (check-equal?
-  (option-bind
+  (option-app expression-typed-sourced
     (expression-resolve-a-expression
       (expression syntax-b type-a)
-      (expression syntax-a (a (structure type-a))))
-    $resolved
-    (expression-typed-sourced $resolved))
+      (expression syntax-a (a (structure type-a)))))
   (typed (sourced `b srcloc-b) type-a))
 
 (check-equal?
@@ -113,12 +107,10 @@
       (field-symbol $type))))
 
 (check-equal?
-  (option-bind
+  (option-app expression-typed-sourced
     (expression-resolve-symbol-expression
       (expression syntax-b (field `a (stack type-b))) 
-      (expression syntax-a (field `a null)))
-    $resolved
-    (expression-typed-sourced $resolved))
+      (expression syntax-a (field `a null))))
   (typed (sourced `b srcloc-b) (field `a (stack type-b))))
 
 (check-equal?
@@ -176,12 +168,10 @@
           $arrow-rhs-type)))))
 
 (check-equal?
-  (option-bind
+  (option-app expression-typed-sourced
     (arrow-expression-resolve-tuple
       (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
-      (stack expression-a expression-b))
-    $resolved
-    (expression-typed-sourced $resolved))
+      (stack expression-a expression-b)))
   (typed (sourced `(d a b) empty-srcloc) type-c))
 
 (check-equal?
