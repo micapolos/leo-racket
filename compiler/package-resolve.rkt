@@ -4,6 +4,7 @@
 
 (require
   racket/function
+  leo/typed/base
   leo/typed/option
   leo/typed/testing
   leo/typed/stack
@@ -51,8 +52,8 @@
               (field `c (stack (racket `c2))) 
               (field `d (stack (racket `d2)))))))
         (expression syntax-b (field `b null)))
-    package-typed-sexp)
-  (typed 
+    package-sexp-structure)
+  (pair 
     `(unsafe-vector-ref a 0)
     (structure (field `b (stack (racket `b2))))))
 

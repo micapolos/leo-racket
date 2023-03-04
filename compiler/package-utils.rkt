@@ -125,11 +125,11 @@
       (package-structure $rhs-package))))
 
 (check-equal?
-  (option-app package-typed-sexp
+  (option-app package-sexp-structure
     (expression-apply-package
       (expression #`fn (arrow (structure type-a) (structure type-b)))
       (package #`pkg (structure type-a))))
-  (typed 
+  (pair 
     `(call-with-values (lambda () pkg) fn)
     (structure type-b)))
 

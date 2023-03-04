@@ -11,7 +11,7 @@
   (syntax : Syntax)
   (structure : Structure))
 
-(define (package-typed-sexp ($package : Package)) : (Typed Sexp Structure)
-  (typed
+(define (package-sexp-structure ($package : Package)) : (Pairof Sexp Structure)
+  (pair
     (syntax->datum (package-syntax $package))
     (package-structure $package)))

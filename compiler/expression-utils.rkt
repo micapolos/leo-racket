@@ -152,7 +152,7 @@
       (tuple-structure $rhs-tuple))))
 
 (check-equal?
-  (option-app package-typed-sexp
+  (option-app package-sexp-structure
     (expression-apply-tuple
       (expression #`fn
         (arrow 
@@ -167,7 +167,7 @@
         dynamic-expression-a 
         static-expression-b 
         dynamic-expression-c)))
-  (typed 
+  (pair 
     `(fn a c) 
     (stack 
       dynamic-type-c 

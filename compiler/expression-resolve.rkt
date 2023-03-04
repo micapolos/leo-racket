@@ -7,6 +7,8 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
+  leo/compiler/package
+  leo/compiler/package-utils
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/syntax-utils
@@ -145,7 +147,7 @@
 (define (arrow-expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
-  : (Option Expression)
+  : (Option Package)
   (define $expression-type (expression-type $lhs-expression))
   (define $structure (tuple-structure $rhs-tuple))
   (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $rhs-tuple))
@@ -155,23 +157,24 @@
       (define $arrow $expression-type)
       (define $arrow-lhs-structure (arrow-lhs-structure $arrow))
       (define $arrow-rhs-structure (arrow-rhs-structure $arrow))
-      (define $arrow-rhs-type (single $arrow-rhs-structure))
-      (unless $arrow-rhs-type (error "TODO: arrow multi-rhs-type"))
       (and 
         (structure-check? $structure $arrow-lhs-structure)
-        (expression
+        (package
           (make-syntax 
             `(
               ,(expression-syntax $lhs-expression)
               ,@(reverse $dynamic-syntax-stack)))
-          $arrow-rhs-type)))))
+          $arrow-rhs-structure)))))
 
 (check-equal?
-  (option-app expression-sexp-type
+  (option-app package-sexp-structure
     (arrow-expression-resolve-tuple
-      (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
+      (expression syntax-d 
+        (arrow 
+          (stack type-a type-b) 
+          (stack type-c type-d)))
       (stack expression-a expression-b)))
-  (pair `(d a b) type-c))
+  (pair `(d a b) (structure type-c type-d)))
 
 (check-equal?
   (arrow-expression-resolve-tuple
@@ -184,14 +187,15 @@
 (define (expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
-  : (Option Expression)
+  : (Option Package)
   (define $single-rhs-expression (single $rhs-tuple))
   (or
     (and
       $single-rhs-expression
-      (expression-resolve-expression 
-        $lhs-expression 
-        $single-rhs-expression))
+      (option-app expression-package
+        (expression-resolve-expression 
+          $lhs-expression 
+          $single-rhs-expression)))
     (arrow-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)))
@@ -201,7 +205,7 @@
 (define (tuple-resolve-tuple
   ($lhs-tuple : Tuple)
   ($rhs-tuple : Tuple))
-  : (Option Expression)
+  : (Option Package)
   (and 
     (not (null? $lhs-tuple))
     (or
