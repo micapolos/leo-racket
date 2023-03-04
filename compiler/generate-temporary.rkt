@@ -38,13 +38,3 @@
   (and 
     (type-dynamic? $type)
     (type-generate-temporary $type)))
-
-; -------------------------------------------------------------------------
-
-(define (typed-syntax-generate-temporary ($typed : (Typed Syntax Type))) : Identifier
-  (type-generate-temporary (typed-type $typed)))
-
-(define (typed-syntax-stack-generate-temporaries 
-  ($typed-syntax-stack : (Stackof (Typed Syntax Type)))) 
-  : (Stackof Identifier)
-  (map typed-syntax-generate-temporary $typed-syntax-stack))

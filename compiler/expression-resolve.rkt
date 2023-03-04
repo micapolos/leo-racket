@@ -15,7 +15,6 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/typed
-  leo/compiler/typed-syntax
   leo/compiler/type-check)
 
 (define (expression-resolve-symbol
