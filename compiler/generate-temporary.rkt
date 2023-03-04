@@ -9,9 +9,16 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-symbol
-  leo/compiler/typed)
+  leo/compiler/typed
+  (for-syntax racket/base))
 
 (define tmp-temporaries? : (Parameter Boolean) (make-parameter #f))
+
+(define-syntax (tmp-do $syntax)
+  (syntax-case $syntax () 
+    ((_ body ...)
+      #`(parameterize ((tmp-temporaries? #t))
+        body ...))))
 
 (define (type-generate-temporary ($type : Type)) : Identifier
   (define $symbol (type-symbol $type))
@@ -28,8 +35,7 @@
   #t)
 
 (check-equal?
-  (parameterize ((tmp-temporaries? #t))
-    (syntax->datum (type-generate-temporary type-a)))
+  (tmp-do (syntax->datum (type-generate-temporary type-a)))
   `tmp-a)
 
 ; -------------------------------------------------------------------------

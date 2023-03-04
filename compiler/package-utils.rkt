@@ -166,7 +166,7 @@
             ,$fn-syntax))))
     $fn-structure))
 
-(parameterize ((tmp-temporaries? #t))
+(tmp-do
   (check-equal?
     (package-sexp-structure
       (package-do

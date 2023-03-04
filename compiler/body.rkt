@@ -55,7 +55,7 @@
     (reverse (body-tuple $body))
     body-commit-expression))
 
-(parameterize ((tmp-temporaries? #t))
+(tmp-do
   (bind $body
     (body-commit
       (body
