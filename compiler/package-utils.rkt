@@ -166,43 +166,42 @@
             ,$fn-syntax))))
     $fn-structure))
 
-(tmp-do
-  (check-equal?
-    (package-sexp-structure
-      (package-do
-        (package #`pkg (structure static-type-a))
-        (lambda (($scope : Scope)) 
-          (package 
-            (make-syntax `(values ,@(scope-identifier-stack $scope)))
-            (reverse (scope-structure $scope))))))
-    (pair 
-      `(values)
-      (structure static-type-a)))
+(check-equal?
+  (package-sexp-structure
+    (package-do
+      (package #`pkg (structure static-type-a))
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(values)
+    (structure static-type-a)))
 
-  (check-equal?
-    (package-sexp-structure
-      (package-do
-        (package #`pkg (structure dynamic-type-a static-type-b))
-        (lambda (($scope : Scope)) 
-          (package 
-            (make-syntax `(values ,@(scope-identifier-stack $scope)))
-            (reverse (scope-structure $scope))))))
-    (pair 
-      `(let ((tmp-a pkg)) (values tmp-a)) 
-      (structure static-type-b dynamic-type-a)))
+(check-equal?
+  (package-sexp-structure
+    (package-do
+      (package #`pkg (structure dynamic-type-a static-type-b))
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(let ((tmp-a pkg)) (values tmp-a)) 
+    (structure static-type-b dynamic-type-a)))
 
-  (check-equal?
-    (package-sexp-structure
-      (package-do
-        (package #`pkg 
-          (structure 
-            dynamic-type-a
-            static-type-b
-            dynamic-type-c))
-        (lambda (($scope : Scope)) 
-          (package 
-            (make-syntax `(values ,@(scope-identifier-stack $scope)))
-            (reverse (scope-structure $scope))))))
-    (pair 
-      `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
-      (structure dynamic-type-c static-type-b dynamic-type-a))))
+(check-equal?
+  (package-sexp-structure
+    (package-do
+      (package #`pkg 
+        (structure 
+          dynamic-type-a
+          static-type-b
+          dynamic-type-c))
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
+    (structure dynamic-type-c static-type-b dynamic-type-a)))

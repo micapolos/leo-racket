@@ -55,23 +55,22 @@
     (reverse (body-tuple $body))
     body-commit-expression))
 
-(tmp-do
-  (bind $body
-    (body-commit
-      (body
-        (stack syntax-a syntax-b)
-        (stack
-          (expression syntax-c type-c)
-          (expression (make-syntax `(complex)) type-d))))
-    (check-equal?
-      (map syntax->datum (body-syntax-stack $body))
-      (stack `a `b `(define tmp-d (complex))))
-    (check-equal?
-      (map expression-sexp (body-tuple $body))
-      (stack `c `tmp-d))
-    (check-equal?
-      (map expression-type (body-tuple $body))
-      (stack type-c type-d))))
+(bind $body
+  (body-commit
+    (body
+      (stack syntax-a syntax-b)
+      (stack
+        (expression syntax-c type-c)
+        (expression (make-syntax `(complex)) type-d))))
+  (check-equal?
+    (map syntax->datum (body-syntax-stack $body))
+    (stack `a `b `(define tmp-d (complex))))
+  (check-equal?
+    (map expression-sexp (body-tuple $body))
+    (stack `c `tmp-d))
+  (check-equal?
+    (map expression-type (body-tuple $body))
+    (stack type-c type-d)))
 
 ; --------------------------------------------------------------
 

@@ -7,6 +7,8 @@
     racket/base
     racket/syntax-srcloc))
 
+(define testing? : (Parameter Boolean) (make-parameter #f))
+
 (define-syntax (check-equal? $syntax)
   (syntax-case $syntax ()
     ((_ actual expected)
@@ -14,11 +16,12 @@
             (expr (syntax->datum #`(quote actual)))
             (actual-value #`actual)
             (expected-value #`expected))
-        #`(check 
-          #,srcloc
-          #,expr
-          #,actual-value
-          #,expected-value)))))
+        #`(parameterize ((testing? #t))
+          (check 
+            #,srcloc
+            #,expr
+            #,actual-value
+            #,expected-value))))))
 
 (define (check ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
   (unless (equal? $actual $expected)
