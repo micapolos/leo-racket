@@ -12,3 +12,5 @@
 (define-type Tuple (Stackof Expression))
 
 (define tuple stack)
+
+(define null-tuple null)

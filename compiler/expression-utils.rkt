@@ -49,8 +49,6 @@
 (define (text-expression ($string : String)) 
   (expression (make-syntax $string) text-type))
 
-(define null-tuple null)
-
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 
