@@ -67,7 +67,7 @@
       (map syntax->datum (body-syntax-stack $body))
       (stack `a `b `(define tmp-d (complex))))
     (check-equal?
-      (map expression-datum (body-tuple $body))
+      (map expression-sexp (body-tuple $body))
       (stack `c `tmp-d))
     (check-equal?
       (map expression-type (body-tuple $body))

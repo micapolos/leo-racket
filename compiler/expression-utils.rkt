@@ -60,12 +60,12 @@
     (syntax-sourced (expression-syntax $expression))
     (expression-type $expression)))
 
-(define (expression-datum ($expression : Expression))
+(define (expression-sexp ($expression : Expression)) : Sexp
   (syntax->datum (expression-syntax $expression)))
 
 (define (expression-sexp-type ($expression : Expression)) : (Pairof Sexp Type)
   (pair
-    (expression-datum $expression)
+    (expression-sexp $expression)
     (expression-type $expression)))
 
 (define (tuple-structure 
