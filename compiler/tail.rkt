@@ -7,6 +7,6 @@
   leo/compiler/expression
   leo/compiler/package)
 
-(define-type Tail (U (Stackof Expression) Package))
+(define-type Tail (U Tuple Package))
 
-(define null-tail : (Stackof Expression) null)
+(define null-tail : Tuple null)

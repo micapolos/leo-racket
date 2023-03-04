@@ -9,7 +9,7 @@
 (option-app package-ref
   (expression-field-rhs
     (field-expression `point
-      (expression-stack-package
+      (tuple-package
         (stack
           (text-expression "foo")
           (number-expression 123)

@@ -12,13 +12,13 @@
   leo/compiler/expression
   leo/compiler/expression-utils)
 
-(define (expression-stack-syntax
-  ($expression-stack : (Stackof Expression)))
+(define (tuple-syntax
+  ($tuple : Tuple))
   : Syntax
-  (define $dynamic-expression-stack 
-    (filter expression-dynamic? $expression-stack))
+  (define $dynamic-tuple 
+    (filter expression-dynamic? $tuple))
   (define $dynamic-syntax-stack
-    (map expression-syntax $dynamic-expression-stack))
+    (map expression-syntax $dynamic-tuple))
   (define $dynamic-length
     (length $dynamic-syntax-stack))
   (case $dynamic-length
@@ -35,22 +35,22 @@
           ,@(reverse $dynamic-syntax-stack))))))
 
 (check-equal?
-  (syntax->datum (expression-stack-syntax null))
+  (syntax->datum (tuple-syntax null))
   #f)
 
 (check-equal?
-  (syntax->datum (expression-stack-syntax (stack static-expression-a)))
+  (syntax->datum (tuple-syntax (stack static-expression-a)))
   #f)
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack dynamic-expression-a)))
   `a)
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack 
         dynamic-expression-a 
         static-expression-a)))
@@ -58,7 +58,7 @@
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack 
         dynamic-expression-a 
         dynamic-expression-b)))
@@ -66,7 +66,7 @@
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -75,7 +75,7 @@
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -84,7 +84,7 @@
 
 (check-equal?
   (syntax->datum
-    (expression-stack-syntax
+    (tuple-syntax
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -94,11 +94,11 @@
 
 ; -----------------------------------------------------------------
 
-(define (expression-stack-values-syntax-option 
-  ($expression-stack : (Stackof Expression)))
+(define (tuple-values-syntax-option 
+  ($tuple : Tuple))
   : (Option Syntax)
-  (define $dynamic-expression-stack (filter expression-dynamic? $expression-stack))
-  (define $dynamic-syntax-stack (map expression-syntax $dynamic-expression-stack))
+  (define $dynamic-tuple (filter expression-dynamic? $tuple))
+  (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
   (make-syntax
     (case (length $dynamic-syntax-stack)
       ((0) #f)
@@ -107,20 +107,20 @@
 
 (check-equal?
   (option-map
-    (expression-stack-values-syntax-option null)
+    (tuple-values-syntax-option null)
     syntax->datum)
   #f)
 
 (check-equal?
   (option-map
-    (expression-stack-values-syntax-option
+    (tuple-values-syntax-option
       (stack dynamic-expression-a))
     syntax->datum)
   `a)
 
 (check-equal?
   (option-map
-    (expression-stack-values-syntax-option
+    (tuple-values-syntax-option
       (stack 
         dynamic-expression-a 
         static-expression-b 

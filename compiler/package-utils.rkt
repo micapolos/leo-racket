@@ -12,7 +12,7 @@
   leo/compiler/package
   leo/compiler/expression
   leo/compiler/expression-utils
-  leo/compiler/expression-stack-syntax
+  leo/compiler/tuple-syntax
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-check
@@ -50,7 +50,7 @@
               ,(- $structure-compiled-size $dynamic-index 1))))))
     $type))
 
-(define (package-expression-stack ($package : Package)) : (Stackof Expression)
+(define (package-tuple ($package : Package)) : Tuple
   (map 
     (curry package-ref $package)
     (range (package-size $package))))
@@ -58,7 +58,7 @@
 (check-equal?
   (map
     expression-typed-datum
-    (package-expression-stack
+    (package-tuple
       (package
         syntax-a
         (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d))))
@@ -69,12 +69,12 @@
     (typed `(unsafe-vector-ref a 2) dynamic-type-d)))
 
 (define (expression-package ($expression : Expression)) : Package
-  (expression-stack-package (stack $expression)))
+  (tuple-package (stack $expression)))
 
-(define (expression-stack-package ($expression-stack : (Stackof Expression))) : Package
+(define (tuple-package ($tuple : Tuple)) : Package
   (package
-    (expression-stack-syntax $expression-stack)
-    (map expression-type $expression-stack)))
+    (tuple-syntax $tuple)
+    (map expression-type $tuple)))
 
 ; -------------------------------------------------------------------
 

@@ -66,28 +66,28 @@
     (expression-datum $expression)
     (expression-type $expression)))
 
-(define (expression-stack-structure 
-  ($expression-stack : (Stackof Expression)))
+(define (tuple-structure 
+  ($tuple : Tuple))
   : Structure
-  (map expression-type $expression-stack))
+  (map expression-type $tuple))
 
-(define (expression-stack-syntax-stack
-  ($expression-stack : (Stackof Expression)))
+(define (tuple-syntax-stack
+  ($tuple : Tuple))
   : (Stackof Syntax)
-  (map expression-syntax $expression-stack))
+  (map expression-syntax $tuple))
 
-(define (expression-stack-dynamic-syntax-stack 
-  ($expression-stack : (Stackof Expression)))
+(define (tuple-dynamic-syntax-stack 
+  ($tuple : Tuple))
   : (Stackof Syntax)
-  (expression-stack-syntax-stack
-    (filter expression-dynamic? $expression-stack)))
+  (tuple-syntax-stack
+    (filter expression-dynamic? $tuple)))
 
 (check-equal?
-  (expression-stack-structure (stack expression-a expression-b))
+  (tuple-structure (stack expression-a expression-b))
   (stack type-a type-b))
 
 (check-equal?
-  (expression-stack-syntax-stack (stack expression-a expression-b))
+  (tuple-syntax-stack (stack expression-a expression-b))
   (stack syntax-a syntax-b))
 
 ; ---------------------------------------------------------
@@ -139,22 +139,22 @@
 
 ; ---------------------------------------------------------
 
-(define (expression-apply-expression-stack
+(define (expression-apply-tuple
   ($lhs-expression : Expression)
-  ($rhs-expression-stack : (Stackof Expression)))
+  ($rhs-tuple : Tuple))
   : (Option Package)
   (option-app package
     (make-syntax
       `(,(expression-syntax $lhs-expression)
         ,@(reverse 
-          (expression-stack-dynamic-syntax-stack $rhs-expression-stack))))
+          (tuple-dynamic-syntax-stack $rhs-tuple))))
     (type-apply-structure
       (expression-type $lhs-expression)
-      (expression-stack-structure $rhs-expression-stack))))
+      (tuple-structure $rhs-tuple))))
 
 (check-equal?
   (option-app package-typed-sexp
-    (expression-apply-expression-stack
+    (expression-apply-tuple
       (expression #`fn
         (arrow 
           (structure 
@@ -175,7 +175,7 @@
       static-type-d)))
 
 (check-equal?
-  (expression-apply-expression-stack
+  (expression-apply-tuple
     (expression #`fn (arrow (structure type-a) (structure type-b)))
     (stack expression-c))
   #f)

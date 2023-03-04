@@ -36,7 +36,7 @@
         (map
           (lambda (($lhs-expression : Expression)) 
             (expression-resolve-expression $lhs-expression $expression))
-          (package-expression-stack $rhs-package)))
+          (package-tuple $rhs-package)))
       expression-package)))
 
 (check-equal?

@@ -151,13 +151,13 @@
 
 ; -----------------------------------------------------------------------
 
-(define (arrow-expression-resolve-expression-stack
+(define (arrow-expression-resolve-tuple
   ($lhs-expression : Expression)
-  ($rhs-expression-stack : (Stackof Expression)))
+  ($rhs-tuple : Tuple))
   : (Option Expression)
   (define $expression-type (expression-type $lhs-expression))
-  (define $structure (expression-stack-structure $rhs-expression-stack))
-  (define $dynamic-syntax-stack (expression-stack-dynamic-syntax-stack $rhs-expression-stack))
+  (define $structure (tuple-structure $rhs-tuple))
+  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $rhs-tuple))
   (and 
     (arrow? $expression-type)
     (let ()
@@ -177,7 +177,7 @@
 
 (check-equal?
   (option-bind
-    (arrow-expression-resolve-expression-stack
+    (arrow-expression-resolve-tuple
       (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
       (stack expression-a expression-b))
     $resolved
@@ -185,40 +185,40 @@
   (typed (sourced `(d a b) empty-srcloc) type-c))
 
 (check-equal?
-  (arrow-expression-resolve-expression-stack
+  (arrow-expression-resolve-tuple
     (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
     (stack expression-b expression-a))
   #f)
 
 ; ------------------------------------------------------------------------
 
-(define (expression-resolve-expression-stack
+(define (expression-resolve-tuple
   ($lhs-expression : Expression)
-  ($rhs-expression-stack : (Stackof Expression)))
+  ($rhs-tuple : Tuple))
   : (Option Expression)
-  (define $single-rhs-expression (single $rhs-expression-stack))
+  (define $single-rhs-expression (single $rhs-tuple))
   (or
     (and
       $single-rhs-expression
       (expression-resolve-expression 
         $lhs-expression 
         $single-rhs-expression))
-    (arrow-expression-resolve-expression-stack 
+    (arrow-expression-resolve-tuple 
       $lhs-expression 
-      $rhs-expression-stack)))
+      $rhs-tuple)))
 
 ; -----------------------------------------------------------------------
 
-(define (expression-stack-resolve-expression-stack
-  ($lhs-expression-stack : (Stackof Expression))
-  ($rhs-expression-stack : (Stackof Expression)))
+(define (tuple-resolve-tuple
+  ($lhs-tuple : Tuple)
+  ($rhs-tuple : Tuple))
   : (Option Expression)
   (and 
-    (not (null? $lhs-expression-stack))
+    (not (null? $lhs-tuple))
     (or
-      (expression-resolve-expression-stack
-        (top $lhs-expression-stack)
-        $rhs-expression-stack)
-      (expression-stack-resolve-expression-stack 
-        (pop $lhs-expression-stack) 
-        $rhs-expression-stack))))
+      (expression-resolve-tuple
+        (top $lhs-tuple)
+        $rhs-tuple)
+      (tuple-resolve-tuple 
+        (pop $lhs-tuple) 
+        $rhs-tuple))))

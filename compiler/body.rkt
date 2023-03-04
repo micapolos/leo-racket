@@ -11,14 +11,14 @@
   leo/compiler/generate-temporary
   leo/compiler/identifier-utils
   leo/compiler/expression
-  leo/compiler/expression-stack-syntax
+  leo/compiler/tuple-syntax
   leo/compiler/tail
   leo/compiler/type-utils
   leo/compiler/binding)
 
 (data body
   (syntax-stack : (Stackof Syntax))
-  (expression-stack : (Stackof Expression)))
+  (tuple : Tuple))
 
 (define null-body (body null null-tail))
 
@@ -27,12 +27,12 @@
 (define (body-append-syntax ($body : Body) ($syntax : Syntax)) : Body
   (body
     (push (body-syntax-stack $body) $syntax)
-    (body-expression-stack $body)))
+    (body-tuple $body)))
 
 (define (body-append-expression ($body : Body) ($expression : Expression)) : Body
   (body
     (body-syntax-stack $body)
-    (push (body-expression-stack $body) $expression)))
+    (push (body-tuple $body) $expression)))
 
 (define (body-commit-expression ($body : Body) ($expression : Expression)) : Body
   (cond
@@ -52,7 +52,7 @@
 (define (body-commit ($body : Body)) : Body
   (fold
     (body (body-syntax-stack $body) null)
-    (reverse (body-expression-stack $body))
+    (reverse (body-tuple $body))
     body-commit-expression))
 
 (parameterize ((tmp-temporaries? #t))
@@ -67,20 +67,20 @@
       (map syntax->datum (body-syntax-stack $body))
       (stack `a `b `(define tmp-d (complex))))
     (check-equal?
-      (map expression-datum (body-expression-stack $body))
+      (map expression-datum (body-tuple $body))
       (stack `c `tmp-d))
     (check-equal?
-      (map expression-type (body-expression-stack $body))
+      (map expression-type (body-tuple $body))
       (stack type-c type-d))))
 
 ; --------------------------------------------------------------
 
 (define (body-values-syntax-stack ($body : Body)) : (Stackof Syntax)
   (define $syntax-stack (body-syntax-stack $body))
-  (define $expression-stack (body-expression-stack $body))
+  (define $tuple (body-tuple $body))
   (push-option
     (body-syntax-stack $body)
-    (expression-stack-values-syntax-option $expression-stack)))
+    (tuple-values-syntax-option $tuple)))
 
 (check-equal?
   (map syntax->datum
