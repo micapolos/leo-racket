@@ -10,3 +10,5 @@
 (define-type Scope (Stackof Binding))
 
 (define null-scope null)
+
+(define scope stack)
