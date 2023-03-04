@@ -177,3 +177,9 @@
     (stack 
       dynamic-type-c 
       static-type-d)))
+
+(check-equal?
+  (expression-apply
+    (expression #`fn (arrow (structure type-a) (structure type-b)))
+    (stack expression-c))
+  #f)
