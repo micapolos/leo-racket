@@ -139,7 +139,7 @@
 
 ; ---------------------------------------------------------
 
-(define (expression-apply 
+(define (expression-apply-expression-stack
   ($lhs-expression : Expression)
   ($rhs-expression-stack : (Stackof Expression)))
   : (Option Package)
@@ -158,7 +158,7 @@
 
 (check-equal?
   (option-app package-typed-sexp
-    (expression-apply
+    (expression-apply-expression-stack
       (expression #`fn
         (arrow 
           (structure 
@@ -179,7 +179,7 @@
       static-type-d)))
 
 (check-equal?
-  (expression-apply
+  (expression-apply-expression-stack
     (expression #`fn (arrow (structure type-a) (structure type-b)))
     (stack expression-c))
   #f)
