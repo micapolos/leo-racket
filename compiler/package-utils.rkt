@@ -112,18 +112,14 @@
   ($lhs-expression : Expression)
   ($rhs-package : Package))
   : (Option Package)
-  (define $lhs-type (expression-type $lhs-expression))
-  (and 
-    (arrow? $lhs-type)
-    (structure-check? 
-      (package-structure $rhs-package)
-      (arrow-lhs-structure $lhs-type))
-    (package
-      (make-syntax
-        `(call-with-values
-          (lambda () ,(package-syntax $rhs-package))
-          ,(expression-syntax $lhs-expression)))
-      (arrow-rhs-structure $lhs-type))))
+  (option-app package
+    (make-syntax
+      `(call-with-values
+        (lambda () ,(package-syntax $rhs-package))
+        ,(expression-syntax $lhs-expression)))
+    (type-apply-structure 
+      (expression-type $lhs-expression)
+      (package-structure $rhs-package))))
 
 (check-equal?
   (option-app package-typed-sexp

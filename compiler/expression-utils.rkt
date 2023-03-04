@@ -143,18 +143,14 @@
   ($lhs-expression : Expression)
   ($rhs-expression-stack : (Stackof Expression)))
   : (Option Package)
-  (define $lhs-type (expression-type $lhs-expression))
-  (and 
-    (arrow? $lhs-type)
-    (structure-check? 
-      (expression-stack-structure $rhs-expression-stack)
-      (arrow-lhs-structure $lhs-type))
-    (package
-      (make-syntax
-        `(,(expression-syntax $lhs-expression)
-          ,@(reverse 
-            (expression-stack-dynamic-syntax-stack $rhs-expression-stack))))
-      (arrow-rhs-structure $lhs-type))))
+  (option-app package
+    (make-syntax
+      `(,(expression-syntax $lhs-expression)
+        ,@(reverse 
+          (expression-stack-dynamic-syntax-stack $rhs-expression-stack))))
+    (type-apply-structure
+      (expression-type $lhs-expression)
+      (expression-stack-structure $rhs-expression-stack))))
 
 (check-equal?
   (option-app package-typed-sexp
