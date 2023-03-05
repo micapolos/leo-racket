@@ -67,6 +67,9 @@
 (define (text-expression ($string : String)) 
   (expression (make-syntax $string) text-type))
 
+(define (type-expression ($type : Type)) 
+  (expression null-syntax (a $type)))
+
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 

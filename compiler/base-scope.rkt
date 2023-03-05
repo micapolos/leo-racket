@@ -21,7 +21,7 @@
       (arrow
         (structure 
           int-type
-          (field `text null-structure))
+          (a text-type))
         (structure text-type))
       `number->string)
     (binding
