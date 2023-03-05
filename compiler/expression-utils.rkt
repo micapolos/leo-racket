@@ -39,6 +39,8 @@
 (define tuple-c (tuple expression-c))
 (define tuple-d (tuple expression-d))
 
+(define tuple-ab (tuple expression-a expression-b))
+
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
 
@@ -94,17 +96,14 @@
 
 ; ---------------------------------------------------------
 
-(define (field-expression 
-  ($symbol : Symbol)
-  ($package : Package)) 
-  : Expression
+(define (symbol-package-expression ($symbol : Symbol)($package : Package)) : Expression
   (expression
     (package-syntax $package)
     (field $symbol (package-structure $package))))
 
 (check-equal?
   (expression-sexp-type
-    (field-expression `point
+    (symbol-package-expression `point
       (package
         syntax-a
         (structure
@@ -181,3 +180,130 @@
     (expression #`fn (arrow (structure type-a) (structure type-b)))
     (stack expression-c))
   #f)
+
+; ------------------------------------------------------------------------------
+
+(define (tuple-syntax
+  ($tuple : Tuple))
+  : Syntax
+  (define $dynamic-tuple 
+    (filter expression-dynamic? $tuple))
+  (define $dynamic-syntax-stack
+    (map expression-syntax $dynamic-tuple))
+  (define $dynamic-length
+    (length $dynamic-syntax-stack))
+  (case $dynamic-length
+    ((0) (make-syntax #f))
+    ((1) (top $dynamic-syntax-stack))
+    ((2) 
+      (make-syntax
+        `(cons 
+          ,(pop-top $dynamic-syntax-stack) 
+          ,(top $dynamic-syntax-stack))))
+    (else 
+      (make-syntax
+        `(vector 
+          ,@(reverse $dynamic-syntax-stack))))))
+
+(check-equal?
+  (syntax->datum (tuple-syntax null))
+  #f)
+
+(check-equal?
+  (syntax->datum (tuple-syntax (stack static-expression-a)))
+  #f)
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack dynamic-expression-a)))
+  `a)
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack 
+        dynamic-expression-a 
+        static-expression-a)))
+  `a)
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack 
+        dynamic-expression-a 
+        dynamic-expression-b)))
+  `(cons a b))
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack 
+        dynamic-expression-a 
+        dynamic-expression-b 
+        static-expression-c)))
+  `(cons a b))
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack 
+        dynamic-expression-a 
+        dynamic-expression-b 
+        dynamic-expression-c)))
+  `(vector a b c))
+
+(check-equal?
+  (syntax->datum
+    (tuple-syntax
+      (stack 
+        dynamic-expression-a 
+        dynamic-expression-b 
+        dynamic-expression-c 
+        static-expression-d)))
+  `(vector a b c))
+
+; -----------------------------------------------------------------
+
+(define (tuple-values-syntax-option ($tuple : Tuple)) : (Option Syntax)
+  (define $dynamic-tuple (filter expression-dynamic? $tuple))
+  (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
+  (make-syntax
+    (case (length $dynamic-syntax-stack)
+      ((0) #f)
+      ((1) (top $dynamic-syntax-stack))
+      (else `(values ,@(reverse $dynamic-syntax-stack))))))
+
+(check-equal?
+  (option-map
+    (tuple-values-syntax-option null)
+    syntax->datum)
+  #f)
+
+(check-equal?
+  (option-map
+    (tuple-values-syntax-option
+      (stack dynamic-expression-a))
+    syntax->datum)
+  `a)
+
+(check-equal?
+  (option-map
+    (tuple-values-syntax-option
+      (stack 
+        dynamic-expression-a 
+        static-expression-b 
+        dynamic-expression-c))
+    syntax->datum)
+  `(values a c))
+
+; ---------------------------------------------------------
+
+(define (field-expression ($symbol : Symbol) ($tuple : Tuple null-tuple)) : Expression
+  (expression
+    (tuple-syntax $tuple)
+    (field $symbol (tuple-structure $tuple))))
+
+(check-equal?
+  (expression-sexp-type (field-expression `foo tuple-ab))
+  (pair `(cons a b) (field `foo structure-ab)))

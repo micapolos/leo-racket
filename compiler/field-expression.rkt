@@ -7,7 +7,6 @@
   leo/typed/testing
   leo/compiler/expression
   leo/compiler/expression-utils
-  leo/compiler/tuple-syntax
   leo/compiler/package
   leo/compiler/package-utils
   leo/compiler/type

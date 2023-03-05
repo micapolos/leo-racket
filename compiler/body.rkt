@@ -11,7 +11,6 @@
   leo/compiler/generate-temporary
   leo/compiler/identifier-utils
   leo/compiler/expression
-  leo/compiler/tuple-syntax
   leo/compiler/tail
   leo/compiler/type-utils
   leo/compiler/binding)

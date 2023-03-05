@@ -37,6 +37,7 @@
 (define structure-b (structure type-b))
 (define structure-c (structure type-c))
 (define structure-d (structure type-d))
+(define structure-ab (structure type-a type-b))
 
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond
