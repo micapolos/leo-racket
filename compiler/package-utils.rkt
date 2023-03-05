@@ -151,7 +151,7 @@
   (define $fn-package ($fn $scope))
   (define $fn-syntax (package-syntax $fn-package))
   (define $fn-structure (package-structure $fn-package))
-  (define $tmp-stack (scope-identifier-stack $scope))
+  (define $tmp-stack (scope-symbol-stack $scope))
   (package
     (make-syntax 
       (case (length $tmp-stack)
@@ -172,7 +172,7 @@
       (package #`pkg (structure static-type-a))
       (lambda (($scope : Scope)) 
         (package 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(values)
@@ -184,7 +184,7 @@
       (package #`pkg (structure dynamic-type-a static-type-b))
       (lambda (($scope : Scope)) 
         (package 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let ((tmp-a pkg)) (values tmp-a)) 
@@ -200,7 +200,7 @@
           dynamic-type-c))
       (lambda (($scope : Scope)) 
         (package 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 

@@ -15,8 +15,8 @@
 (define (structure-generate-scope ($structure : Structure)) : Scope
   (map type-generate-binding $structure))
 
-(define (scope-identifier-stack ($scope : Scope)) : (Stackof Identifier)
-  (filter-false (map binding-identifier-option $scope)))
+(define (scope-symbol-stack ($scope : Scope)) : (Stackof Symbol)
+  (filter-false (map binding-symbol-option $scope)))
 
 (define (scope-structure ($scope : Scope)) : Structure
   (map binding-type $scope))

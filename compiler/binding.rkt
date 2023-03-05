@@ -9,7 +9,7 @@
 
 (data binding
   (type : Type)
-  (identifier-option : (Option Identifier)))
+  (symbol-option : (Option Symbol)))
 
 (define (empty-binding ($type : Type)) : Binding
   (binding $type #f))

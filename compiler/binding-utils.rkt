@@ -4,6 +4,7 @@
 
 (require 
   leo/typed/base
+  leo/typed/option
   leo/typed/testing
   leo/compiler/binding
   leo/compiler/type
@@ -15,16 +16,16 @@
   leo/compiler/expression-utils)
 
 (define (binding-expression ($binding : Binding)) : Expression
-  (define $identifier-option (binding-identifier-option $binding))
+  (define $symbol-option (binding-symbol-option $binding))
   (expression
-    (or $identifier-option null-syntax)
+    (or (option-app make-syntax $symbol-option) null-syntax)
     (binding-type $binding)))
 
 (check-equal?
   (expression-sexp-type
     (binding-expression
-      (binding type-a #`b)))
+      (binding type-a `b)))
   (pair `b type-a))
 
 (define (type-generate-binding ($type : Type)) : Binding
-  (binding $type (type-generate-temporary-option $type)))
+  (binding $type (option-app syntax-e (type-generate-temporary-option $type))))
