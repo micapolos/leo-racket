@@ -90,17 +90,17 @@
 
 ; -----------------------------------------------------------------------------
 
-(define (environment-eval-values ($environment : Environment) ($any : Any)) : AnyValues
-  (eval $any (environment-namespace $environment)))
+(define (environment-eval-values ($environment : Environment) ($sexp : Sexp)) : AnyValues
+  (eval $sexp (environment-namespace $environment)))
 
-(define (environment-eval-list ($environment : Environment) ($any : Any)) : (Listof Any)
+(define (environment-eval-list ($environment : Environment) ($sexp : Sexp)) : (Listof Any)
   (call-with-values
-    (lambda () (environment-eval-values $environment $any))
+    (lambda () (environment-eval-values $environment $sexp))
     (ann list (-> Any * (Listof Any)))))
 
-(define (environment-eval ($environment : Environment) ($any : Any)) : Any
+(define (environment-eval ($environment : Environment) ($sexp : Sexp)) : Any
   (bind $list
-    (environment-eval-list $environment $any)
+    (environment-eval-list $environment $sexp)
     (if (null? list) (void) (car (reverse $list)))))
 
 (check-equal?

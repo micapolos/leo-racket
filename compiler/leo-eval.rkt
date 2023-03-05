@@ -7,6 +7,7 @@
   leo/typed/base
   leo/typed/stack
   leo/typed/testing
+  leo/typed/environment
   leo/compiler/package
   leo/compiler/value
   leo/compiler/value-datum
