@@ -12,14 +12,7 @@
 (define (type-sexp ($type : Type)) : Sexp
   (cond
     ((racket? $type)
-      (define $any (racket-any $type))
-      (case $any
-        ((boolean) `boolean)
-        ((number) `number)
-        ((fixnum) `fixnum)
-        ((flonum) `flonum)
-        ((string) `string)
-        (else `(racket ,(any-sexp $any)))))
+      `(racket ,(any-sexp (racket-any $type))))
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))
@@ -37,12 +30,7 @@
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
 
-(check-equal? (type-sexp (racket `void)) `(racket void))
-(check-equal? (type-sexp (racket `boolean)) `boolean)
-(check-equal? (type-sexp (racket `number)) `number)
-(check-equal? (type-sexp (racket `fixnum)) `fixnum)
-(check-equal? (type-sexp (racket `flonum)) `flonum)
-(check-equal? (type-sexp (racket `string)) `string)
+(check-equal? (type-sexp (racket `foo)) `(racket foo))
 
 (check-equal? (type-sexp (racket `foo)) `(racket foo))
 (check-equal? (type-sexp (racket 123)) `(racket 123))
@@ -50,20 +38,20 @@
 
 (check-equal? (type-sexp (field `foo null)) `foo)
 
-(check-equal? (type-sexp (field `foo (stack (racket `number)))) `(foo number))
+(check-equal? (type-sexp (field `foo (stack (racket `number)))) `(foo (racket number)))
 
 (check-equal? 
   (type-sexp 
     (field `foo (stack (racket `number) (racket `string)))) 
-  `(foo number string))
+  `(foo (racket number) (racket string)))
 
 (check-equal? 
   (type-sexp 
     (arrow 
       (stack (racket `number) (racket `string))
       (stack (racket `boolean) (racket `fixnum)))) 
-  `(function number string (giving boolean fixnum)))
+  `(function (racket number) (racket string) (giving (racket boolean) (racket fixnum))))
 
 (check-equal? 
   (type-sexp (a (racket `string)))
-  `(a string))
+  `(a (racket string)))

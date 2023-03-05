@@ -107,11 +107,11 @@
       (arrow 
         (stack (racket `string)) 
         (stack (racket `number)))))
-  `(function string (giving number)))
+  `(function (racket string) (giving (racket number))))
 
 (check-equal?
   (value-sexp (value `foo (a (racket `number))))
-  `(a number))
+  `(a (racket number)))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack (racket `string)))))
