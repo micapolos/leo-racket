@@ -6,6 +6,7 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
+  leo/typed/syntax-match
   leo/compiler/compiler
   leo/compiler/base-scope
   leo/compiler/scope
@@ -35,7 +36,29 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
-  ; TODO: Implement do and doing
+  (or
+    (compiler-syntax-resolve-do $compiler $syntax)
+    (compiler-syntax-resolve-doing $compiler $syntax)
+    (compiler-syntax-resolve-default $compiler $syntax)))
+
+(define (compiler-syntax-resolve-do
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `do $args
+    #f))
+
+(define (compiler-syntax-resolve-doing
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `do $args
+    #f))
+
+(define (compiler-syntax-resolve-default
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : Compiler
   (compiler-plus-expression
     $compiler
     (scope-syntax-expression 
