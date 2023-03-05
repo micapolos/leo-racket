@@ -213,19 +213,29 @@
 
 ; -----------------------------------------------------------------------
 
-(define (tuple-resolve-expression
+(define (tuple-expression-resolve
   ($lhs-tuple : Tuple)
   ($rhs-expression : Expression))
   : (Option Package)
-  (option-app expression-package
-    (option-app expression-resolve-expression
-      (single $lhs-tuple)
-      $rhs-expression)))
+  (or 
+    (tuple-expression-resolve-doing $lhs-tuple $rhs-expression)
+    (option-app expression-package
+      (option-app expression-resolve-expression
+        (single $lhs-tuple)
+        $rhs-expression))))
+
+; -----------------------------------------------------------------------
+
+(define (tuple-expression-resolve-doing
+  ($lhs-tuple : Tuple)
+  ($rhs-expression : Expression))
+  : (Option Package)
+  #f)
 
 ; -----------------------------------------------------------------------
 
 (define (tuple-resolve ($tuple : Tuple)) : (Option Package)
   (and
     (>= (length $tuple) 2))
-    (tuple-resolve-expression (cdr $tuple) (car $tuple)))
+    (tuple-expression-resolve (cdr $tuple) (car $tuple)))
 
