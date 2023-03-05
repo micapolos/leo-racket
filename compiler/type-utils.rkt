@@ -33,6 +33,10 @@
 (define text-type (field `text (stack string-racket)))
 
 (define null-structure null)
+(define structure-a (structure type-a))
+(define structure-b (structure type-b))
+(define structure-c (structure type-c))
+(define structure-d (structure type-d))
 
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond

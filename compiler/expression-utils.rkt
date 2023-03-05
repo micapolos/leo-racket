@@ -34,6 +34,11 @@
 (define expression-c dynamic-expression-c)
 (define expression-d dynamic-expression-d)
 
+(define tuple-a (tuple expression-a))
+(define tuple-b (tuple expression-b))
+(define tuple-c (tuple expression-c))
+(define tuple-d (tuple expression-d))
+
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
 

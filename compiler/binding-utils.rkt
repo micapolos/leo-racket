@@ -15,6 +15,9 @@
   leo/compiler/generate-temporary
   leo/compiler/expression-utils)
 
+(define binding-ab (binding (arrow (structure type-a) (structure type-b)) `ab))
+(define binding-cd (binding (arrow (structure type-c) (structure type-d)) `cd))
+
 (define (binding-expression ($binding : Binding)) : Expression
   (define $symbol-option (binding-symbol-option $binding))
   (expression

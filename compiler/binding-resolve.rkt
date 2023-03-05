@@ -21,7 +21,5 @@
 
 (check-equal?
   (option-app package-sexp-structure
-    (binding-resolve-tuple
-      (binding (arrow (structure type-a) (structure type-b)) `fn)
-      (tuple expression-a)))
-  (pair `(fn a) (structure type-b)))
+    (binding-resolve-tuple binding-ab tuple-a))
+  (pair `(ab a) structure-b))

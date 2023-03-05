@@ -4,20 +4,39 @@
 
 (require
   leo/typed/base
+  leo/typed/option
   leo/typed/stack
+  leo/typed/testing
   leo/compiler/scope
   leo/compiler/binding
+  leo/compiler/binding-utils
   leo/compiler/type
+  leo/compiler/type-utils
   leo/compiler/binding-resolve
   leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/package)
 
 (define (scope-resolve-tuple 
   ($scope : Scope)
   ($tuple : Tuple))
   : (Option Package)
-  (or 
-    (and 
-      (not (null? $scope)) 
-      (binding-resolve-tuple (car $scope) $tuple))
-    (scope-resolve-tuple (cdr $scope) $tuple)))
+  (and
+    (not (null? $scope))
+    (or
+      (binding-resolve-tuple (car $scope) $tuple)
+      (scope-resolve-tuple (cdr $scope) $tuple))))
+
+(check-equal?
+  (option-app package-sexp-structure
+    (scope-resolve-tuple (scope binding-ab binding-cd) tuple-a))
+  (pair `(ab a) structure-b))
+
+(check-equal?
+  (option-app package-sexp-structure
+    (scope-resolve-tuple (scope binding-ab binding-cd) tuple-c))
+  (pair `(cd c) structure-d))
+
+(check-equal?
+  (scope-resolve-tuple (scope binding-ab binding-cd) tuple-b)
+  #f)
