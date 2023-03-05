@@ -69,8 +69,7 @@
           ,(structure-syntax (arrow-lhs-structure $type))
           ,(structure-syntax (arrow-rhs-structure $type))))
       ((a? $type)
-        `(a
-          ,(structure-syntax (a-structure $type)))))))
+        `(a ,(type-syntax (a-type $type)))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax

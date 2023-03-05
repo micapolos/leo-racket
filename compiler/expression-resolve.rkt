@@ -66,19 +66,14 @@
   : (Option Expression)
   (define $type (expression-type $rhs-expression))
   (and
-    (a? $type)
-    (let ()
-      (define $structure (a-structure $type))
-      (define $type-option (single $structure))
-      (and $type-option
-        (expression-resolve-type 
-          $lhs-expression $type-option)))))
+    (a? $type) 
+    (expression-resolve-type $lhs-expression (a-type $type))))
 
 (check-equal?
   (option-app expression-sexp-type
     (expression-resolve-a-expression
       (expression syntax-b type-a)
-      (expression syntax-a (a (structure type-a)))))
+      (expression syntax-a (a type-a))))
   (pair `b type-a))
 
 (check-equal?
@@ -90,7 +85,7 @@
 (check-equal?
   (expression-resolve-a-expression
     (expression syntax-b type-a)
-    (expression syntax-a (a (structure type-b))))
+    (expression syntax-a (a type-b)))
   #f)
 
 ; -----------------------------------------------------------------------

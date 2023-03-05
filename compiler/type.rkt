@@ -19,8 +19,7 @@
   (symbol : Symbol) 
   (structure : Structure))
 
-(data a 
-  (structure : Structure))
+(data a (type : Type))
 
 (define structure stack)
 

@@ -50,7 +50,7 @@
                   (value-sexp (any-structure-ref $any $structure $index)))
                 (range (length $structure))))))))
     ((arrow? $type) (type-sexp $type))
-    ((a? $type) `(a ,@(structure-sexp-list (a-structure $type))))))
+    ((a? $type) `(a ,(type-sexp (a-type $type))))))
 
 (define (any-structure-ref
   ($any : Any)
@@ -110,8 +110,8 @@
   `(function string (giving number)))
 
 (check-equal?
-  (value-sexp (value `foo (a (structure (racket `number) (racket `string)))))
-  `(a number string))
+  (value-sexp (value `foo (a (racket `number))))
+  `(a number))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack (racket `string)))))

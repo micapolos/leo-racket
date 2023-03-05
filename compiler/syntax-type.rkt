@@ -22,9 +22,9 @@
         ((symbol? $car-syntax-e)
           (define $symbol $car-syntax-e)
           (define $structure (syntax-list-structure $cdr))
-          (define $type $structure)
+          (define $type (single $structure))
           (cond
-            ((equal? $symbol `a) (a $structure))
+            ((and (equal? $symbol `a) $type) (a $type))
             (else (field $symbol $structure))))
         (else (racket (syntax->datum $syntax)))))
     (else (racket (syntax->datum $syntax)))))
@@ -63,8 +63,8 @@
 (check-equal? (syntax-type #`()) (racket `()))
 (check-equal? (syntax-type #`foo) (racket `foo))
 
-(check-equal? (syntax-type #`(a)) (a null))
-(check-equal? (syntax-type #`(a foo bar)) (a (structure (racket `foo) (racket `bar))))
+(check-equal? (syntax-type #`(a)) (field `a (structure)))
+(check-equal? (syntax-type #`(a foo)) (a (racket `foo)))
 
 (check-equal? (syntax-type #`(foo)) (field `foo null))
 

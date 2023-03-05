@@ -32,7 +32,7 @@
       `(function 
         ,@(structure-sexp-list $lhs-structure)
         (giving ,@(structure-sexp-list $rhs-structure))))
-    ((a? $type) `(a ,@(structure-sexp-list (a-structure $type))))))
+    ((a? $type) `(a ,(type-sexp (a-type $type))))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
@@ -65,5 +65,5 @@
   `(function number string (giving boolean fixnum)))
 
 (check-equal? 
-  (type-sexp (a (structure (racket `string) (racket `number)))) 
-  `(a string number))
+  (type-sexp (a (racket `string)))
+  `(a string))
