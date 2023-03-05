@@ -8,11 +8,13 @@
   leo/typed/stack
   leo/typed/testing
   leo/compiler/scope
+  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expression-resolve
   leo/compiler/package-utils
   leo/compiler/scope-resolve
+  leo/compiler/type
   leo/compiler/type-utils)
 
 (data compiler 
@@ -38,6 +40,15 @@
 (check-equal?
   (map expression-sexp-type
     (compiler-tuple
-      (compiler-plus-expression null-compiler
-        (number-expression 3.14))))
-  (stack (pair 3.14 number-type)))
+      (compiler-plus-expression
+        (compiler
+          (scope
+            (binding
+              (arrow
+                (structure text-type (field `plus (structure text-type)))
+                (structure text-type))
+              `string-append))
+          (tuple (text-expression "Hello, ")))
+        (field-expression `plus 
+          (tuple (text-expression "world!"))))))
+  (stack (pair `(string-append "Hello, " "world!") text-type)))
