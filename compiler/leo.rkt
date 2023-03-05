@@ -3,9 +3,11 @@
 (provide (all-defined-out))
 
 (require
-  (for-syntax racket/base))
+  (for-syntax 
+    racket/base
+    leo/compiler/compiler-plus-syntax))
 
 (define-syntax (leo $syntax)
   (syntax-case $syntax ()
-    ((_ body ...) 
+    ((_ body ...)
       #`(begin body ...))))
