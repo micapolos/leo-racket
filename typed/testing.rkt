@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  racket/pretty
   (for-syntax 
     racket/base
     racket/syntax-srcloc))
@@ -25,22 +26,16 @@
 
 (define (check ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
   (unless (equal? $actual $expected)
-    (error 
-      (format 
-        (string-append
-          "------------------\n"
-          "FAILURE\n"
-          "location:   ~a:~a:~a\n"
-          "expression: ~s\n"
-          "actual:     ~v\n"
-          "expected:   ~v\n"
-          "------------------"
-          )
-        (srcloc-source (cast $srcloc srcloc))
-        (srcloc-line (cast $srcloc srcloc))
-        (srcloc-column (cast $srcloc srcloc))
-        $expr
-        $actual
-        $expected))))
+    (error
+      (pretty-format 
+        `(failure
+          (location
+            (source ,(srcloc-source (cast $srcloc srcloc)))
+            (line ,(srcloc-line (cast $srcloc srcloc)))
+            (column ,(srcloc-column (cast $srcloc srcloc))))
+          (expression ,$expr)
+          (actual ,$actual)
+          (expected ,$expected))
+        #:mode `write))))
 
-(check-equal? (+ 1 2 ) 3)
+(check-equal? (string-append "foo" "bar") "foobar")

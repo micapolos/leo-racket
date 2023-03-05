@@ -97,7 +97,7 @@
       (define scope 
         (scope
           (binding (field 'a (structure)) #f)
-          (binding (racket 'b) #'tmp-b))))
+          (binding (racket 'b) 'tmp-b))))
     (define tmp-b pkg)))
 
 (check-equal?
@@ -109,7 +109,7 @@
     (module* scope 
       (define scope 
         (scope
-          (binding (racket 'a) #'tmp-a)
+          (binding (racket 'a) 'tmp-a)
           (binding (field 'b (structure)) #f)
-          (binding (racket 'c) #'tmp-c))))
+          (binding (racket 'c) 'tmp-c))))
     (define-values (tmp-a tmp-c) pkg)))
