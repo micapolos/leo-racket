@@ -25,9 +25,7 @@
     (binding-type $binding)))
 
 (check-equal?
-  (expression-sexp-type
-    (binding-expression
-      (binding type-a `b)))
+  (expression-sexp-type (binding-expression (binding type-a `b)))
   (pair `b type-a))
 
 (define (type-generate-binding ($type : Type)) : Binding
