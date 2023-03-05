@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/option
   leo/typed/base
   leo/typed/testing
   leo/compiler/compiler
@@ -59,11 +60,10 @@
           (define $syntax-list (cdr $syntax-e))
           (define $package (scope-syntax-list-package $scope $syntax-list))
           (define $structure (package-structure $package))
-          (cond 
-            ((and (ormap a? $structure) (andmap a? $structure))
-              (type-expression (field $symbol (map a-type $structure))))
-            (else 
-              (symbol-package-expression $symbol $package))))
+          (or
+            (option-bind (structure-lift-a $structure) $structure-a
+              (type-expression (field $symbol $structure-a)))
+            (symbol-package-expression $symbol $package)))
         (else (error "parse error unknown"))))))
 
 

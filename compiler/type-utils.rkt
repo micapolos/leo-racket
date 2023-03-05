@@ -117,3 +117,19 @@
   (and
     (field? $type)
     (equal? (field-symbol $type) $symbol)))
+
+; ---------------------------------------------------------------------------
+
+(define (structure-lift-a ($structure : Structure)) : (Option Structure)
+  (and 
+    (ormap a? $structure) 
+    (andmap a? $structure)
+    (map a-type $structure)))
+
+(check-equal? (structure-lift-a structure-a) #f)
+
+(check-equal? (structure-lift-a (structure type-a (a type-b))) #f)
+
+(check-equal? 
+  (structure-lift-a (structure (a type-a) (a type-b)))
+  (structure type-a type-b))
