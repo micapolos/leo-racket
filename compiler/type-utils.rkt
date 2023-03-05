@@ -33,21 +33,41 @@
 (define text-type (field `text (stack string-racket)))
 
 (define null-structure null)
-(define structure-a (structure type-a))
-(define structure-b (structure type-b))
-(define structure-c (structure type-c))
-(define structure-d (structure type-d))
+
+(define static-structure-a (structure static-type-a))
+(define static-structure-b (structure static-type-b))
+(define static-structure-c (structure static-type-c))
+(define static-structure-d (structure static-type-d))
+
+(define dynamic-structure-a (structure dynamic-type-a))
+(define dynamic-structure-b (structure dynamic-type-b))
+(define dynamic-structure-c (structure dynamic-type-c))
+(define dynamic-structure-d (structure dynamic-type-d))
+
+(define structure-a dynamic-structure-a)
+(define structure-b dynamic-structure-b)
+(define structure-c dynamic-structure-c)
+(define structure-d dynamic-structure-d)
+
 (define structure-ab (structure type-a type-b))
 
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond
     ((racket? $type) #t)
-    ((arrow? $type) #t)
-    ((field? $type) (ormap type-dynamic? (field-structure $type)))
+    ((arrow? $type) (structure-dynamic? (arrow-rhs-structure $type)))
+    ((field? $type) (structure-dynamic? (field-structure $type)))
     ((a? $type) #f)))
 
+(define (structure-dynamic? ($structure : Structure)) : Boolean
+  (ormap type-dynamic? $structure))
+
 (check-equal? (type-dynamic? (racket `number)) #t)
-(check-equal? (type-dynamic? (arrow null null)) #t)
+
+(check-equal? (type-dynamic? (arrow static-structure-a static-structure-b)) #f)
+(check-equal? (type-dynamic? (arrow dynamic-structure-a static-structure-b)) #f)
+(check-equal? (type-dynamic? (arrow static-structure-a dynamic-structure-b)) #t)
+(check-equal? (type-dynamic? (arrow dynamic-structure-a dynamic-structure-b)) #t)
+
 (check-equal? (type-dynamic? (field `foo null)) #f)
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null)))) #f)
 (check-equal? (type-dynamic? (field `foo (structure (racket `number)))) #t)
