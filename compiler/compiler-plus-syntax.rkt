@@ -5,6 +5,7 @@
 (require
   leo/typed/option
   leo/typed/base
+  leo/typed/stack
   leo/typed/testing
   leo/typed/syntax-match
   leo/compiler/compiler
@@ -13,6 +14,7 @@
   leo/compiler/package
   leo/compiler/sexp-utils
   leo/compiler/expression
+  leo/compiler/expression-resolve
   leo/compiler/package-utils
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
@@ -45,8 +47,16 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `do $args
-    #f))
+  (syntax-symbol-match-args $syntax `do $do-syntax-list
+    (define $scope (compiler-scope $compiler))
+    (define $tuple (compiler-tuple $compiler))
+    (compiler $scope
+      (package-tuple
+        (tuple-do $tuple
+          (lambda (($scope : Scope))
+            (scope-syntax-list-package 
+              (push-stack (compiler-scope $compiler) $scope) 
+              $do-syntax-list)))))))
 
 (define (compiler-syntax-resolve-doing
   ($compiler : Compiler) 
@@ -90,6 +100,7 @@
             (symbol-package-expression $symbol $package)))
         (else (error "parse error unknown"))))))
 
+; ----------------------------------------------------------------------------
 
 (check-equal?
   (package-sexp-structure
@@ -112,3 +123,15 @@
   (pair 
     `(number->string (unsafe-fx+ 1 2)) 
     (structure text-type)))
+
+(check-equal?
+  (package-sexp-structure
+    (scope-syntax-list-package
+      base-scope
+      (list
+        #`(int 1)
+        #`(plus (int 2))
+        #`(do int (plus int)))))
+  (pair 
+    `(let ((tmp-int (unsafe-fx+ 1 2))) (unsafe-fx+ tmp-int tmp-int))
+    (structure int-type)))
