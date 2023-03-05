@@ -327,27 +327,33 @@
 
 ; -----------------------------------------------------------------------
 
-(define (tuple-doing ($tuple : Tuple) ($fn : (-> Scope Package))) : Package
-  (define $structure (tuple-structure $tuple))
-  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
-  (define $values-syntax (tuple-values-syntax-option $tuple))
-  (define $scope (structure-generate-scope $structure))
-  (define $fn-package ($fn $scope))
-  (define $fn-syntax (package-syntax $fn-package))
-  (define $fn-structure (package-structure $fn-package))
-  (define $tmp-stack (scope-symbol-stack $scope))
-  (define $arrow (arrow $structure $fn-structure))
-  (package
-    (cond
-      ((type-dynamic? $arrow)
-        (make-syntax `(lambda (,@(reverse $tmp-stack)) ,$fn-syntax)))
-      (else null-syntax))
-    (structure $arrow)))
+(define (tuple-doing ($tuple : Tuple) ($fn : (-> Scope Package))) : (Option Package)
+  (option-bind (structure-lift (tuple-structure $tuple)) $structure
+    (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
+    (define $values-syntax (tuple-values-syntax-option $tuple))
+    (define $scope (structure-generate-scope $structure))
+    (define $fn-package ($fn $scope))
+    (define $fn-syntax (package-syntax $fn-package))
+    (define $fn-structure (package-structure $fn-package))
+    (define $tmp-stack (scope-symbol-stack $scope))
+    (define $arrow (arrow $structure $fn-structure))
+    (package
+      (cond
+        ((type-dynamic? $arrow)
+          (make-syntax `(lambda (,@(reverse $tmp-stack)) ,$fn-syntax)))
+        (else null-syntax))
+      (structure $arrow))))
 
 (check-equal?
-  (package-sexp-structure
+  (tuple-doing
+    (tuple expression-a)
+    (lambda (($scope : Scope)) null-package))
+  #f)
+
+(check-equal?
+  (option-app package-sexp-structure
     (tuple-doing
-      (tuple static-expression-a)
+      (tuple (type-expression static-type-a))
       (lambda (($scope : Scope)) 
         (package 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
@@ -360,9 +366,9 @@
         (structure static-type-a)))))
 
 (check-equal?
-  (package-sexp-structure
+  (option-app package-sexp-structure
     (tuple-doing
-      (tuple static-expression-a)
+      (tuple (type-expression static-type-a))
       (lambda (($scope : Scope)) 
         (package 
           (make-syntax `(values ,@(push (scope-symbol-stack $scope) `b)))
@@ -375,9 +381,11 @@
         (structure static-type-a dynamic-type-b)))))
 
 (check-equal?
-  (package-sexp-structure
+  (option-app package-sexp-structure
     (tuple-doing
-      (tuple dynamic-expression-a static-expression-b)
+      (tuple 
+        (type-expression dynamic-type-a) 
+        (type-expression static-type-b))
       (lambda (($scope : Scope)) 
         (package 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
@@ -390,9 +398,12 @@
         (structure static-type-b dynamic-type-a)))))
 
 (check-equal?
-  (package-sexp-structure
+  (option-app package-sexp-structure
     (tuple-doing
-      (tuple dynamic-expression-a static-expression-b dynamic-expression-c)
+      (tuple 
+        (type-expression dynamic-type-a)
+        (type-expression static-type-b)
+        (type-expression dynamic-type-c))
       (lambda (($scope : Scope)) 
         (package 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
