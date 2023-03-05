@@ -9,8 +9,10 @@
   leo/compiler/base-scope
   leo/compiler/scope
   leo/compiler/package
+  leo/compiler/sexp-utils
   leo/compiler/expression
   leo/compiler/package-utils
+  leo/compiler/syntax-utils
   leo/compiler/syntax-expression
   leo/compiler/compiler-plus-expression
   leo/compiler/expression-utils
@@ -56,8 +58,24 @@
           (define $symbol $car)
           (define $syntax-list (cdr $syntax-e))
           (define $package (scope-syntax-list-package $scope $syntax-list))
-          (symbol-package-expression $symbol $package))
+          (define $structure (package-structure $package))
+          (cond 
+            ((and (ormap a? $structure) (andmap a? $structure))
+              (type-expression (field $symbol (map a-type $structure))))
+            (else 
+              (symbol-package-expression $symbol $package))))
         (else (error "parse error unknown"))))))
+
+
+(check-equal?
+  (package-sexp-structure
+    (scope-syntax-list-package null-scope (list #`number)))
+  (pair null-sexp (structure (a number-type))))
+  
+(check-equal?
+  (package-sexp-structure
+    (scope-syntax-list-package null-scope (list #`(big number))))
+  (pair null-sexp (structure (a (field `big (structure number-type))))))
   
 (check-equal?
   (package-sexp-structure
