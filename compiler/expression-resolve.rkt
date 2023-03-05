@@ -9,6 +9,8 @@
   leo/typed/testing
   leo/compiler/package
   leo/compiler/package-utils
+  leo/compiler/scope
+  leo/compiler/scope-utils
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/sexp-utils
@@ -262,3 +264,63 @@
     (>= (length $tuple) 2))
     (tuple-expression-resolve (cdr $tuple) (car $tuple)))
 
+; -----------------------------------------------------------------------
+
+(define (tuple-do ($tuple : Tuple) ($fn : (-> Scope Package))) : Package
+  (define $structure (tuple-structure $tuple))
+  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
+  (define $values-syntax (tuple-values-syntax-option $tuple))
+  (define $scope (structure-generate-scope $structure))
+  (define $fn-package ($fn $scope))
+  (define $fn-syntax (package-syntax $fn-package))
+  (define $fn-structure (package-structure $fn-package))
+  (define $tmp-stack (scope-symbol-stack $scope))
+  (package
+    (make-syntax 
+      (case (length $tmp-stack)
+        ((0) $fn-syntax)
+        ((1) 
+          `(let
+            ((,(car $tmp-stack) ,$values-syntax))
+            ,$fn-syntax))
+        (else 
+          `(let-values 
+            ((,@(reverse $tmp-stack)) ,$values-syntax)
+            ,$fn-syntax))))
+    $fn-structure))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-do
+      (tuple static-expression-a)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(values)
+    (structure static-type-a)))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-do
+      (tuple dynamic-expression-a static-expression-b)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(let ((tmp-a a)) (values tmp-a)) 
+    (structure static-type-b dynamic-type-a)))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-do
+      (tuple dynamic-expression-a static-expression-b dynamic-expression-c)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(let-values ((tmp-a tmp-c) (values a c)) (values tmp-c tmp-a)) 
+    (structure dynamic-type-c static-type-b dynamic-type-a)))
