@@ -204,3 +204,8 @@
   (pair 
     `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
     (structure dynamic-type-c static-type-b dynamic-type-a)))
+
+; -------------------------------------------------------------------------
+
+(define (package-lift-structure ($package : Package)) : (Option Structure)
+  (structure-lift (package-structure $package)))

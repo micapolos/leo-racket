@@ -61,7 +61,7 @@
           (define $package (scope-syntax-list-package $scope $syntax-list))
           (define $structure (package-structure $package))
           (or
-            (option-bind (structure-lift-a $structure) $structure-a
+            (option-bind (structure-lift $structure) $structure-a
               (type-expression (field $symbol $structure-a)))
             (symbol-package-expression $symbol $package)))
         (else (error "parse error unknown"))))))

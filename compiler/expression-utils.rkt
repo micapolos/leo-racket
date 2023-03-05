@@ -331,3 +331,11 @@
 (check-equal?
   (expression-sexp-type (field-expression `foo tuple-ab))
   (pair `(cons a b) (field `foo structure-ab)))
+
+; ---------------------------------------------------------
+
+(define (expression-lift-type ($expression : Expression)) : (Option Type)
+  (type-lift (expression-type $expression)))
+
+(define (tuple-lift-structure ($tuple : Tuple)) : (Option Structure)
+  (structure-lift (tuple-structure $tuple)))
