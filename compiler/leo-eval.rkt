@@ -42,5 +42,13 @@
       (else (list $sexp)))))
 
 (check-equal?
-  (leo-eval `((int 1) (plus (int 2)) text (plus " pieces")))
-  "3 pieces")
+  (leo-eval 
+    `(
+      (int 1) 
+      (plus (int 2)) 
+      text 
+      (plus " pieces")
+      (do 
+        text
+        (plus "!!!"))))
+  "3 pieces!!!")
