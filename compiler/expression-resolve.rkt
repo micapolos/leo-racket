@@ -279,7 +279,7 @@
     (make-syntax 
       (case (length $tmp-stack)
         ((0) $fn-syntax)
-        ((1) 
+        ((1)
           `(let
             ((,(car $tmp-stack) ,$values-syntax))
             ,$fn-syntax))
