@@ -35,6 +35,7 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
+  ; TODO: Implement do and doing
   (compiler-plus-expression
     $compiler
     (scope-syntax-expression 
