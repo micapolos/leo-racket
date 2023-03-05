@@ -47,7 +47,8 @@
       (int 1) 
       (plus (int 2)) 
       text 
-      (plus " pieces")
+      (plus " ")
+      (plus "pieces")
       (do 
         text
         (plus "!!!"))))
