@@ -324,3 +324,82 @@
   (pair 
     `(let-values ((tmp-a tmp-c) (values a c)) (values tmp-c tmp-a)) 
     (structure dynamic-type-c static-type-b dynamic-type-a)))
+
+; -----------------------------------------------------------------------
+
+(define (tuple-doing ($tuple : Tuple) ($fn : (-> Scope Package))) : Package
+  (define $structure (tuple-structure $tuple))
+  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
+  (define $values-syntax (tuple-values-syntax-option $tuple))
+  (define $scope (structure-generate-scope $structure))
+  (define $fn-package ($fn $scope))
+  (define $fn-syntax (package-syntax $fn-package))
+  (define $fn-structure (package-structure $fn-package))
+  (define $tmp-stack (scope-symbol-stack $scope))
+  (define $arrow (arrow $structure $fn-structure))
+  (package
+    (cond
+      ((type-dynamic? $arrow)
+        (make-syntax `(lambda (,@(reverse $tmp-stack)) ,$fn-syntax)))
+      (else null-syntax))
+    (structure $arrow)))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-doing
+      (tuple static-expression-a)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    null-sexp
+    (structure 
+      (arrow 
+        (structure static-type-a) 
+        (structure static-type-a)))))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-doing
+      (tuple static-expression-a)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(push (scope-symbol-stack $scope) `b)))
+          (push (scope-structure $scope) dynamic-type-b)))))
+  (pair 
+    `(lambda () (values b))
+    (structure 
+      (arrow 
+        (structure static-type-a) 
+        (structure static-type-a dynamic-type-b)))))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-doing
+      (tuple dynamic-expression-a static-expression-b)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(lambda (tmp-a) (values tmp-a)) 
+    (structure 
+      (arrow 
+        (structure dynamic-type-a static-type-b)
+        (structure static-type-b dynamic-type-a)))))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-doing
+      (tuple dynamic-expression-a static-expression-b dynamic-expression-c)
+      (lambda (($scope : Scope)) 
+        (package 
+          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (reverse (scope-structure $scope))))))
+  (pair 
+    `(lambda (tmp-a tmp-c) (values tmp-c tmp-a))
+    (structure 
+      (arrow
+        (structure dynamic-type-a static-type-b dynamic-type-c)
+        (structure dynamic-type-c static-type-b dynamic-type-a)))))
