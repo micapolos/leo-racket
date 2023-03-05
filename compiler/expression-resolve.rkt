@@ -11,6 +11,7 @@
   leo/compiler/package-utils
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/sourced
   leo/compiler/srcloc
@@ -218,7 +219,7 @@
   ($rhs-expression : Expression))
   : (Option Package)
   (or 
-    (tuple-expression-resolve-doing $lhs-tuple $rhs-expression)
+    (tuple-expression-resolve-arrow $lhs-tuple $rhs-expression)
     (option-app expression-package
       (option-app expression-resolve-expression
         (single $lhs-tuple)
@@ -226,11 +227,33 @@
 
 ; -----------------------------------------------------------------------
 
-(define (tuple-expression-resolve-doing
+(define (tuple-expression-resolve-arrow
   ($lhs-tuple : Tuple)
   ($rhs-expression : Expression))
   : (Option Package)
-  #f)
+  (option-bind (tuple-lift-structure $lhs-tuple) $lhs-structure
+    (option-bind (expression-lift-type $rhs-expression) $rhs-type
+      (and 
+        (field? $rhs-type) 
+        (equal? (field-symbol $rhs-type) `giving)
+        (expression-package
+          (type-expression
+            (arrow
+              $lhs-structure 
+              (field-structure $rhs-type))))))))
+
+(check-equal?
+  (option-app package-sexp-structure
+    (tuple-expression-resolve-arrow
+      (tuple (type-expression type-a) (type-expression type-b))
+      (type-expression (field `giving (structure type-c type-d)))))
+  (pair 
+    null-sexp
+    (structure
+      (a 
+        (arrow 
+          (structure type-a type-b) 
+          (structure type-c type-d))))))
 
 ; -----------------------------------------------------------------------
 
