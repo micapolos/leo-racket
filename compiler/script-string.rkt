@@ -64,45 +64,45 @@
   (string-replace $string "\n" "\n  "))
 
 (check-equal? 
-  (line-string (datum-line 1))
+  (line-string (sexp-line 1))
   "1")
 
 (check-equal? 
-  (line-string (datum-line "foo"))
+  (line-string (sexp-line "foo"))
   "\"foo\"")
 
 (check-equal? 
-  (line-string (datum-line `foo))
+  (line-string (sexp-line `foo))
   "foo")
 
 (check-equal? 
-  (line-string (datum-line `(foo bar)))
+  (line-string (sexp-line `(foo bar)))
   "foo bar")
 
 (check-equal? 
-  (line-string (datum-line `(foo (bar zoo))))
+  (line-string (sexp-line `(foo (bar zoo))))
   "foo bar zoo")
 
 (check-equal? 
-  (line-string (datum-line `(foo bar)))
+  (line-string (sexp-line `(foo bar)))
   "foo bar")
 
 (check-equal?
-  (line-string (datum-line `(foo bar zoo)))
+  (line-string (sexp-line `(foo bar zoo)))
   "foo: bar zoo")
 
 (check-equal?
-  (line-string (datum-line `(foo (x 1) (y 2))))
+  (line-string (sexp-line `(foo (x 1) (y 2))))
   "foo\n  x 1\n  y 2")
 
 (check-equal?
-  (script-string (datum-script `()))
+  (script-string (sexp-script `()))
   "")
 
 (check-equal?
-  (script-string (datum-script 1))
+  (script-string (sexp-script 1))
   "1\n")
 
 (check-equal?
-  (script-string (datum-script `(1 2)))
+  (script-string (sexp-script `(1 2)))
   "1\n2\n")

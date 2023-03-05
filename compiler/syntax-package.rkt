@@ -16,14 +16,14 @@
 (define (syntax-list-package ($syntax-list : (Listof Syntax))) : Package
   (scope-syntax-list-package base-scope $syntax-list))
 
-; TODO: Refactor to Sexp
-(define (datum-package ($datum : Datum)) : Package
+(define (sexp-package ($sexp : Sexp)) : Package
+  (define $datum (sexp-datum $sexp))
   (syntax-list-package
     (cond
-      ((list? $datum) (map (ann make-syntax (-> Datum Syntax)) $datum))
+      ((list? $datum) (map make-syntax $datum))
       (else (list (make-syntax $datum))))))
 
 (check-equal?
   (package-sexp-structure
-    (datum-package `((int 1) (plus (int 2)) text)))
+    (sexp-package `((int 1) (plus (int 2)) text)))
   (pair `(number->string (unsafe-fx+ 1 2)) (structure text-type)))

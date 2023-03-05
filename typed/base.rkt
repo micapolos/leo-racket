@@ -4,6 +4,7 @@
 
 (require
   leo/typed/testing
+  racket/vector
   (for-syntax 
     racket/base
     racket/string
@@ -58,3 +59,19 @@
 (define pair cons)
 (define left car)
 (define right cdr)
+
+; -------------------------------------------------------------------------
+
+(define (sexp-datum ($sexp : Sexp)) : Datum
+  (cond
+    ((number? $sexp) $sexp)
+    ((symbol? $sexp) $sexp)
+    ((string? $sexp) $sexp)
+    ((char? $sexp) $sexp)
+    ((keyword? $sexp) $sexp)
+    ((boolean? $sexp) $sexp)
+    ((vector? $sexp) (vector-map sexp-datum $sexp))
+    ((box? $sexp) (box (sexp-datum (unbox $sexp))))
+    ((pair? $sexp) (cons (sexp-datum (car $sexp)) (sexp-datum (cdr $sexp))))
+    ((null? $sexp) null)
+    (else (error "impossible"))))

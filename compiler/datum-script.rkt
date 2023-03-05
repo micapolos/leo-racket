@@ -5,19 +5,19 @@
 (require
   racket/function
   leo/typed/stack
+  leo/typed/base
   leo/compiler/script
-  leo/compiler/syntax-script)
+  leo/compiler/syntax-script
+  leo/compiler/syntax-utils)
 
-(define (datum-line ($datum : Datum)) : Line
-  (syntax-line (datum->syntax #f $datum)))
+(define (sexp-line ($sexp : Sexp)) : Line
+  (syntax-line (make-syntax (sexp-datum $sexp))))
 
-(define (datum-list-script ($datum-list : (Listof Datum))) : Script
+(define (sexp-list-script ($sexp-list : (Listof Sexp))) : Script
   (syntax-list-script 
-    (map 
-      (lambda (($datum : Datum)) (datum->syntax #f $datum))
-      $datum-list)))
+    (map make-syntax (map sexp-datum $sexp-list))))
 
-(define (datum-script ($datum : Datum)) : Script
+(define (sexp-script ($sexp : Sexp)) : Script
   (cond
-    ((list? $datum) (datum-list-script $datum))
-    (else (stack (datum-line $datum)))))
+    ((list? $sexp) (sexp-list-script $sexp))
+    (else (stack (sexp-line $sexp)))))
