@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  leo/compiler/sexp-utils
   leo/compiler/sourced
   leo/compiler/srcloc
   racket/syntax-srcloc)
@@ -33,7 +34,7 @@
 (define (syntax-e-with-srcloc ($syntax : Syntax))
   (with-srcloc (syntax-srcloc $syntax) (lambda () (syntax-e $syntax))))
 
-(define null-syntax (make-syntax #f))
+(define null-syntax (make-syntax null-sexp))
 (define test-syntax (make-syntax `test test-srcloc))
 (define syntax-a (make-syntax `a srcloc-a))
 (define syntax-b (make-syntax `b srcloc-b))

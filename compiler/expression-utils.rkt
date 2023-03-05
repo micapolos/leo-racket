@@ -12,6 +12,7 @@
   leo/compiler/racket
   leo/compiler/package
   leo/compiler/expression
+  leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-check
@@ -34,10 +35,20 @@
 (define expression-c dynamic-expression-c)
 (define expression-d dynamic-expression-d)
 
-(define tuple-a (tuple expression-a))
-(define tuple-b (tuple expression-b))
-(define tuple-c (tuple expression-c))
-(define tuple-d (tuple expression-d))
+(define static-tuple-a (tuple static-expression-a))
+(define static-tuple-b (tuple static-expression-b))
+(define static-tuple-c (tuple static-expression-c))
+(define static-tuple-d (tuple static-expression-d))
+
+(define dynamic-tuple-a (tuple dynamic-expression-a))
+(define dynamic-tuple-b (tuple dynamic-expression-b))
+(define dynamic-tuple-c (tuple dynamic-expression-c))
+(define dynamic-tuple-d (tuple dynamic-expression-d))
+
+(define tuple-a dynamic-tuple-a)
+(define tuple-b dynamic-tuple-b)
+(define tuple-c dynamic-tuple-c)
+(define tuple-d dynamic-tuple-d)
 
 (define tuple-ab (tuple expression-a expression-b))
 
@@ -146,9 +157,12 @@
   : (Option Package)
   (option-app package
     (make-syntax
-      `(,(expression-syntax $lhs-expression)
-        ,@(reverse 
-          (tuple-dynamic-syntax-stack $rhs-tuple))))
+      (cond
+        ((type-dynamic? (expression-type $lhs-expression))
+          `(,(expression-syntax $lhs-expression)
+            ,@(reverse 
+              (tuple-dynamic-syntax-stack $rhs-tuple))))
+        (else null-syntax)))
     (type-apply-structure
       (expression-type $lhs-expression)
       (tuple-structure $rhs-tuple))))
@@ -174,6 +188,13 @@
     (stack 
       dynamic-type-c 
       static-type-d)))
+
+(check-equal?
+  (option-app package-sexp-structure
+    (expression-apply-tuple
+      (expression #`fn (arrow dynamic-structure-a static-structure-b))
+      dynamic-tuple-a))
+  (pair null-sexp static-structure-b))
 
 (check-equal?
   (expression-apply-tuple
