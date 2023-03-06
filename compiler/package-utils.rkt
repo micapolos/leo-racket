@@ -10,6 +10,7 @@
   leo/typed/testing
   leo/typed/stack
   leo/compiler/racket
+  leo/compiler/sexp-utils
   leo/compiler/scope
   leo/compiler/scope-utils
   leo/compiler/package
@@ -78,8 +79,28 @@
 
 (define (tuple-package ($tuple : Tuple)) : Package
   (package
-    (tuple-syntax $tuple)
-    (map expression-type $tuple)))
+    (or (tuple-values-syntax-option $tuple) null-syntax)
+    (tuple-structure $tuple)))
+
+(check-equal?
+  (package-sexp-structure (tuple-package (tuple static-expression-a)))
+  (pair null-sexp (structure static-type-a)))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-package
+      (tuple dynamic-expression-a static-expression-b)))
+  (pair 
+    `a 
+    (structure dynamic-type-a static-type-b)))
+
+(check-equal?
+  (package-sexp-structure
+    (tuple-package
+      (tuple dynamic-expression-a static-expression-b dynamic-expression-c)))
+  (pair 
+    `(values a c) 
+    (structure dynamic-type-a static-type-b dynamic-type-c)))
 
 ; -------------------------------------------------------------------
 
