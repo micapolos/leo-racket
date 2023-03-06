@@ -8,7 +8,7 @@
   leo/typed/stack
   leo/compiler/scope
   leo/compiler/scope-resolve
-  leo/compiler/package-utils
+  leo/compiler/expressions-utils
   leo/compiler/expression-resolve
   leo/compiler/expression
   (for-syntax racket/base))
@@ -30,7 +30,7 @@
   (tuple-compiler
     $scope
     (or
-      (option-app package-tuple
+      (option-app expressions-tuple
         (or
           (tuple-resolve $new-tuple)
           (scope-resolve-tuple $scope $new-tuple)))

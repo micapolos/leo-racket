@@ -10,7 +10,7 @@
   leo/compiler/scope
   leo/compiler/type
   leo/compiler/expression
-  leo/compiler/package)
+  leo/compiler/expressions)
 
 (define (structure-generate-scope ($structure : Structure)) : Scope
   (map type-generate-binding $structure))

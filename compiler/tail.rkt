@@ -5,8 +5,8 @@
 (require
   leo/typed/stack
   leo/compiler/expression
-  leo/compiler/package)
+  leo/compiler/expressions)
 
-(define-type Tail (U Tuple Package))
+(define-type Tail (U Tuple Expressions))
 
 (define null-tail : Tuple null)

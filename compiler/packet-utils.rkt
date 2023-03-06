@@ -7,17 +7,17 @@
   leo/typed/testing
   leo/compiler/scope
   leo/compiler/packet
-  leo/compiler/package
-  leo/compiler/package-utils
+  leo/compiler/expressions
+  leo/compiler/expressions-utils
   leo/compiler/expression-resolve)
 
-(define (packet-package ($packet : Packet)) : Package
+(define (packet-expressions ($packet : Packet)) : Expressions
   (cond
-    ((package? $packet) $packet)
-    (else (tuple-package $packet))))
+    ((expressions? $packet) $packet)
+    (else (tuple-expressions $packet))))
 
 (define (packet-do ($packet : Packet) ($fn : (-> Scope Packet))) : Packet
-  (define $package-fn (compose packet-package $fn))
+  (define $expressions-fn (compose packet-expressions $fn))
   (cond
-    ((package? $packet) (package-do $packet $package-fn))
-    (else (tuple-do $packet $package-fn))))
+    ((expressions? $packet) (expressions-do $packet $expressions-fn))
+    (else (tuple-do $packet $expressions-fn))))

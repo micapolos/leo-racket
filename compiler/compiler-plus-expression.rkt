@@ -13,7 +13,7 @@
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expression-resolve
-  leo/compiler/package-utils
+  leo/compiler/expressions-utils
   leo/compiler/scope-resolve
   leo/compiler/type
   leo/compiler/type-utils)
@@ -26,7 +26,7 @@
   (option-app compiler
     $scope
     (or
-      (option-app package-tuple
+      (option-app expressions-tuple
         (or
           (scope-resolve-tuple $scope $tuple)
           (tuple-resolve $tuple)))

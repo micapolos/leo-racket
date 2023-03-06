@@ -11,11 +11,11 @@
   leo/compiler/compiler
   leo/compiler/base-scope
   leo/compiler/scope
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/sexp-utils
   leo/compiler/expression
   leo/compiler/expression-resolve
-  leo/compiler/package-utils
+  leo/compiler/expressions-utils
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
   leo/compiler/compiler-plus-expression
@@ -23,11 +23,11 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define (scope-syntax-list-package 
+(define (scope-syntax-list-expressions 
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
-  : Package
-  (tuple-package
+  : Expressions
+  (tuple-expressions
     (compiler-tuple
       (fold 
         (compiler $scope null-tuple)
@@ -51,10 +51,10 @@
     (define $scope (compiler-scope $compiler))
     (define $tuple (compiler-tuple $compiler))
     (compiler $scope
-      (package-tuple
+      (expressions-tuple
         (tuple-do $tuple
           (lambda (($scope : Scope))
-            (scope-syntax-list-package 
+            (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
               $do-syntax-list)))))))
 
@@ -66,10 +66,10 @@
     (define $scope (compiler-scope $compiler))
     (define $tuple (compiler-tuple $compiler))
     (option-app compiler $scope
-      (option-app package-tuple
+      (option-app expressions-tuple
         (tuple-doing $tuple
           (lambda (($scope : Scope))
-            (scope-syntax-list-package 
+            (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
               $doing-syntax-list)))))))
 
@@ -100,12 +100,12 @@
           (unless (symbol? $car) (error "parse-error not symbol"))
           (define $symbol $car)
           (define $syntax-list (cdr $syntax-e))
-          (define $package (scope-syntax-list-package $scope $syntax-list))
-          (define $structure (package-structure $package))
+          (define $expressions (scope-syntax-list-expressions $scope $syntax-list))
+          (define $structure (expressions-structure $expressions))
           (or
             (option-bind (structure-lift $structure) $structure-a
               (type-expression (field $symbol $structure-a)))
-            (symbol-package-expression $symbol $package)))
+            (symbol-expressions-expression $symbol $expressions)))
         (else (error "parse error unknown"))))))
 
 ; ----------------------------------------------------------------------------
@@ -141,18 +141,18 @@
     (pair "foo" text-type)))
 
 (check-equal?
-  (package-sexp-structure
-    (scope-syntax-list-package null-scope (list #`number)))
+  (expressions-sexp-structure
+    (scope-syntax-list-expressions null-scope (list #`number)))
   (pair null-sexp (structure (a number-type))))
   
 (check-equal?
-  (package-sexp-structure
-    (scope-syntax-list-package null-scope (list #`(big number))))
+  (expressions-sexp-structure
+    (scope-syntax-list-expressions null-scope (list #`(big number))))
   (pair null-sexp (structure (a (field `big (structure number-type))))))
   
 (check-equal?
-  (package-sexp-structure
-    (scope-syntax-list-package
+  (expressions-sexp-structure
+    (scope-syntax-list-expressions
       base-scope
       (list
         #`(int 1) 
@@ -163,8 +163,8 @@
     (structure text-type)))
 
 (check-equal?
-  (package-sexp-structure
-    (scope-syntax-list-package
+  (expressions-sexp-structure
+    (scope-syntax-list-expressions
       base-scope
       (list
         #`(int 1)

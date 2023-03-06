@@ -15,12 +15,12 @@
   leo/compiler/binding-resolve
   leo/compiler/expression
   leo/compiler/expression-utils
-  leo/compiler/package)
+  leo/compiler/expressions)
 
 (define (scope-resolve-tuple 
   ($scope : Scope)
   ($tuple : Tuple))
-  : (Option Package)
+  : (Option Expressions)
   (and
     (not (null? $scope))
     (or
@@ -28,12 +28,12 @@
       (scope-resolve-tuple (cdr $scope) $tuple))))
 
 (check-equal?
-  (option-app package-sexp-structure
+  (option-app expressions-sexp-structure
     (scope-resolve-tuple (scope binding-ab binding-cd) tuple-a))
   (pair `(ab a) structure-b))
 
 (check-equal?
-  (option-app package-sexp-structure
+  (option-app expressions-sexp-structure
     (scope-resolve-tuple (scope binding-ab binding-cd) tuple-c))
   (pair `(cd c) structure-d))
 

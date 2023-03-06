@@ -14,7 +14,7 @@
   leo/compiler/sexp-utils
   leo/compiler/scope
   leo/compiler/scope-utils
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -24,19 +24,19 @@
   leo/compiler/typed
   leo/compiler/type-utils)
 
-(define null-package (package null-syntax null-structure))
+(define null-expressions (expressions null-syntax null-structure))
 
-(define (package-size ($package : Package)) : Exact-Nonnegative-Integer
-  (length (package-structure $package)))
+(define (expressions-size ($expressions : Expressions)) : Exact-Nonnegative-Integer
+  (length (expressions-structure $expressions)))
 
 ; ----------------------------------------------------------------------------
 
-(define (package-ref
-  ($package : Package)
+(define (expressions-ref
+  ($expressions : Expressions)
   ($index : Exact-Nonnegative-Integer))
   : Expression
-  (define $syntax (package-syntax $package))
-  (define $structure (package-structure $package))
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
   (define $structure-compiled-size (structure-compiled-size $structure))
   (define $dynamic-index (structure-dynamic-ref $structure $index))
   (define $type (list-ref $structure $index))
@@ -57,16 +57,16 @@
               ,(- $structure-compiled-size $dynamic-index 1))))))
     $type))
 
-(define (package-tuple ($package : Package)) : Tuple
+(define (expressions-tuple ($expressions : Expressions)) : Tuple
   (map 
-    (curry package-ref $package)
-    (range (package-size $package))))
+    (curry expressions-ref $expressions)
+    (range (expressions-size $expressions))))
 
 (check-equal?
   (map
     expression-sexp-type
-    (package-tuple
-      (package
+    (expressions-tuple
+      (expressions
         syntax-a
         (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d))))
   (stack
@@ -75,29 +75,29 @@
     (pair `#f static-type-c)
     (pair `(unsafe-vector-ref a 2) dynamic-type-d)))
 
-(define (expression-package ($expression : Expression)) : Package
-  (tuple-package (stack $expression)))
+(define (expression-expressions ($expression : Expression)) : Expressions
+  (tuple-expressions (stack $expression)))
 
-(define (tuple-package ($tuple : Tuple)) : Package
-  (package
+(define (tuple-expressions ($tuple : Tuple)) : Expressions
+  (expressions
     (or (tuple-values-syntax-option $tuple) null-syntax)
     (tuple-structure $tuple)))
 
 (check-equal?
-  (package-sexp-structure (tuple-package (tuple static-expression-a)))
+  (expressions-sexp-structure (tuple-expressions (tuple static-expression-a)))
   (pair null-sexp (structure static-type-a)))
 
 (check-equal?
-  (package-sexp-structure
-    (tuple-package
+  (expressions-sexp-structure
+    (tuple-expressions
       (tuple dynamic-expression-a static-expression-b)))
   (pair 
     `a 
     (structure dynamic-type-a static-type-b)))
 
 (check-equal?
-  (package-sexp-structure
-    (tuple-package
+  (expressions-sexp-structure
+    (tuple-expressions
       (tuple dynamic-expression-a static-expression-b dynamic-expression-c)))
   (pair 
     `(values a c) 
@@ -105,75 +105,75 @@
 
 ; -------------------------------------------------------------------
 
-(define (package-rhs-option ($package : Package)) : (Option Package)
-  (option-bind (single (package-structure $package)) $type
+(define (expressions-rhs-option ($expressions : Expressions)) : (Option Expressions)
+  (option-bind (single (expressions-structure $expressions)) $type
     (and (field? $type)
-      (package 
-        (package-syntax $package) 
+      (expressions 
+        (expressions-syntax $expressions) 
         (field-structure $type)))))
 
 (check-equal?
-  (package-rhs-option
-    (package syntax-a 
+  (expressions-rhs-option
+    (expressions syntax-a 
       (structure 
         (field `foo
           (structure type-b type-c)))))
-  (package syntax-a (structure type-b type-c)))
+  (expressions syntax-a (structure type-b type-c)))
 
 (check-equal?
-  (package-rhs-option
-    (package syntax-a 
+  (expressions-rhs-option
+    (expressions syntax-a 
       (structure 
         (field `foo null)
         (field `bar null))))
   #f)
 
 (check-equal?
-  (package-rhs-option
-    (package syntax-a (structure (racket `foo))))
+  (expressions-rhs-option
+    (expressions syntax-a (structure (racket `foo))))
   #f)
 
 ; --------------------------------------------------------------
 
-(define (expression-apply-package
+(define (expression-apply-expressions
   ($lhs-expression : Expression)
-  ($rhs-package : Package))
-  : (Option Package)
-  (option-app package
+  ($rhs-expressions : Expressions))
+  : (Option Expressions)
+  (option-app expressions
     (make-syntax
       `(call-with-values
-        (lambda () ,(package-syntax $rhs-package))
+        (lambda () ,(expressions-syntax $rhs-expressions))
         ,(expression-syntax $lhs-expression)))
     (type-apply-structure 
       (expression-type $lhs-expression)
-      (package-structure $rhs-package))))
+      (expressions-structure $rhs-expressions))))
 
 (check-equal?
-  (option-app package-sexp-structure
-    (expression-apply-package
+  (option-app expressions-sexp-structure
+    (expression-apply-expressions
       (expression #`fn (arrow (structure type-a) (structure type-b)))
-      (package #`pkg (structure type-a))))
+      (expressions #`pkg (structure type-a))))
   (pair 
     `(call-with-values (lambda () pkg) fn)
     (structure type-b)))
 
 (check-equal?
-  (expression-apply-package
+  (expression-apply-expressions
     (expression #`fn (arrow (structure type-a) (structure type-b)))
-    (package #`pkg (structure type-b)))
+    (expressions #`pkg (structure type-b)))
   #f)
 
 ; ---------------------------------------------------------------
 
-(define (package-do ($package : Package) ($fn : (-> Scope Package))) : Package
-  (define $syntax (package-syntax $package))
-  (define $structure (package-structure $package))
+(define (expressions-do ($expressions : Expressions) ($fn : (-> Scope Expressions))) : Expressions
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
   (define $scope (structure-generate-scope $structure))
-  (define $fn-package ($fn $scope))
-  (define $fn-syntax (package-syntax $fn-package))
-  (define $fn-structure (package-structure $fn-package))
+  (define $fn-expressions ($fn $scope))
+  (define $fn-syntax (expressions-syntax $fn-expressions))
+  (define $fn-structure (expressions-structure $fn-expressions))
   (define $tmp-stack (scope-symbol-stack $scope))
-  (package
+  (expressions
     (make-syntax 
       (case (length $tmp-stack)
         ((0) $fn-syntax)
@@ -188,11 +188,11 @@
     $fn-structure))
 
 (check-equal?
-  (package-sexp-structure
-    (package-do
-      (package #`pkg (structure static-type-a))
+  (expressions-sexp-structure
+    (expressions-do
+      (expressions #`pkg (structure static-type-a))
       (lambda (($scope : Scope)) 
-        (package 
+        (expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
@@ -200,11 +200,11 @@
     (structure static-type-a)))
 
 (check-equal?
-  (package-sexp-structure
-    (package-do
-      (package #`pkg (structure dynamic-type-a static-type-b))
+  (expressions-sexp-structure
+    (expressions-do
+      (expressions #`pkg (structure dynamic-type-a static-type-b))
       (lambda (($scope : Scope)) 
-        (package 
+        (expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
@@ -212,15 +212,15 @@
     (structure static-type-b dynamic-type-a)))
 
 (check-equal?
-  (package-sexp-structure
-    (package-do
-      (package #`pkg 
+  (expressions-sexp-structure
+    (expressions-do
+      (expressions #`pkg 
         (structure 
           dynamic-type-a
           static-type-b
           dynamic-type-c))
       (lambda (($scope : Scope)) 
-        (package 
+        (expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
@@ -229,27 +229,27 @@
 
 ; -------------------------------------------------------------------------
 
-(define (package-lift-structure ($package : Package)) : (Option Structure)
-  (structure-lift (package-structure $package)))
+(define (expressions-lift-structure ($expressions : Expressions)) : (Option Structure)
+  (structure-lift (expressions-structure $expressions)))
 
 ; ---------------------------------------------------------
 
-(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
+(define (symbol-expressions-expression ($symbol : Symbol) ($expressions : Expressions)) : Expression
   (expression
-    (package-syntax
-      (if (= (package-size $package) 1)
-        $package
-        (package-do $package 
+    (expressions-syntax
+      (if (= (expressions-size $expressions) 1)
+        $expressions
+        (expressions-do $expressions 
           (lambda (($scope : Scope))
-            (package 
+            (expressions 
               (tuple-syntax (map binding-expression $scope))
-              (package-structure $package))))))
-    (field $symbol (package-structure $package))))
+              (expressions-structure $expressions))))))
+    (field $symbol (expressions-structure $expressions))))
 
 (check-equal?
   (expression-sexp-type
-    (symbol-package-expression `point
-      (package
+    (symbol-expressions-expression `point
+      (expressions
         syntax-a
         (structure
           dynamic-type-a 

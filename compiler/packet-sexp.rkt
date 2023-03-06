@@ -6,12 +6,12 @@
   leo/typed/base
   leo/typed/testing
   leo/compiler/packet
-  leo/compiler/package
-  leo/compiler/package-sexp
+  leo/compiler/expressions
+  leo/compiler/expressions-sexp
   leo/compiler/packet
   leo/compiler/expression-utils)
 
 (define (packet-sexp ($packet : Packet)) : Sexp
   (cond
-    ((package? $packet) (package-sexp $packet))
+    ((expressions? $packet) (expressions-sexp $packet))
     (else (tuple-sexp $packet))))

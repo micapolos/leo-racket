@@ -9,17 +9,17 @@
   leo/typed/stack
   leo/typed/testing
   leo/typed/environment
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/value
   leo/compiler/value-sexp
-  leo/compiler/syntax-package
+  leo/compiler/syntax-expressions
   leo/compiler/syntax-utils)
 
 (define-namespace-anchor leo-namespace-anchor)
 
 (define (leo-eval-sexp-list ($sexp-list : (Listof Sexp)))
-  (define $package 
-    (syntax-list-package 
+  (define $expressions 
+    (syntax-list-expressions 
       (map make-syntax (map sexp-datum $sexp-list))))
   (define $eval-sexp-list
     (any-structure-sexp-list
@@ -27,11 +27,11 @@
         (call-with-values
           (lambda ()
             (eval 
-              (syntax->datum (package-syntax $package))
+              (syntax->datum (expressions-syntax $expressions))
               (namespace-anchor->namespace leo-namespace-anchor)))
           (ann list (-> Any * (Listof Any))))
         (or (single $list) $list))
-      (package-structure $package)))
+      (expressions-structure $expressions)))
   (cond
     ((= (length $eval-sexp-list) 1) (car $eval-sexp-list))
     (else $eval-sexp-list)))

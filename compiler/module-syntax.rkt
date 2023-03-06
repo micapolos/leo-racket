@@ -7,16 +7,16 @@
   leo/typed/testing
   leo/compiler/racket
   leo/compiler/binding
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/scope
   leo/compiler/scope-utils
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define (package-module-syntax ($package : Package)) : Syntax
-  (define $syntax (package-syntax $package))
-  (define $structure (package-structure $package))
+(define (expressions-module-syntax ($expressions : Expressions)) : Syntax
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
   (define $scope (structure-generate-scope $structure))
   (define $tmp-stack (scope-symbol-stack $scope))
   (make-syntax 
@@ -77,8 +77,8 @@
 
 (check-equal?
   (syntax->datum
-    (package-module-syntax
-      (package #`pkg
+    (expressions-module-syntax
+      (expressions #`pkg
         (structure static-type-a))))
   `(module leo racket/base
     (module* scope 
@@ -88,8 +88,8 @@
 
 (check-equal?
   (syntax->datum
-    (package-module-syntax
-      (package #`pkg
+    (expressions-module-syntax
+      (expressions #`pkg
         (structure static-type-a dynamic-type-b))))
   `(module leo racket/base
     (module* scope 
@@ -101,8 +101,8 @@
 
 (check-equal?
   (syntax->datum
-    (package-module-syntax
-      (package #`pkg
+    (expressions-module-syntax
+      (expressions #`pkg
         (structure dynamic-type-a static-type-b dynamic-type-c))))
   `(module leo racket/base
     (module* scope 

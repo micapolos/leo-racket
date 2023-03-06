@@ -10,7 +10,7 @@
   leo/typed/stack
   leo/typed/testing
   leo/compiler/racket
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
@@ -121,10 +121,10 @@
 
 ; ---------------------------------------------------------
 
-(define (expression-field-rhs ($expression : Expression)) : (Option Package)
+(define (expression-field-rhs ($expression : Expression)) : (Option Expressions)
   (define $type (expression-type $expression))
   (and (field? $type)
-    (package
+    (expressions
       (expression-syntax $expression) 
       (field-structure $type))))
 
@@ -133,7 +133,7 @@
     (expression syntax-a 
       (field `foo
         (structure type-b type-c))))
-  (package syntax-a (structure type-b type-c)))
+  (expressions syntax-a (structure type-b type-c)))
 
 (check-equal?
   (expression-field-rhs (expression syntax-a (racket `foo)))
@@ -144,8 +144,8 @@
 (define (expression-apply-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
-  : (Option Package)
-  (option-app package
+  : (Option Expressions)
+  (option-app expressions
     (make-syntax
       (cond
         ((type-dynamic? (expression-type $lhs-expression))
@@ -158,7 +158,7 @@
       (tuple-structure $rhs-tuple))))
 
 (check-equal?
-  (option-app package-sexp-structure
+  (option-app expressions-sexp-structure
     (expression-apply-tuple
       (expression #`fn
         (arrow 
@@ -180,7 +180,7 @@
       static-type-d)))
 
 (check-equal?
-  (option-app package-sexp-structure
+  (option-app expressions-sexp-structure
     (expression-apply-tuple
       (expression #`fn (arrow dynamic-structure-a static-structure-b))
       dynamic-tuple-a))

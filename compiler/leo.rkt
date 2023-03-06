@@ -9,7 +9,7 @@
     leo/compiler/base-scope
     leo/compiler/leo-eval
     leo/compiler/leo-compile
-    leo/compiler/package
+    leo/compiler/expressions
     leo/compiler/compiler-plus-syntax
     leo/typed/syntax-match))
 

@@ -12,14 +12,14 @@
   leo/compiler/type-utils
   leo/compiler/binding
   leo/compiler/binding-utils
-  leo/compiler/package
+  leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/expression-resolve)
 
-(define (binding-resolve-tuple ($binding : Binding) ($tuple : Tuple)) : (Option Package)
+(define (binding-resolve-tuple ($binding : Binding) ($tuple : Tuple)) : (Option Expressions)
   (expression-resolve-tuple (binding-expression $binding) $tuple))
 
 (check-equal?
-  (option-app package-sexp-structure
+  (option-app expressions-sexp-structure
     (binding-resolve-tuple binding-ab tuple-a))
   (pair `(ab a) structure-b))
