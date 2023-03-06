@@ -7,4 +7,6 @@
   leo/compiler/expressions
   leo/compiler/expression)
 
-(define-type Packet (U Expressions Tuple))
+(data package
+  (expressions-option : (Option Expressions))
+  (tuple : Tuple))
