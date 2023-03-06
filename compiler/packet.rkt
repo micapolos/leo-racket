@@ -4,9 +4,7 @@
 
 (require 
   leo/typed/base
-  leo/compiler/body
+  leo/compiler/package
   leo/compiler/expression)
 
-(data packet
-  (body : Body)
-  (tuple : Tuple))
+(define-type Packet (U Package Tuple))

@@ -30,6 +30,9 @@
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
 
+(define (structure-sexp ($structure : Structure)) : Sexp
+  `(structure ,@(structure-sexp-list $structure)))
+
 (check-equal? (type-sexp (racket `foo)) `(racket foo))
 
 (check-equal? (type-sexp (racket `foo)) `(racket foo))
