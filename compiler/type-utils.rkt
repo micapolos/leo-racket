@@ -50,6 +50,7 @@
 (define structure-d dynamic-structure-d)
 
 (define structure-ab (structure type-a type-b))
+(define structure-cd (structure type-c type-d))
 
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond

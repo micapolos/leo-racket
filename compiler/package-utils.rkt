@@ -4,6 +4,7 @@
 
 (require 
   leo/typed/base
+  leo/typed/option
   leo/typed/stack
   leo/typed/testing
   leo/compiler/scope
@@ -18,82 +19,58 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
-(define (package-push-expression ($package : Package) ($expression : Expression)) : Package
-  (package 
-    (package-expressions-option $package)
-    (push (package-tuple $package) $expression)))
+(define (expressions-list-scope-resolve-fn
+  ($expressions-list : (Listof Expressions))
+  ($tuple : Tuple)
+  ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
+  (cond
+    ((null? $expressions-list) ($fn $tuple))
+    (else 
+      (expressions-resolve-fn (car $expressions-list)
+        (lambda (($expressions-tuple : Tuple))
+          (expressions-list-scope-resolve-fn
+            (cdr $expressions-list)
+            (push-stack $tuple $expressions-tuple)
+            $fn))))))
 
-(define (package-push-tuple ($package : Package) ($tuple : Tuple)) : Package
-  (package 
-    (package-expressions-option $package)
-    (push-stack (package-tuple $package) $tuple)))
+(define (package-resolve-fn
+  ($package : Package)
+  ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
+  (expressions-list-scope-resolve-fn (reverse $package) null-scope $fn))
 
-; -------------------------------------------------------------------------------
+(check-equal?
+  (option-app expressions-sexp
+    (package-resolve-fn
+      (package expressions-ab expressions-cd)
+      (lambda (($tuple : Tuple)) #f)))
+  #f)
 
-(define (package-make ($package : Package) ($fn : (-> Tuple Expression))) : Expression
-  (define $expressions-option (package-expressions-option $package))
-  (define $tuple (package-tuple $package))
-  (or
-    (and $expressions-option 
-      (expressions-do-expression $expressions-option 
-        (lambda (($scope : Scope))
-          ($fn (push-stack (scope-tuple $scope) $tuple)))))
-    ($fn $tuple)))
+(check-equal?
+  (option-app expressions-sexp
+    (package-resolve-fn
+      (package expressions-a)
+      (lambda (($tuple : Tuple))
+        (make-expressions #`result (tuple-structure $tuple)))))
+  `(expressions result (structure (racket a))))
+
+(check-equal?
+  (option-app expressions-sexp
+    (package-resolve-fn
+      (package expressions-ab expressions-cd)
+      (lambda (($tuple : Tuple))
+        (make-expressions #`result (tuple-structure $tuple)))))
+  `(expressions 
+    (let-values (((tmp-a tmp-b) ab))
+      (let-values (((tmp-c tmp-d) cd))
+        result))
+    (structure (racket a) (racket b) (racket c) (racket d))))
 
 ; --------------------------------------------------------------------------------
 
-(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
-  (package-make $package
-    (lambda (($tuple : Tuple))
-      (expression
-        (tuple-syntax $tuple)
-        (field $symbol (tuple-structure $tuple))))))
-
-; -------------------------------------------------------------------------------
-
-(define (package-do ($package : Package) ($fn : (-> Scope Expressions))) : Expressions
-  (define $expressions-option (package-expressions-option $package))
-  (define $tuple (package-tuple $package))
-  (or
-    (and $expressions-option
-      (expressions-do $expressions-option
-        (lambda (($scope : Scope))
-          (tuple-do $tuple
-            (lambda (($tuple-scope : Scope))
-              ($fn (push-stack $scope $tuple-scope)))))))
-    (tuple-do $tuple $fn)))
-
-(check-equal?
-  (expressions-sexp
-    (package-do
-      (package #f (tuple))
-      (lambda (($scope : Scope))
-        (make-expressions #`result (scope-structure $scope)))))
-  `(expressions #f (structure)))
-
-(check-equal?
-  (expressions-sexp
-    (package-do
-      (package
-        #f
-        (tuple dynamic-expression-c dynamic-expression-d))
-      (lambda (($scope : Scope))
-        (make-expressions #`result (scope-structure $scope)))))
-  `(expressions
-    (let-values (((tmp-c tmp-d) (values c d))) result)
-    (structure (racket c) (racket d))))
-
-(check-equal?
-  (expressions-sexp
-    (package-do
-      (package
-        (expressions #`exprs (structure dynamic-type-a dynamic-type-b))
-        (tuple dynamic-expression-c dynamic-expression-d))
-      (lambda (($scope : Scope))
-        (make-expressions #`result (scope-structure $scope)))))
-  `(expressions
-    (let-values (((tmp-a tmp-b) exprs))
-      (let-values (((tmp-c tmp-d) (values c d)))
-        result))
-    (structure (racket a) (racket b) (racket c) (racket d))))
+; (define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
+;   (package-do $package
+;     (lambda (($tuple : Tuple))
+;       (expression
+;         (tuple-syntax $tuple)
+;         (field $symbol (tuple-structure $tuple))))))
 

@@ -4,17 +4,11 @@
 
 (require 
   leo/typed/base
-  leo/compiler/expressions
-  leo/compiler/expression)
+  leo/typed/stack
+  leo/compiler/expressions)
 
-(data package
-  (expressions-option : (Option Expressions))
-  (tuple : Tuple))
+(define-type Package (Stackof Expressions))
 
-(define null-package (package #f null-tuple))
+(define null-package null)
 
-(define (expressions-package ($expressions : Expressions))
-  (package $expressions null-tuple))
-
-(define (tuple-package ($tuple : Tuple))
-  (package #f $tuple))
+(define package stack)

@@ -26,6 +26,10 @@
 
 (define null-expressions (expressions null-syntax null-structure))
 
+(define expressions-a (expressions #`a structure-a))
+(define expressions-ab (expressions #`ab structure-ab))
+(define expressions-cd (expressions #`cd structure-cd))
+
 (define (make-expressions ($syntax : Syntax) ($structure : Structure)) : Expressions
   (expressions
     (or (and (structure-dynamic? $structure) $syntax) null-syntax)
@@ -228,6 +232,52 @@
     (field `foo (structure dynamic-type-c static-type-b dynamic-type-a))))
 
 ; --------------------------------------------------------------------
+
+(define (expressions-resolve-fn
+  ($expressions : Expressions) 
+  ($fn : (-> Tuple (Option Expressions)))) : 
+  (Option Expressions)
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
+  (define $compiled-size (structure-compiled-size $structure))
+  (case $compiled-size
+    ((0 1) 
+      ($fn (map (curry expression $syntax) $structure)))
+    (else 
+      (define $scope (structure-generate-scope $structure))
+      (define $tmp-stack (scope-symbol-stack $scope))
+      (define $fn-expressions ($fn (map binding-expression $scope)))
+      (and $fn-expressions
+        (make-expressions
+          (make-syntax 
+            `(let-values
+              (((,@(reverse $tmp-stack)) ,$syntax))
+              ,(expressions-syntax $fn-expressions)))
+          (expressions-structure $fn-expressions))))))
+
+(check-equal?
+  (option-app expressions-sexp-structure
+    (expressions-resolve-fn expressions-a
+      (lambda (($tuple : Tuple))
+        (expressions
+          (make-syntax (reverse (map expression-syntax $tuple)))
+          (tuple-structure $tuple)))))
+  (pair 
+    `(a)
+    structure-a))
+
+(check-equal?
+  (option-app expressions-sexp-structure
+    (expressions-resolve-fn expressions-ab
+      (lambda (($tuple : Tuple))
+        (expressions 
+          (make-syntax (reverse (map expression-syntax $tuple)))
+          (tuple-structure $tuple)))))
+  (pair 
+    `(let-values (((tmp-a tmp-b) ab)) (tmp-a tmp-b))
+    structure-ab))
+
+; ---------------------------------------------------------------------
 
 (define (expressions-do ($expressions : Expressions) ($fn : (-> Scope Expressions))) : Expressions
   (define $syntax (expressions-syntax $expressions))
