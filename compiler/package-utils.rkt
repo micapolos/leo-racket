@@ -44,3 +44,50 @@
       (expression
         (tuple-syntax $tuple)
         (field $symbol (tuple-structure $tuple))))))
+
+(define (package-do ($package : Package) ($fn : (-> Scope Expressions))) : Expressions
+  (define $expressions-option (package-expressions-option $package))
+  (define $tuple (package-tuple $package))
+  (or
+    (and $expressions-option
+      (expressions-do $expressions-option
+        (lambda (($scope : Scope))
+          (tuple-do $tuple
+            (lambda (($tuple-scope : Scope))
+              ($fn (push-stack $scope $tuple-scope)))))))
+    (tuple-do $tuple $fn)))
+
+(check-equal?
+  (expressions-sexp
+    (package-do
+      (package #f (tuple))
+      (lambda (($scope : Scope))
+        (expressions #`result (scope-structure $scope)))))
+  `(expressions result (structure)))
+
+(check-equal?
+  (expressions-sexp
+    (package-do
+      (package
+        #f
+        (tuple dynamic-expression-c dynamic-expression-d))
+      (lambda (($scope : Scope))
+        (expressions #`result (scope-structure $scope)))))
+  `(expressions
+    (let-values (((tmp-c tmp-d) (values c d))) result)
+    (structure (racket c) (racket d))))
+
+(check-equal?
+  (expressions-sexp
+    (package-do
+      (package
+        (expressions #`exprs (structure dynamic-type-a dynamic-type-b))
+        (tuple dynamic-expression-c dynamic-expression-d))
+      (lambda (($scope : Scope))
+        (expressions #`result (scope-structure $scope)))))
+  `(expressions
+    (let-values (((tmp-a tmp-b) exprs))
+      (let-values (((tmp-c tmp-d) (values c d)))
+        result))
+    (structure (racket a) (racket b) (racket c) (racket d))))
+

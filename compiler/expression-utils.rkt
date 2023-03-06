@@ -53,6 +53,11 @@
 
 (define tuple-ab (tuple expression-a expression-b))
 
+(define (make-expression ($syntax : Syntax) ($type : Type)) : Expression
+  (expression
+    (or (and (type-dynamic? $type) $syntax) null-syntax)
+    $type))
+
 (define (expression-sexp ($expression : Expression)) : Sexp
   `(expression
     ,(syntax->datum (expression-syntax $expression))

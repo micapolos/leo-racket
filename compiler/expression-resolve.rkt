@@ -275,7 +275,7 @@
   (define $fn-syntax (expressions-syntax $fn-expressions))
   (define $fn-structure (expressions-structure $fn-expressions))
   (define $tmp-stack (scope-symbol-stack $scope))
-  (expressions
+  (make-expressions
     (make-syntax 
       (case (length $tmp-stack)
         ((0) $fn-syntax)
@@ -294,11 +294,11 @@
     (tuple-do
       (tuple static-expression-a)
       (lambda (($scope : Scope)) 
-        (expressions 
+        (make-expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
-    `(values)
+    #f
     (structure static-type-a)))
 
 (check-equal?
@@ -306,7 +306,7 @@
     (tuple-do
       (tuple dynamic-expression-a static-expression-b)
       (lambda (($scope : Scope)) 
-        (expressions 
+        (make-expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
@@ -318,7 +318,7 @@
     (tuple-do
       (tuple dynamic-expression-a static-expression-b dynamic-expression-c)
       (lambda (($scope : Scope)) 
-        (expressions 
+        (make-expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
