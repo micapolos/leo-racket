@@ -22,15 +22,16 @@
     (syntax-list-package 
       (map make-syntax (map sexp-datum $sexp-list))))
   (define $eval-sexp-list
-    (map value-sexp
-      (map value
+    (any-structure-sexp-list
+      (bind $list
         (call-with-values
           (lambda ()
             (eval 
               (syntax->datum (package-syntax $package))
               (namespace-anchor->namespace leo-namespace-anchor)))
           (ann list (-> Any * (Listof Any))))
-        (reverse (package-structure $package)))))
+        (or (single $list) $list))
+      (package-structure $package)))
   (cond
     ((= (length $eval-sexp-list) 1) (car $eval-sexp-list))
     (else $eval-sexp-list)))
@@ -53,7 +54,3 @@
         text
         (plus "!!!"))))
   "3 pieces!!!")
-
-(leo-eval
-  `(
-    foo bar))
