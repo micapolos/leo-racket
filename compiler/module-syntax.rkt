@@ -18,7 +18,7 @@
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
   (define $scope (structure-generate-scope $structure))
-  (define $tmp-stack (scope-symbol-stack $scope))
+  (define $tmp-stack (scope-identifier-stack $scope))
   (make-syntax 
     `(module leo racket/base
       ,(scope-module-syntax $scope)
@@ -49,8 +49,8 @@
   (make-syntax
     `(binding 
       ,(type-syntax (binding-type $binding))
-      ,(option-bind (binding-symbol-option $binding) $symbol
-        `(quote ,$symbol)))))
+      ,(option-bind (binding-identifier-option $binding) $identifier
+        `(quote ,$identifier)))))
 
 (define (type-syntax ($type : Type)) : Syntax
   (make-syntax

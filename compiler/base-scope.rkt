@@ -16,67 +16,67 @@
           number-type
           (field `plus (structure number-type)))
         (structure number-type))
-      `+)
+      #`+)
     (binding
       (arrow
         (structure 
           number-type
           (field `minus (structure number-type)))
         (structure number-type))
-      `-)
+      #`-)
     (binding
       (arrow
         (structure 
           number-type
           (field `times (structure number-type)))
         (structure number-type))
-      `*)
+      #`*)
     (binding
       (arrow
         (structure 
           number-type
           (a text-type))
         (structure text-type))
-      `number->string)
+      #`number->string)
     (binding
       (arrow
         (structure 
           int-type
           (a text-type))
         (structure text-type))
-      `number->string)
+      #`number->string)
     (binding
       (arrow
         (structure 
           int-type
           (field `plus (structure int-type)))
         (structure int-type))
-      `unsafe-fx+)
+      #`unsafe-fx+)
     (binding
       (arrow
         (structure 
           int-type
           (field `minus (structure int-type)))
         (structure int-type))
-      `unsafe-fx-)
+      #`unsafe-fx-)
     (binding
       (arrow
         (structure 
           int-type
           (field `times (structure int-type)))
         (structure int-type))
-      `unsafe-fx*)
+      #`unsafe-fx*)
     (binding
       (arrow
         (structure 
           int-type
           (a text-type))
         (structure text-type))
-      `number->string)
+      #`number->string)
     (binding
       (arrow
         (structure 
           text-type
           (field `plus (structure text-type)))
         (structure text-type))
-      `string-append)))
+      #`string-append)))

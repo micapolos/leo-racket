@@ -181,7 +181,7 @@
   (define $fn-expression ($fn $scope))
   (define $fn-syntax (expression-syntax $fn-expression))
   (define $fn-type (expression-type $fn-expression))
-  (define $tmp-stack (scope-symbol-stack $scope))
+  (define $tmp-stack (scope-identifier-stack $scope))
   (make-expression
     (make-syntax 
       (and (type-dynamic? $fn-type)
@@ -203,7 +203,7 @@
       (expressions #`x (structure static-type-a))
       (lambda (($scope : Scope))
         (expression
-          (make-syntax `(list ,@(reverse (scope-symbol-stack $scope))))
+          (make-syntax `(list ,@(reverse (scope-identifier-stack $scope))))
           (field `foo (reverse (scope-structure $scope)))))))
   (pair #f (field `foo (structure static-type-a))))
 
@@ -213,7 +213,7 @@
       (expressions #`x (structure dynamic-type-a static-type-b))
       (lambda (($scope : Scope))
         (expression
-          (make-syntax `(list ,@(reverse (scope-symbol-stack $scope))))
+          (make-syntax `(list ,@(reverse (scope-identifier-stack $scope))))
           (field `foo (reverse (scope-structure $scope)))))))
   (pair 
     `(let ((tmp-a x)) (list tmp-a)) 
@@ -225,7 +225,7 @@
       (expressions #`x (structure dynamic-type-a static-type-b dynamic-type-c))
       (lambda (($scope : Scope))
         (expression
-          (make-syntax `(list ,@(scope-symbol-stack $scope)))
+          (make-syntax `(list ,@(scope-identifier-stack $scope)))
           (field `foo (reverse (scope-structure $scope)))))))
   (pair 
     `(let-values (((tmp-a tmp-c) x)) (list tmp-c tmp-a)) 
@@ -245,7 +245,7 @@
       ($fn (map (curry expression $syntax) $structure)))
     (else 
       (define $scope (structure-generate-scope $structure))
-      (define $tmp-stack (scope-symbol-stack $scope))
+      (define $tmp-stack (scope-identifier-stack $scope))
       (define $fn-expressions ($fn (map binding-expression $scope)))
       (and $fn-expressions
         (make-expressions
@@ -286,7 +286,7 @@
   (define $fn-expressions ($fn $scope))
   (define $fn-syntax (expressions-syntax $fn-expressions))
   (define $fn-structure (expressions-structure $fn-expressions))
-  (define $tmp-stack (scope-symbol-stack $scope))
+  (define $tmp-stack (scope-identifier-stack $scope))
   (make-expressions
     (make-syntax 
       (case (length $tmp-stack)
@@ -307,7 +307,7 @@
       (make-expressions #`pkg (structure static-type-a))
       (lambda (($scope : Scope)) 
         (make-expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     #f
@@ -319,7 +319,7 @@
       (expressions #`pkg (structure dynamic-type-a static-type-b))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let ((tmp-a pkg)) (values tmp-a)) 
@@ -335,7 +335,7 @@
           dynamic-type-c))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let-values (((tmp-a tmp-c) pkg)) (values tmp-c tmp-a)) 

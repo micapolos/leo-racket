@@ -52,7 +52,7 @@
               (arrow
                 (structure text-type (field `plus (structure text-type)))
                 (structure text-type))
-              `string-append))
+              #`string-append))
           (tuple (text-expression "Hello, ")))
         (field-expression `plus 
           (tuple (text-expression "world!"))))))

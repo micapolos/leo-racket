@@ -274,7 +274,7 @@
   (define $fn-expressions ($fn $scope))
   (define $fn-syntax (expressions-syntax $fn-expressions))
   (define $fn-structure (expressions-structure $fn-expressions))
-  (define $tmp-stack (scope-symbol-stack $scope))
+  (define $tmp-stack (scope-identifier-stack $scope))
   (make-expressions
     (make-syntax 
       (case (length $tmp-stack)
@@ -295,7 +295,7 @@
       (tuple static-expression-a)
       (lambda (($scope : Scope)) 
         (make-expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     #f
@@ -307,7 +307,7 @@
       (tuple dynamic-expression-a static-expression-b)
       (lambda (($scope : Scope)) 
         (make-expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let ((tmp-a a)) (values tmp-a)) 
@@ -319,7 +319,7 @@
       (tuple dynamic-expression-a static-expression-b dynamic-expression-c)
       (lambda (($scope : Scope)) 
         (make-expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(let-values (((tmp-a tmp-c) (values a c))) (values tmp-c tmp-a))
@@ -335,7 +335,7 @@
     (define $fn-expressions ($fn $scope))
     (define $fn-syntax (expressions-syntax $fn-expressions))
     (define $fn-structure (expressions-structure $fn-expressions))
-    (define $tmp-stack (scope-symbol-stack $scope))
+    (define $tmp-stack (scope-identifier-stack $scope))
     (define $arrow (arrow $structure $fn-structure))
     (expressions
       (cond
@@ -356,7 +356,7 @@
       (tuple (type-expression static-type-a))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     null-sexp
@@ -371,7 +371,7 @@
       (tuple (type-expression static-type-a))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(push (scope-symbol-stack $scope) `b)))
+          (make-syntax `(values ,@(push (scope-identifier-stack $scope) `b)))
           (push (scope-structure $scope) dynamic-type-b)))))
   (pair 
     `(lambda () (values b))
@@ -388,7 +388,7 @@
         (type-expression static-type-b))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(lambda (tmp-a) (values tmp-a)) 
@@ -406,7 +406,7 @@
         (type-expression dynamic-type-c))
       (lambda (($scope : Scope)) 
         (expressions 
-          (make-syntax `(values ,@(scope-symbol-stack $scope)))
+          (make-syntax `(values ,@(scope-identifier-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
     `(lambda (tmp-a tmp-c) (values tmp-c tmp-a))
