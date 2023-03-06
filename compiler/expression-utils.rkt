@@ -285,6 +285,11 @@
       ((1) (top $dynamic-syntax-stack))
       (else `(values ,@(reverse $dynamic-syntax-stack))))))
 
+(define (tuple-values-syntax ($tuple : Tuple)) : Syntax
+  (or
+    (tuple-values-syntax-option $tuple)
+    (make-syntax `(values))))
+
 (check-equal?
   (option-map
     (tuple-values-syntax-option null)
