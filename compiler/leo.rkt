@@ -27,4 +27,4 @@
       (replace-context $syntax
         #`(quote #,(leo-compile-any #`(body ...)))))))
 
-(leoc (int 123) (do int (plus int)))
+(leoc (point 10 20 30))
