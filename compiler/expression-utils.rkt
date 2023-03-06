@@ -73,9 +73,6 @@
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 
-(define (expression-identifier? ($expression : Expression)) : Boolean
-  (identifier? (expression-syntax $expression)))
-
 (define (expression-sexp ($expression : Expression)) : Sexp
   (syntax->datum (expression-syntax $expression)))
 
