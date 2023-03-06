@@ -165,6 +165,65 @@
 
 ; ---------------------------------------------------------------
 
+(define (expressions-do-expression ($expressions : Expressions) ($fn : (-> Scope Expression))) : Expression
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
+  (define $scope (structure-generate-scope $structure))
+  (define $fn-expression ($fn $scope))
+  (define $fn-syntax (expression-syntax $fn-expression))
+  (define $fn-type (expression-type $fn-expression))
+  (define $tmp-stack (scope-symbol-stack $scope))
+  (expression
+    (make-syntax 
+      (and (type-dynamic? $fn-type)
+        (case (length $tmp-stack)
+          ((0) $fn-syntax)
+          ((1) 
+            `(let
+              ((,(car $tmp-stack) ,$syntax))
+              ,$fn-syntax))
+          (else 
+            `(let-values 
+              (((,@(reverse $tmp-stack)) ,$syntax))
+              ,$fn-syntax)))))
+    $fn-type))
+
+(check-equal?
+  (expression-sexp-type
+    (expressions-do-expression
+      (expressions #`x (structure static-type-a))
+      (lambda (($scope : Scope))
+        (expression
+          (make-syntax `(list ,@(reverse (scope-symbol-stack $scope))))
+          (field `foo (reverse (scope-structure $scope)))))))
+  (pair #f (field `foo (structure static-type-a))))
+
+(check-equal?
+  (expression-sexp-type
+    (expressions-do-expression
+      (expressions #`x (structure dynamic-type-a static-type-b))
+      (lambda (($scope : Scope))
+        (expression
+          (make-syntax `(list ,@(reverse (scope-symbol-stack $scope))))
+          (field `foo (reverse (scope-structure $scope)))))))
+  (pair 
+    `(let ((tmp-a x)) (list tmp-a)) 
+    (field `foo (structure static-type-b dynamic-type-a))))
+
+(check-equal?
+  (expression-sexp-type
+    (expressions-do-expression
+      (expressions #`x (structure dynamic-type-a static-type-b dynamic-type-c))
+      (lambda (($scope : Scope))
+        (expression
+          (make-syntax `(list ,@(scope-symbol-stack $scope)))
+          (field `foo (reverse (scope-structure $scope)))))))
+  (pair 
+    `(let-values (((tmp-a tmp-c) x)) (list tmp-c tmp-a)) 
+    (field `foo (structure dynamic-type-c static-type-b dynamic-type-a))))
+
+; --------------------------------------------------------------------
+
 (define (expressions-do ($expressions : Expressions) ($fn : (-> Scope Expressions))) : Expressions
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))

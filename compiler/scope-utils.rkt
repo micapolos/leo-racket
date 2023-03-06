@@ -20,3 +20,6 @@
 
 (define (scope-structure ($scope : Scope)) : Structure
   (map binding-type $scope))
+
+(define (scope-tuple ($scope : Scope)) : Tuple
+  (map binding-expression $scope))
