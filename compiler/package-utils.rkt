@@ -28,16 +28,19 @@
     (package-expressions-option $package)
     (push-stack (package-tuple $package) $tuple)))
 
-(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
+(define (package-make-expression ($package : Package) ($fn : (-> Tuple Expression))) : Expression
   (define $expressions-option (package-expressions-option $package))
   (define $tuple (package-tuple $package))
   (or
     (and $expressions-option 
       (expressions-do-expression $expressions-option 
         (lambda (($scope : Scope))
-          (expression
-            (tuple-syntax (push-stack (scope-tuple $scope) $tuple))
-            (field $symbol (tuple-structure $tuple))))))
-    (expression
-      (tuple-syntax $tuple)
-      (field $symbol (tuple-structure $tuple)))))
+          ($fn (push-stack (scope-tuple $scope) $tuple)))))
+    ($fn $tuple)))
+
+(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
+  (package-make-expression $package
+    (lambda (($tuple : Tuple))
+      (expression
+        (tuple-syntax $tuple)
+        (field $symbol (tuple-structure $tuple))))))
