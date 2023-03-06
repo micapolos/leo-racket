@@ -25,5 +25,7 @@
 (check-equal?
   (body-sexp
     (packet-values-body
-      (packet (body #`foo #`bar) (tuple expression-c expression-d))))
-  `(body foo bar (values c d)))
+      (packet 
+        (body syntax-a syntax-b) 
+        (tuple expression-c expression-d))))
+  `(body a b (values c d)))
