@@ -110,7 +110,7 @@
 
 ; ---------------------------------------------------------
 
-(define (symbol-package-expression ($symbol : Symbol)($package : Package)) : Expression
+(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
   (expression
     (package-syntax $package)
     (field $symbol (package-structure $package))))

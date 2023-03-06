@@ -40,3 +40,7 @@
 (define syntax-b (make-syntax `b srcloc-b))
 (define syntax-c (make-syntax `c srcloc-c))
 (define syntax-d (make-syntax `d srcloc-d))
+
+(define (syntax-syntax-list ($syntax : Syntax)) : (Listof Syntax)
+  (define $syntax-e (syntax-e $syntax))
+  (or (and (list? $syntax-e) $syntax-e) (list $syntax)))
