@@ -7,6 +7,7 @@
   leo/typed/testing
   leo/compiler/packet
   leo/compiler/body
+  leo/compiler/body-sexp
   leo/compiler/typed
   leo/compiler/expression
   leo/compiler/expression-utils
