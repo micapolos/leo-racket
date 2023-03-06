@@ -36,7 +36,7 @@
     ((= (length $eval-sexp-list) 1) (car $eval-sexp-list))
     (else $eval-sexp-list)))
 
-(define (leo-eval ($sexp : Sexp))
+(define (leo-eval ($sexp : Sexp)) : Sexp
   (leo-eval-sexp-list
     (cond
       ((list? $sexp) $sexp)
