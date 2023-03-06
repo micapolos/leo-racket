@@ -62,8 +62,16 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `do $args
-    #f))
+  (syntax-symbol-match-args $syntax `doing $doing-syntax-list
+    (define $scope (compiler-scope $compiler))
+    (define $tuple (compiler-tuple $compiler))
+    (option-app compiler $scope
+      (option-app package-tuple
+        (tuple-doing $tuple
+          (lambda (($scope : Scope))
+            (scope-syntax-list-package 
+              (push-stack (compiler-scope $compiler) $scope) 
+              $doing-syntax-list)))))))
 
 (define (compiler-syntax-resolve-default
   ($compiler : Compiler) 
