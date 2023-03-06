@@ -110,30 +110,6 @@
 
 ; ---------------------------------------------------------
 
-(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
-  (expression
-    (package-syntax $package)
-    (field $symbol (package-structure $package))))
-
-(check-equal?
-  (expression-sexp-type
-    (symbol-package-expression `point
-      (package
-        syntax-a
-        (structure
-          dynamic-type-a 
-          static-type-b 
-          dynamic-type-c))))
-  (pair
-    `a
-    (field `point 
-      (stack 
-        dynamic-type-a 
-        static-type-b 
-        dynamic-type-c))))
-
-; ---------------------------------------------------------
-
 (define (expression-field-rhs ($expression : Expression)) : (Option Package)
   (define $type (expression-type $expression))
   (and (field? $type)

@@ -10,6 +10,7 @@
   leo/typed/testing
   leo/typed/stack
   leo/compiler/racket
+  leo/compiler/binding-utils
   leo/compiler/sexp-utils
   leo/compiler/scope
   leo/compiler/scope-utils
@@ -182,7 +183,7 @@
             ,$fn-syntax))
         (else 
           `(let-values 
-            ((,@(reverse $tmp-stack)) ,$syntax) 
+            (((,@(reverse $tmp-stack)) ,$syntax))
             ,$fn-syntax))))
     $fn-structure))
 
@@ -223,10 +224,41 @@
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
-    `(let-values ((tmp-a tmp-c) pkg) (values tmp-c tmp-a)) 
+    `(let-values (((tmp-a tmp-c) pkg)) (values tmp-c tmp-a)) 
     (structure dynamic-type-c static-type-b dynamic-type-a)))
 
 ; -------------------------------------------------------------------------
 
 (define (package-lift-structure ($package : Package)) : (Option Structure)
   (structure-lift (package-structure $package)))
+
+; ---------------------------------------------------------
+
+(define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
+  (expression
+    (package-syntax
+      (if (= (package-size $package) 1)
+        $package
+        (package-do $package 
+          (lambda (($scope : Scope))
+            (package 
+              (tuple-syntax (map binding-expression $scope))
+              (package-structure $package))))))
+    (field $symbol (package-structure $package))))
+
+(check-equal?
+  (expression-sexp-type
+    (symbol-package-expression `point
+      (package
+        syntax-a
+        (structure
+          dynamic-type-a 
+          static-type-b 
+          dynamic-type-c))))
+  (pair
+    `(let-values (((tmp-a tmp-c) a)) (cons tmp-a tmp-c))
+    (field `point 
+      (stack 
+        dynamic-type-a 
+        static-type-b 
+        dynamic-type-c))))

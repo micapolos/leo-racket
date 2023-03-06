@@ -285,7 +285,7 @@
             ,$fn-syntax))
         (else 
           `(let-values 
-            ((,@(reverse $tmp-stack)) ,$values-syntax)
+            (((,@(reverse $tmp-stack)) ,$values-syntax))
             ,$fn-syntax))))
     $fn-structure))
 
@@ -322,7 +322,7 @@
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
-    `(let-values ((tmp-a tmp-c) (values a c)) (values tmp-c tmp-a)) 
+    `(let-values (((tmp-a tmp-c) (values a c))) (values tmp-c tmp-a))
     (structure dynamic-type-c static-type-b dynamic-type-a)))
 
 ; -----------------------------------------------------------------------
