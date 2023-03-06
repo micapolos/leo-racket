@@ -16,6 +16,7 @@
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-check
+  leo/compiler/type-sexp
   leo/compiler/typed
   leo/compiler/sourced
   leo/compiler/type-utils)
@@ -52,6 +53,15 @@
 
 (define tuple-ab (tuple expression-a expression-b))
 
+(define (expression-sexp ($expression : Expression)) : Sexp
+  `(expression
+    ,(syntax->datum (expression-syntax $expression))
+    ,(type-sexp (expression-type $expression))))
+
+(check-equal?
+  (expression-sexp (expression syntax-a static-type-b))
+  `(expression a b))
+
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
 
@@ -73,12 +83,9 @@
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 
-(define (expression-sexp ($expression : Expression)) : Sexp
-  (syntax->datum (expression-syntax $expression)))
-
 (define (expression-sexp-type ($expression : Expression)) : (Pairof Sexp Type)
   (pair
-    (expression-sexp $expression)
+    (syntax->datum (expression-syntax $expression))
     (expression-type $expression)))
 
 (define (tuple-structure 
