@@ -25,6 +25,6 @@
   (syntax-case $syntax ()
     ((_ body ...)
       (replace-context $syntax
-        (leo-compile-any #`(body ...))))))
+        #`(quote #,(leo-compile-any #`(body ...)))))))
 
-(leoc (point (x 10) (y 20)))
+(leoc (int 123) (do int (plus int)))
