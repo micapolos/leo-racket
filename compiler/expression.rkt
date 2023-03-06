@@ -5,7 +5,11 @@
 (require
   leo/typed/base
   leo/typed/stack
-  leo/compiler/type)
+  leo/typed/testing
+  leo/compiler/syntax-utils
+  leo/compiler/type
+  leo/compiler/type-utils
+  leo/compiler/type-sexp)
 
 (data expression (syntax : Syntax) (type : Type))
 

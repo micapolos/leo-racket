@@ -62,6 +62,13 @@
   (expression-sexp (expression syntax-a static-type-b))
   `(expression a b))
 
+(define (tuple-sexp ($tuple : Tuple)) : Sexp
+  `(tuple ,@(reverse (map expression-sexp $tuple))))
+
+(check-equal?
+  (tuple-sexp (tuple expression-a expression-b))
+  `(tuple (expression a (racket a)) (expression b (racket b))))
+
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
 
