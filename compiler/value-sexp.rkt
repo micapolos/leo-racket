@@ -44,13 +44,16 @@
         (else 
           `(
             ,$symbol
-            ,@(reverse
-              (map
-                (lambda (($index : Exact-Nonnegative-Integer))
-                  (value-sexp (any-structure-ref $any $structure $index)))
-                (range (length $structure))))))))
+            ,@(any-structure-sexp-list $any $structure)))))
     ((arrow? $type) (type-sexp $type))
     ((a? $type) `(a ,(type-sexp (a-type $type))))))
+
+(define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
+  (reverse
+    (map
+      (lambda (($index : Exact-Nonnegative-Integer))
+        (value-sexp (any-structure-ref $any $structure $index)))
+      (range (length $structure)))))
 
 (define (any-structure-ref
   ($any : Any)

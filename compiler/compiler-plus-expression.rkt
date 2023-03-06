@@ -36,6 +36,16 @@
   (map expression-sexp-type
     (compiler-tuple
       (compiler-plus-expression
+        (compiler null-scope (tuple expression-a))
+        expression-b)))
+  (stack 
+    (pair `a type-a)
+    (pair `b type-b)))
+
+(check-equal?
+  (map expression-sexp-type
+    (compiler-tuple
+      (compiler-plus-expression
         (compiler
           (scope
             (binding

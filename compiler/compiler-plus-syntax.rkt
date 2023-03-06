@@ -103,6 +103,36 @@
 ; ----------------------------------------------------------------------------
 
 (check-equal?
+  (map expression-sexp-type
+    (compiler-tuple
+      (compiler-plus-syntax
+        (compiler null-scope (tuple (number-expression 3.14)))
+        #`b)))
+  (stack 
+    (pair 3.14 number-type)
+    (pair null-sexp static-type-b)))
+
+(check-equal?
+  (map expression-sexp-type
+    (compiler-tuple
+      (compiler-plus-syntax
+        (compiler null-scope (tuple (number-expression 3.14)))
+        #`foo)))
+  (stack 
+    (pair 3.14 number-type)
+    (pair #f (field `foo null-structure))))
+
+(check-equal?
+  (map expression-sexp-type
+    (compiler-tuple
+      (compiler-plus-syntax
+        (compiler null-scope (tuple (number-expression 3.14)))
+        #`"foo")))
+  (stack 
+    (pair 3.14 number-type)
+    (pair "foo" text-type)))
+
+(check-equal?
   (package-sexp-structure
     (scope-syntax-list-package null-scope (list #`number)))
   (pair null-sexp (structure (a number-type))))

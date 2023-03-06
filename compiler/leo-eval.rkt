@@ -53,3 +53,7 @@
         text
         (plus "!!!"))))
   "3 pieces!!!")
+
+(leo-eval
+  `(
+    foo bar))
