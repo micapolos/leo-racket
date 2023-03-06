@@ -62,8 +62,8 @@
     (package-do
       (package #f (tuple))
       (lambda (($scope : Scope))
-        (expressions #`result (scope-structure $scope)))))
-  `(expressions result (structure)))
+        (make-expressions #`result (scope-structure $scope)))))
+  `(expressions #f (structure)))
 
 (check-equal?
   (expressions-sexp
@@ -72,7 +72,7 @@
         #f
         (tuple dynamic-expression-c dynamic-expression-d))
       (lambda (($scope : Scope))
-        (expressions #`result (scope-structure $scope)))))
+        (make-expressions #`result (scope-structure $scope)))))
   `(expressions
     (let-values (((tmp-c tmp-d) (values c d))) result)
     (structure (racket c) (racket d))))
@@ -84,7 +84,7 @@
         (expressions #`exprs (structure dynamic-type-a dynamic-type-b))
         (tuple dynamic-expression-c dynamic-expression-d))
       (lambda (($scope : Scope))
-        (expressions #`result (scope-structure $scope)))))
+        (make-expressions #`result (scope-structure $scope)))))
   `(expressions
     (let-values (((tmp-a tmp-b) exprs))
       (let-values (((tmp-c tmp-d) (values c d)))
