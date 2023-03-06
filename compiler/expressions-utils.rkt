@@ -178,7 +178,7 @@
   (define $fn-syntax (expression-syntax $fn-expression))
   (define $fn-type (expression-type $fn-expression))
   (define $tmp-stack (scope-symbol-stack $scope))
-  (expression
+  (make-expression
     (make-syntax 
       (and (type-dynamic? $fn-type)
         (case (length $tmp-stack)
@@ -254,9 +254,9 @@
 (check-equal?
   (expressions-sexp-structure
     (expressions-do
-      (expressions #`pkg (structure static-type-a))
+      (make-expressions #`pkg (structure static-type-a))
       (lambda (($scope : Scope)) 
-        (expressions 
+        (make-expressions 
           (make-syntax `(values ,@(scope-symbol-stack $scope)))
           (reverse (scope-structure $scope))))))
   (pair 
