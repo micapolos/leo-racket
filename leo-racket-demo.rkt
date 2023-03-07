@@ -1,7 +1,10 @@
 #lang leo/racket
 
-(point 
-  (x 10)
-  (y 20))
-x number
-(plus 320)
+10
+(do
+  number
+  (plus number)
+  (times 2.0))
+text
+(plus " ")
+(plus "apples!!!")
