@@ -133,7 +133,7 @@
               (number-expression 3.14))))
         #`b)))
   `(package
-    (expressions 3.14 (structure (number racket)))
+    (expressions 3.14 (structure number))
     (expressions #f (structure b))))
 
 ; number plus field
@@ -147,7 +147,7 @@
               (number-expression 3.14))))
         #`foo)))
   `(package
-    (expressions 3.14 (structure (number racket)))
+    (expressions 3.14 (structure number))
     (expressions #f (structure foo))))
 
 ; number plus string
@@ -161,8 +161,8 @@
               (number-expression 3.14))))
         #`"foo")))
   `(package
-    (expressions 3.14 (structure (number racket)))
-    (expressions "foo" (structure (text racket)))))
+    (expressions 3.14 (structure number))
+    (expressions "foo" (structure text))))
 
 (check-equal?
   (expressions-sexp-structure

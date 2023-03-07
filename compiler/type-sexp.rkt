@@ -12,6 +12,11 @@
 (define (type-sexp ($type : Type)) : Sexp
   (cond
     ((racket? $type) `racket)
+    ((equal? $type number-type) `number)
+    ((equal? $type text-type) `text)
+    ((equal? $type int-type) `int)
+    ((equal? $type float-type) `float)
+    ((equal? $type boolean-type) `boolean)
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))
@@ -34,6 +39,12 @@
 
 (check-equal? (type-sexp (racket)) `racket)
 
+(check-equal? (type-sexp number-type) `number)
+(check-equal? (type-sexp text-type) `text)
+(check-equal? (type-sexp float-type) `float)
+(check-equal? (type-sexp int-type) `int)
+(check-equal? (type-sexp boolean-type) `boolean)
+
 (check-equal? (type-sexp (field `foo null)) `foo)
 
 (check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
@@ -46,9 +57,9 @@
 (check-equal? 
   (type-sexp 
     (arrow 
-      (stack (null-field `number) (null-field `string))
-      (stack (null-field `boolean) (null-field `fixnum))))
-  `(function number string (giving boolean fixnum)))
+      (stack number-type text-type)
+      (stack boolean-type int-type)))
+  `(function number text (giving boolean int)))
 
 (check-equal? 
   (type-sexp (a (racket)))

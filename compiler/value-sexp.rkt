@@ -97,11 +97,11 @@
       (arrow 
         (stack text-type) 
         (stack number-type))))
-  `(function (text racket) (giving (number racket))))
+  `(function text (giving number)))
 
 (check-equal?
   (value-sexp (value `foo (a number-type)))
-  `(a (number racket)))
+  `(a number))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack text-type))))

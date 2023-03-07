@@ -67,4 +67,4 @@
   `(package
     (expressions
       (string-append "Hello, " "world!") 
-      (structure (text racket)))))
+      (structure text))))
