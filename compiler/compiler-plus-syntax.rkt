@@ -20,6 +20,9 @@
   leo/compiler/syntax-expression
   leo/compiler/compiler-plus-expression
   leo/compiler/expression-utils
+  leo/compiler/package-utils
+  leo/compiler/package-sexp
+  leo/compiler/package
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -27,8 +30,8 @@
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (tuple-expressions
-    (compiler-tuple
+  (package-expressions
+    (compiler-package
       (fold 
         (compiler $scope null-tuple)
         $syntax-list
@@ -49,10 +52,10 @@
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `do $do-syntax-list
     (define $scope (compiler-scope $compiler))
-    (define $tuple (compiler-tuple $compiler))
+    (define $package (compiler-package $compiler))
     (compiler $scope
-      (expressions-tuple
-        (tuple-do $tuple
+      (package
+        (package-do $package
           (lambda (($scope : Scope))
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
@@ -64,10 +67,10 @@
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `doing $doing-syntax-list
     (define $scope (compiler-scope $compiler))
-    (define $tuple (compiler-tuple $compiler))
-    (option-app compiler $scope
-      (option-app expressions-tuple
-        (tuple-doing $tuple
+    (define $package (compiler-package $compiler))
+    (compiler $scope
+      (package
+        (package-do $package
           (lambda (($scope : Scope))
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
@@ -110,35 +113,47 @@
 
 ; ----------------------------------------------------------------------------
 
+; number plus static
 (check-equal?
-  (map expression-sexp-type
-    (compiler-tuple
+  (package-sexp
+    (compiler-package
       (compiler-plus-syntax
-        (compiler null-scope (tuple (number-expression 3.14)))
+        (compiler null-scope 
+          (package 
+            (expression-expressions 
+              (number-expression 3.14))))
         #`b)))
-  (stack 
-    (pair 3.14 number-type)
-    (pair null-sexp static-type-b)))
+  `(package
+    (expressions 3.14 (structure (number (racket number))))
+    (expressions #f (structure b))))
 
+; number plus field
 (check-equal?
-  (map expression-sexp-type
-    (compiler-tuple
+  (package-sexp
+    (compiler-package
       (compiler-plus-syntax
-        (compiler null-scope (tuple (number-expression 3.14)))
+        (compiler null-scope 
+          (package 
+            (expression-expressions 
+              (number-expression 3.14))))
         #`foo)))
-  (stack 
-    (pair 3.14 number-type)
-    (pair #f (field `foo null-structure))))
+  `(package
+    (expressions 3.14 (structure (number (racket number))))
+    (expressions #f (structure foo))))
 
+; number plus string
 (check-equal?
-  (map expression-sexp-type
-    (compiler-tuple
+  (package-sexp
+    (compiler-package
       (compiler-plus-syntax
-        (compiler null-scope (tuple (number-expression 3.14)))
+        (compiler null-scope 
+          (package
+            (expression-expressions 
+              (number-expression 3.14))))
         #`"foo")))
-  (stack 
-    (pair 3.14 number-type)
-    (pair "foo" text-type)))
+  `(package
+    (expressions 3.14 (structure (number (racket number))))
+    (expressions "foo" (structure (text (racket string))))))
 
 (check-equal?
   (expressions-sexp-structure
@@ -171,5 +186,5 @@
         #`(plus (int 2))
         #`(do int (plus int)))))
   (pair 
-    `(let ((tmp-int (unsafe-fx+ 1 2))) (unsafe-fx+ tmp-int tmp-int))
+    `(let-values (((tmp-int) (unsafe-fx+ 1 2))) (unsafe-fx+ tmp-int tmp-int))
     (structure int-type)))

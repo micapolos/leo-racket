@@ -14,6 +14,9 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve
   leo/compiler/expressions-utils
+  leo/compiler/package
+  leo/compiler/package-utils
+  leo/compiler/package-sexp
   leo/compiler/scope-resolve
   leo/compiler/type
   leo/compiler/type-utils)
@@ -22,29 +25,34 @@
   ($compiler : Compiler) 
   ($expression : Expression)) : Compiler
   (define $scope (compiler-scope $compiler))
-  (define $tuple (push (compiler-tuple $compiler) $expression))
+  (define $package 
+    (push 
+      (compiler-package $compiler) 
+      (expression-expressions $expression)))
   (option-app compiler
     $scope
     (or
-      (option-app expressions-tuple
-        (or
-          (scope-resolve-tuple $scope $tuple)
-          (tuple-resolve $tuple)))
-      $tuple)))
+      (option-app package
+        (package-resolve-fn $package
+          (lambda (($tuple : Tuple))
+            (or
+              (scope-resolve-tuple $scope $tuple)
+              (tuple-resolve $tuple)))))
+      $package)))
 
 (check-equal?
-  (map expression-sexp-type
-    (compiler-tuple
+  (package-sexp
+    (compiler-package
       (compiler-plus-expression
-        (compiler null-scope (tuple expression-a))
+        (compiler null-scope (package expressions-a))
         expression-b)))
-  (stack 
-    (pair `a type-a)
-    (pair `b type-b)))
+  `(package 
+    (expressions a (structure (racket a)))
+    (expressions b (structure (racket b)))))
 
 (check-equal?
-  (map expression-sexp-type
-    (compiler-tuple
+  (package-sexp
+    (compiler-package
       (compiler-plus-expression
         (compiler
           (scope
@@ -53,10 +61,10 @@
                 (structure text-type (field `plus (structure text-type)))
                 (structure text-type))
               #`string-append))
-          (tuple (text-expression "Hello, ")))
+          (package (expression-expressions (text-expression "Hello, "))))
         (field-expression `plus 
           (tuple (text-expression "world!"))))))
-  (stack 
-    (pair 
-      `(string-append "Hello, " "world!") 
-      text-type)))
+  `(package
+    (expressions
+      (string-append "Hello, " "world!") 
+      (structure (text (racket string))))))

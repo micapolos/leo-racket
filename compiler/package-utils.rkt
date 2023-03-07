@@ -193,3 +193,31 @@
       (vector a tmp-c tmp-d))
     (structure (foo (racket a) (racket c) (racket d)))))
 
+; --------------------------------------------------------------------------
+
+(define (package-expressions ($package : Package)) : Expressions
+  (package-apply-fn $package
+    (lambda (($tuple : Tuple))
+      (expressions
+        (make-syntax
+          (bind $syntax-list (reverse (tuple-syntax-stack $tuple))
+            (cond
+              ((= (length $syntax-list) 1) (car $syntax-list))
+              (else `(values ,@$syntax-list)))))
+        (tuple-structure $tuple)))))
+
+; single-expression
+(check-equal?
+  (expressions-sexp
+    (package-expressions
+      (package expressions-a)))
+  `(expressions a (structure (racket a))))
+
+; single-expression & multi-expression
+(check-equal?
+  (expressions-sexp
+    (package-expressions
+      (package expressions-a expressions-cd)))
+  `(expressions 
+    (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
+    (structure (racket a) (racket c) (racket d))))

@@ -5,10 +5,10 @@
 (require
   leo/typed/base
   leo/compiler/scope
-  leo/compiler/expression)
+  leo/compiler/package)
 
 (data compiler 
   (scope : Scope) 
-  (tuple : Tuple))
+  (package : Package))
 
-(define null-compiler (compiler null-scope null-tuple))
+(define null-compiler (compiler null-scope null-package))
