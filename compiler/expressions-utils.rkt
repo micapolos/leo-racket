@@ -28,6 +28,8 @@
 (define null-expressions (expressions null-syntax null-structure))
 
 (define expressions-a (expressions #`a structure-a))
+(define expressions-b (expressions #`b structure-b))
+
 (define expressions-ab (expressions #`ab structure-ab))
 (define expressions-cd (expressions #`cd structure-cd))
 
@@ -380,58 +382,80 @@
 
 ; ---------------------------------------------------------------------
 
-(define (expressions-identifier-stack-and-tuple 
+(data let-values-entry 
+  (temporary-stack : (Stackof Identifier))
+  (syntax-option : (Option Syntax))
+  (tuple : Tuple))
+
+(define (expressions-let-values-entry
   ($expressions : Expressions))
-  : (Pairof (Stackof Identifier) Tuple)
+  : Let-Values-Entry
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
   (define $size (structure-compiled-size $structure))
   (case (structure-compiled-size $structure)
-    ((0 1) 
-      (cons
+    ((0)
+      (let-values-entry
         null
-        (map 
+        #f
+        (map
+          (lambda (($type : Type)) (expression null-syntax $type))
+          $structure)))
+    ((1)
+      (let-values-entry
+        null
+        #f
+        (map
           (lambda (($type : Type)) (make-expression $syntax $type))
           $structure)))
-    (else 
+    (else
       (define $scope (structure-generate-scope $structure))
-      (cons
+      (let-values-entry
         (filter-false (map binding-identifier-option $scope))
+        $syntax
         (map binding-expression $scope)))))
 
 (parameterize ((testing? #t))
-  (bind $identifier-stack-and-tuple
-    (expressions-identifier-stack-and-tuple
+  (bind $let-values-entry
+    (expressions-let-values-entry
       (make-expressions #`expr (structure static-type-a)))
     (check-equal?
-      (map syntax->datum (car $identifier-stack-and-tuple))
+      (map syntax->datum (let-values-entry-temporary-stack $let-values-entry))
       (stack))
     (check-equal?
-      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (let-values-entry-syntax-option $let-values-entry)
+      #f)
+    (check-equal?
+      (map expression-sexp-type (let-values-entry-tuple $let-values-entry))
       (stack (pair #f static-type-a))))
 
-  (bind $identifier-stack-and-tuple
-    (expressions-identifier-stack-and-tuple
+  (bind $let-values-entry
+    (expressions-let-values-entry
       (make-expressions #`expr (structure dynamic-type-a static-type-b)))
     (check-equal?
-      (map syntax->datum (car $identifier-stack-and-tuple))
+      (map syntax->datum (let-values-entry-temporary-stack $let-values-entry))
       (stack))
     (check-equal?
-      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (let-values-entry-syntax-option $let-values-entry)
+      #f)
+    (check-equal?
+      (map expression-sexp-type (let-values-entry-tuple $let-values-entry))
       (stack 
         (pair `expr dynamic-type-a)
         (pair #f static-type-b))))
 
-  (bind $identifier-stack-and-tuple
-    (expressions-identifier-stack-and-tuple
+  (bind $let-values-entry
+    (expressions-let-values-entry
       (make-expressions #`expr (structure dynamic-type-a static-type-b dynamic-type-c)))
     (check-equal?
-      (map syntax->datum (car $identifier-stack-and-tuple))
+      (map syntax->datum (let-values-entry-temporary-stack $let-values-entry))
       (stack `tmp-a `tmp-c))
     (check-equal?
-      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (option-app syntax->datum (let-values-entry-syntax-option $let-values-entry))
+      `expr)
+    (check-equal?
+      (map expression-sexp-type (let-values-entry-tuple $let-values-entry))
       (stack 
         (pair `tmp-a dynamic-type-a)
-      (pair #f static-type-b)
-      (pair `tmp-c dynamic-type-c)))))
-
+        (pair #f static-type-b)
+        (pair `tmp-c dynamic-type-c)))))
