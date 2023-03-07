@@ -13,6 +13,7 @@
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expression-resolve
+  leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/package
   leo/compiler/package-utils
@@ -21,14 +22,12 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define (compiler-plus-expression 
+(define (compiler-plus-expressions
   ($compiler : Compiler) 
-  ($expression : Expression)) : Compiler
+  ($expressions : Expressions)) : Compiler
   (define $scope (compiler-scope $compiler))
   (define $package 
-    (push 
-      (compiler-package $compiler) 
-      (expression-expressions $expression)))
+    (push (compiler-package $compiler) $expressions))
   (option-app compiler
     $scope
     (or
@@ -43,9 +42,9 @@
 (check-equal?
   (package-sexp
     (compiler-package
-      (compiler-plus-expression
+      (compiler-plus-expressions
         (compiler null-scope (package expressions-a))
-        expression-b)))
+        expressions-b)))
   `(package 
     (expressions a (structure (racket a)))
     (expressions b (structure (racket b)))))
@@ -53,7 +52,7 @@
 (check-equal?
   (package-sexp
     (compiler-package
-      (compiler-plus-expression
+      (compiler-plus-expressions
         (compiler
           (scope
             (binding
@@ -62,8 +61,9 @@
                 (structure text-type))
               #`string-append))
           (package (expression-expressions (text-expression "Hello, "))))
-        (field-expression `plus 
-          (tuple (text-expression "world!"))))))
+        (expression-expressions 
+          (field-expression `plus 
+            (tuple (text-expression "world!")))))))
   `(package
     (expressions
       (string-append "Hello, " "world!") 

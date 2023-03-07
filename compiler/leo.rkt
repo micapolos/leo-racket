@@ -26,5 +26,3 @@
     ((_ body ...)
       (replace-context $syntax
         #`(quote #,(leo-compile-any #`(body ...)))))))
-
-(leoc (point 10 20 30))

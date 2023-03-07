@@ -21,6 +21,9 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
+(define (package-structure ($package : Package)) : Structure
+  (apply append (map expressions-structure $package)))
+
 (define (package-resolve-fn
   ($package : Package)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)

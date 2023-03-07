@@ -18,7 +18,7 @@
   leo/compiler/expressions-utils
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
-  leo/compiler/compiler-plus-expression
+  leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
   leo/compiler/package-utils
   leo/compiler/package-sexp
@@ -26,16 +26,23 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
+(define (scope-syntax-list-package 
+  ($scope : Scope)
+  ($syntax-list : (Listof Syntax)))
+  : Package
+  (compiler-package
+    (fold 
+      (compiler $scope null-tuple)
+      $syntax-list
+      compiler-plus-syntax)))
+
 (define (scope-syntax-list-expressions 
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Expressions
   (package-expressions
-    (compiler-package
-      (fold 
-        (compiler $scope null-tuple)
-        $syntax-list
-        compiler-plus-syntax))))
+    (scope-syntax-list-package 
+      $scope $syntax-list)))
 
 (define (compiler-plus-syntax 
   ($compiler : Compiler) 
@@ -80,35 +87,37 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
-  (compiler-plus-expression
+  (compiler-plus-expressions
     $compiler
-    (scope-syntax-expression 
+    (scope-syntax-expressions
       (compiler-scope $compiler)
       $syntax)))
 
-(define (scope-syntax-expression 
+(define (scope-syntax-expressions
   ($scope : Scope) 
   ($syntax : Syntax)) 
-  : Expression
+  : Expressions
   (or 
-    (syntax-expression-option $syntax)
+    (option-app expression-expressions
+      (syntax-expression-option $syntax))
     (let ()
       (define $syntax-e (syntax-e $syntax))
       (cond
         ((null? $syntax-e) (error "parse error null"))
         ((symbol? $syntax-e)
-          (field-expression $syntax-e))
+          (expression-expressions (field-expression $syntax-e)))
         ((list? $syntax-e)
           (define $car (syntax-e (car $syntax-e)))
           (unless (symbol? $car) (error "parse-error not symbol"))
           (define $symbol $car)
           (define $syntax-list (cdr $syntax-e))
-          (define $expressions (scope-syntax-list-expressions $scope $syntax-list))
-          (define $structure (expressions-structure $expressions))
+          (define $package (scope-syntax-list-package $scope $syntax-list))
+          (define $structure (package-structure $package))
           (or
             (option-bind (structure-lift $structure) $structure-a
-              (type-expression (field $symbol $structure-a)))
-            (symbol-expressions-expression $symbol $expressions)))
+              (expression-expressions 
+                (type-expression (field $symbol $structure-a))))
+            (symbol-package-expressions $symbol $package)))
         (else (error "parse error unknown"))))))
 
 ; ----------------------------------------------------------------------------
