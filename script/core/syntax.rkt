@@ -84,9 +84,9 @@
     null
     #f))
 
-(define (leo-commit-if-empty-line $leo) 
+(define (leo-commit-if-needed $leo) 
   (cond
-    ((leo-empty-line? $leo) (leo-commit $leo))
+    ((or (read-leo-compiler?) (leo-empty-line? $leo)) (leo-commit $leo))
     (else $leo)))
 
 (define (leo-gather $leo) 
@@ -283,7 +283,7 @@
     (($leo-line 
       (read-leo-empty-lines $port
         (read-leo-line $port $src $depth 
-          (leo-commit-if-empty-line $leo)))))
+          (leo-commit-if-needed $leo)))))
     (cond
       ((eof-object? $leo-line) $leo)
       ((peek-exact-depth $port $depth)
