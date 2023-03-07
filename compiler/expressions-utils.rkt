@@ -460,3 +460,8 @@
         (pair `tmp-a dynamic-type-a)
         (pair #f static-type-b)
         (pair `tmp-c dynamic-type-c)))))
+
+; ---------------------------------------------------------------------
+
+(define (expressions-sexp-option ($expressions : Expressions)) : (Option Sexp)
+  (option-app syntax->datum (expressions-syntax-option $expressions)))

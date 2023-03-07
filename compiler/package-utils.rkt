@@ -227,3 +227,8 @@
   `(expressions 
     (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
     (structure (a racket) (c racket) (d racket))))
+
+; ----------------------------------------------------------------------
+
+(define (package-sexp-list ($package : Package)) : (Listof Sexp)
+  (reverse (filter-false (map expressions-sexp-option $package))))

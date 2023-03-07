@@ -3,7 +3,8 @@
 (require leo/compiler/leo)
 
 (leo
-  (point
-    (x 10)
-    (y 20))
-  x number)
+  1
+  (plus 2)
+  text
+  (plus " apples")
+  type)

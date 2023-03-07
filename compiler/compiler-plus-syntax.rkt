@@ -25,6 +25,7 @@
   leo/compiler/package-sexp
   leo/compiler/package
   leo/compiler/type
+  leo/compiler/type-sexp
   leo/compiler/type-utils)
 
 (define (scope-syntax-list-package 
@@ -53,6 +54,8 @@
     (compiler-syntax-resolve-do $compiler $syntax)
     (compiler-syntax-resolve-doing $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
+    (compiler-syntax-resolve-compiled $compiler $syntax)
+    (compiler-syntax-resolve-type $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
 
 (define (compiler-syntax-resolve-do
@@ -93,6 +96,35 @@
     (compiler-plus-quoted-tuple $compiler 
       (sexp-list-tuple 
         (map syntax->datum $quote-syntax-list)))))
+
+(define (compiler-syntax-resolve-compiled
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (and (equal? (syntax-e $syntax) `compiled)
+    (compiler
+      (compiler-scope $compiler)
+      (package 
+        (expression-expressions
+          (sexp-expression
+            `(compiled
+              ,@(package-sexp-list
+                (compiler-package $compiler)))))))))
+
+(define (compiler-syntax-resolve-type
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (and (equal? (syntax-e $syntax) `type)
+    (compiler
+      (compiler-scope $compiler)
+      (package 
+        (expression-expressions
+          (sexp-expression
+            `(type
+              ,@(structure-sexp-list
+                (package-structure
+                  (compiler-package $compiler))))))))))
 
 (define (compiler-syntax-resolve-default
   ($compiler : Compiler) 

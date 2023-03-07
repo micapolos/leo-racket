@@ -9,6 +9,7 @@
 
 (define (sexp-expression ($sexp : Sexp)) : Expression
   (cond
+    ((boolean? $sexp) (boolean-expression $sexp))
     ((number? $sexp) (number-expression $sexp))
     ((string? $sexp) (text-expression $sexp))
     ((symbol? $sexp) (field-expression $sexp))
@@ -23,6 +24,10 @@
 
 (define (sexp-list-tuple ($sexp-list : (Listof Sexp))) : Tuple
   (reverse (map sexp-expression $sexp-list)))
+
+(check-equal?
+  (expression-sexp (sexp-expression #t))
+  `(expression #t boolean))
 
 (check-equal?
   (expression-sexp (sexp-expression 3.14))
