@@ -4,6 +4,7 @@
 
 (require
   racket/string
+  leo/typed/base
   leo/typed/stack
   leo/typed/testing
   leo/compiler/type
@@ -36,3 +37,8 @@
   (and 
     (type-dynamic? $type)
     (type-generate-temporary $type)))
+
+; -------------------------------------------------------------------------
+
+(define (structure-temporary-stack ($structure : Structure)) : (Stackof Identifier)
+  (filter-false (map type-generate-temporary-option $structure)))

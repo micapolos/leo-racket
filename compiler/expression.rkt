@@ -24,3 +24,6 @@
 (define tuple stack)
 
 (define null-tuple null)
+
+(define (empty-expression ($type : Type)) : Expression 
+  (expression null-syntax $type))

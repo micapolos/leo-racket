@@ -12,6 +12,7 @@
   leo/compiler/racket
   leo/compiler/binding-utils
   leo/compiler/sexp-utils
+  leo/compiler/binding
   leo/compiler/scope
   leo/compiler/scope-utils
   leo/compiler/expressions
@@ -376,3 +377,61 @@
         dynamic-type-a 
         static-type-b 
         dynamic-type-c))))
+
+; ---------------------------------------------------------------------
+
+(define (expressions-identifier-stack-and-tuple 
+  ($expressions : Expressions))
+  : (Pairof (Stackof Identifier) Tuple)
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
+  (define $size (structure-compiled-size $structure))
+  (case (structure-compiled-size $structure)
+    ((0 1) 
+      (cons
+        null
+        (map 
+          (lambda (($type : Type)) (make-expression $syntax $type))
+          $structure)))
+    (else 
+      (define $scope (structure-generate-scope $structure))
+      (cons
+        (filter-false (map binding-identifier-option $scope))
+        (map binding-expression $scope)))))
+
+(parameterize ((testing? #t))
+  (bind $identifier-stack-and-tuple
+    (expressions-identifier-stack-and-tuple
+      (make-expressions #`expr (structure static-type-a)))
+    (check-equal?
+      (map syntax->datum (car $identifier-stack-and-tuple))
+      (stack))
+    (check-equal?
+      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (stack (pair #f static-type-a))))
+
+  (bind $identifier-stack-and-tuple
+    (expressions-identifier-stack-and-tuple
+      (make-expressions #`expr (structure dynamic-type-a static-type-b)))
+    (check-equal?
+      (map syntax->datum (car $identifier-stack-and-tuple))
+      (stack))
+    (check-equal?
+      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (stack 
+        (pair `expr dynamic-type-a)
+        (pair #f static-type-b))))
+
+  (bind $identifier-stack-and-tuple
+    (expressions-identifier-stack-and-tuple
+      (make-expressions #`expr (structure dynamic-type-a static-type-b dynamic-type-c)))
+    (check-equal?
+      (map syntax->datum (car $identifier-stack-and-tuple))
+      (stack `tmp-a `tmp-c))
+    (check-equal?
+      (map expression-sexp-type (cdr $identifier-stack-and-tuple))
+      (stack 
+        (pair `tmp-a dynamic-type-a)
+      (pair #f static-type-b)
+      (pair `tmp-c dynamic-type-c)))))
+
