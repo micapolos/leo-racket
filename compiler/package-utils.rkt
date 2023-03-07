@@ -21,6 +21,9 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
+(define (package-plus-tuple ($package : Package) ($tuple : Tuple)) : Package
+  (push-stack $package (map expression-expressions $tuple)))
+
 (define (package-structure ($package : Package)) : Structure
   (apply append (map expressions-structure $package)))
 

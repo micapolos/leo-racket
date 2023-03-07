@@ -20,7 +20,9 @@
         (map sexp-datum $sexp-list)))))
 
 (define (leo-compile-any ($any : Any)) : Syntax
-  (expressions-syntax (syntax-list-expressions (syntax-syntax-list (any-syntax $any)))))
+  (expressions-syntax 
+    (syntax-list-expressions 
+      (syntax-syntax-list (any-syntax $any)))))
 
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))

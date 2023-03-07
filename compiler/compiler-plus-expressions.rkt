@@ -22,6 +22,15 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
+(define (compiler-plus-quoted-tuple
+  ($compiler : Compiler) 
+  ($tuple : Tuple)) : Compiler
+  (struct-copy compiler $compiler
+    (package 
+      (package-plus-tuple 
+        (compiler-package $compiler) 
+        $tuple))))
+
 (define (compiler-plus-expressions
   ($compiler : Compiler) 
   ($expressions : Expressions)) : Compiler

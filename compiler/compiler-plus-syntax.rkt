@@ -11,6 +11,7 @@
   leo/compiler/compiler
   leo/compiler/base-scope
   leo/compiler/scope
+  leo/compiler/sexp-expression
   leo/compiler/expressions
   leo/compiler/sexp-utils
   leo/compiler/expression
@@ -51,6 +52,7 @@
   (or
     (compiler-syntax-resolve-do $compiler $syntax)
     (compiler-syntax-resolve-doing $compiler $syntax)
+    (compiler-syntax-resolve-quote $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
 
 (define (compiler-syntax-resolve-do
@@ -82,6 +84,15 @@
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
               $doing-syntax-list)))))))
+
+(define (compiler-syntax-resolve-quote
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `quote $quote-syntax-list
+    (compiler-plus-quoted-tuple $compiler 
+      (sexp-list-tuple 
+        (map syntax->datum $quote-syntax-list)))))
 
 (define (compiler-syntax-resolve-default
   ($compiler : Compiler) 

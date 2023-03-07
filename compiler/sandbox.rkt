@@ -3,10 +3,6 @@
 (require leo/compiler/leo)
 
 (leo
-  (vector
-    10
-    (point
-      20
-      (plus 1)
-      (times 12)
-      30)))
+  (point
+      (int 1)
+      (plus (int 2))))
