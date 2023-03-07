@@ -78,10 +78,8 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `quote $quote-syntax-list
-    (compiler-plus-quoted-tuple $compiler 
-      (sexp-list-tuple
-        (map syntax->datum $quote-syntax-list)))))
+  (syntax-symbol-match-args $syntax `quote $syntax-list
+    (compiler-apply-quote $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-compiled
   ($compiler : Compiler) 
