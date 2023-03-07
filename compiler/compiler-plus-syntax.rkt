@@ -118,13 +118,10 @@
   (and (equal? (syntax-e $syntax) `type)
     (compiler
       (compiler-scope $compiler)
-      (package 
-        (expression-expressions
-          (sexp-expression
-            `(type
-              ,@(structure-sexp-list
-                (package-structure
-                  (compiler-package $compiler))))))))))
+      (map expression-expressions
+        (map type-expression
+          (package-structure
+            (compiler-package $compiler)))))))
 
 (define (compiler-syntax-resolve-default
   ($compiler : Compiler) 
