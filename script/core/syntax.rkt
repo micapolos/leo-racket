@@ -9,6 +9,8 @@
   syntax/readerr
   (for-syntax racket/base))
 
+(define read-leo-compiler? (make-parameter #f))
+
 (define (read-leo-stxs $port $src)
   (leo-stxs (read-leo $port $src)))
 
@@ -342,7 +344,7 @@
     (read-leo-rhs-list $port $src $depth)))
 
 (define (read-leo-identifier-stx-rhs $port $src $depth $leo $identifier $stx)
-  (leo-append-identifier-stx-list?-rhs $leo $identifier $stx #f 
+  (leo-append-identifier-stx-list?-rhs $leo $identifier $stx (read-leo-compiler?)
     (read-leo-rhs $port $src $depth)))
 
 (define (read-leo-identifier-colon-stx-rhs $port $src $depth $leo $identifier $stx)
