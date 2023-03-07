@@ -20,20 +20,6 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
-(define (expressions-list-tuple-resolve-fn
-  ($expressions-list : (Listof Expressions))
-  ($tuple : Tuple)
-  ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (cond
-    ((null? $expressions-list) ($fn $tuple))
-    (else 
-      (expressions-resolve-fn (car $expressions-list)
-        (lambda (($expressions-tuple : Tuple))
-          (expressions-list-tuple-resolve-fn
-            (cdr $expressions-list)
-            (push-stack $tuple $expressions-tuple)
-            $fn))))))
-
 (define (package-resolve-fn
   ($package : Package)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
