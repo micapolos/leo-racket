@@ -16,25 +16,28 @@
   leo/compiler/module-syntax)
 
 (define (package-top-level-syntax ($package : Package)) : Syntax
-  (expressions-syntax (package-top-level-expressions $package)))
+  (make-syntax 
+    `(for-each writeln
+      ,(expressions-syntax (package-top-level-expressions $package)))))
 
 (define (package-top-level-expressions ($package : Package)) : Expressions
   (package-apply-fn $package tuple-top-level-expressions))
 
 (define (tuple-top-level-expressions ($tuple : Tuple)) : Expressions
-  (tuple-expressions (tuple-top-level $tuple)))
+  (expressions 
+    (tuple-top-level-syntax $tuple)
+    (structure (racket))))
 
-(define (tuple-top-level ($tuple : Tuple)) : Tuple
-  (map expression-top-level $tuple))
+(define (tuple-top-level-syntax ($tuple : Tuple)) : Syntax
+  (make-syntax
+    `(list ,@(reverse (map expression-top-level-syntax $tuple)))))
 
-(define (expression-top-level ($expression : Expression)) : Expression
-  (expression
-    (make-syntax
-      `(value-sexp
-        (value 
-          ,(expression-syntax $expression) 
-          ,(type-syntax (expression-type $expression)))))
-    (racket)))
+(define (expression-top-level-syntax ($expression : Expression)) : Syntax
+  (make-syntax
+    `(value-sexp
+      (value 
+        ,(expression-syntax $expression) 
+        ,(type-syntax (expression-type $expression))))))
 
 (check-equal?
   (syntax->datum
@@ -42,7 +45,9 @@
       (package
         (expressions #`expr
           (structure number-type text-type)))))
-  `(let-values (((tmp-number tmp-text) expr))
-    (values
-      (value-sexp (value tmp-number (field 'number (structure (racket)))))
-      (value-sexp (value tmp-text (field 'text (structure (racket))))))))
+  `(for-each
+     writeln
+     (let-values (((tmp-number tmp-text) expr))
+       (list
+        (value-sexp (value tmp-number (field 'number (structure (racket)))))
+        (value-sexp (value tmp-text (field 'text (structure (racket)))))))))
