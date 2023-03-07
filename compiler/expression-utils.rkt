@@ -9,7 +9,6 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/racket
   leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/sexp-utils
@@ -72,7 +71,7 @@
 
 (check-equal?
   (tuple-sexp (tuple expression-a expression-b))
-  `(tuple (expression a (racket a)) (expression b (racket b))))
+  `(tuple (expression a (a racket)) (expression b (b racket))))
 
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
@@ -135,7 +134,7 @@
   (expressions syntax-a (structure type-b type-c)))
 
 (check-equal?
-  (expression-field-rhs (expression syntax-a (racket `foo)))
+  (expression-field-rhs (expression syntax-a (racket)))
   #f)
 
 ; ---------------------------------------------------------

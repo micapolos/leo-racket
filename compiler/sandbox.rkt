@@ -2,7 +2,11 @@
 
 (require leo/compiler/leo)
 
-(leoc
-  (point
+(leo
+  (vector
     10
-    20))
+    (point
+      20
+      (plus 1)
+      (times 12)
+      30)))

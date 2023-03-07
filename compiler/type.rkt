@@ -4,8 +4,7 @@
 
 (require 
   leo/typed/base
-  leo/typed/stack
-  leo/compiler/racket)
+  leo/typed/stack)
 
 (define-type Type (U Racket Field Arrow A))
 
@@ -19,7 +18,16 @@
   (symbol : Symbol) 
   (structure : Structure))
 
+(data racket)
+
 (data a (type : Type))
 
 (define structure stack)
 
+(define null-structure null)
+
+(define (racket-field ($symbol : Symbol)) 
+  (field $symbol (structure (racket))))
+
+(define (null-field ($symbol : Symbol)) 
+  (field $symbol null-structure))

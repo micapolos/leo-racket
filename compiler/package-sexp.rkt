@@ -25,5 +25,5 @@
   (package-sexp
     (package expressions-ab expressions-cd))
   `(package
-    (expressions ab (structure (racket a) (racket b)))
-    (expressions cd (structure (racket c) (racket d)))))
+    (expressions ab (structure (a racket) (b racket)))
+    (expressions cd (structure (c racket) (d racket)))))

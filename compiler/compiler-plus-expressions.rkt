@@ -46,8 +46,8 @@
         (compiler null-scope (package expressions-a))
         expressions-b)))
   `(package 
-    (expressions a (structure (racket a)))
-    (expressions b (structure (racket b)))))
+    (expressions a (structure (a racket)))
+    (expressions b (structure (b racket)))))
 
 (check-equal?
   (package-sexp
@@ -67,4 +67,4 @@
   `(package
     (expressions
       (string-append "Hello, " "world!") 
-      (structure (text (racket string))))))
+      (structure (text racket)))))

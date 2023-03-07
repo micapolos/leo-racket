@@ -72,7 +72,7 @@
       (package expressions-a)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
-  `(expressions result (structure (racket a))))
+  `(expressions result (structure (a racket))))
 
 ; single-expression & multi-expression
 (check-equal?
@@ -83,7 +83,7 @@
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd)) result)
-    (structure (racket a) (racket c) (racket d))))
+    (structure (a racket) (c racket) (d racket))))
 
 ; multi-expressions
 (check-equal?
@@ -96,7 +96,7 @@
     (let-values (((tmp-a tmp-b) ab)
                  ((tmp-c tmp-d) cd))
         result)
-    (structure (racket a) (racket b) (racket c) (racket d))))
+    (structure (a racket) (b racket) (c racket) (d racket))))
 
 ; --------------------------------------------------------------------------------
 
@@ -151,7 +151,7 @@
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
     (let-values (((tmp-b) b)) result)
-    (structure a (racket b))))
+    (structure a (b racket))))
 
 ; single-expressions
 (check-equal?
@@ -162,7 +162,7 @@
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
     (let-values (((tmp-a) a) ((tmp-b) b)) result)
-    (structure (racket a) (racket b))))
+    (structure (a racket) (b racket))))
 
 ; mutli-expressions
 (check-equal?
@@ -175,7 +175,7 @@
     (let-values (((tmp-a tmp-b) ab)
                  ((tmp-c tmp-d) cd))
         result)
-    (structure (racket a) (racket b) (racket c) (racket d))))
+    (structure (a racket) (b racket) (c racket) (d racket))))
 
 ; ----------------------------------------------------------------------------
 
@@ -194,7 +194,7 @@
   `(expressions 
     (let-values (((tmp-c tmp-d) cd))
       (vector a tmp-c tmp-d))
-    (structure (foo (racket a) (racket c) (racket d)))))
+    (structure (foo (a racket) (c racket) (d racket)))))
 
 ; --------------------------------------------------------------------------
 
@@ -214,7 +214,7 @@
   (expressions-sexp
     (package-expressions
       (package expressions-a)))
-  `(expressions a (structure (racket a))))
+  `(expressions a (structure (a racket))))
 
 ; single-expression & multi-expression
 (check-equal?
@@ -223,4 +223,4 @@
       (package expressions-a expressions-cd)))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
-    (structure (racket a) (racket c) (racket d))))
+    (structure (a racket) (c racket) (d racket))))

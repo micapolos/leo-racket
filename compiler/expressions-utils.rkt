@@ -9,7 +9,6 @@
   leo/typed/option
   leo/typed/testing
   leo/typed/stack
-  leo/compiler/racket
   leo/compiler/binding-utils
   leo/compiler/sexp-utils
   leo/compiler/binding
@@ -144,7 +143,7 @@
 
 (check-equal?
   (expressions-rhs-option
-    (expressions syntax-a (structure (racket `foo))))
+    (expressions syntax-a (structure (racket))))
   #f)
 
 ; --------------------------------------------------------------

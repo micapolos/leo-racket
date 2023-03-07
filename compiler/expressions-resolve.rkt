@@ -8,7 +8,6 @@
   leo/typed/option
   leo/typed/testing
   leo/typed/stack
-  leo/compiler/racket
   leo/compiler/syntax-utils
   leo/compiler/expressions
   leo/compiler/expressions-utils
@@ -48,14 +47,14 @@
         (structure
           (field `point 
             (stack
-              (field `b (stack (racket `b2))) 
-              (field `c (stack (racket `c2))) 
-              (field `d (stack (racket `d2)))))))
+              (field `b (stack (racket))) 
+              (field `c (stack (racket))) 
+              (field `d (stack (racket)))))))
         (expression syntax-b (field `b null)))
     expressions-sexp-structure)
   (pair 
     `(unsafe-vector-ref a 0)
-    (structure (field `b (stack (racket `b2))))))
+    (structure (field `b (stack (racket))))))
 
 (check-equal?
   (expressions-rhs-resolve-expression
@@ -64,8 +63,8 @@
       (structure
         (field `point 
           (stack
-            (field `b (stack (racket `b2))) 
-            (field `c (stack (racket `c2))) 
-            (field `d (stack (racket `d2)))))))
+            (field `b (stack (racket))) 
+            (field `c (stack (racket))) 
+            (field `d (stack (racket)))))))
     (expression syntax-b (field `e null)))
   #f)

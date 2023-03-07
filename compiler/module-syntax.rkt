@@ -5,7 +5,6 @@
 (require
   leo/typed/option
   leo/typed/testing
-  leo/compiler/racket
   leo/compiler/binding
   leo/compiler/expressions
   leo/compiler/scope
@@ -55,11 +54,7 @@
 (define (type-syntax ($type : Type)) : Syntax
   (make-syntax
     (cond
-      ((racket? $type)
-        `(racket 
-          ,(cond
-            ((symbol? (racket-any $type)) `(quote ,(racket-any $type)))
-            (else (error "not sexp")))))
+      ((racket? $type) `(racket))
       ((field? $type)
         `(field 
           (quote ,(field-symbol $type))
@@ -96,7 +91,7 @@
       (define scope 
         (scope
           (binding (field 'a (structure)) #f)
-          (binding (racket 'b) 'tmp-b))))
+          (binding (field 'b (structure (racket))) 'tmp-b))))
     (define tmp-b pkg)))
 
 (check-equal?
@@ -108,7 +103,7 @@
     (module* scope 
       (define scope 
         (scope
-          (binding (racket 'a) 'tmp-a)
+          (binding (field 'a (structure (racket))) 'tmp-a)
           (binding (field 'b (structure)) #f)
-          (binding (racket 'c) 'tmp-c))))
+          (binding (field 'c (structure (racket))) 'tmp-c))))
     (define-values (tmp-a tmp-c) pkg)))

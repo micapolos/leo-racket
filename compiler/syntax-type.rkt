@@ -6,13 +6,20 @@
   leo/typed/stack
   leo/typed/testing
   leo/compiler/type
-  leo/compiler/racket)
+  leo/compiler/type-utils)
 
 (define (syntax-type ($syntax : Syntax)) : Type
   (define $syntax-e (syntax-e $syntax))
   (cond
-    ((null? $syntax-e) 
-      (racket $syntax-e))
+    ((null? $syntax-e) (racket))
+    ((symbol? $syntax-e) 
+      (case $syntax-e
+        ((boolean) boolean-type)
+        ((number) number-type)
+        ((int) int-type)
+        ((float) float-type)
+        ((text) text-type)
+        (else (null-field $syntax-e))))
     ((list? $syntax-e)
       (define $list $syntax-e)
       (define $car (car $list))
@@ -26,8 +33,8 @@
           (cond
             ((and (equal? $symbol `a) $type) (a $type))
             (else (field $symbol $structure))))
-        (else (racket (syntax->datum $syntax)))))
-    (else (racket (syntax->datum $syntax)))))
+        (else (racket))))
+    (else (racket))))
 
 (define (syntax-list-structure ($syntax-list : (Listof Syntax))) : Structure
   (foldl
@@ -60,22 +67,22 @@
         (else (push $structure (syntax-type $syntax)))))
     (else (push $structure (syntax-type $syntax)))))
 
-(check-equal? (syntax-type #`()) (racket `()))
-(check-equal? (syntax-type #`foo) (racket `foo))
+(check-equal? (syntax-type #`()) (racket))
+(check-equal? (syntax-type #`foo) (null-field `foo))
 
 (check-equal? (syntax-type #`(a)) (field `a (structure)))
-(check-equal? (syntax-type #`(a foo)) (a (racket `foo)))
+(check-equal? (syntax-type #`(a foo)) (a (null-field `foo)))
 
-(check-equal? (syntax-type #`(foo)) (field `foo null))
+(check-equal? (syntax-type #`(foo)) (null-field `foo))
 
 (check-equal? 
-  (syntax-type #`(foo number string))
-  (field `foo (stack (racket `number) (racket `string))))
+  (syntax-type #`(foo number text))
+  (field `foo (stack number-type text-type)))
 
 (check-equal? 
   (syntax-list-structure (list #`foo #`bar))
-  (stack (racket `foo) (racket `bar)))
+  (stack (null-field `foo) (null-field `bar)))
 
 (check-equal? 
   (syntax-list-structure (list #`foo #`bar #`(giving zoo)))
-  (list (arrow (stack (racket `foo) (racket `bar)) (stack (racket `zoo)))))
+  (list (arrow (stack (null-field `foo) (null-field `bar)) (stack (null-field `zoo)))))

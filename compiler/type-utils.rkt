@@ -5,16 +5,14 @@
 (require 
   racket/function
   leo/compiler/type
-  leo/compiler/racket
-  leo/compiler/racket-utils
   leo/typed/base
   leo/typed/stack
   leo/typed/testing)
 
-(define dynamic-type-a (racket `a))
-(define dynamic-type-b (racket `b))
-(define dynamic-type-c (racket `c))
-(define dynamic-type-d (racket `d))
+(define dynamic-type-a (racket-field `a))
+(define dynamic-type-b (racket-field `b))
+(define dynamic-type-c (racket-field `c))
+(define dynamic-type-d (racket-field `d))
 
 (define static-type-a (field `a null))
 (define static-type-b (field `b null))
@@ -26,13 +24,11 @@
 (define type-c dynamic-type-c)
 (define type-d dynamic-type-d)
 
-(define boolean-type (field `boolean (stack boolean-racket)))
-(define number-type (field `number (stack number-racket)))
-(define int-type (field `int (stack fixnum-racket)))
-(define float-type (field `float (stack flonum-racket)))
-(define text-type (field `text (stack string-racket)))
-
-(define null-structure null)
+(define boolean-type (racket-field `boolean))
+(define number-type (racket-field `number))
+(define int-type (racket-field `int))
+(define float-type (racket-field `float))
+(define text-type (racket-field `text))
 
 (define static-structure-a (structure static-type-a))
 (define static-structure-b (structure static-type-b))
@@ -62,7 +58,7 @@
 (define (structure-dynamic? ($structure : Structure)) : Boolean
   (ormap type-dynamic? $structure))
 
-(check-equal? (type-dynamic? (racket `number)) #t)
+(check-equal? (type-dynamic? (racket)) #t)
 
 (check-equal? (type-dynamic? (arrow static-structure-a static-structure-b)) #f)
 (check-equal? (type-dynamic? (arrow dynamic-structure-a static-structure-b)) #f)
@@ -71,8 +67,8 @@
 
 (check-equal? (type-dynamic? (field `foo null)) #f)
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null)))) #f)
-(check-equal? (type-dynamic? (field `foo (structure (racket `number)))) #t)
-(check-equal? (type-dynamic? (field `foo (structure (field `foo null) (racket `number)))) #t)
+(check-equal? (type-dynamic? (racket-field `foo)) #t)
+(check-equal? (type-dynamic? (field `foo (structure (field `foo null) (racket)))) #t)
 (check-equal? (type-dynamic? (a dynamic-type-a)) #f)
 
 (define (structure-compiled-size ($structure : Structure)) : Exact-Nonnegative-Integer
@@ -107,7 +103,7 @@
   : (Option Exact-Nonnegative-Integer)
   (structure-dynamic-ref-from $structure $index 0 0))
 
-(bind $structure (stack (racket `boolean) (racket `number) (field `foo null) (racket `string))
+(bind $structure (stack boolean-type number-type (field `foo null) number-type)
   (check-equal? (structure-dynamic-ref $structure 0) 0)
   (check-equal? (structure-dynamic-ref $structure 1) #f)
   (check-equal? (structure-dynamic-ref $structure 2) 1)

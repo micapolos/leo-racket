@@ -11,30 +11,17 @@
   leo/compiler/type-sexp
   leo/compiler/value
   leo/compiler/type
-  leo/compiler/type-utils
-  leo/compiler/racket)
+  leo/compiler/type-utils)
 
 (define (value-sexp ($value : Value)) : Sexp
   (define $type (value-type $value))
   (define $any (value-any $value))
   (cond
-    ((racket? $type)
-      (define $type-any (racket-any $type))
-      (cond
-        ((equal? $type-any `boolean) 
-          `(boolean ,(if (cast $any Boolean) `true `false)))
-        ((equal? $type-any `number) 
-          (cast $any Number))
-        ((equal? $type-any `fixnum) 
-          `(fixnum ,(cast $any Fixnum)))
-        ((equal? $type-any `flonum) 
-          `(flonum ,(cast $any Flonum)))
-        ((equal? $type-any `string) 
-          (cast $any String))
-        (else (type-sexp $type))))
-    ((equal? $type int-type) (cast $any Fixnum))
-    ((equal? $type float-type) (cast $any Flonum))
+    ((racket? $type) `racket)
+    ((equal? $type int-type) `(int ,(cast $any Fixnum)))
+    ((equal? $type float-type) `(float ,(cast $any Flonum)))
     ((equal? $type number-type) (cast $any Number))
+    ((equal? $type boolean-type) `(boolean ,(if (cast $any Boolean) `true `false)))
     ((equal? $type text-type) (cast $any String))
     ((field? $type) 
       (define $symbol (field-symbol $type))
@@ -77,59 +64,59 @@
     (list-ref $structure $index)))
 
 (check-equal?
-  (value-sexp (value #t (racket `boolean)))
+  (value-sexp (value #t boolean-type))
   `(boolean true))
 
 (check-equal?
-  (value-sexp (value #f (racket `boolean)))
+  (value-sexp (value #f boolean-type))
   `(boolean false))
 
 (check-equal?
-  (value-sexp (value 3.14 (racket `number)))
+  (value-sexp (value 3.14 number-type))
   3.14)
 
 (check-equal?
-  (value-sexp (value 1 (racket `fixnum)))
-  `(fixnum 1))
+  (value-sexp (value 1 int-type))
+  `(int 1))
 
 (check-equal?
-  (value-sexp (value 3.14 (racket `flonum)))
-  `(flonum 3.14))
+  (value-sexp (value 3.14 float-type))
+  `(float 3.14))
 
 (check-equal?
-  (value-sexp (value "foo" (racket `string)))
+  (value-sexp (value "foo" text-type))
   "foo")
 
 (check-equal?
-  (value-sexp (value `foo (racket `bar)))
-  `(racket bar))
+  (value-sexp (value `foo (racket)))
+  `racket)
 
 (check-equal?
   (value-sexp 
     (value `foo 
       (arrow 
-        (stack (racket `string)) 
-        (stack (racket `number)))))
-  `(function (racket string) (giving (racket number))))
+        (stack text-type) 
+        (stack number-type))))
+  `(function (text racket) (giving (number racket))))
 
 (check-equal?
-  (value-sexp (value `foo (a (racket `number))))
-  `(a (racket number)))
+  (value-sexp (value `foo (a number-type)))
+  `(a (number racket)))
 
 (check-equal?
-  (value-sexp (value "foo" (field `foo (stack (racket `string)))))
+  (value-sexp (value "foo" (field `foo (stack text-type))))
   `(foo "foo"))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 128 "foo") 
-      (field `foo (stack (racket `number) (field `bar null) (racket `string)))))
+      (field `foo (stack number-type (null-field `bar) text-type))))
   `(foo 128 bar "foo"))
 
 (check-equal?
   (value-sexp 
     (value 
       (vector 128 "foo" #t) 
-      (field `foo (stack (racket `number) (field `bar null) (racket `string) (racket `boolean)))))
+      (field `foo (stack number-type (null-field `bar) text-type boolean-type))))
   `(foo 128 bar "foo" (boolean true)))

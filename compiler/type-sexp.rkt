@@ -6,13 +6,12 @@
   leo/typed/testing
   leo/typed/stack
   leo/compiler/any-sexp
-  leo/compiler/racket
-  leo/compiler/type)
+  leo/compiler/type
+  leo/compiler/type-utils)
 
 (define (type-sexp ($type : Type)) : Sexp
   (cond
-    ((racket? $type)
-      `(racket ,(any-sexp (racket-any $type))))
+    ((racket? $type) `racket)
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))
@@ -33,28 +32,24 @@
 (define (structure-sexp ($structure : Structure)) : Sexp
   `(structure ,@(structure-sexp-list $structure)))
 
-(check-equal? (type-sexp (racket `foo)) `(racket foo))
-
-(check-equal? (type-sexp (racket `foo)) `(racket foo))
-(check-equal? (type-sexp (racket 123)) `(racket 123))
-(check-equal? (type-sexp (racket "foo")) `(racket "foo"))
+(check-equal? (type-sexp (racket)) `racket)
 
 (check-equal? (type-sexp (field `foo null)) `foo)
 
-(check-equal? (type-sexp (field `foo (stack (racket `number)))) `(foo (racket number)))
+(check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
 
 (check-equal? 
   (type-sexp 
-    (field `foo (stack (racket `number) (racket `string)))) 
-  `(foo (racket number) (racket string)))
+    (field `foo (structure (null-field `bar) (null-field `zoo))))
+  `(foo bar zoo))
 
 (check-equal? 
   (type-sexp 
     (arrow 
-      (stack (racket `number) (racket `string))
-      (stack (racket `boolean) (racket `fixnum)))) 
-  `(function (racket number) (racket string) (giving (racket boolean) (racket fixnum))))
+      (stack (null-field `number) (null-field `string))
+      (stack (null-field `boolean) (null-field `fixnum))))
+  `(function number string (giving boolean fixnum)))
 
 (check-equal? 
-  (type-sexp (a (racket `string)))
-  `(a (racket string)))
+  (type-sexp (a (racket)))
+  `(a racket))
