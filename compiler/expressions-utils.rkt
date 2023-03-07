@@ -27,6 +27,8 @@
 
 (define null-expressions (expressions null-syntax null-structure))
 
+(define static-expressions-a (expressions null-syntax static-structure-a))
+
 (define expressions-a (expressions #`a structure-a))
 (define expressions-b (expressions #`b structure-b))
 
