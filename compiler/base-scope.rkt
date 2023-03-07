@@ -79,4 +79,12 @@
           text-type
           (field `plus (structure text-type)))
         (structure text-type))
-      #`string-append)))
+      #`string-append)
+    (binding
+      (arrow
+        (structure 
+          text-type
+          (null-field `length))
+        (structure 
+          (field `length (structure number-type))))
+      #`string-length)))

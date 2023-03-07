@@ -17,8 +17,7 @@
  
 (define (leo-read-syntax src port)
   (strip-context
-    #`(module leo racket/base
-      (require racket/unsafe/ops)
+    #`(module leo leo/racket/runtime
       #,(leo-compile-any-list
         (port->list 
           (curry read-syntax src) 

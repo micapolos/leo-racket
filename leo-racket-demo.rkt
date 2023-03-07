@@ -1,5 +1,6 @@
 #lang leo/racket
 
-1
-(plus 2)
-(times 3)
+"Hello, "
+(plus "world!")
+length number
+(plus 13)
