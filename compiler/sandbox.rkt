@@ -4,4 +4,9 @@
 
 (leo
   10
-  (do number (times number)))
+  "foo"
+  (do 
+    number 
+    (times number)
+    text
+    (plus "!!!")))
