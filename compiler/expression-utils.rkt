@@ -73,6 +73,9 @@
   (tuple-sexp (tuple expression-a expression-b))
   `(tuple (expression a (a racket)) (expression b (b racket))))
 
+(define (racket-expression ($sexp : Sexp)) 
+  (expression (make-syntax (sexp-datum $sexp)) (racket)))
+
 (define (boolean-expression ($boolean : Boolean)) 
   (expression (make-syntax $boolean) boolean-type))
 

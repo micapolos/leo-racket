@@ -21,6 +21,6 @@
     (package-apply-compiled (compiler-package $compiler))))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-plus-quoted-tuple $compiler 
+  (compiler-plus-quoted-tuple $compiler
     (sexp-list-tuple
       (map syntax->datum $syntax-list))))

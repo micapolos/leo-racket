@@ -3,10 +3,4 @@
 (require leo/compiler/leo)
 
 (leo
-  10
-  "foo"
-  (do 
-    number 
-    (times number)
-    text
-    (plus "!!!")))
+  10)

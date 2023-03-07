@@ -8,19 +8,18 @@
   leo/compiler/expression-utils)
 
 (define (sexp-expression ($sexp : Sexp)) : Expression
-  (cond
-    ((boolean? $sexp) (boolean-expression $sexp))
-    ((number? $sexp) (number-expression $sexp))
-    ((string? $sexp) (text-expression $sexp))
-    ((symbol? $sexp) (field-expression $sexp))
-    ((pair? $sexp) 
-      (define $car (car $sexp))
-      (define $cdr (cdr $sexp))
-      (cond
-        ((and (symbol? $car) (list? $cdr))
-          (field-expression $car (sexp-list-tuple $cdr)))
-        (else (error "dupa"))))
-    (else (error "dupa"))))
+  (or
+    (and (boolean? $sexp) (boolean-expression $sexp))
+    (and (number? $sexp) (number-expression $sexp))
+    (and (string? $sexp) (text-expression $sexp))
+    (and (symbol? $sexp) (field-expression $sexp))
+    (and (pair? $sexp) 
+      (let ()
+        (define $car (car $sexp))
+        (define $cdr (cdr $sexp))
+        (and (symbol? $car) (list? $cdr)
+          (field-expression $car (sexp-list-tuple $cdr)))))
+    (racket-expression $sexp)))
 
 (define (sexp-list-tuple ($sexp-list : (Listof Sexp))) : Tuple
   (reverse (map sexp-expression $sexp-list)))
