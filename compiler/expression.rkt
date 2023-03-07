@@ -13,6 +13,12 @@
 
 (data expression (syntax : Syntax) (type : Type))
 
+; TODO: Refactor expression-syntax
+(define (expression-syntax-option ($expression : Expression)) : (Option Syntax)
+  (and 
+    (type-dynamic? (expression-type $expression)) 
+    (expression-syntax $expression)))
+
 (define-type Tuple (Stackof Expression))
 
 (define tuple stack)
