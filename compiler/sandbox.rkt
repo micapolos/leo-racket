@@ -6,4 +6,8 @@
   (point
     (x 10)
     (y 20))
-  compiled)
+  (do
+    point x number
+    (plus point y number))
+  text 
+  (plus "!!!"))

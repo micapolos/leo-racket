@@ -21,6 +21,7 @@
   leo/compiler/syntax-expression
   leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
+  leo/compiler/compiler-utils
   leo/compiler/package-utils
   leo/compiler/package-sexp
   leo/compiler/package
@@ -94,7 +95,7 @@
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `quote $quote-syntax-list
     (compiler-plus-quoted-tuple $compiler 
-      (sexp-list-tuple 
+      (sexp-list-tuple
         (map syntax->datum $quote-syntax-list)))))
 
 (define (compiler-syntax-resolve-compiled
@@ -102,26 +103,14 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (and (equal? (syntax-e $syntax) `compiled)
-    (compiler
-      (compiler-scope $compiler)
-      (package 
-        (expression-expressions
-          (sexp-expression
-            `(compiled
-              ,@(package-sexp-list
-                (compiler-package $compiler)))))))))
+    (compiler-apply-compiled $compiler)))
 
 (define (compiler-syntax-resolve-type
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
   (and (equal? (syntax-e $syntax) `type)
-    (compiler
-      (compiler-scope $compiler)
-      (map expression-expressions
-        (map type-expression
-          (package-structure
-            (compiler-package $compiler)))))))
+    (compiler-apply-type $compiler)))
 
 (define (compiler-syntax-resolve-default
   ($compiler : Compiler) 

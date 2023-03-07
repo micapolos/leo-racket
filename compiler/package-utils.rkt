@@ -18,6 +18,7 @@
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
   leo/compiler/expression
+  leo/compiler/sexp-expression
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
@@ -232,3 +233,15 @@
 
 (define (package-sexp-list ($package : Package)) : (Listof Sexp)
   (reverse (filter-false (map expressions-sexp-option $package))))
+
+(define (package-apply-type ($package : Package)) : Package
+  (map expression-expressions
+    (map type-expression
+      (package-structure $package))))
+
+(define (package-apply-compiled ($package : Package)) : Package
+  (package 
+    (expression-expressions
+      (sexp-expression
+        `(compiled
+          ,@(package-sexp-list $package))))))
