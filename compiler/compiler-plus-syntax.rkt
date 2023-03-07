@@ -186,5 +186,6 @@
         #`(plus (int 2))
         #`(do int (plus int)))))
   (pair 
-    `(let-values (((tmp-int) (unsafe-fx+ 1 2))) (unsafe-fx+ tmp-int tmp-int))
+    `(let-values (((tmp-int) (unsafe-fx+ 1 2))) 
+      (unsafe-fx+ tmp-int tmp-int))
     (structure int-type)))
