@@ -4,5 +4,6 @@
 
 (leo
   (point
-      (int 1)
-      (plus (int 2))))
+    (x 10)
+    (y 20))
+  x number)
