@@ -148,7 +148,7 @@
   : (Option Expressions)
   (define $expression-type (expression-type $lhs-expression))
   (define $structure (tuple-structure $rhs-tuple))
-  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $rhs-tuple))
+  (define $dynamic-syntax-stack (tuple-syntax-stack $rhs-tuple))
   (and 
     (arrow? $expression-type)
     (let ()
@@ -268,7 +268,7 @@
 
 (define (tuple-do ($tuple : Tuple) ($fn : (-> Scope Expressions))) : Expressions
   (define $structure (tuple-structure $tuple))
-  (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
+  (define $dynamic-syntax-stack (tuple-syntax-stack $tuple))
   (define $values-syntax (tuple-values-syntax-option $tuple))
   (define $scope (structure-generate-scope $structure))
   (define $fn-expressions ($fn $scope))
@@ -329,7 +329,7 @@
 
 (define (tuple-doing ($tuple : Tuple) ($fn : (-> Scope Expressions))) : (Option Expressions)
   (option-bind (structure-lift (tuple-structure $tuple)) $structure
-    (define $dynamic-syntax-stack (tuple-dynamic-syntax-stack $tuple))
+    (define $dynamic-syntax-stack (tuple-syntax-stack $tuple))
     (define $values-syntax (tuple-values-syntax-option $tuple))
     (define $scope (structure-generate-scope $structure))
     (define $fn-expressions ($fn $scope))

@@ -108,13 +108,7 @@
 (define (tuple-syntax-stack
   ($tuple : Tuple))
   : (Stackof Syntax)
-  (map expression-syntax $tuple))
-
-(define (tuple-dynamic-syntax-stack 
-  ($tuple : Tuple))
-  : (Stackof Syntax)
-  (tuple-syntax-stack
-    (filter expression-dynamic? $tuple)))
+  (filter-false (map expression-syntax-option $tuple)))
 
 (check-equal?
   (tuple-structure (stack expression-a expression-b))
@@ -156,7 +150,7 @@
         ((type-dynamic? (expression-type $lhs-expression))
           `(,(expression-syntax $lhs-expression)
             ,@(reverse 
-              (tuple-dynamic-syntax-stack $rhs-tuple))))
+              (tuple-syntax-stack $rhs-tuple))))
         (else null-syntax)))
     (type-apply-structure
       (expression-type $lhs-expression)
