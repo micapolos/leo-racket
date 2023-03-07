@@ -97,6 +97,13 @@
 
 ; --------------------------------------------------------------------------------
 
+(define (package-apply-fn
+  ($package : Package)
+  ($fn : (-> Tuple Expressions))) : Expressions
+  (option-ref (package-resolve-fn $package $fn)))
+
+; --------------------------------------------------------------------------------
+
 (define (package-do ($package : Package) ($fn : (-> Scope Expressions))) : Expressions
   (define $expressions-stack $package)
   (define $syntax-option-stack (map expressions-syntax-option $expressions-stack))
@@ -167,10 +174,22 @@
         result)
     (structure (racket a) (racket b) (racket c) (racket d))))
 
-; (define (symbol-package-expression ($symbol : Symbol) ($package : Package)) : Expression
-;   (package-do $package
-;     (lambda (($tuple : Tuple))
-;       (expression
-;         (tuple-syntax $tuple)
-;         (field $symbol (tuple-structure $tuple))))))
+; ----------------------------------------------------------------------------
+
+(define (symbol-package-expressions ($symbol : Symbol) ($package : Package)) : Expressions
+  (package-apply-fn $package
+    (lambda (($tuple : Tuple))
+      (make-expressions
+        (tuple-syntax $tuple)
+        (structure (field $symbol (tuple-structure $tuple)))))))
+
+(check-equal?
+  (expressions-sexp
+    (symbol-package-expressions
+      `foo
+      (package expressions-a expressions-cd)))
+  `(expressions 
+    (let-values (((tmp-c tmp-d) cd))
+      (vector a tmp-c tmp-d))
+    (structure (foo (racket a) (racket c) (racket d)))))
 
