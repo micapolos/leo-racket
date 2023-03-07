@@ -63,16 +63,8 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `do $do-syntax-list
-    (define $scope (compiler-scope $compiler))
-    (define $package (compiler-package $compiler))
-    (compiler $scope
-      (package
-        (package-do $package
-          (lambda (($scope : Scope))
-            (scope-syntax-list-expressions 
-              (push-stack (compiler-scope $compiler) $scope) 
-              $do-syntax-list)))))))
+  (syntax-symbol-match-args $syntax `do $syntax-list
+    (compiler-apply-do $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-doing
   ($compiler : Compiler) 
@@ -148,6 +140,19 @@
                 (type-expression (field $symbol $structure-a))))
             (symbol-package-expressions $symbol $package)))
         (else (error "parse error unknown"))))))
+
+; ------------------------------------------------------------------------------------
+
+(define (compiler-apply-do 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax))) : Compiler
+  (compiler-with-package $compiler
+    (package
+      (package-do (compiler-package $compiler)
+        (lambda (($scope : Scope))
+          (scope-syntax-list-expressions 
+            (push-stack (compiler-scope $compiler) $scope) 
+            $syntax-list))))))
 
 ; ----------------------------------------------------------------------------
 

@@ -3,5 +3,5 @@
 (require leo/compiler/leo)
 
 (leo
-  number squared
-  (doing number (times number)))
+  10
+  (do number (times number)))
