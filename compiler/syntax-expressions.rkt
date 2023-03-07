@@ -11,7 +11,11 @@
   leo/compiler/expressions-utils
   leo/compiler/type
   leo/compiler/type-utils
+  leo/compiler/package
   leo/compiler/compiler-plus-syntax)
+
+(define (syntax-list-package ($syntax-list : (Listof Syntax))) : Package
+  (scope-syntax-list-package base-scope $syntax-list))
 
 (define (syntax-list-expressions ($syntax-list : (Listof Syntax))) : Expressions
   (scope-syntax-list-expressions base-scope $syntax-list))

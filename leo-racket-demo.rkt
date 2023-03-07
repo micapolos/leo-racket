@@ -1,6 +1,6 @@
 #lang leo/racket
 
-"Hello, "
-(plus "world!")
-length number
-(plus 13)
+(point 
+  (x 10)
+  (y 20))
+x number 
