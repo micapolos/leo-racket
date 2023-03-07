@@ -24,6 +24,11 @@
     (syntax-list-expressions 
       (syntax-syntax-list (any-syntax $any)))))
 
+(define (leo-compile-any-list ($any-list : (Listof Any))) : Syntax
+  (expressions-syntax 
+    (syntax-list-expressions 
+      (map any-syntax $any-list))))
+
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))
   (pair `(string-append "Hello, " "world!") (structure text-type)))
