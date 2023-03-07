@@ -71,15 +71,8 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `doing $doing-syntax-list
-    (define $scope (compiler-scope $compiler))
-    (define $package (compiler-package $compiler))
-    (compiler $scope
-      (package
-        (package-do $package
-          (lambda (($scope : Scope))
-            (scope-syntax-list-expressions 
-              (push-stack (compiler-scope $compiler) $scope) 
-              $doing-syntax-list)))))))
+    ; TODO
+    #f))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 
