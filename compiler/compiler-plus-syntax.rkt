@@ -117,20 +117,25 @@
       (cond
         ((null? $syntax-e) (error "parse error null"))
         ((symbol? $syntax-e)
-          (expression-expressions (field-expression $syntax-e)))
+          (scope-symbol-syntax-list-expressions $scope $syntax-e null))
         ((list? $syntax-e)
           (define $car (syntax-e (car $syntax-e)))
           (unless (symbol? $car) (error "parse-error not symbol"))
-          (define $symbol $car)
-          (define $syntax-list (cdr $syntax-e))
-          (define $package (scope-syntax-list-package $scope $syntax-list))
-          (define $structure (package-structure $package))
-          (or
-            (option-bind (structure-lift $structure) $structure-a
-              (expression-expressions 
-                (type-expression (field $symbol $structure-a))))
-            (symbol-package-expressions $symbol $package)))
+          (scope-symbol-syntax-list-expressions $scope $car (cdr $syntax-e)))
         (else (error "parse error unknown"))))))
+
+(define (scope-symbol-syntax-list-expressions
+  ($scope : Scope) 
+  ($symbol : Symbol)
+  ($syntax-list : (Listof Syntax)))
+  : Expressions
+  (define $package (scope-syntax-list-package $scope $syntax-list))
+  (define $structure (package-structure $package))
+  (or
+    (option-bind (structure-lift $structure) $structure-a
+      (expression-expressions 
+        (type-expression (field $symbol $structure-a))))
+    (symbol-package-expressions $symbol $package)))
 
 ; ------------------------------------------------------------------------------------
 
