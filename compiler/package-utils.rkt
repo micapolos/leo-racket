@@ -44,6 +44,7 @@
           (else `(let-values ,$entries ,(expressions-syntax $expressions)))))
       (expressions-structure $expressions))))
 
+; not resolved
 (check-equal?
   (option-app expressions-sexp
     (package-resolve-fn
@@ -51,6 +52,16 @@
       (lambda (($tuple : Tuple)) #f)))
   #f)
 
+; resolved to static
+(check-equal?
+  (option-app expressions-sexp
+    (package-resolve-fn
+      (package expressions-ab expressions-cd)
+      (lambda (($tuple : Tuple)) 
+        (expressions null-syntax static-structure-a))))
+  `(expressions #f (structure a)))
+
+; single-expression
 (check-equal?
   (option-app expressions-sexp
     (package-resolve-fn
@@ -59,6 +70,7 @@
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions result (structure (racket a))))
 
+; single-expression & multi-expression
 (check-equal?
   (option-app expressions-sexp
     (package-resolve-fn
@@ -69,6 +81,7 @@
     (let-values (((tmp-c tmp-d) cd)) result)
     (structure (racket a) (racket c) (racket d))))
 
+; multi-expressions
 (check-equal?
   (option-app expressions-sexp
     (package-resolve-fn
