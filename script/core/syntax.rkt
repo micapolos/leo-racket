@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide read-leo-stxs)
+(provide read-leo-stxs read-leo-compiler?)
 
 (require 
   leo/testing
