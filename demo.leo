@@ -1,6 +1,10 @@
 #lang leo
 
-10
-do
+number
+dodać number
+doing
   number
-  plus number
+  plus dodać.number
+do
+  10
+  dodać 20

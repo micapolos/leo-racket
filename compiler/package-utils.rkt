@@ -251,3 +251,6 @@
       (sexp-expression
         `(compiled
           ,@(package-sexp-list $package))))))
+
+(define (package-lift-structure ($package : Package)) : (Option Structure)
+  (structure-lift (package-structure $package)))

@@ -13,6 +13,7 @@
   leo/compiler/scope
   leo/compiler/sexp-expression
   leo/compiler/expressions
+  leo/compiler/scope-utils
   leo/compiler/sexp-utils
   leo/compiler/expression
   leo/compiler/expression-resolve
@@ -71,9 +72,8 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `doing $doing-syntax-list
-    ; TODO
-    #f))
+  (syntax-symbol-match-args $syntax `doing $syntax-list
+    (compiler-resolve-doing $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 
@@ -158,16 +158,17 @@
             (push-stack (compiler-scope $compiler) $scope) 
             $syntax-list))))))
 
-; (define (compiler-apply-doing
-;   ($compiler : Compiler) 
-;   ($syntax-list : (Listof Syntax))) : Compiler
-;   (compiler-with-package $compiler
-;     (bind (package-structure $compiler-scope $compiler))
-;     (scope-doing-package
-;       (compiler-scope $compiler)
-;       (scope-syntax-list-package
-;         (push-stack (compiler-scope $compiler) (compiler-scope $scope))
-;         $syntax-list))))
+(define (compiler-resolve-doing
+  ($compiler : Compiler)
+  ($syntax-list : (Listof Syntax))) : (Option Compiler)
+  (option-bind (package-lift-structure (compiler-package $compiler)) $structure
+    (bind $scope (structure-generate-scope $structure)
+      (compiler-with-package $compiler
+        (scope-doing-package
+          $scope
+          (scope-syntax-list-package
+            (push-stack (compiler-scope $compiler) $scope)
+            $syntax-list))))))
 
 (define (compiler-apply-then 
   ($compiler : Compiler) 
