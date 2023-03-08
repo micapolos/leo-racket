@@ -151,11 +151,7 @@
   : Expressions
   (define $package (scope-syntax-list-package $scope $syntax-list))
   (define $structure (package-structure $package))
-  (or
-    ; (option-bind (structure-lift $structure) $structure-a
-    ;   (expression-expressions 
-    ;     (type-expression (field $symbol $structure-a))))
-    (symbol-package-expressions $symbol $package)))
+  (symbol-package-expressions $symbol $package))
 
 ; ------------------------------------------------------------------------------------
 
