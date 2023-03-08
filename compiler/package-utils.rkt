@@ -245,12 +245,11 @@
     (map type-expression
       (package-structure $package))))
 
-(define (package-apply-compiled ($package : Package)) : Package
-  (package 
-    (expression-expressions
-      (sexp-expression
-        `(compiled
-          ,@(package-sexp-list $package))))))
+(define (package-apply-racket ($package : Package)) : Package
+  (package
+    (expressions 
+      (make-syntax `(quote ,(reverse (map expressions-syntax $package))))
+      (structure (racket)))))
 
 (define (package-lift-structure ($package : Package)) : (Option Structure)
   (structure-lift (package-structure $package)))

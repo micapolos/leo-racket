@@ -39,7 +39,7 @@
                   (else 
                     (string-indent 
                       (string-append "\n" (sexp-list-rhs-string $list)))))))))))
-    (format "~v" $sexp)))
+    (format "~s" $sexp)))
 
 (define (sexp-list-rhs-string ($sexp-list : (Listof Sexp))) : String
   (string-join (map sexp-string $sexp-list) "\n"))
@@ -55,6 +55,10 @@
 
 (define (string-indent ($string : String)) : String
   (string-replace $string "\n" "\n  "))
+
+(check-equal? 
+  (sexp-string `("foo" bar))
+  "(\"foo\" bar)")
 
 (check-equal? 
   (sexp-string 1)

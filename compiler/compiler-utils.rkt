@@ -16,9 +16,9 @@
   (compiler-with-package $compiler
     (package-apply-type (compiler-package $compiler))))
 
-(define (compiler-apply-compiled ($compiler : Compiler)) : Compiler 
+(define (compiler-apply-racket ($compiler : Compiler)) : Compiler 
   (compiler-with-package $compiler
-    (package-apply-compiled (compiler-package $compiler))))
+    (package-apply-racket (compiler-package $compiler))))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-plus-quoted-tuple $compiler

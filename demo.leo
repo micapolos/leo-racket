@@ -1,11 +1,8 @@
 #lang leo
 
-recipe
-  number
-  increment
-  does
-    number
-    plus 1
+10
+plus 20
 do
-  10
-  increment
+  number
+  times number
+racket

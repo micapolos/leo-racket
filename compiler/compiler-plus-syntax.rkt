@@ -60,7 +60,7 @@
     (compiler-syntax-resolve-do $compiler $syntax)
     (compiler-syntax-resolve-recipe $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
-    (compiler-syntax-resolve-compiled $compiler $syntax)
+    (compiler-syntax-resolve-racket $compiler $syntax)
     (compiler-syntax-resolve-the $compiler $syntax)
     (compiler-syntax-resolve-then $compiler $syntax)
     (compiler-syntax-resolve-type $compiler $syntax)
@@ -87,12 +87,12 @@
   (syntax-symbol-match-args $syntax `quote $syntax-list
     (compiler-apply-quote $compiler $syntax-list)))
 
-(define (compiler-syntax-resolve-compiled
+(define (compiler-syntax-resolve-racket
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (and (equal? (syntax->datum $syntax) `compiled)
-    (compiler-apply-compiled $compiler)))
+  (and (equal? (syntax->datum $syntax) `racket)
+    (compiler-apply-racket $compiler)))
 
 (define (compiler-syntax-resolve-the
   ($compiler : Compiler) 

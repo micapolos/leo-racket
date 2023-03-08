@@ -4,9 +4,10 @@
 
 (define (any-sexp ($any : Any)) : Sexp
   (cond
+    ((null? $any) $any)
     ((symbol? $any) $any)
     ((number? $any) $any)
     ((string? $any) $any)
     ((boolean? $any) $any)
-    ((list? $any) (map any-sexp $any))
-    (else `(any ...))))
+    ((pair? $any) (cons (any-sexp (car $any)) (any-sexp (cdr $any))))
+    (else `(native ,(format "~a" $any)))))
