@@ -6,7 +6,7 @@
   leo/typed/base
   leo/typed/stack)
 
-(define-type Type (U Racket Field Arrow A))
+(define-type Type (U Racket Field Choice Arrow A))
 
 (define-type Structure (Stackof Type))
 
@@ -17,6 +17,8 @@
 (data field 
   (symbol : Symbol) 
   (structure : Structure))
+
+(data choice (structure : Structure))
 
 (data racket)
 

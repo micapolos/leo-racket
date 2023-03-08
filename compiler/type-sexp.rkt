@@ -23,6 +23,8 @@
       (if (null? $structure)
         $symbol
         `(,$symbol ,@(structure-sexp-list $structure))))
+    ((choice? $type)
+      `(choice ,@(structure-sexp-list (choice-structure $type))))
     ((arrow? $type) 
       (define $lhs-structure (arrow-lhs-structure $type))
       (define $rhs-structure (arrow-rhs-structure $type))
@@ -46,8 +48,10 @@
 (check-equal? (type-sexp boolean-type) `boolean)
 
 (check-equal? (type-sexp (field `foo null)) `foo)
-
 (check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
+
+(check-equal? (type-sexp (choice null)) `(choice))
+(check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
 
 (check-equal? 
   (type-sexp 

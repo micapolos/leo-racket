@@ -53,10 +53,18 @@
     ((racket? $type) #t)
     ((arrow? $type) (structure-dynamic? (arrow-rhs-structure $type)))
     ((field? $type) (structure-dynamic? (field-structure $type)))
+    ((choice? $type) (choice-dynamic? $type))
     ((a? $type) #f)))
 
 (define (structure-dynamic? ($structure : Structure)) : Boolean
   (ormap type-dynamic? $structure))
+
+(define (choice-dynamic? ($choice : Choice)) : Boolean
+  (bind $structure (choice-structure $choice)
+    (case (length $structure)
+      ((0) #f)
+      ((1) (type-dynamic? (top $structure)))
+      (else #t))))
 
 (check-equal? (type-dynamic? (racket)) #t)
 
@@ -70,6 +78,11 @@
 (check-equal? (type-dynamic? (racket-field `foo)) #t)
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null) (racket)))) #t)
 (check-equal? (type-dynamic? (a dynamic-type-a)) #f)
+
+(check-equal? (type-dynamic? (choice null-structure)) #f)
+(check-equal? (type-dynamic? (choice (structure static-type-a))) #f)
+(check-equal? (type-dynamic? (choice (structure dynamic-type-a))) #t)
+(check-equal? (type-dynamic? (choice (structure static-type-a static-type-b))) #t)
 
 (define (structure-compiled-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))

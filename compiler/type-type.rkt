@@ -20,6 +20,8 @@
       (field 
         (field-symbol $type) 
         (structure-structure (field-structure $type))))
+    ((choice? $type)
+      (a (field `choice (structure-structure (choice-structure $type)))))
     ((arrow? $type) 
       (a 
         (field `function 

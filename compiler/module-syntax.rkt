@@ -59,6 +59,7 @@
         `(field 
           (quote ,(field-symbol $type))
           ,(structure-syntax (field-structure $type))))
+      ((choice? $type) (error "TODO (type-syntax choice)"))
       ((arrow? $type)
         `(arrow
           ,(structure-syntax (arrow-lhs-structure $type))
