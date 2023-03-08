@@ -1,12 +1,6 @@
 #lang leo
 
-then 10
-then
+10
+do
   number
-  plus 1
-then
-  number.text
-then
-  text
-  plus "!!!"
-then text
+  plus number

@@ -15,6 +15,7 @@
   leo/compiler/scope
   leo/compiler/scope-utils
   leo/compiler/expressions
+  leo/compiler/expressions-sexp
   leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -465,3 +466,29 @@
 
 (define (expressions-sexp-option ($expressions : Expressions)) : (Option Sexp)
   (option-app syntax->datum (expressions-syntax-option $expressions)))
+
+(define (scope-doing-expressions
+  ($scope : Scope)
+  ($expressions : Expressions)) : Expressions
+  (expressions
+    (make-syntax 
+      `(lambda 
+        ,(reverse (filter-false (map binding-identifier-option $scope)))
+        ,(expressions-syntax $expressions)))
+    (structure 
+      (arrow
+        (scope-structure $scope)
+        (expressions-structure $expressions)))))
+
+(check-equal?
+  (expressions-sexp-structure
+    (scope-doing-expressions
+      (scope 
+        (binding number-type #`num)
+        (binding text-type #`txt))
+      (expressions 
+        #`(string-append (number->string num) txt)
+        (structure text-type))))
+  (pair
+    `(lambda (num txt) (string-append (number->string num) txt))
+    (structure (arrow (structure number-type text-type) (structure text-type)))))

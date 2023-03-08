@@ -158,6 +158,17 @@
             (push-stack (compiler-scope $compiler) $scope) 
             $syntax-list))))))
 
+; (define (compiler-apply-doing
+;   ($compiler : Compiler) 
+;   ($syntax-list : (Listof Syntax))) : Compiler
+;   (compiler-with-package $compiler
+;     (bind (package-structure $compiler-scope $compiler))
+;     (scope-doing-package
+;       (compiler-scope $compiler)
+;       (scope-syntax-list-package
+;         (push-stack (compiler-scope $compiler) (compiler-scope $scope))
+;         $syntax-list))))
+
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler

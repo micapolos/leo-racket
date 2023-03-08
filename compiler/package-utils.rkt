@@ -237,6 +237,9 @@
 (define (package-sexp-list ($package : Package)) : (Listof Sexp)
   (reverse (filter-false (map expressions-sexp-option $package))))
 
+(define (scope-doing-package ($scope : Scope) ($package : Package)) : Package
+  (package (scope-doing-expressions $scope (package-expressions $package))))
+
 (define (package-apply-type ($package : Package)) : Package
   (map expression-expressions
     (map type-expression
