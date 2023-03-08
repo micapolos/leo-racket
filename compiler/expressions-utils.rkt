@@ -51,14 +51,14 @@
   : Expression
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
-  (define $structure-compiled-size (structure-compiled-size $structure))
+  (define $structure-dynamic-size (structure-dynamic-size $structure))
   (define $dynamic-index (structure-dynamic-ref $structure $index))
   (define $type (list-ref $structure $index))
   (expression
     (make-syntax
       (and
         $dynamic-index
-        (case $structure-compiled-size
+        (case $structure-dynamic-size
           ((0) #f)
           ((1) $syntax)
           ((2)
@@ -68,7 +68,7 @@
           (else
             `(unsafe-vector-ref 
               ,$syntax
-              ,(- $structure-compiled-size $dynamic-index 1))))))
+              ,(- $structure-dynamic-size $dynamic-index 1))))))
     $type))
 
 (define (expressions-tuple ($expressions : Expressions)) : Tuple
@@ -259,7 +259,7 @@
   (Option Expressions)
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
-  (define $compiled-size (structure-compiled-size $structure))
+  (define $compiled-size (structure-dynamic-size $structure))
   (case $compiled-size
     ((0 1) 
       ($fn (map (curry expression $syntax) $structure)))
@@ -409,8 +409,8 @@
   : Let-Values-Entry
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
-  (define $size (structure-compiled-size $structure))
-  (case (structure-compiled-size $structure)
+  (define $size (structure-dynamic-size $structure))
+  (case (structure-dynamic-size $structure)
     ((0)
       (let-values-entry
         null

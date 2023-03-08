@@ -13,6 +13,8 @@
 
 (data expression (syntax : Syntax) (type : Type))
 
+(define-type Selection (U Type Expression))
+
 ; TODO: Refactor expression-syntax
 (define (expression-syntax-option ($expression : Expression)) : (Option Syntax)
   (and 

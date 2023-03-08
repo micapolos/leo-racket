@@ -4,6 +4,7 @@
 
 (require 
   racket/function
+  leo/typed/option
   leo/compiler/type
   leo/typed/base
   leo/typed/stack
@@ -84,7 +85,7 @@
 (check-equal? (type-dynamic? (choice (structure dynamic-type-a))) #t)
 (check-equal? (type-dynamic? (choice (structure static-type-a static-type-b))) #t)
 
-(define (structure-compiled-size ($structure : Structure)) : Exact-Nonnegative-Integer
+(define (structure-dynamic-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))
 
 ; -------------------------------------------------------------------------
@@ -122,6 +123,14 @@
   (check-equal? (structure-dynamic-ref $structure 2) 1)
   (check-equal? (structure-dynamic-ref $structure 3) 2)
   (check-equal? (structure-dynamic-ref $structure 4) #f))
+
+(define (structure-dynamic-index 
+  ($structure : Structure) 
+  ($index : Exact-Nonnegative-Integer)) 
+  : (Option Exact-Nonnegative-Integer)
+  (option-bind (structure-dynamic-ref $structure $index) $ref
+    (cast 
+      (- (structure-dynamic-size $structure) $ref 1) Exact-Nonnegative-Integer)))
 
 (define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
   (and

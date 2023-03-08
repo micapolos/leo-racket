@@ -12,4 +12,3 @@ recipe
 do
   10
   "jajek"
-racket
