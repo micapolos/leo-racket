@@ -1,14 +1,10 @@
 #lang leo
 
-recipe
-  number
-  text
-  does
-    number
-    plus 1
-    text
-    plus " "
-    plus text
-do
-  10
-  "jajek"
+select
+  not text
+  the 123
+  not number
+match
+  true 123
+  false 125
+choice: number text
