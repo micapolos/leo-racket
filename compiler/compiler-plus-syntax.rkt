@@ -291,11 +291,11 @@
     (scope-syntax-list-expressions
       base-scope
       (list
-        #`(int 1) 
-        #`(plus (int 2))
+        #`1
+        #`(plus 2)
         #`text)))
   (pair 
-    `(number->string (unsafe-fx+ 1 2)) 
+    `(number->string (+ 1 2)) 
     (structure text-type)))
 
 (check-equal?
@@ -303,13 +303,13 @@
     (scope-syntax-list-expressions
       base-scope
       (list
-        #`(int 1)
-        #`(plus (int 2))
-        #`(do int (plus int)))))
+        #`1
+        #`(add 2)
+        #`(do number (plus number)))))
   (pair 
-    `(let-values (((tmp-int) (unsafe-fx+ 1 2))) 
-      (unsafe-fx+ tmp-int tmp-int))
-    (structure int-type)))
+    `(let-values (((tmp-number) 1) ((tmp-add) 2)) 
+      (+ tmp-number tmp-number))
+    (structure number-type)))
 
 (check-equal?
   (expressions-sexp-structure

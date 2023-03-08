@@ -30,3 +30,63 @@
 
 (define (type-generate-binding ($type : Type)) : Binding
   (binding $type (type-generate-temporary-option $type)))
+
+(define (unary-binding 
+  ($lhs-type : Type)
+  ($symbol : Symbol)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (null-field $symbol))
+      (structure $return-type))
+    $identifier))
+
+(define (unary-binding-2
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (null-field $symbol-1)
+        (null-field $symbol-2))
+      (structure $return-type))
+    $identifier))
+
+(define (binary-binding 
+  ($lhs-type : Type)
+  ($symbol : Symbol)
+  ($rhs-type : Type)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (field $symbol (structure $rhs-type)))
+      (structure $return-type))
+    $identifier))
+
+(define (binary-binding-2
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($rhs-type : Type)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (field $symbol-1
+          (structure 
+            (field $symbol-2 
+              (structure $rhs-type)))))
+      (structure $return-type))
+    $identifier))

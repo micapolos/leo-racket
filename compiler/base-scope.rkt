@@ -5,86 +5,45 @@
 (require 
   leo/compiler/scope
   leo/compiler/binding
+  leo/compiler/binding-utils
   leo/compiler/type
   leo/compiler/type-utils)
 
 (define base-scope
   (scope
-    (binding
-      (arrow
-        (structure 
-          number-type
-          (field `plus (structure number-type)))
-        (structure number-type))
-      #`+)
-    (binding
-      (arrow
-        (structure 
-          number-type
-          (field `minus (structure number-type)))
-        (structure number-type))
-      #`-)
-    (binding
-      (arrow
-        (structure 
-          number-type
-          (field `times (structure number-type)))
-        (structure number-type))
-      #`*)
-    (binding
-      (arrow
-        (structure 
-          number-type
-          (null-field `text))
-        (structure text-type))
-      #`number->string)
-    (binding
-      (arrow
-        (structure 
-          int-type
-          (a text-type))
-        (structure text-type))
-      #`number->string)
-    (binding
-      (arrow
-        (structure 
-          int-type
-          (field `plus (structure int-type)))
-        (structure int-type))
-      #`unsafe-fx+)
-    (binding
-      (arrow
-        (structure 
-          int-type
-          (field `minus (structure int-type)))
-        (structure int-type))
-      #`unsafe-fx-)
-    (binding
-      (arrow
-        (structure 
-          int-type
-          (field `times (structure int-type)))
-        (structure int-type))
-      #`unsafe-fx*)
-    (binding
-      (arrow
-        (structure 
-          int-type
-          (null-field `text))
-        (structure text-type))
-      #`number->string)
-    (binding
-      (arrow
-        (structure 
-          text-type
-          (field `plus (structure text-type)))
-        (structure text-type))
-      #`string-append)
-    (binding
-      (arrow
-        (structure 
-          text-type
-          (null-field `length))
-        (structure 
-          (field `length (structure number-type))))
-      #`string-length)))
+    (binary-binding number-type `plus number-type number-type #`+)
+    (binary-binding number-type `minus number-type number-type #`-)
+    (binary-binding number-type `times number-type number-type #`*)
+    (binary-binding-2 number-type `divided `by number-type number-type #`/)
+    (unary-binding number-type `increment number-type #`add1)
+    (unary-binding number-type `decrement number-type #`sub1)
+
+    (binary-binding number-type `equals number-type boolean-type #`=)
+    (binary-binding-2 number-type `less `than number-type boolean-type #`<)
+    (binary-binding-2 number-type `greater `than number-type boolean-type #`>)
+
+    (unary-binding-2 number-type `square `root number-type #`sqrt)
+    (unary-binding-2 number-type `squared `root number-type #`sqr)
+
+    (unary-binding number-type `sinus number-type #`sin)
+    (unary-binding number-type `cosinus number-type #`cos)
+    (unary-binding number-type `tangens number-type #`tan)
+
+    (unary-binding number-type `text text-type #`number->string)
+
+    (binary-binding int-type `plus int-type int-type #`unsafe-fx/wraparound+)
+    (binary-binding int-type `minus int-type int-type #`unsafe-fx/wraparound-)
+    (binary-binding int-type `times int-type int-type #`unsafe-fx/wraparound*)
+    
+    (binary-binding int-type `equals int-type boolean-type #`unsafe-fx=)
+    (binary-binding-2 int-type `less `than int-type boolean-type #`unsafe-fx<)
+    (binary-binding-2 int-type `greater `than int-type boolean-type #`unsafe-fx>)
+
+    (unary-binding int-type `text text-type #`number->string)
+
+    (binary-binding text-type `plus text-type text-type #`string-append)
+    (unary-binding-2 text-type `length `number number-type #`string-length)
+    (unary-binding-2 text-type `length `int int-type #`string-length)
+    (binary-binding text-type `equals text-type boolean-type #`string=?)
+  )
+)

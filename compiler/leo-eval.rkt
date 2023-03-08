@@ -45,8 +45,8 @@
 (check-equal?
   (leo-eval 
     `(
-      (int 1) 
-      (plus (int 2)) 
+      1
+      (plus 2) 
       text 
       (plus " ")
       (plus "pieces")
