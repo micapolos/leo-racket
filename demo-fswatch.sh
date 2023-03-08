@@ -1,0 +1,1 @@
+fswatch -o -r demo.leo | while read f; do racket demo.leo > demo-out.leo; done
