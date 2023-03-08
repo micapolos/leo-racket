@@ -1,4 +1,7 @@
 #lang leo
 
-10
-text
+point
+  x 10
+  y 20
+x.number
+type

@@ -33,7 +33,7 @@
             ,$symbol
             ,@(any-structure-sexp-list $any $structure)))))
     ((arrow? $type) (type-sexp $type))
-    ((a? $type) `(a ,(type-sexp (a-type $type))))))
+    ((a? $type) (type-sexp (a-type $type)))))
 
 (define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
   (reverse
@@ -101,7 +101,7 @@
 
 (check-equal?
   (value-sexp (value `foo (a number-type)))
-  `(a number))
+  `number)
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack text-type))))
