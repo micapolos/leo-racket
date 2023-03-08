@@ -95,9 +95,12 @@
 
 (define (leo-append-identifier-stx-list?-rhs $leo $identifier $stx $list? $rhs) 
   (cond
-     ((equal? $identifier `comment) (leo-append-comment-rhs $leo $rhs))
-     ((equal? $identifier `group) (leo-append-group-rhs $leo $rhs))
-     ((equal? $identifier `the) (leo-append-the-rhs $leo $rhs))
+     ((and (not (read-leo-compiler?)) (equal? $identifier `comment))
+       (leo-append-comment-rhs $leo $rhs))
+     ((and (not (read-leo-compiler?)) (equal? $identifier `group))
+       (leo-append-group-rhs $leo $rhs))
+     ((and (not (read-leo-compiler?)) (equal? $identifier `the)) 
+       (leo-append-the-rhs $leo $rhs))
      (else (leo-append-stx-list?-rhs $leo $stx $list? $rhs))))
 
 (define (leo-append-comment-rhs $leo $rhs)

@@ -18,6 +18,7 @@
   leo/compiler/package
   leo/compiler/package-utils
   leo/compiler/package-sexp
+  leo/compiler/package-resolve
   leo/compiler/scope-resolve
   leo/compiler/type
   leo/compiler/type-utils)
@@ -40,6 +41,7 @@
   (option-app compiler
     $scope
     (or
+      (package-resolve-the $package $expressions)
       (option-app package
         (package-resolve-fn $package
           (lambda (($tuple : Tuple))

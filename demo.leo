@@ -1,3 +1,5 @@
 #lang leo
 
-10
+the
+  name "Michał"
+  nazwisko "Pociecha-Łoś"

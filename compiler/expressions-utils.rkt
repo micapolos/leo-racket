@@ -119,6 +119,21 @@
 
 ; -------------------------------------------------------------------
 
+(define (expressions-expression-option ($expressions : Expressions)) : (Option Expression)
+  (option-bind (single (expressions-structure $expressions)) $type
+    (expression (expressions-syntax $expressions) $type)))
+
+(define (expressions-symbol-rhs
+  ($expressions : Expressions)
+  ($symbol : Symbol))
+  : (Option Expressions)
+  (option-bind (expressions-expression-option $expressions) $expression
+    (bind $type (expression-type $expression)
+      (and (field? $type) (equal? (field-symbol $type) `the)
+        (expressions 
+          (expression-syntax $expression)
+          (field-structure $type))))))
+
 (define (expressions-rhs-option ($expressions : Expressions)) : (Option Expressions)
   (option-bind (single (expressions-structure $expressions)) $type
     (and (field? $type)

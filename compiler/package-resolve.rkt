@@ -3,12 +3,19 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/option
+  leo/typed/stack
   leo/compiler/expression
   leo/compiler/package
   leo/compiler/package-utils
-  leo/compiler/expressions)
+  leo/compiler/expressions
+  leo/compiler/expressions-utils)
 
-(define (package-resolve-field ($package : Package)) : (Option Expressions)
-  (package-resolve-fn $package
-    (lambda (($tuple : Tuple))
-      #f)))
+(define (package-resolve-the
+  ($package : Package)
+  ($expressions : Expressions))
+  : (Option Package)
+  (option-app push
+    $package
+    (expressions-symbol-rhs $expressions `the)))
+  
