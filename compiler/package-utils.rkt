@@ -22,6 +22,9 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
+(define (package-plus ($lhs-package : Package) ($rhs-package : Package)) : Package
+  (push-stack $lhs-package $rhs-package))
+
 (define (package-plus-tuple ($package : Package) ($tuple : Tuple)) : Package
   (push-stack $package (map expression-expressions $tuple)))
 
