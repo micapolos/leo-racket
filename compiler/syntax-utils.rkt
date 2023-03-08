@@ -3,6 +3,8 @@
 (provide (all-defined-out))
 
 (require 
+  leo/typed/base
+  leo/typed/testing
   leo/compiler/sexp-utils
   leo/compiler/sourced
   leo/compiler/srcloc
@@ -44,3 +46,17 @@
 (define (syntax-syntax-list ($syntax : Syntax)) : (Listof Syntax)
   (define $syntax-e (syntax-e $syntax))
   (or (and (list? $syntax-e) $syntax-e) (list $syntax)))
+
+(define (syntax-normalize ($syntax : Syntax)) : Syntax
+  (bind $syntax-e (syntax-e $syntax)
+    (cond
+      ((list? $syntax-e) 
+        (bind $normalized-e (map syntax-normalize $syntax-e)
+          (if (= (length $normalized-e) 1) 
+            (car $normalized-e) 
+            (make-syntax `(,@$normalized-e)))))
+      (else $syntax))))
+
+(check-equal? 
+  (syntax->datum (syntax-normalize #`((1) ((2)) ((3) (3)))))
+  `(1 2 (3 3)))

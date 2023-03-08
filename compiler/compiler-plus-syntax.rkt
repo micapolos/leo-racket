@@ -85,20 +85,14 @@
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (and 
-    (or
-      (equal? (syntax->datum $syntax) `compiled)
-      (equal? (syntax->datum $syntax) `(compiled)))
+  (and (equal? (syntax->datum $syntax) `compiled)
     (compiler-apply-compiled $compiler)))
 
 (define (compiler-syntax-resolve-type
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (and 
-    (or
-      (equal? (syntax->datum $syntax) `type)
-      (equal? (syntax->datum $syntax) `(type)))
+  (and (equal? (syntax->datum $syntax) `type)
     (compiler-apply-type $compiler)))
 
 (define (compiler-syntax-resolve-default

@@ -29,7 +29,7 @@
 (define (leo-compile-any-list ($any-list : (Listof Any))) : Syntax
   (package-top-level-syntax 
     (syntax-list-package
-      (map any-syntax $any-list))))
+      (map syntax-normalize (map any-syntax $any-list)))))
 
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))
