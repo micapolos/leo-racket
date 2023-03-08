@@ -327,7 +327,7 @@
 
 ; ---------------------------------------------------------
 
-(define (index-syntax-structure-choice-expression 
+(define (index-syntax-structure-select-expression 
   ($index : Exact-Nonnegative-Integer)
   ($syntax : Syntax)
   ($structure : Structure)) : Expression
@@ -347,48 +347,48 @@
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 0 #`stx null-structure))
+    (index-syntax-structure-select-expression 0 #`stx null-structure))
   (pair `(error) (choice null-structure)))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 0 null-syntax
+    (index-syntax-structure-select-expression 0 null-syntax
       (structure static-type-a)))
   (pair #f (choice (structure static-type-a))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 0 #`stx
+    (index-syntax-structure-select-expression 0 #`stx
       (structure dynamic-type-a)))
   (pair `stx (choice (structure dynamic-type-a))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 0 null-syntax
+    (index-syntax-structure-select-expression 0 null-syntax
       (structure static-type-a static-type-b)))
   (pair #f (choice (structure static-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 1 null-syntax
+    (index-syntax-structure-select-expression 1 null-syntax
       (structure static-type-a static-type-b)))
   (pair #t (choice (structure static-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 0 #`stx
+    (index-syntax-structure-select-expression 0 #`stx
       (structure dynamic-type-a static-type-b)))
   (pair `(#f . stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 1 #`stx
+    (index-syntax-structure-select-expression 1 #`stx
       (structure dynamic-type-a static-type-b)))
   (pair `(#t . stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 
+    (index-syntax-structure-select-expression 
       0
       null-syntax
       (structure static-type-a static-type-b static-type-c)))
@@ -398,7 +398,7 @@
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-choice-expression 
+    (index-syntax-structure-select-expression 
       0
       #`stx
       (structure dynamic-type-a static-type-b dynamic-type-c)))
