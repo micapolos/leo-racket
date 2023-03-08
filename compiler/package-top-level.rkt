@@ -15,10 +15,19 @@
   leo/compiler/type-utils
   leo/compiler/module-syntax)
 
+(define top-level-string? : (Parameter Boolean) (make-parameter #f))
+
 (define (package-top-level-syntax ($package : Package)) : Syntax
-  (make-syntax 
-    `(for-each writeln
-      ,(expressions-syntax (package-top-level-expressions $package)))))
+  (cond
+    ((top-level-string?)
+      (make-syntax 
+        `(for-each
+          (lambda ($sexp) (displayln (sexp-string $sexp)))
+          ,(expressions-syntax (package-top-level-expressions $package)))))
+    (else
+      (make-syntax 
+        `(for-each writeln
+          ,(expressions-syntax (package-top-level-expressions $package)))))))
 
 (define (package-top-level-expressions ($package : Package)) : Expressions
   (package-apply-fn $package tuple-top-level-expressions))

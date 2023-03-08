@@ -5,6 +5,7 @@
   racket/port
   racket/function
   leo/script/core/syntax
+  leo/compiler/package-top-level
   leo/compiler/leo-compile)
 
 (provide 
@@ -19,6 +20,7 @@
 (define (leo-read-syntax src port)
   (strip-context
     #`(module leo leo/lang/runtime
-      #,(leo-compile-any-list 
-        (parameterize ((read-leo-compiler? #t))
-          (read-leo-stxs port src))))))
+      #,(parameterize ((top-level-string? #t))
+        (leo-compile-any-list
+          (parameterize ((read-leo-compiler? #t))
+            (read-leo-stxs port src)))))))
