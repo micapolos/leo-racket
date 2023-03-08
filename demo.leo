@@ -1,5 +1,14 @@
 #lang leo
 
 10
-plus 20
-text
+"apples"
+do
+  number.text
+  plus " "
+  plus text
+  plus " and "
+  plus
+    number
+    plus 15
+    text
+    plus " pears!!!"
