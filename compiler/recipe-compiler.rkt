@@ -9,7 +9,7 @@
 
 (data recipe-compiler 
   (scope : Scope) 
-  (recipe-package : Recipe-Package))
+  (package : Recipe-Package))
 
-(define null-recipe-compiler 
-  (recipe-compiler null-scope null-recipe-package))
+(define (null-recipe-compiler ($scope : Scope))
+  (recipe-compiler $scope null-recipe-package))

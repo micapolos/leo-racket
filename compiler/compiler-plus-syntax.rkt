@@ -18,6 +18,7 @@
   leo/compiler/expression
   leo/compiler/expression-resolve
   leo/compiler/expressions-utils
+  leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
   leo/compiler/compiler-plus-expressions
@@ -26,6 +27,8 @@
   leo/compiler/package-utils
   leo/compiler/package-sexp
   leo/compiler/package
+  leo/compiler/recipe-compiler
+  leo/compiler/recipe-package
   leo/compiler/type
   leo/compiler/type-type
   leo/compiler/type-sexp
@@ -55,7 +58,7 @@
   : Compiler
   (or
     (compiler-syntax-resolve-do $compiler $syntax)
-    (compiler-syntax-resolve-doing $compiler $syntax)
+    (compiler-syntax-resolve-recipe $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
     (compiler-syntax-resolve-compiled $compiler $syntax)
     (compiler-syntax-resolve-the $compiler $syntax)
@@ -70,12 +73,12 @@
   (syntax-symbol-match-args $syntax `do $syntax-list
     (compiler-apply-do $compiler $syntax-list)))
 
-(define (compiler-syntax-resolve-doing
+(define (compiler-syntax-resolve-recipe
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `doing $syntax-list
-    (compiler-apply-doing $compiler $syntax-list)))
+  (syntax-symbol-match-args $syntax `recipe $syntax-list
+    (compiler-apply-recipe $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 
@@ -167,21 +170,6 @@
             (push-stack (compiler-scope $compiler) $scope) 
             $syntax-list))))))
 
-(define (compiler-apply-doing
-  ($compiler : Compiler)
-  ($syntax-list : (Listof Syntax))) : Compiler
-  (bind $scope 
-    (structure-generate-scope 
-      (structure-structure
-        (package-structure 
-          (compiler-package $compiler))))
-    (compiler-with-package $compiler
-      (scope-doing-package
-        $scope
-        (scope-syntax-list-package
-          (push-stack (compiler-scope $compiler) $scope)
-          $syntax-list)))))
-
 (define (compiler-apply-the 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
@@ -204,6 +192,59 @@
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
               $syntax-list)))))))
+
+; ----------------------------------------------------------------------------
+
+(define (compiler-apply-recipe 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax))) 
+  : Compiler
+  (compiler-with-package $compiler
+    (push
+      (compiler-package $compiler)
+      (scope-syntax-list-arrow-expressions
+        (compiler-scope $compiler)
+        $syntax-list))))
+
+(define (scope-syntax-list-arrow-expressions
+  ($scope : Scope) 
+  ($syntax-list : (Listof Syntax))) 
+  : Expressions
+  (recipe-package-arrow-expressions
+    (recipe-compiler-package
+      (fold
+        (null-recipe-compiler $scope)
+        $syntax-list
+        recipe-compiler-plus-syntax))))
+
+(define (recipe-compiler-plus-syntax 
+  ($recipe-compiler : Recipe-Compiler) 
+  ($syntax : Syntax)) 
+  : Recipe-Compiler
+  (define $scope (recipe-compiler-scope $recipe-compiler))
+  (define $recipe-package (recipe-compiler-package $recipe-compiler))
+  (when (recipe-package-arrow-expressions-option $recipe-package)
+    (error "Recipe already have a body"))
+  (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
+  (or
+    (syntax-symbol-match-args $syntax `does $syntax-list
+      (bind $lhs-scope (structure-generate-scope $lhs-structure)
+        (struct-copy recipe-compiler $recipe-compiler
+          (package
+            (struct-copy recipe-package $recipe-package
+              (arrow-expressions-option
+                (scope-doing-expressions
+                  $lhs-scope
+                  (scope-syntax-list-expressions
+                    (push-stack $scope $lhs-scope) 
+                    $syntax-list))))))))
+    (struct-copy recipe-compiler $recipe-compiler
+      (package 
+        (struct-copy recipe-package $recipe-package
+          (lhs-structure 
+            (push 
+              $lhs-structure 
+              (syntax-type $syntax))))))))
 
 ; ----------------------------------------------------------------------------
 
@@ -249,16 +290,6 @@
     (expressions 3.14 (structure number))
     (expressions "foo" (structure text))))
 
-; (check-equal?
-;   (expressions-sexp-structure
-;     (scope-syntax-list-expressions null-scope (list #`number)))
-;   (pair null-sexp (structure (a number-type))))
-  
-; (check-equal?
-;   (expressions-sexp-structure
-;     (scope-syntax-list-expressions null-scope (list #`(big number))))
-;   (pair null-sexp (structure (a (field `big (structure number-type))))))
-  
 (check-equal?
   (expressions-sexp-structure
     (scope-syntax-list-expressions
@@ -283,3 +314,15 @@
     `(let-values (((tmp-int) (unsafe-fx+ 1 2))) 
       (unsafe-fx+ tmp-int tmp-int))
     (structure int-type)))
+
+(check-equal?
+  (expressions-sexp-structure
+    (scope-syntax-list-arrow-expressions
+      base-scope
+      (syntax-e #`(number increment (does number (plus 1))))))
+  (pair
+    `(lambda (tmp-number) (+ tmp-number 1))
+    (structure 
+      (arrow 
+        (structure number-type (null-field `increment))
+        (structure number-type)))))

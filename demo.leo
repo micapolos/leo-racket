@@ -1,8 +1,11 @@
 #lang leo
 
-name "Michał"
-surname "Pociecha-Łoś"
-do full name
-  name.text
-  plus " "
-  plus surname.text
+recipe
+  number
+  increment
+  does
+    number
+    plus 1
+do
+  10
+  increment
