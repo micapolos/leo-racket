@@ -58,6 +58,7 @@
     (compiler-syntax-resolve-doing $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
     (compiler-syntax-resolve-compiled $compiler $syntax)
+    (compiler-syntax-resolve-the $compiler $syntax)
     (compiler-syntax-resolve-then $compiler $syntax)
     (compiler-syntax-resolve-type $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
@@ -89,6 +90,13 @@
   : (Option Compiler)
   (and (equal? (syntax->datum $syntax) `compiled)
     (compiler-apply-compiled $compiler)))
+
+(define (compiler-syntax-resolve-the
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `the $syntax-list
+    (compiler-apply-the $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-then
   ($compiler : Compiler) 
@@ -173,6 +181,17 @@
         (scope-syntax-list-package
           (push-stack (compiler-scope $compiler) $scope)
           $syntax-list)))))
+
+(define (compiler-apply-the 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax))) 
+  : Compiler
+  (compiler-with-package $compiler
+    (package-plus
+      (compiler-package $compiler)
+      (scope-syntax-list-package
+        (compiler-scope $compiler)
+        $syntax-list))))
 
 (define (compiler-apply-then 
   ($compiler : Compiler) 
