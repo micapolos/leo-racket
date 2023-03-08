@@ -26,9 +26,9 @@
     ((arrow? $type) 
       (define $lhs-structure (arrow-lhs-structure $type))
       (define $rhs-structure (arrow-rhs-structure $type))
-      `(function 
+      `(recipe 
         ,@(structure-sexp-list $lhs-structure)
-        (giving ,@(structure-sexp-list $rhs-structure))))
+        (doing ,@(structure-sexp-list $rhs-structure))))
     ((a? $type) `(a ,(type-sexp (a-type $type))))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
@@ -59,7 +59,7 @@
     (arrow 
       (stack number-type text-type)
       (stack boolean-type int-type)))
-  `(function number text (giving boolean int)))
+  `(recipe number text (doing boolean int)))
 
 (check-equal? 
   (type-sexp (a (racket)))

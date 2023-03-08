@@ -97,7 +97,7 @@
       (arrow 
         (stack text-type) 
         (stack number-type))))
-  `(function text (giving number)))
+  `(recipe text (doing number)))
 
 (check-equal?
   (value-sexp (value `foo (a number-type)))

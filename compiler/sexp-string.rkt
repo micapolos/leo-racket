@@ -42,7 +42,7 @@
                       (string-append "\n" (sexp-list-rhs-string $list)))))))))))
     (pretty-format 
       $sexp 
-      (if (testing?) 10000 32) 
+      (if (testing?) 10000 64) 
       #:mode `write)))
 
 (define (sexp-list-rhs-string ($sexp-list : (Listof Sexp))) : String
