@@ -17,14 +17,14 @@
 (define (syntax-expression-option ($syntax : Syntax)) : (Option Expression)
   (define $syntax-e (syntax-e $syntax))
   (or
-    (and (symbol? $syntax-e)
-      (case $syntax-e
-        ((boolean) (type-expression boolean-type))
-        ((number) (type-expression number-type))
-        ((int) (type-expression int-type))
-        ((float) (type-expression float-type))
-        ((text) (type-expression text-type))
-        (else #f)))
+    ; (and (symbol? $syntax-e)
+    ;   (case $syntax-e
+    ;     ((boolean) (type-expression boolean-type))
+    ;     ((number) (type-expression number-type))
+    ;     ((int) (type-expression int-type))
+    ;     ((float) (type-expression float-type))
+    ;     ((text) (type-expression text-type))
+    ;     (else #f)))
     (and (number? $syntax-e) (number-expression $syntax-e))
     (and (string? $syntax-e) (text-expression $syntax-e))
     (and 
@@ -41,35 +41,35 @@
               (and (equal? $rhs `true) (boolean-expression #t))
               (and (equal? $rhs `false) (boolean-expression #f)))))))))
 
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `boolean)) 
-    expression-sexp-type)
-  (pair null-sexp (a boolean-type)))
+; (check-equal?
+;   (option-map 
+;     (syntax-expression-option (make-syntax `boolean)) 
+;     expression-sexp-type)
+;   (pair null-sexp (a boolean-type)))
 
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `number)) 
-    expression-sexp-type)
-  (pair null-sexp (a number-type)))
+; (check-equal?
+;   (option-map 
+;     (syntax-expression-option (make-syntax `number)) 
+;     expression-sexp-type)
+;   (pair null-sexp (a number-type)))
 
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `int)) 
-    expression-sexp-type)
-  (pair null-sexp (a int-type)))
+; (check-equal?
+;   (option-map 
+;     (syntax-expression-option (make-syntax `int)) 
+;     expression-sexp-type)
+;   (pair null-sexp (a int-type)))
 
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `float)) 
-    expression-sexp-type)
-  (pair null-sexp (a float-type)))
+; (check-equal?
+;   (option-map 
+;     (syntax-expression-option (make-syntax `float)) 
+;     expression-sexp-type)
+;   (pair null-sexp (a float-type)))
 
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `text)) 
-    expression-sexp-type)
-  (pair null-sexp (a text-type)))
+; (check-equal?
+;   (option-map 
+;     (syntax-expression-option (make-syntax `text)) 
+;     expression-sexp-type)
+;   (pair null-sexp (a text-type)))
 
 (check-equal?
   (option-map 

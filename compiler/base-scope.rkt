@@ -35,7 +35,7 @@
       (arrow
         (structure 
           number-type
-          (a text-type))
+          (null-field `text))
         (structure text-type))
       #`number->string)
     (binding
@@ -70,7 +70,7 @@
       (arrow
         (structure 
           int-type
-          (a text-type))
+          (null-field `text))
         (structure text-type))
       #`number->string)
     (binding

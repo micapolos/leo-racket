@@ -27,6 +27,7 @@
   leo/compiler/package-sexp
   leo/compiler/package
   leo/compiler/type
+  leo/compiler/type-type
   leo/compiler/type-sexp
   leo/compiler/type-utils)
 
@@ -73,7 +74,7 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `doing $syntax-list
-    (compiler-resolve-doing $compiler $syntax-list)))
+    (compiler-apply-doing $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 
@@ -140,9 +141,9 @@
   (define $package (scope-syntax-list-package $scope $syntax-list))
   (define $structure (package-structure $package))
   (or
-    (option-bind (structure-lift $structure) $structure-a
-      (expression-expressions 
-        (type-expression (field $symbol $structure-a))))
+    ; (option-bind (structure-lift $structure) $structure-a
+    ;   (expression-expressions 
+    ;     (type-expression (field $symbol $structure-a))))
     (symbol-package-expressions $symbol $package)))
 
 ; ------------------------------------------------------------------------------------
@@ -158,17 +159,20 @@
             (push-stack (compiler-scope $compiler) $scope) 
             $syntax-list))))))
 
-(define (compiler-resolve-doing
+(define (compiler-apply-doing
   ($compiler : Compiler)
-  ($syntax-list : (Listof Syntax))) : (Option Compiler)
-  (option-bind (package-lift-structure (compiler-package $compiler)) $structure
-    (bind $scope (structure-generate-scope $structure)
-      (compiler-with-package $compiler
-        (scope-doing-package
-          $scope
-          (scope-syntax-list-package
-            (push-stack (compiler-scope $compiler) $scope)
-            $syntax-list))))))
+  ($syntax-list : (Listof Syntax))) : Compiler
+  (bind $scope 
+    (structure-generate-scope 
+      (structure-structure
+        (package-structure 
+          (compiler-package $compiler))))
+    (compiler-with-package $compiler
+      (scope-doing-package
+        $scope
+        (scope-syntax-list-package
+          (push-stack (compiler-scope $compiler) $scope)
+          $syntax-list)))))
 
 (define (compiler-apply-then 
   ($compiler : Compiler) 
@@ -226,15 +230,15 @@
     (expressions 3.14 (structure number))
     (expressions "foo" (structure text))))
 
-(check-equal?
-  (expressions-sexp-structure
-    (scope-syntax-list-expressions null-scope (list #`number)))
-  (pair null-sexp (structure (a number-type))))
+; (check-equal?
+;   (expressions-sexp-structure
+;     (scope-syntax-list-expressions null-scope (list #`number)))
+;   (pair null-sexp (structure (a number-type))))
   
-(check-equal?
-  (expressions-sexp-structure
-    (scope-syntax-list-expressions null-scope (list #`(big number))))
-  (pair null-sexp (structure (a (field `big (structure number-type))))))
+; (check-equal?
+;   (expressions-sexp-structure
+;     (scope-syntax-list-expressions null-scope (list #`(big number))))
+;   (pair null-sexp (structure (a (field `big (structure number-type))))))
   
 (check-equal?
   (expressions-sexp-structure

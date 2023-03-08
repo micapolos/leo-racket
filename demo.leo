@@ -1,10 +1,10 @@
 #lang leo
 
 number
-dodać number
+squared
 doing
   number
-  plus dodać.number
+  times number
 do
   10
-  dodać 20
+  squared
