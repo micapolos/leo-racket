@@ -18,7 +18,7 @@
  
 (define (leo-read-syntax src port)
   (strip-context
-    #`(module leo leo/racket/runtime
+    #`(module leo leo/lang/runtime
       #,(leo-compile-any-list 
         (parameterize ((read-leo-compiler? #t))
           (read-leo-stxs port src))))))

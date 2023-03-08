@@ -1,5 +1,5 @@
 #lang leo
 
-10
-plus 20
-times 40
+point
+  x 10
+  y 20
