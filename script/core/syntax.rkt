@@ -261,8 +261,8 @@
         (define $leading-atoms (reverse (cdr $reversed-atoms)))
         (define $folded-leo
           (foldl 
-            (lambda ($atom $leo) 
-              (leo-append-stx-list?-rhs $leo $atom #f empty-leo))
+            (lambda ($atom $leo)
+              (leo-commit-if-needed (leo-append-stx-list?-rhs $leo $atom #f empty-leo)))
             $leo
             $leading-atoms))
         (values $folded-leo $last-atom))

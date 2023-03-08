@@ -3,6 +3,6 @@
 point
   x 10
   y 20
-x
-number
-plus 30
+do
+  point.x.number
+  plus point.y.number
