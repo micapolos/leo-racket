@@ -248,7 +248,11 @@
 (define (package-apply-racket ($package : Package)) : Package
   (package
     (expressions 
-      (make-syntax `(quote ,(reverse (map expressions-syntax $package))))
+      (make-syntax 
+        `(quote 
+          ,(reverse 
+            (filter-false 
+              (map expressions-syntax-option $package)))))
       (structure (racket)))))
 
 (define (package-lift-structure ($package : Package)) : (Option Structure)

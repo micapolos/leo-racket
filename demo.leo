@@ -1,8 +1,14 @@
 #lang leo
 
-10
-plus 20
+point
+  name "Michał"
+  number 20
+  something else
+  boolean true
+"foo"
+"bar"
 do
-  number
-  times number
+  text
+  plus text
+  plus point.name.text
 racket

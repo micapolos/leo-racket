@@ -4,6 +4,7 @@
 
 (require 
   racket/string
+  racket/pretty
   leo/typed/stack
   leo/typed/testing
   leo/compiler/syntax-utils)
@@ -39,7 +40,10 @@
                   (else 
                     (string-indent 
                       (string-append "\n" (sexp-list-rhs-string $list)))))))))))
-    (format "~s" $sexp)))
+    (pretty-format 
+      $sexp 
+      (if (testing?) 10000 32) 
+      #:mode `write)))
 
 (define (sexp-list-rhs-string ($sexp-list : (Listof Sexp))) : String
   (string-join (map sexp-string $sexp-list) "\n"))
