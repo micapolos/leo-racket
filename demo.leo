@@ -2,4 +2,9 @@
 
 "Hello, "
 plus "world!"
-length.number
+do
+  text
+  plus " "
+  plus "("
+  plus text.length.number.text
+  plus ")"
