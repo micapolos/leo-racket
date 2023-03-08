@@ -25,6 +25,16 @@
         ((float) (type-expression float-type))
         ((text) (type-expression text-type))
         (else #f)))
+    (and 
+      (list? $syntax-e) 
+      (= (length $syntax-e) 1)
+      (case (syntax-e (car $syntax-e))
+        ((boolean) (type-expression boolean-type))
+        ((number) (type-expression number-type))
+        ((int) (type-expression int-type))
+        ((float) (type-expression float-type))
+        ((text) (type-expression text-type))
+        (else #f)))
     (and (number? $syntax-e) (number-expression $syntax-e))
     (and (string? $syntax-e) (text-expression $syntax-e))
     (and 
