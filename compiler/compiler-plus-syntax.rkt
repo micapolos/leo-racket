@@ -41,18 +41,19 @@
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Package
-  (compiler-package
-    (fold 
-      (compiler $scope null-tuple)
-      $syntax-list
-      compiler-plus-syntax)))
+  (parameterize ((compile-package-parameter scope-syntax-list-package))
+    (compiler-package
+      (fold 
+        (compiler $scope null-tuple)
+        $syntax-list
+        compiler-plus-syntax))))
 
 (define (scope-syntax-list-expressions 
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Expressions
   (package-expressions
-    (scope-syntax-list-package 
+    (scope-syntax-list-package
       $scope $syntax-list)))
 
 (define (compiler-plus-syntax 
