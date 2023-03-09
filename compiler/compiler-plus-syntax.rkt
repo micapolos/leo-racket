@@ -210,9 +210,10 @@
   (compiler-with-package $compiler
     (push
       (compiler-package $compiler)
-      (scope-syntax-list-arrow-expressions
-        (compiler-scope $compiler)
-        $syntax-list))))
+      (parameterize ((compile-package-parameter scope-syntax-list-package))
+        (scope-syntax-list-arrow-expressions
+          (compiler-scope $compiler)
+          $syntax-list)))))
 
 (define (compiler-apply-select 
   ($compiler : Compiler) 
@@ -227,47 +228,7 @@
             (compiler-scope $compiler)
             $syntax-list))))))
 
-(define (scope-syntax-list-arrow-expressions
-  ($scope : Scope) 
-  ($syntax-list : (Listof Syntax))) 
-  : Expressions
-  (recipe-package-arrow-expressions
-    (recipe-compiler-package
-      (fold
-        (null-recipe-compiler $scope)
-        $syntax-list
-        recipe-compiler-plus-syntax))))
-
-(define (recipe-compiler-plus-syntax 
-  ($recipe-compiler : Recipe-Compiler) 
-  ($syntax : Syntax)) 
-  : Recipe-Compiler
-  (define $scope (recipe-compiler-scope $recipe-compiler))
-  (define $recipe-package (recipe-compiler-package $recipe-compiler))
-  (when (recipe-package-arrow-expressions-option $recipe-package)
-    (error "Recipe already have a body"))
-  (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
-  (or
-    (syntax-symbol-match-args $syntax `does $syntax-list
-      (bind $lhs-scope (structure-generate-scope $lhs-structure)
-        (struct-copy recipe-compiler $recipe-compiler
-          (package
-            (struct-copy recipe-package $recipe-package
-              (arrow-expressions-option
-                (scope-doing-expressions
-                  $lhs-scope
-                  (scope-syntax-list-expressions
-                    (push-stack $scope $lhs-scope) 
-                    $syntax-list))))))))
-    (struct-copy recipe-compiler $recipe-compiler
-      (package 
-        (struct-copy recipe-package $recipe-package
-          (lhs-structure 
-            (push 
-              $lhs-structure 
-              (syntax-type $syntax))))))))
-
-; ----------------------------------------------------------------------------
+; -------------------------------------------------------------------------------------
 
 ; number plus static
 (check-equal?
@@ -335,15 +296,3 @@
     `(let-values (((tmp-number) 1) ((tmp-add) 2)) 
       (+ tmp-number tmp-number))
     (structure number-type)))
-
-(check-equal?
-  (expressions-sexp-structure
-    (scope-syntax-list-arrow-expressions
-      base-scope
-      (syntax-e #`(number increment (does number (plus 1))))))
-  (pair
-    `(lambda (tmp-number) (+ tmp-number 1))
-    (structure 
-      (arrow 
-        (structure number-type (null-field `increment))
-        (structure number-type)))))
