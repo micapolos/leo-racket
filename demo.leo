@@ -1,9 +1,6 @@
 #lang leo
 
-recipe
-  number
-  and number
-  giving number
-  does
-    number
-    plus and.number
+quote
+  1
+  plus 2
+apply

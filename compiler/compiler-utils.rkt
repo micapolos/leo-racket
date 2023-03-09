@@ -24,3 +24,9 @@
   (compiler-plus-quoted-tuple $compiler
     (sexp-list-tuple
       (map syntax->datum $syntax-list))))
+
+(define (compiler-apply-apply ($compiler : Compiler)) : Compiler
+  (compiler-with-package $compiler
+    (scope-apply-package
+      (compiler-scope $compiler)
+      (compiler-package $compiler))))

@@ -34,19 +34,23 @@
 (define (compiler-plus-expressions
   ($compiler : Compiler) 
   ($expressions : Expressions)) : Compiler
-  (define $scope (compiler-scope $compiler))
-  (define $package 
-    (push (compiler-package $compiler) $expressions))
-  (option-app compiler
-    $scope
-    (or
-      (option-app package
-        (package-resolve-fn $package
-          (lambda (($tuple : Tuple))
-            (or
-              (scope-resolve-tuple $scope $tuple)
-              (tuple-resolve $tuple)))))
-      $package)))
+  (struct-copy compiler $compiler
+    (package 
+      (scope-apply-package 
+        (compiler-scope $compiler)
+        (push (compiler-package $compiler) $expressions)))))
+
+(define (scope-apply-package
+  ($scope : Scope) 
+  ($package : Package)) : Package
+  (or
+    (option-app package
+      (package-resolve-fn $package
+        (lambda (($tuple : Tuple))
+          (or
+            (scope-resolve-tuple $scope $tuple)
+            (tuple-resolve $tuple)))))
+    $package))
 
 (check-equal?
   (package-sexp
