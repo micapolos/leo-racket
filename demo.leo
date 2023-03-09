@@ -3,9 +3,7 @@
 recipe
   number
   and number
+  giving number
   does
     number
     plus and.number
-do
-  10
-  and 20

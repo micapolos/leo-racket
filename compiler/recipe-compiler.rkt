@@ -17,6 +17,7 @@
   leo/compiler/syntax-type
   leo/compiler/type
   leo/compiler/type-utils
+  leo/compiler/type-check
   leo/compiler/compile-package)
 
 (data recipe-compiler 
@@ -39,33 +40,52 @@
 
 (define (recipe-compiler-plus-syntax 
   ($recipe-compiler : Recipe-Compiler) 
-  ($syntax : Syntax)) 
+  ($syntax : Syntax))
   : Recipe-Compiler
   (define $scope (recipe-compiler-scope $recipe-compiler))
   (define $recipe-package (recipe-compiler-package $recipe-compiler))
-  (when (recipe-package-arrow-expressions-option $recipe-package)
-    (error "Recipe already have a body"))
+  (define $arrow-expressions-option (recipe-package-arrow-expressions-option $recipe-package))
+  (when $arrow-expressions-option (error "Recipe already have a body"))
   (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
+  (define $rhs-structure-option (recipe-package-rhs-structure-option $recipe-package))
   (or
+    (syntax-symbol-match-args $syntax `giving $syntax-list
+      (when $rhs-structure-option (error "Recipe already has giving"))
+      (struct-copy recipe-compiler $recipe-compiler
+        (package
+          (struct-copy recipe-package $recipe-package
+            (rhs-structure-option (syntax-list-structure $syntax-list))))))
     (syntax-symbol-match-args $syntax `does $syntax-list
       (bind $lhs-scope (structure-generate-scope $lhs-structure)
         (struct-copy recipe-compiler $recipe-compiler
           (package
             (struct-copy recipe-package $recipe-package
               (arrow-expressions-option
-                (scope-doing-expressions
-                  $lhs-scope
-                  (package-expressions
-                    (compile-package
-                      (push-stack $scope $lhs-scope) 
-                      $syntax-list)))))))))
-    (struct-copy recipe-compiler $recipe-compiler
-      (package 
-        (struct-copy recipe-package $recipe-package
-          (lhs-structure 
-            (push 
-              $lhs-structure 
-              (syntax-type $syntax))))))))
+                (let ()
+                  (define $expressions 
+                    (scope-doing-expressions
+                      $lhs-scope
+                      (package-expressions
+                        (compile-package
+                          (push-stack $scope $lhs-scope) 
+                          $syntax-list))))
+                  (when 
+                    (and 
+                      $rhs-structure-option 
+                      (structure-check? 
+                        (expressions-structure $expressions) 
+                        $rhs-structure-option))
+                    (error "recipe giving doing type mismatch"))
+                  $expressions)))))))
+    (let ()
+      (when $rhs-structure-option (error "recipe expected does"))
+      (struct-copy recipe-compiler $recipe-compiler
+        (package 
+          (struct-copy recipe-package $recipe-package
+            (lhs-structure 
+              (push 
+                $lhs-structure 
+                (syntax-type $syntax)))))))))
 
 ; ---------------------------------------------------------------------
 

@@ -13,10 +13,11 @@
 
 (data recipe-package
   (lhs-structure : Structure)
+  (rhs-structure-option : (Option Structure))
   (arrow-expressions-option : (Option Expressions)))
 
 (define null-recipe-package 
-  (recipe-package null #f))
+  (recipe-package null #f #f))
 
 (define (recipe-package-arrow-expressions ($recipe-package : Recipe-Package)) : Expressions
   (or
