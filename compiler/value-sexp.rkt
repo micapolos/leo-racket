@@ -5,6 +5,7 @@
 (require 
   racket/list
   racket/unsafe/ops
+  leo/typed/base
   leo/typed/testing
   leo/typed/stack
   leo/compiler/any-sexp
@@ -33,9 +34,28 @@
             ,$symbol
             ,@(any-structure-sexp-list $any $structure)))))
     ((choice? $type)
-      `((TODO (select ,(any-sexp $any)))))
+      (value-sexp (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
     ((a? $type) (type-sexp (a-type $type)))))
+
+(define (any-choice-value ($any : Any) ($choice : Choice)) : Value
+  (define $structure (choice-structure $choice))
+  (define $size (length $structure))
+  (case $size
+    ((0) (error "null choice"))
+    ((1) (value $any (top $structure)))
+    (else
+      (define $dynamic? (structure-dynamic? $structure))
+      (define-values ($selector $value) 
+        (if $dynamic? 
+          (bind $pair (cast $any (Pairof (U Exact-Nonnegative-Integer Boolean) Any))
+            (values (car $pair) (cdr $pair)))
+          (values $any #f)))
+      (define $index 
+        (if (= $size 2) 
+          (if (cast $selector Boolean) 0 1)
+          (cast $selector Exact-Nonnegative-Integer)))
+      (value $value (list-ref (reverse $structure) $index)))))
 
 (define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
   (reverse
@@ -122,3 +142,87 @@
       (vector 128 "foo" #t) 
       (field `foo (stack number-type (null-field `bar) text-type boolean-type))))
   `(foo 128 bar "foo" (boolean true)))
+
+(check-equal?
+  (value-sexp 
+    (value 
+      #f
+      (choice (structure (null-field `foo)))))
+  `foo)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      "foo"
+      (choice (structure text-type))))
+  "foo")
+
+(check-equal?
+  (value-sexp 
+    (value 
+      #t
+      (choice (structure (null-field `foo) (null-field `bar)))))
+  `foo)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      #f
+      (choice (structure (null-field `foo) (null-field `bar)))))
+  `bar)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (cons #t 123)
+      (choice (structure number-type text-type))))
+  123)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (cons #f "foo") 
+      (choice (structure number-type text-type))))
+  "foo")
+
+(check-equal?
+  (value-sexp 
+    (value 
+      0
+      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+  `foo)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      1
+      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+  `bar)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      2
+      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+  `zoo)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (cons 0 123) 
+      (choice (structure number-type (null-field `foo) text-type))))
+  123)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (cons 1 #t) 
+      (choice (structure number-type (null-field `foo) text-type))))
+  `foo)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (cons 2 "foo") 
+      (choice (structure number-type (null-field `foo) text-type))))
+  "foo")

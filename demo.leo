@@ -1,6 +1,5 @@
 #lang leo
 
 select
-  not number
-  the "Michał"
-  not boolean
+  the 123
+  not text
