@@ -21,6 +21,7 @@
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
+  leo/compiler/compile-package
   leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
   leo/compiler/compiler-utils
@@ -88,7 +89,8 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `select $syntax-list
-    (compiler-apply-select $compiler $syntax-list)))
+    (parameterize ((compile-package-parameter scope-syntax-list-package))
+      (compiler-apply-select $compiler $syntax-list))))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 

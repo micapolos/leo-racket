@@ -32,7 +32,8 @@
           `(
             ,$symbol
             ,@(any-structure-sexp-list $any $structure)))))
-    ((choice? $type) (error "TODO (value-sexp choice)"))
+    ((choice? $type)
+      `((TODO (select ,(any-sexp $any)))))
     ((arrow? $type) (type-sexp $type))
     ((a? $type) (type-sexp (a-type $type)))))
 

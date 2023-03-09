@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/base
   leo/typed/stack
   leo/typed/testing
   leo/compiler/type

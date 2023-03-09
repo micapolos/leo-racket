@@ -75,3 +75,16 @@
     ((box? $sexp) (box (sexp-datum (unbox $sexp))))
     ((pair? $sexp) (cons (sexp-datum (car $sexp)) (sexp-datum (cdr $sexp))))
     (else (error "impossible"))))
+
+; ---------------------------------------------------------------------------
+
+(define #:forall (A) (single ($list : (Listof A))) : (Option A)
+  (and 
+    (not (null? $list))
+    (null? (cdr $list))
+    (car $list)))
+
+(check-equal? (single (list)) #f)
+(check-equal? (single (list 1)) 1)
+(check-equal? (single (list 1 2)) #f)
+

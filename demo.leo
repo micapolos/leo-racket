@@ -2,4 +2,5 @@
 
 select
   not number
-  not text
+  the "misiu"
+  not boolean

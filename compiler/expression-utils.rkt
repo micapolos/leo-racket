@@ -343,7 +343,7 @@
               (= $index 0)
               $index))
           (if (structure-dynamic? $structure) 
-            (cons $selector $syntax) 
+            `(cons ,$selector ,$syntax) 
             $selector))))
     (choice $structure)))
 
@@ -380,13 +380,13 @@
   (expression-sexp-type
     (index-syntax-structure-select-expression 0 #`stx
       (structure dynamic-type-a static-type-b)))
-  (pair `(#t . stx) (choice (structure dynamic-type-a static-type-b))))
+  (pair `(cons #t stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
     (index-syntax-structure-select-expression 1 #`stx
       (structure dynamic-type-a static-type-b)))
-  (pair `(#f . stx) (choice (structure dynamic-type-a static-type-b))))
+  (pair `(cons #f stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
@@ -405,7 +405,7 @@
       #`stx
       (structure dynamic-type-a static-type-b dynamic-type-c)))
   (pair 
-    `(0 . stx) 
+    `(cons 0 stx) 
     (choice (structure dynamic-type-a static-type-b dynamic-type-c))))
 
 ; ---------------------------------------------------------

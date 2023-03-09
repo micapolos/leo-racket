@@ -27,16 +27,6 @@
 (define pop-top cadr)
 (define stack? list?)
 
-(define #:forall (A) (single ($stack : (Stackof A))) : (Option A)
-  (and 
-    (not (null? $stack))
-    (null? (pop $stack))
-    (top $stack)))
-
-(check-equal? (single (stack)) #f)
-(check-equal? (single (stack 1)) 1)
-(check-equal? (single (stack 1 2)) #f)
-
 ; --------------------------------------------------------------------
 
 (: option-stack-first (All (V) (-> (Stackof V) (Option V))))
