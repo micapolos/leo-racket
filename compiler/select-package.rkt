@@ -10,3 +10,6 @@
 (data select-package
   (selected-expression-option : (Option Expression))
   (choice-structure : Structure))
+
+(define null-select-package 
+  (select-package #f null-structure))
