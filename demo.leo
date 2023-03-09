@@ -2,5 +2,5 @@
 
 select
   not number
-  the "misiu"
+  the "Michał"
   not boolean

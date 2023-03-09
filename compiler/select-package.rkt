@@ -7,6 +7,7 @@
   leo/typed/stack
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/select-expression-utils
   leo/compiler/type)
 
 (data select-package
