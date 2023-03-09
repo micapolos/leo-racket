@@ -7,6 +7,8 @@
   leo/typed/syntax-match
   leo/compiler/scope
   leo/compiler/syntax-type
+  leo/compiler/type
+  leo/compiler/expression-utils
   leo/compiler/select-package)
 
 (data select-compiler
@@ -24,14 +26,27 @@
       select-compiler-plus-syntax)))
 
 (define (select-compiler-plus-syntax
-  ($select-compiler : Select-Compiler)
+  ($compiler : Select-Compiler)
   ($syntax : Syntax))
   : Select-Compiler
+  (define $scope (select-compiler-scope $compiler))
+  (define $package (select-compiler-package $compiler))
   (or
-    (syntax-match-symbol-args $syntax $symbol $args
-      (case $symbol
-        ((not) (syntax-type $syntax))
-        ((the) (error "TODO"))
-        (else (error "select-compiler, expected not or the"))))
+    (syntax-match-symbol-args $syntax $symbol $syntax-list
+      (cond
+        ((equal? $symbol `not)
+          (select-compiler
+            $scope
+            (select-package-plus-not 
+              $package 
+              (null-field `todo))))
+        ((equal? $symbol `the)
+          (select-compiler
+            $scope
+            (select-package-plus-the 
+              $package 
+              (text-expression "TODO"))))
+        (else 
+          (error "select-compiler, expected not or the"))))
     (error "select compiler, expected not or the")))
 

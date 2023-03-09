@@ -117,15 +117,26 @@
 (define-syntax
   (syntax-match-symbol-args $syntax)
     (syntax-case $syntax ()
-      ((_ syntax symbol args body ...)
-        (let ((e (car (generate-temporaries `(e)))))
-          #`(let ((#,e (syntax-e syntax)))
+      ((_ $syntax $symbol $args $body ...)
+        (let (($e (car (generate-temporaries `(e)))))
+          #`(let ((#,$e (syntax-e $syntax)))
             (and
-              (list? #,e)
-              (>= (length #,e) 1)
-              (let ((symbol (car #,e))
-                    (args (cdr #,e))) 
-                body ...)))))))
+              (list? #,$e)
+              (>= (length #,$e) 1)
+              (symbol? (syntax-e (car #,$e)))
+              (let (($symbol (syntax-e (car #,$e)))
+                    ($args (cdr #,$e)))
+                $body ...)))))))
+
+(check-equal?
+  (syntax-match-symbol-args #`(1) $symbol $args 
+    `(,$symbol ,@(map syntax->datum $args)))
+  #f)
+
+(check-equal?
+  (syntax-match-symbol-args #`(foo 1 2) $symbol $args 
+    `(,$symbol ,@(map syntax->datum $args)))
+  `(foo 1 2))
 
 (define-syntax
   (syntax-symbol-match-args $syntax)

@@ -27,6 +27,8 @@
   leo/compiler/package-utils
   leo/compiler/package-sexp
   leo/compiler/package
+  leo/compiler/select-compiler
+  leo/compiler/select-package
   leo/compiler/recipe-compiler
   leo/compiler/recipe-package
   leo/compiler/type
@@ -64,6 +66,7 @@
     (compiler-syntax-resolve-the $compiler $syntax)
     (compiler-syntax-resolve-then $compiler $syntax)
     (compiler-syntax-resolve-type $compiler $syntax)
+    (compiler-syntax-resolve-select $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
 
 (define (compiler-syntax-resolve-do
@@ -79,6 +82,13 @@
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `recipe $syntax-list
     (compiler-apply-recipe $compiler $syntax-list)))
+
+(define (compiler-syntax-resolve-select
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `select $syntax-list
+    (compiler-apply-select $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-quote
   ($compiler : Compiler) 
@@ -201,6 +211,19 @@
       (scope-syntax-list-arrow-expressions
         (compiler-scope $compiler)
         $syntax-list))))
+
+(define (compiler-apply-select 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax))) 
+  : Compiler
+  (compiler-with-package $compiler
+    (push
+      (compiler-package $compiler)
+      (expression-expressions
+        (select-package-expression
+          (compile-select-package
+            (compiler-scope $compiler)
+            $syntax-list))))))
 
 (define (scope-syntax-list-arrow-expressions
   ($scope : Scope) 

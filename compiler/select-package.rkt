@@ -41,7 +41,7 @@
 (define (select-package-expression
   ($package : Select-Package)) : Expression
   (define $selection (select-package-selection $package))
-  (unless $selection (error "already selected"))
+  (unless $selection (error "not selected"))
   (index-syntax-structure-select-expression 
     (car $selection)
     (cdr $selection)
