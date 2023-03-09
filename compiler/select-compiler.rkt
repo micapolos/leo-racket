@@ -4,7 +4,9 @@
 
 (require
   leo/typed/base
+  leo/typed/syntax-match
   leo/compiler/scope
+  leo/compiler/syntax-type
   leo/compiler/select-package)
 
 (data select-compiler
@@ -25,4 +27,11 @@
   ($select-compiler : Select-Compiler)
   ($syntax : Syntax))
   : Select-Compiler
-  (error "TODO"))
+  (or
+    (syntax-match-symbol-args $syntax $symbol $args
+      (case $symbol
+        ((not) (syntax-type $syntax))
+        ((the) (error "TODO"))
+        (else (error "select-compiler, expected not or the"))))
+    (error "select compiler, expected not or the")))
+

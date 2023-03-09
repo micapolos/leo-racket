@@ -340,9 +340,11 @@
         (else
           (define $selector 
             (if (= $size 2)
-              (= $index 1)
-              (- $size $index 1)))
-          (if (structure-dynamic? $structure) (cons $selector $syntax) $selector))))
+              (= $index 0)
+              $index))
+          (if (structure-dynamic? $structure) 
+            (cons $selector $syntax) 
+            $selector))))
     (choice $structure)))
 
 (check-equal?
@@ -366,25 +368,25 @@
   (expression-sexp-type
     (index-syntax-structure-select-expression 0 null-syntax
       (structure static-type-a static-type-b)))
-  (pair #f (choice (structure static-type-a static-type-b))))
+  (pair #t (choice (structure static-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
     (index-syntax-structure-select-expression 1 null-syntax
       (structure static-type-a static-type-b)))
-  (pair #t (choice (structure static-type-a static-type-b))))
+  (pair #f (choice (structure static-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
     (index-syntax-structure-select-expression 0 #`stx
       (structure dynamic-type-a static-type-b)))
-  (pair `(#f . stx) (choice (structure dynamic-type-a static-type-b))))
+  (pair `(#t . stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
     (index-syntax-structure-select-expression 1 #`stx
       (structure dynamic-type-a static-type-b)))
-  (pair `(#t . stx) (choice (structure dynamic-type-a static-type-b))))
+  (pair `(#f . stx) (choice (structure dynamic-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
@@ -393,7 +395,7 @@
       null-syntax
       (structure static-type-a static-type-b static-type-c)))
   (pair 
-    2
+    0
     (choice (structure static-type-a static-type-b static-type-c))))
 
 (check-equal?
@@ -403,7 +405,7 @@
       #`stx
       (structure dynamic-type-a static-type-b dynamic-type-c)))
   (pair 
-    `(2 . stx) 
+    `(0 . stx) 
     (choice (structure dynamic-type-a static-type-b dynamic-type-c))))
 
 ; ---------------------------------------------------------

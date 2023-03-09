@@ -115,6 +115,19 @@
       (not (null? (cdr (cdr e)))))))
 
 (define-syntax
+  (syntax-match-symbol-args $syntax)
+    (syntax-case $syntax ()
+      ((_ syntax symbol args body ...)
+        (let ((e (car (generate-temporaries `(e)))))
+          #`(let ((#,e (syntax-e syntax)))
+            (and
+              (list? #,e)
+              (>= (length #,e) 1)
+              (let ((symbol (car #,e))
+                    (args (cdr #,e))) 
+                body ...)))))))
+
+(define-syntax
   (syntax-symbol-match-args $syntax)
     (syntax-case $syntax ()
       ((_ syntax symbol args body ...)
