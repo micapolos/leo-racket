@@ -28,7 +28,12 @@
         #:type-name 
         #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))))
 
-(define (nothing) (error "nothing"))
+(define-syntax (lazy $syntax)
+  (syntax-case $syntax ()
+    ((_ body ...)
+      #`(lambda () body ...))))
+
+(define nothing (lazy (error "nothing")))
 
 (define-syntax (bind $syntax)
   (syntax-case $syntax ()
