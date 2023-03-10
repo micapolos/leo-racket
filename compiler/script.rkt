@@ -11,17 +11,26 @@
 (data (script of V)
   (line-stack : (Stackof (Lineof V))))
 
+(data (word of V)
+  (value : V)
+  (symbol : Symbol))
+
 (data (line of V)
   (value : V)
   (body : (U (Sentenceof V) Literal)))
 
 (data (sentence of V)
-  (symbol : Symbol) 
+  (word : (Wordof V))
   (script : (Scriptof V)))
 
+(define-type Word (Wordof Void))
 (define-type Script (Scriptof Void))
 (define-type Line (Lineof Void))
 (define-type Sentence (Sentenceof Void))
+
+(: word-strip (All (V) (-> (Wordof V) Word)))
+(define #:forall (V) (word-strip ($word : (Wordof V))) : Word
+  (word nil (word-symbol $word)))
 
 (: script-strip (All (V) (-> (Scriptof V) Script)))
 (define #:forall (V) (script-strip ($script : (Scriptof V))) : Script
@@ -37,11 +46,11 @@
       ((sentence? $body)
         (line nil
           (sentence 
-            (sentence-symbol $body)
+            (word-strip (sentence-word $body))
             (script-strip (sentence-script $body)))))
       (else (line nil $body)))))
 
 (define null-script : Script (script null))
 
 (define (null-line ($symbol : Symbol)) : Line
-  (line nil (sentence $symbol null-script)))
+  (line nil (sentence (word nil $symbol) null-script)))
