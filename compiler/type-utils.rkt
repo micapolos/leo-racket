@@ -30,6 +30,7 @@
 (define int-type (racket-field `int))
 (define float-type (racket-field `float))
 (define text-type (racket-field `text))
+(define check-type (field `check (structure (choice (structure (null-field `yes) (null-field `no))))))
 
 (define static-structure-a (structure static-type-a))
 (define static-structure-b (structure static-type-b))

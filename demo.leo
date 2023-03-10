@@ -1,6 +1,5 @@
 #lang leo
 
-10
-add 12
-get text
-get length
+1
+check less than 2
+type
