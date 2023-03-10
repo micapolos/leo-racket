@@ -3,4 +3,5 @@
 10
 add 12
 get text
-append " apples"
+get length
+get number

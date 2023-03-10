@@ -132,11 +132,46 @@
 
 ; -----------------------------------------------------------------------
 
+(define (expression-resolve-get-symbol-expression
+  ($lhs-expression : Expression)
+  ($rhs-expression : Expression))
+  : (Option Expression)
+  (define $type (expression-type $rhs-expression))
+  (and
+    (field? $type)
+    (equal? (field-symbol $type) `get)
+    (option-bind (single (field-structure $type)) $rhs-type
+      (expression-resolve-symbol-expression
+        $lhs-expression
+        (expression (expression-syntax $rhs-expression) $rhs-type)))))
+
+(check-equal?
+  (option-app expression-sexp-type
+    (expression-resolve-get-symbol-expression
+      (expression syntax-b (field `a (stack type-b))) 
+      (expression syntax-a (field `get (structure (null-field `a))))))
+  (pair `b (field `a (stack type-b))))
+
+(check-equal?
+  (expression-resolve-get-symbol-expression
+    (expression syntax-b (field `get (structure (null-field `b)) ))
+    (expression syntax-a type-a))
+  #f)
+
+(check-equal?
+  (expression-resolve-get-symbol-expression
+    (expression syntax-b (field `a (stack type-b))) 
+    (expression syntax-a (field `not-get (structure (null-field `a)))))
+  #f)
+
+; -----------------------------------------------------------------------
+
 (define (expression-resolve-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
   : (Option Expression)
   (or
+    (expression-resolve-get-symbol-expression $lhs-expression $rhs-expression)
     (expression-resolve-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
 
