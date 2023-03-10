@@ -59,6 +59,41 @@
       (structure $return-type))
     $identifier))
 
+(define (unary-nested-binding-2
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (field $symbol-1
+          (structure
+            (null-field $symbol-2))))
+      (structure $return-type))
+    $identifier))
+
+(define (unary-nested-binding-3
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($symbol-3 : Symbol)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (field $symbol-1
+          (structure 
+            (field $symbol-2
+              (structure
+                (null-field $symbol-3))))))
+      (structure $return-type))
+    $identifier))
+
 (define (binary-binding 
   ($lhs-type : Type)
   ($symbol : Symbol)
@@ -88,5 +123,26 @@
           (structure 
             (field $symbol-2 
               (structure $rhs-type)))))
+      (structure $return-type))
+    $identifier))
+
+(define (binary-binding-3
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($symbol-3 : Symbol)
+  ($rhs-type : Type)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (binding
+    (arrow
+      (structure 
+        $lhs-type
+        (field $symbol-1
+          (structure 
+            (field $symbol-2 
+              (structure 
+                (field $symbol-3
+                  (structure $rhs-type)))))))
       (structure $return-type))
     $identifier))

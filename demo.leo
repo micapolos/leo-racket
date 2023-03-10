@@ -1,10 +1,6 @@
 #lang leo
 
-recipe
-  number.increment
-  does
-    number
-    plus 1
-do
-  10
-  increment
+10
+add 12
+get text
+append " apples"

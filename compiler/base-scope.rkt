@@ -11,6 +11,31 @@
 
 (define base-scope
   (scope
+    (binary-binding number-type `add number-type number-type #`+)
+    (binary-binding number-type `subtract number-type number-type #`-)
+    (binary-binding-2 number-type `multiply `by number-type number-type #`*)
+    (binary-binding-2 number-type `divide `by number-type number-type #`/)
+    (unary-binding number-type `increment number-type #`add1)
+    (unary-binding number-type `decrement number-type #`sub1)
+
+    (binary-binding-2 number-type `check `equals number-type boolean-type #`=)
+    (binary-binding-3 number-type `check `less `than number-type boolean-type #`<)
+    (binary-binding-3 number-type `check `greater `than number-type boolean-type #`>)
+
+    (unary-nested-binding-3 number-type `get `square `root number-type #`sqrt)
+    (unary-nested-binding-2 number-type `get `square number-type #`sqr)
+
+    (unary-nested-binding-2 number-type `get `sinus number-type #`sin)
+    (unary-nested-binding-2 number-type `get `cosinus number-type #`cos)
+    (unary-nested-binding-2 number-type `get `tangens number-type #`tan)
+
+    (unary-nested-binding-2 number-type `get `text text-type #`number->string)
+
+    (binary-binding text-type `append text-type text-type #`string-append)
+    (unary-nested-binding-2 text-type `get `length (field `length (structure number-type)) #`string-length)
+    (binary-binding-2 text-type `check `equals text-type boolean-type #`string=?)
+
+    ; deprecated
     (binary-binding number-type `plus number-type number-type #`+)
     (binary-binding number-type `minus number-type number-type #`-)
     (binary-binding number-type `times number-type number-type #`*)

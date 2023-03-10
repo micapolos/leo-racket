@@ -316,9 +316,9 @@
       base-scope
       (list
         #`1
-        #`(add 2)
+        #`(dodać 2)
         #`(do number (plus number)))))
   (pair 
-    `(let-values (((tmp-number) 1) ((tmp-add) 2)) 
+    `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
       (+ tmp-number tmp-number))
     (structure number-type)))
