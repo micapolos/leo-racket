@@ -11,7 +11,12 @@
     leo/typed/symbol-type-name))
 
 (define-syntax (data syntax)
-  (syntax-case syntax (forall)
+  (syntax-case syntax (of)
+    ((_ (name of vars ...) fields ...)
+      #`(struct (vars ...) name (fields ...) 
+        #:transparent 
+        #:type-name 
+        #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name) #t))))
     ((_ (vars ...) name fields ...)
       #`(struct (vars ...) name (fields ...) 
         #:transparent 
@@ -22,6 +27,8 @@
         #:transparent 
         #:type-name 
         #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))))
+
+(define (nothing) (error "nothing"))
 
 (define-syntax (bind $syntax)
   (syntax-case $syntax ()

@@ -5,7 +5,6 @@ recipe
   does
     number
     plus 1
-
-test
-  10.increment
-  equals 11
+do
+  10
+  increment
