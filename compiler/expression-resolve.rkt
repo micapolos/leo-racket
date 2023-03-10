@@ -93,6 +93,21 @@
 
 ; -----------------------------------------------------------------------
 
+(define (expression-resolve-get-a-expression
+  ($lhs-expression : Expression)
+  ($rhs-expression : Expression))
+  : (Option Expression)
+  (define $type (expression-type $rhs-expression))
+  (and
+    (field? $type)
+    (equal? (field-symbol $type) `get)
+    (option-bind (single (field-structure $type)) $rhs-type
+      (expression-resolve-get-a-expression
+        $lhs-expression
+        (expression (expression-syntax $rhs-expression) $rhs-type)))))
+
+; -----------------------------------------------------------------------
+
 (define (expression-resolve-symbol-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
@@ -172,6 +187,7 @@
   : (Option Expression)
   (or
     (expression-resolve-get-symbol-expression $lhs-expression $rhs-expression)
+    (expression-resolve-get-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
 

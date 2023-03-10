@@ -4,4 +4,3 @@
 add 12
 get text
 get length
-get number
