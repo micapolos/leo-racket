@@ -68,6 +68,7 @@
     (compiler-syntax-resolve-racket $compiler $syntax)
     (compiler-syntax-resolve-the $compiler $syntax)
     (compiler-syntax-resolve-then $compiler $syntax)
+    (compiler-syntax-resolve-time $compiler $syntax)
     (compiler-syntax-resolve-type $compiler $syntax)
     (compiler-syntax-resolve-select $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
@@ -121,6 +122,13 @@
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `the $syntax-list
     (compiler-apply-the $compiler $syntax-list)))
+
+(define (compiler-syntax-resolve-time
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (and (equal? (syntax->datum $syntax) `time)
+    (compiler-apply-time $compiler)))
 
 (define (compiler-syntax-resolve-then
   ($compiler : Compiler) 
@@ -197,6 +205,15 @@
       (scope-syntax-list-package
         (compiler-scope $compiler)
         $syntax-list))))
+
+(define (compiler-apply-time ($compiler : Compiler)) : Compiler
+  (compiler-with-package $compiler
+    (package
+      (bind $expressions
+        (package-expressions (compiler-package $compiler))
+        (expressions
+          (make-syntax `(time ,(expressions-syntax $expressions)))
+          (expressions-structure $expressions))))))
 
 (define (compiler-apply-then 
   ($compiler : Compiler) 

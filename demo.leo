@@ -1,6 +1,5 @@
 #lang leo
 
-quote
-  1
-  plus 2
-apply
+1
+plus 2
+time
