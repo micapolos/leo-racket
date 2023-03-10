@@ -33,8 +33,6 @@
     ((_ body ...)
       #`(lambda () body ...))))
 
-(define nothing (lazy (error "nothing")))
-
 (define-syntax (bind $syntax)
   (syntax-case $syntax ()
     ((_ var expr body ...)
@@ -100,3 +98,4 @@
 (check-equal? (single (list 1)) 1)
 (check-equal? (single (list 1 2)) #f)
 
+(define nil (void))

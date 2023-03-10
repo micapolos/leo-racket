@@ -12,7 +12,7 @@
 
 (define (syntax-line ($syntax : Syntax)) : (Lineof srcloc)
   (define $syntax-e (syntax-e $syntax))
-  (define $srcloc (lazy (syntax-srcloc $syntax)))
+  (define $srcloc (syntax-srcloc $syntax))
   (or
     (and (number? $syntax-e) 
       (line $srcloc $syntax-e))
@@ -36,21 +36,21 @@
 
 (check-equal? 
   (line-strip (syntax-line #`1) )
-  (line nothing 1))
+  (line nil 1))
 
 (check-equal? 
   (line-strip (syntax-line #`"foo"))
-  (line nothing "foo"))
+  (line nil "foo"))
 
 (check-equal? 
   (line-strip (syntax-line #`foo))
-  (line nothing (sentence `foo null-script)))
+  (line nil (sentence `foo null-script)))
 
 (check-equal? 
   (line-strip (syntax-line #`(foo 1 "foo")))
-  (line nothing 
+  (line nil 
     (sentence `foo 
       (script 
         (stack 
-          (line nothing 1)
-          (line nothing "foo"))))))
+          (line nil 1)
+          (line nil "foo"))))))

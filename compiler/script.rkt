@@ -10,16 +10,16 @@
   (line-stack : (Stackof (Lineof V))))
 
 (data (line of V)
-  (value-fn : (-> V)) 
+  (value : V)
   (body : (U (Sentenceof V) Number String)))
 
 (data (sentence of V)
   (symbol : Symbol) 
   (script : (Scriptof V)))
 
-(define-type Script (Scriptof Nothing))
-(define-type Line (Lineof Nothing))
-(define-type Sentence (Sentenceof Nothing))
+(define-type Script (Scriptof Void))
+(define-type Line (Lineof Void))
+(define-type Sentence (Sentenceof Void))
 
 (: script-strip (All (V) (-> (Scriptof V) Script)))
 (define #:forall (V) (script-strip ($script : (Scriptof V))) : Script
@@ -33,15 +33,14 @@
   (bind $body (line-body $line)
     (cond
       ((sentence? $body)
-        (line
-          nothing
+        (line nil
           (sentence 
             (sentence-symbol $body)
             (script-strip (sentence-script $body)))))
-      ((number? $body) (line nothing $body))
-      ((string? $body) (line nothing $body)))))
+      ((number? $body) (line nil $body))
+      ((string? $body) (line nil $body)))))
 
 (define null-script : Script (script null))
 
 (define (null-line ($symbol : Symbol)) : Line
-  (line nothing (sentence $symbol null-script)))
+  (line nil (sentence $symbol null-script)))
