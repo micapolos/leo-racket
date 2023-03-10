@@ -1,5 +1,11 @@
 #lang leo
 
-1
-plus 2
-time
+recipe
+  number.increment
+  does
+    number
+    plus 1
+
+test
+  10.increment
+  equals 11
