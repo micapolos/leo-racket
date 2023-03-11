@@ -61,6 +61,7 @@
   ($syntax : Syntax))
   : Compiler
   (or
+    (compiler-syntax-resolve-a $compiler $syntax)
     (compiler-syntax-resolve-do $compiler $syntax)
     (compiler-syntax-resolve-recipe $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
@@ -72,6 +73,13 @@
     (compiler-syntax-resolve-type $compiler $syntax)
     (compiler-syntax-resolve-select $compiler $syntax)
     (compiler-syntax-resolve-default $compiler $syntax)))
+
+(define (compiler-syntax-resolve-a
+  ($compiler : Compiler) 
+  ($syntax : Syntax))
+  : (Option Compiler)
+  (syntax-symbol-match-args $syntax `a $syntax-list
+    (compiler-apply-a $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-do
   ($compiler : Compiler) 
@@ -229,6 +237,17 @@
 
 ; ----------------------------------------------------------------------------
 
+(define (compiler-apply-a 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax))) 
+  : Compiler
+  (compiler-with-package $compiler
+    (push-stack
+      (compiler-package $compiler)
+      (map expression-expressions 
+        (map type-expression 
+          (syntax-list-structure $syntax-list))))))
+
 (define (compiler-apply-recipe 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
@@ -317,8 +336,8 @@
       (list
         #`1
         #`(dodać 2)
-        #`(do (get number) (plus (get number))))))
+        #`(do number (add dodać number)))))
   (pair 
     `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
-      (+ tmp-number tmp-number))
+      (+ tmp-number tmp-dodać))
     (structure number-type)))

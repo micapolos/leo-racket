@@ -47,10 +47,10 @@
     `(
       1
       (add 2) 
-      (get text)
+      text
       (append " ")
       (append "pieces")
       (do
-        (get text)
+        text
         (append "!!!"))))
   "3 pieces!!!")

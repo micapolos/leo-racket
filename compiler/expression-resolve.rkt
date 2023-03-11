@@ -44,20 +44,6 @@
       (expression-type $selector))
     $expression))
 
-(define (expression-resolve-selector-list
-  ($expression : Expression)
-  ($selector-list : (Listof Expression)))
-  : (Option Expression)
-  (and
-    (not (null? $selector-list))
-    (fold
-      (expression-resolve-selector $expression (car $selector-list))
-      (cdr $selector-list)
-      (lambda (($expression2 : (Option Expression)) ($selector2 : Expression))
-        (and $expression2
-          (option-bind (expression-field-rhs $expression2) $rhs
-            (tuple-resolve-selector (expressions-tuple $rhs) $selector2)))))))
-
 ; -----------------------------------------------------------------------------------------
 
 (define (expression-resolve-symbol
@@ -203,9 +189,11 @@
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
   : (Option Expression)
-  (option-bind (expression-symbol-content $rhs-expression `get) $get-expressions
-    (bind $selector-list (reverse (expressions-tuple $get-expressions))
-      (expression-resolve-selector-list $lhs-expression $selector-list))))
+  (or
+    (option-bind (expression-symbol-content $rhs-expression `get) $selectors-expressions
+      (option-bind (expressions-expression-option $selectors-expressions) $selector-expression
+        (expression-resolve-selector $lhs-expression $selector-expression)))
+    (expression-resolve-selector $lhs-expression $rhs-expression)))
 
 (check-equal?
   (option-app expression-sexp-type

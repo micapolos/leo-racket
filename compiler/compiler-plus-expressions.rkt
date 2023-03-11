@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  racket/function
   leo/typed/base
   leo/typed/option
   leo/typed/stack
@@ -46,11 +47,15 @@
   (or
     (option-app package
       (package-resolve-fn $package
-        (lambda (($tuple : Tuple))
-          (or
-            (scope-resolve-tuple $scope $tuple)
-            (tuple-resolve $tuple)))))
+        (curry scope-or-tuple-resolve-tuple $scope)))
     $package))
+
+(define (scope-or-tuple-resolve-tuple
+  ($scope : Scope) 
+  ($tuple : Tuple)) : (Option Expressions)
+  (or
+    (scope-resolve-tuple $scope $tuple)
+    (tuple-resolve $tuple)))
 
 (check-equal?
   (package-sexp

@@ -36,7 +36,7 @@
     ((choice? $type)
       (value-sexp (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
-    ((a? $type) (type-sexp (a-type $type)))))
+    ((a? $type) `(a ,(type-sexp (a-type $type))))))
 
 (define (any-choice-value ($any : Any) ($choice : Choice)) : Value
   (define $structure (choice-structure $choice))
@@ -123,7 +123,7 @@
 
 (check-equal?
   (value-sexp (value `foo (a number-type)))
-  `number)
+  `(a number))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack text-type))))

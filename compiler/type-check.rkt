@@ -18,7 +18,7 @@
 
 (define (type-check-selector? ($type : Type) ($selector : Type)) : Boolean
   (or
-    (type-check? $type $selector)
+    ;(and (a? $selector) (type-check? $type (a-type $selector)))
     (and
       (field? $selector) 
       (and (null? (field-structure $selector)))
