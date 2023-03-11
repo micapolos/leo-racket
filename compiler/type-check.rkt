@@ -4,84 +4,97 @@
 
 (require 
   racket/function
+  racket/list
+  leo/typed/option
+  leo/typed/base
   leo/typed/stack
   leo/typed/testing
   leo/compiler/type
   leo/compiler/type-utils)
 
+(define-type Match (Stackof (Option Type)))
+
 (define (type-check? ($actual : Type) ($expected : Type)) : Boolean
-  (type-stack-type-check? null $actual $expected))
+  (and (type-match null $actual $expected) #t))
 
 (define (structure-check? ($actual : Structure) ($expected : Structure)) : Boolean
-  (type-stack-structure-check? null $actual $expected))
+  (and (structure-match null $actual $expected) #t))
 
-(define (type-stack-type-check? ($type-stack : (Stackof Type)) ($actual : Type) ($expected : Type)) : Boolean
+(define (type-match ($match : Match) ($actual : Type) ($expected : Type)) : (Option Match)
   (or
     (and 
       (racket? $expected) 
-      (racket? $actual))
+      (racket? $actual)
+      $match)
     (and 
       (value? $expected) 
       (value? $actual)
-      ; TODO: Should I use $type-stack here, or assume value types are top-level?
-      (type-check? (value-type $actual) (value-type $expected))
-      (equal? (value-any $actual) (value-any $expected)))
+      (equal? (value-any $actual) (value-any $expected))
+      ; TODO: Should I pass $match here, or assume value types are top-level?
+      (type-match $match (value-type $actual) (value-type $expected)))
     (and 
       (field? $expected) 
       (field? $actual) 
       (equal? 
         (field-symbol $actual) 
         (field-symbol $expected))
-      (type-stack-structure-check? 
-        $type-stack
+      (structure-match
+        $match
         (field-structure $actual) 
-        (field-structure $expected)))
+        (field-structure $expected))
+      $match)
     (and
       (choice? $expected)
       (choice? $actual)
-      (type-stack-structure-check?
-        $type-stack
+      (type-stack-match
+        $match
         (choice-type-stack $actual)
         (choice-type-stack $expected)))
     (and 
       (arrow? $expected)
       (arrow? $actual)
-      (type-stack-structure-check? 
-        $type-stack
-        (arrow-from-structure $actual)
-        (arrow-from-structure $expected))
-      (type-stack-structure-check? 
-        $type-stack
+      (option-app structure-match
+        (structure-match
+          $match
+          (arrow-from-structure $actual)
+          (arrow-from-structure $expected))
         (arrow-to-structure $actual)
         (arrow-to-structure $expected)))
     (and 
       (generic? $expected)
-      #f) ; TODO: Push unique on the stack
+      (type-match
+        (push $match #f)
+        $actual
+        (generic-type $expected)))
     (and 
       (specific? $expected)
-      (type-stack-type-check? 
-        (push $type-stack (specific-argument-type $expected))
+      (type-match
+        (push $match (specific-argument-type $expected))
         $actual
         (specific-type $expected)))
     (and
       (recursive? $expected)
       (recursive? $actual)
-      (type-stack-type-check? 
-        (push $type-stack $expected)
+      (type-match
+        (push $match $expected)
         (recursive-type $actual)
         (recursive-type $expected)))
     (and 
       (variable? $expected)
-      (type-stack-type-check?
-        $type-stack
-        $actual
-        (list-ref $type-stack (variable-index $expected))))
+      (bind $variable-item (list-ref $match (variable-index $expected))
+        (or
+          (and $variable-item (type-match $match $actual $variable-item))
+          (list-set
+            $match
+            (variable-index $expected)
+            $actual))))
     (and
       (universe? $expected)
       (universe? $actual)
       (= 
         (universe-index $actual)
-        (universe-index $expected)))))
+        (universe-index $expected))
+      $match)))
 
 (define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
   (and
@@ -96,14 +109,22 @@
       (and (null? (field-structure $selector)))
       (type-check-symbol? $type (field-symbol $selector)))))
 
-(define (type-stack-structure-check? 
-  ($type-stack : (Stackof Type))
-  ($actual : Structure)
-  ($expected : Structure)) 
-  : Boolean
+(define (type-stack-match
+  ($match : Match)
+  ($actual-type-stack : (Stackof Type))
+  ($expected-type-stack : (Stackof Type)))
+  : (Option Match)
   (and 
-    (= (length $actual) (length $expected))
-    (andmap (curry type-stack-type-check? $type-stack) $actual $expected)))
+    (= (length $actual-type-stack) (length $expected-type-stack))
+    (foldl
+      (lambda (($actual-type : Type) ($expected-type : Type) ($match-option : (Option Match)))
+        (and $match-option
+          (type-match $match-option $actual-type $expected-type)))
+      $match
+      $actual-type-stack
+      $expected-type-stack)))
+
+(define structure-match type-stack-match)
 
 (define (type-apply-structure
   ($type : Type)
