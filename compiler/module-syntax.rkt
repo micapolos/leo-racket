@@ -69,7 +69,12 @@
           ,(structure-syntax (arrow-from-structure $type))
           ,(structure-syntax (arrow-to-structure $type))))
       ((generic? $type)
-        `(generic ,(type-syntax (generic-type $type))))
+        `(generic 
+          ,(type-syntax (generic-type $type))))
+      ((specific? $type)
+        `(specific 
+          ,(type-syntax (specific-argument-type $type))
+          ,(type-syntax (specific-body-type $type))))
       ((recursive? $type)
         `(recursive ,(type-syntax (recursive-type $type))))
       ((variable? $type)

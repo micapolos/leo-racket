@@ -9,6 +9,7 @@
   leo/compiler/type-utils)
 
 (define (type-check? ($actual : Type) ($expected : Type)) : Boolean
+  ; TODO: Implement for generic, recursive and variable.
   (equal? $actual $expected))
 
 (define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean

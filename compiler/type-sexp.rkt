@@ -35,7 +35,12 @@
         ,@(structure-sexp-list $lhs-structure)
         (doing ,@(structure-sexp-list $rhs-structure))))
     ((generic? $type) 
-      `(generic ,(type-sexp (generic-type $type))))
+      `(generic 
+        ,(type-sexp (generic-type $type))))
+    ((specific? $type) 
+      `(specific 
+        ,(type-sexp (specific-argument-type $type))
+        (giving ,(type-sexp (specific-body-type $type)))))
     ((recursive? $type) 
       `(recursive ,(type-sexp (recursive-type $type))))
     ((variable? $type) 
@@ -64,7 +69,9 @@
 (check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
 
 (check-equal? (type-sexp (recursive (field! `foo))) `(recursive foo))
+
 (check-equal? (type-sexp (generic (field! `foo))) `(generic foo))
+(check-equal? (type-sexp (specific (field! `foo) (field! `bar))) `(specific foo (giving bar)))
 
 (check-equal? (type-sexp (variable 0)) `(variable 0))
 
@@ -85,6 +92,14 @@
 ; ----------------------------------------------------------------------------
 
 (define (value-sexp ($value : Value)) : Sexp
+  (type-stack-value-sexp null $value))
+
+(define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
+  (type-stack-any-structure-sexp-list null $any $structure))
+
+(define (type-stack-value-sexp 
+  ($type-stack : (Stackof Type))
+  ($value : Value)) : Sexp
   (define $type (value-type $value))
   (define $any (value-any $value))
   (cond
@@ -102,18 +117,37 @@
         (else 
           `(
             ,$symbol
-            ,@(any-structure-sexp-list $any $structure)))))
+            ,@(type-stack-any-structure-sexp-list $type-stack $any $structure)))))
     ((choice? $type)
-      (value-sexp (any-choice-value $any $type)))
+      (type-stack-value-sexp $type-stack (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
-    ((generic? $type) (error "TODO"))
-    ((recursive? $type) (error "TODO"))
-    ((variable? $type) (error "TODO"))
-    ((universe? $type) (error "TODO"))
-    ((value? $type) (error "TODO"))))
+    ((generic? $type) 
+      (type-stack-value-sexp
+        $type-stack
+        (value $any (generic-type $type))))
+    ((specific? $type) 
+      (type-stack-value-sexp
+        (push $type-stack (specific-argument-type $type))
+        (value $any (specific-body-type $type))))
+    ((recursive? $type) 
+      (type-stack-value-sexp
+        (push $type-stack (recursive-type $type))
+        (value $any (recursive-type $type))))
+    ((variable? $type) 
+      (type-stack-value-sexp
+        $type-stack 
+        (value $any (list-ref $type-stack (variable-index $type)))))
+    ((universe? $type)
+      `(universe 
+        (if (= (universe-index $type) 0)
+          (type-sexp (cast $any Type))
+          (value-sexp (value $any (sub1 (universe-index $type)))))))
+    ((value? $type) 
+      `(value ,(type-stack-value-sexp $type-stack $type)))))
 
-
-(define (any-choice-value ($any : Any) ($choice : Choice)) : Value
+(define (any-choice-value 
+  ($any : Any) 
+  ($choice : Choice)) : Value
   (define $structure (choice-type-stack $choice))
   (define $size (length $structure))
   (case $size
@@ -132,11 +166,16 @@
           (cast $selector Exact-Nonnegative-Integer)))
       (value $value (list-ref (reverse $structure) $index)))))
 
-(define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
+(define (type-stack-any-structure-sexp-list 
+  ($type-stack : (Stackof Type)) 
+  ($any : Any) 
+  ($structure : Structure)) : (Listof Sexp)
   (reverse
     (map
       (lambda (($index : Exact-Nonnegative-Integer))
-        (value-sexp (any-structure-ref $any $structure $index)))
+        (type-stack-value-sexp 
+          $type-stack 
+          (any-structure-ref $any $structure $index)))
       (range (length $structure)))))
 
 (define (any-structure-ref

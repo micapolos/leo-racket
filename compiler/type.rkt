@@ -15,6 +15,7 @@
     Choice 
     Arrow 
     Generic
+    Specific
     Recursive 
     Variable
     Universe))
@@ -36,6 +37,10 @@
   (to-structure : Structure))
 
 (data generic (type : Type))
+
+(data specific
+  (argument-type : Type) 
+  (body-type : Type))
 
 (data recursive (type : Type))
 
