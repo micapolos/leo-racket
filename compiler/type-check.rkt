@@ -9,8 +9,7 @@
   leo/typed/base
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/type
-  leo/compiler/type-utils)
+  leo/compiler/type)
 
 (define-type Match (Stackof (Option Type)))
 
@@ -125,24 +124,3 @@
       $expected-type-stack)))
 
 (define structure-match type-stack-match)
-
-(define (type-apply-structure
-  ($type : Type)
-  ($structure : Structure))
-  : (Option Structure)
-  (and
-    (arrow? $type)
-    (structure-check? $structure (arrow-from-structure $type))
-    (arrow-to-structure $type)))
-
-(check-equal?
-  (type-apply-structure
-    (arrow (structure type-a) (structure type-b))
-    (structure type-a))
-  (structure type-b))
-
-(check-equal?
-  (type-apply-structure
-    (arrow (structure type-a) (structure type-b))
-    (structure type-b))
-  #f)

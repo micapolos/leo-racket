@@ -6,6 +6,7 @@
   racket/function
   leo/typed/option
   leo/compiler/type
+  leo/compiler/type-check
   leo/typed/base
   leo/typed/stack
   leo/typed/testing)
@@ -157,3 +158,26 @@
 ; TODO: Remove
 (define (type-lift ($type : Type)) : (Option Type) #f)
 (define (structure-lift ($structure : Structure)) : (Option Structure) #f)
+
+; ---------------------------------------------------------------------------
+
+(define (type-apply-structure
+  ($type : Type)
+  ($structure : Structure))
+  : (Option Structure)
+  (and
+    (arrow? $type)
+    (structure-check? $structure (arrow-from-structure $type))
+    (arrow-to-structure $type)))
+
+(check-equal?
+  (type-apply-structure
+    (arrow (structure type-a) (structure type-b))
+    (structure type-a))
+  (structure type-b))
+
+(check-equal?
+  (type-apply-structure
+    (arrow (structure type-a) (structure type-b))
+    (structure type-b))
+  #f)
