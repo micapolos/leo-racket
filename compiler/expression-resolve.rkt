@@ -22,6 +22,44 @@
   leo/compiler/typed
   leo/compiler/type-check)
 
+; ----------------------------------------------------------------------------------------
+
+(define (tuple-resolve-selector
+  ($tuple : Tuple)
+  ($selector : Expression))
+  : (Option Expression)
+  (and 
+    (not (null? $tuple))
+    (or
+      (expression-resolve-selector (top $tuple) $selector)
+      (tuple-resolve-selector (pop $tuple) $selector))))
+
+(define (expression-resolve-selector
+  ($expression : Expression)
+  ($selector : Expression))
+  : (Option Expression)
+  (and
+    (type-check-selector? 
+      (expression-type $expression) 
+      (expression-type $selector))
+    $expression))
+
+(define (expression-resolve-selector-list
+  ($expression : Expression)
+  ($selector-list : (Listof Expression)))
+  : (Option Expression)
+  (and
+    (not (null? $selector-list))
+    (fold
+      (expression-resolve-selector $expression (car $selector-list))
+      (cdr $selector-list)
+      (lambda (($expression2 : (Option Expression)) ($selector2 : Expression))
+        (and $expression2
+          (option-bind (expression-field-rhs $expression2) $rhs
+            (tuple-resolve-selector (expressions-tuple $rhs) $selector2)))))))
+
+; -----------------------------------------------------------------------------------------
+
 (define (expression-resolve-symbol
   ($expression : Expression)
   ($symbol : Symbol))
@@ -147,49 +185,46 @@
 
 ; -----------------------------------------------------------------------
 
-(define (expression-resolve-get-symbol-expression
-  ($lhs-expression : Expression)
-  ($rhs-expression : Expression))
-  : (Option Expression)
-  (define $type (expression-type $rhs-expression))
-  (and
-    (field? $type)
-    (equal? (field-symbol $type) `get)
-    (option-bind (single (field-structure $type)) $rhs-type
-      (expression-resolve-symbol-expression
-        $lhs-expression
-        (expression (expression-syntax $rhs-expression) $rhs-type)))))
-
-(check-equal?
-  (option-app expression-sexp-type
-    (expression-resolve-get-symbol-expression
-      (expression syntax-b (field `a (stack type-b))) 
-      (expression syntax-a (field `get (structure (null-field `a))))))
-  (pair `b (field `a (stack type-b))))
-
-(check-equal?
-  (expression-resolve-get-symbol-expression
-    (expression syntax-b (field `get (structure (null-field `b)) ))
-    (expression syntax-a type-a))
-  #f)
-
-(check-equal?
-  (expression-resolve-get-symbol-expression
-    (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `not-get (structure (null-field `a)))))
-  #f)
-
-; -----------------------------------------------------------------------
-
 (define (expression-resolve-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
   : (Option Expression)
   (or
-    (expression-resolve-get-symbol-expression $lhs-expression $rhs-expression)
-    (expression-resolve-get-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
+
+; -----------------------------------------------------------------------
+
+(define (expression-rhs-get ($expression : Expression) ($selector : Expression)) : (Option Expression)
+  (option-bind (expression-field-rhs $expression) $rhs-expressions
+    (tuple-resolve-selector (expressions-tuple $rhs-expressions) $selector)))
+
+(define (expression-resolve-get
+  ($lhs-expression : Expression)
+  ($rhs-expression : Expression))
+  : (Option Expression)
+  (option-bind (expression-symbol-content $rhs-expression `get) $get-expressions
+    (bind $selector-list (reverse (expressions-tuple $get-expressions))
+      (expression-resolve-selector-list $lhs-expression $selector-list))))
+
+(check-equal?
+  (option-app expression-sexp-type
+    (expression-resolve-get
+      (expression syntax-b (field `a (stack type-b))) 
+      (expression syntax-a (field `get (structure (null-field `a))))))
+  (pair `b (field `a (stack type-b))))
+
+(check-equal?
+  (expression-resolve-get
+    (expression syntax-b (field `get (structure (null-field `b)) ))
+    (expression syntax-a type-a))
+  #f)
+
+(check-equal?
+  (expression-resolve-get
+    (expression syntax-b (field `a (stack type-b))) 
+    (expression syntax-a (field `not-get (structure (null-field `a)))))
+  #f)
 
 ; -----------------------------------------------------------------------
 
@@ -242,9 +277,7 @@
     (and
       $single-rhs-expression
       (option-app expression-expressions
-        (expression-resolve-expression 
-          $lhs-expression 
-          $single-rhs-expression)))
+        (expression-resolve-get $lhs-expression $single-rhs-expression)))
     (arrow-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)))
@@ -483,7 +516,7 @@
       (option-stack-first 
         (map
           (lambda (($lhs-expression : Expression)) 
-            (expression-resolve-expression $lhs-expression $expression))
+            (expression-resolve-get $lhs-expression $expression))
           (expressions-tuple $rhs-expressions)))
       expression-expressions)))
 
@@ -498,7 +531,7 @@
               (field `b (stack (racket))) 
               (field `c (stack (racket))) 
               (field `d (stack (racket)))))))
-        (expression syntax-b (field `b null)))
+        (expression syntax-b (field `get (structure (null-field `b)))))
     expressions-sexp-structure)
   (pair 
     `(unsafe-vector-ref a 0)
@@ -514,5 +547,5 @@
             (field `b (stack (racket))) 
             (field `c (stack (racket))) 
             (field `d (stack (racket)))))))
-    (expression syntax-b (field `e null)))
+    (expression syntax-b (field `get (structure (null-field `e)))))
   #f)

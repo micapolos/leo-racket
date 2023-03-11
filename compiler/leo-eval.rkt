@@ -46,11 +46,11 @@
   (leo-eval 
     `(
       1
-      (plus 2) 
-      text 
-      (plus " ")
-      (plus "pieces")
-      (do 
-        text
-        (plus "!!!"))))
+      (add 2) 
+      (get text)
+      (append " ")
+      (append "pieces")
+      (do
+        (get text)
+        (append "!!!"))))
   "3 pieces!!!")

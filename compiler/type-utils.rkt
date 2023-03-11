@@ -133,11 +133,6 @@
     (cast 
       (- (structure-dynamic-size $structure) $ref 1) Exact-Nonnegative-Integer)))
 
-(define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
-  (and
-    (field? $type)
-    (equal? (field-symbol $type) $symbol)))
-
 ; ---------------------------------------------------------------------------
 
 (define (type-lift ($type : Type)) : (Option Type)

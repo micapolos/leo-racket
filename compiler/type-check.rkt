@@ -11,6 +11,19 @@
 (define (type-check? ($actual : Type) ($expected : Type)) : Boolean
   (equal? $actual $expected))
 
+(define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
+  (and
+    (field? $type)
+    (equal? (field-symbol $type) $symbol)))
+
+(define (type-check-selector? ($type : Type) ($selector : Type)) : Boolean
+  (or
+    (type-check? $type $selector)
+    (and
+      (field? $selector) 
+      (and (null? (field-structure $selector)))
+      (type-check-symbol? $type (field-symbol $selector)))))
+
 (define (structure-check? 
   ($actual : Structure)
   ($expected : Structure)) 

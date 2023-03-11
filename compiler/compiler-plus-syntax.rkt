@@ -317,7 +317,7 @@
       (list
         #`1
         #`(dodać 2)
-        #`(do number (plus number)))))
+        #`(do (get number) (plus (get number))))))
   (pair 
     `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
       (+ tmp-number tmp-number))

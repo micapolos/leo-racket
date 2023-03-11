@@ -122,6 +122,28 @@
 
 ; ---------------------------------------------------------
 
+(define (expression-symbol-content ($expression : Expression) ($symbol : Symbol)) : (Option Expressions)
+  (define $type (expression-type $expression))
+  (and 
+    (field? $type)
+    (equal? (field-symbol $type) $symbol)
+    (expressions
+      (expression-syntax $expression) 
+      (field-structure $type))))
+
+(check-equal?
+  (expression-symbol-content (expression syntax-a (field `foo structure-ab)) `foo)
+  (expressions syntax-a structure-ab))
+
+(check-equal?
+  (expression-symbol-content (expression syntax-a (field `foo structure-ab)) `bar)
+  #f)
+
+(check-equal?
+  (expression-symbol-content (expression syntax-a (racket)) `bar)
+  #f)
+
+; ------------------------------------------------------------
 (define (expression-field-rhs ($expression : Expression)) : (Option Expressions)
   (define $type (expression-type $expression))
   (and (field? $type)
