@@ -32,13 +32,13 @@
       `(recipe 
         ,@(structure-sexp-list $lhs-structure)
         (doing ,@(structure-sexp-list $rhs-structure))))
-    ((a? $type) `(a ,(type-sexp (a-type $type))))
     ((generic? $type) 
       `(generic ,(type-sexp (generic-type $type))))
     ((recursive? $type) 
       `(recursive ,(type-sexp (recursive-type $type))))
     ((variable? $type) 
-      `(variable ,(variable-index $type)))))
+      `(variable ,(variable-index $type)))
+    ((universe? $type) `(universe ,(universe-index $type)))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
@@ -77,6 +77,4 @@
       (stack boolean-type int-type)))
   `(recipe number text (doing boolean int)))
 
-(check-equal? 
-  (type-sexp (a (racket)))
-  `(a racket))
+(check-equal? (type-sexp (universe 128)) `(universe 128))

@@ -87,36 +87,6 @@
 
 ; -----------------------------------------------------------------------
 
-(define (expression-resolve-a-expression
-  ($lhs-expression : Expression)
-  ($rhs-expression : Expression))
-  : (Option Expression)
-  (define $type (expression-type $rhs-expression))
-  (and
-    (a? $type) 
-    (expression-resolve-type $lhs-expression (a-type $type))))
-
-(check-equal?
-  (option-app expression-sexp-type
-    (expression-resolve-a-expression
-      (expression syntax-b type-a)
-      (expression syntax-a (a type-a))))
-  (pair `b type-a))
-
-(check-equal?
-  (expression-resolve-a-expression
-    (expression syntax-b type-a)
-    (expression syntax-a (field `get (stack type-a))))
-  #f)
-
-(check-equal?
-  (expression-resolve-a-expression
-    (expression syntax-b type-a)
-    (expression syntax-a (a type-b)))
-  #f)
-
-; -----------------------------------------------------------------------
-
 (define (expression-resolve-get-a-expression
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
@@ -176,7 +146,6 @@
   ($rhs-expression : Expression))
   : (Option Expression)
   (or
-    (expression-resolve-a-expression $lhs-expression $rhs-expression)
     (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
 
 ; -----------------------------------------------------------------------
@@ -293,40 +262,9 @@
   ($rhs-expression : Expression))
   : (Option Expressions)
   (or 
-    (tuple-expression-resolve-arrow $lhs-tuple $rhs-expression)
     (option-app expressions-resolve-expression
       (option-app expression-expressions (single $lhs-tuple))
       $rhs-expression)))
-
-; -----------------------------------------------------------------------
-
-(define (tuple-expression-resolve-arrow
-  ($lhs-tuple : Tuple)
-  ($rhs-expression : Expression))
-  : (Option Expressions)
-  (option-bind (tuple-lift-structure $lhs-tuple) $lhs-structure
-    (option-bind (expression-lift-type $rhs-expression) $rhs-type
-      (and 
-        (field? $rhs-type) 
-        (equal? (field-symbol $rhs-type) `giving)
-        (expression-expressions
-          (type-expression
-            (arrow
-              $lhs-structure 
-              (field-structure $rhs-type))))))))
-
-(check-equal?
-  (option-app expressions-sexp-structure
-    (tuple-expression-resolve-arrow
-      (tuple (type-expression type-a) (type-expression type-b))
-      (type-expression (field `giving (structure type-c type-d)))))
-  (pair 
-    null-sexp
-    (structure
-      (a 
-        (arrow 
-          (structure type-a type-b) 
-          (structure type-c type-d))))))
 
 ; -----------------------------------------------------------------------
 
@@ -395,97 +333,6 @@
   (pair 
     `(let-values (((tmp-a tmp-c) (values a c))) (values tmp-c tmp-a))
     (structure dynamic-type-c static-type-b dynamic-type-a)))
-
-; -----------------------------------------------------------------------
-
-(define (tuple-doing ($tuple : Tuple) ($fn : (-> Scope Expressions))) : (Option Expressions)
-  (option-bind (structure-lift (tuple-structure $tuple)) $structure
-    (define $dynamic-syntax-stack (tuple-syntax-stack $tuple))
-    (define $values-syntax (tuple-values-syntax-option $tuple))
-    (define $scope (structure-generate-scope $structure))
-    (define $fn-expressions ($fn $scope))
-    (define $fn-syntax (expressions-syntax $fn-expressions))
-    (define $fn-structure (expressions-structure $fn-expressions))
-    (define $tmp-stack (scope-identifier-stack $scope))
-    (define $arrow (arrow $structure $fn-structure))
-    (expressions
-      (cond
-        ((type-dynamic? $arrow)
-          (make-syntax `(lambda (,@(reverse $tmp-stack)) ,$fn-syntax)))
-        (else null-syntax))
-      (structure $arrow))))
-
-(check-equal?
-  (tuple-doing
-    (tuple expression-a)
-    (lambda (($scope : Scope)) null-expressions))
-  #f)
-
-(check-equal?
-  (option-app expressions-sexp-structure
-    (tuple-doing
-      (tuple (type-expression static-type-a))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    null-sexp
-    (structure 
-      (arrow 
-        (structure static-type-a) 
-        (structure static-type-a)))))
-
-(check-equal?
-  (option-app expressions-sexp-structure
-    (tuple-doing
-      (tuple (type-expression static-type-a))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(push (scope-identifier-stack $scope) `b)))
-          (push (scope-structure $scope) dynamic-type-b)))))
-  (pair 
-    `(lambda () (values b))
-    (structure 
-      (arrow 
-        (structure static-type-a) 
-        (structure static-type-a dynamic-type-b)))))
-
-(check-equal?
-  (option-app expressions-sexp-structure
-    (tuple-doing
-      (tuple 
-        (type-expression dynamic-type-a) 
-        (type-expression static-type-b))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    `(lambda (tmp-a) (values tmp-a)) 
-    (structure 
-      (arrow 
-        (structure dynamic-type-a static-type-b)
-        (structure static-type-b dynamic-type-a)))))
-
-(check-equal?
-  (option-app expressions-sexp-structure
-    (tuple-doing
-      (tuple 
-        (type-expression dynamic-type-a)
-        (type-expression static-type-b)
-        (type-expression dynamic-type-c))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    `(lambda (tmp-a tmp-c) (values tmp-c tmp-a))
-    (structure 
-      (arrow
-        (structure dynamic-type-a static-type-b dynamic-type-c)
-        (structure dynamic-type-c static-type-b dynamic-type-a)))))
-
 
 (define (expressions-resolve-expression
   ($expressions : Expressions)

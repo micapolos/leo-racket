@@ -66,14 +66,14 @@
         `(arrow
           ,(structure-syntax (arrow-lhs-structure $type))
           ,(structure-syntax (arrow-rhs-structure $type))))
-      ((a? $type)
-        `(a ,(type-syntax (a-type $type))))
       ((generic? $type)
         `(generic ,(type-syntax (generic-type $type))))
       ((recursive? $type)
         `(recursive ,(type-syntax (recursive-type $type))))
       ((variable? $type)
-        `(variable ,(variable-index $type))))))
+        `(variable ,(variable-index $type)))
+      ((universe? $type)
+        `(universe ,(universe-index $type))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax

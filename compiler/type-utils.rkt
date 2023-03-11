@@ -56,10 +56,10 @@
     ((arrow? $type) (structure-dynamic? (arrow-rhs-structure $type)))
     ((field? $type) (structure-dynamic? (field-structure $type)))
     ((choice? $type) (choice-dynamic? $type))
-    ((a? $type) #f)
     ((generic? $type) #t)
     ((recursive? $type) #t)
-    ((variable? $type) (error "impossible"))))
+    ((variable? $type) (error "impossible"))
+    ((universe? $type) #t)))
 
 (define (structure-dynamic? ($structure : Structure)) : Boolean
   (ormap type-dynamic? $structure))
@@ -82,7 +82,6 @@
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null)))) #f)
 (check-equal? (type-dynamic? (racket-field `foo)) #t)
 (check-equal? (type-dynamic? (field `foo (structure (field `foo null) (racket)))) #t)
-(check-equal? (type-dynamic? (a dynamic-type-a)) #f)
 
 (check-equal? (type-dynamic? (choice null-structure)) #f)
 (check-equal? (type-dynamic? (choice (structure static-type-a))) #f)
@@ -94,6 +93,8 @@
 
 (check-equal? (type-dynamic? (recursive (null-field `foo))) #t)
 (check-equal? (type-dynamic? (recursive (variable 0))) #t)
+
+(check-equal? (type-dynamic? (universe 0)) #t)
 
 (define (structure-dynamic-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))
@@ -144,19 +145,6 @@
 
 ; ---------------------------------------------------------------------------
 
-(define (type-lift ($type : Type)) : (Option Type)
-  (and (a? $type) (a-type $type)))
-
-(define (structure-lift ($structure : Structure)) : (Option Structure)
-  (and 
-    (ormap a? $structure) 
-    (andmap a? $structure)
-    (map a-type $structure)))
-
-(check-equal? (structure-lift structure-a) #f)
-
-(check-equal? (structure-lift (structure type-a (a type-b))) #f)
-
-(check-equal? 
-  (structure-lift (structure (a type-a) (a type-b)))
-  (structure type-a type-b))
+; TODO: Remove
+(define (type-lift ($type : Type)) : (Option Type) #f)
+(define (structure-lift ($structure : Structure)) : (Option Structure) #f)

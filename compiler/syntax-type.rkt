@@ -32,7 +32,7 @@
           (define $structure (syntax-list-structure $cdr))
           (define $type (single $structure))
           (cond
-            ((and (equal? $symbol `a) $type) (a $type))
+            ; TODO: Parse universe / generic / recursive / recurse
             (else (field $symbol $structure))))
         (else (racket))))
     (else (racket))))
@@ -70,9 +70,6 @@
 
 (check-equal? (syntax-type #`()) (racket))
 (check-equal? (syntax-type #`foo) (null-field `foo))
-
-(check-equal? (syntax-type #`(a)) (field `a (structure)))
-(check-equal? (syntax-type #`(a foo)) (a (null-field `foo)))
 
 (check-equal? (syntax-type #`(foo)) (null-field `foo))
 

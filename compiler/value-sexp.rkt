@@ -36,10 +36,11 @@
     ((choice? $type)
       (value-sexp (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
-    ((a? $type) `(a ,(type-sexp (a-type $type))))
     ((generic? $type) (error "TODO"))
     ((recursive? $type) (error "TODO"))
-    ((variable? $type) (error "TODO"))))
+    ((variable? $type) (error "TODO"))
+    ((universe? $type) (error "TODO"))))
+
 
 (define (any-choice-value ($any : Any) ($choice : Choice)) : Value
   (define $structure (choice-structure $choice))
@@ -123,10 +124,6 @@
         (stack text-type) 
         (stack number-type))))
   `(recipe text (doing number)))
-
-(check-equal?
-  (value-sexp (value `foo (a number-type)))
-  `(a number))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack text-type))))

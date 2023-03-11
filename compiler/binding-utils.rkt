@@ -12,8 +12,7 @@
   leo/compiler/typed
   leo/compiler/syntax-utils
   leo/compiler/expression
-  leo/compiler/generate-temporary
-  leo/compiler/expression-utils)
+  leo/compiler/generate-temporary)
 
 (define binding-ab (binding (arrow (structure type-a) (structure type-b)) #`ab))
 (define binding-cd (binding (arrow (structure type-c) (structure type-d)) #`cd))
@@ -24,8 +23,13 @@
     (or $identifier-option null-syntax)
     (binding-type $binding)))
 
+(define (expression-sexp-type-2 ($expression : Expression)) : (Pairof Sexp Type)
+  (pair
+    (syntax->datum (expression-syntax $expression))
+    (expression-type $expression)))
+
 (check-equal?
-  (expression-sexp-type (binding-expression (binding type-a #`b)))
+  (expression-sexp-type-2 (binding-expression (binding type-a #`b)))
   (pair `b type-a))
 
 (define (type-generate-binding ($type : Type)) : Binding

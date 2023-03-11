@@ -18,7 +18,8 @@
   leo/compiler/type-sexp
   leo/compiler/typed
   leo/compiler/sourced
-  leo/compiler/type-utils)
+  leo/compiler/type-utils
+  leo/compiler/module-syntax)
 
 (define dynamic-expression-a (expression syntax-a dynamic-type-a))
 (define dynamic-expression-b (expression syntax-b dynamic-type-b))
@@ -92,7 +93,7 @@
   (expression (make-syntax $string) text-type))
 
 (define (type-expression ($type : Type)) 
-  (expression null-syntax (a $type)))
+  (expression (type-syntax $type) (type-universe $type)))
 
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))

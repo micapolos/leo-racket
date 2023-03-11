@@ -12,10 +12,10 @@
     Field 
     Choice 
     Arrow 
-    A 
     Generic
     Recursive 
-    Variable))
+    Variable
+    Universe))
 
 (define-type Structure (Stackof Type))
 
@@ -31,20 +31,27 @@
 
 (data racket)
 
-(data a (type : Type))
-
 (data generic (type : Type))
 
 (data recursive (type : Type))
 
 (data variable (index : Exact-Nonnegative-Integer))
 
+(data universe (index : Exact-Nonnegative-Integer))
+
 (define structure stack)
 
 (define null-structure null)
+
+(define racket-type (racket))
 
 (define (racket-field ($symbol : Symbol)) 
   (field $symbol (structure (racket))))
 
 (define (null-field ($symbol : Symbol)) 
   (field $symbol null-structure))
+
+(define (type-universe ($type : Type)) : Universe
+  (if (universe? $type) 
+    (universe (add1 (universe-index $type)))
+    (universe 0)))
