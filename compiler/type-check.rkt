@@ -29,9 +29,9 @@
     (and 
       (value? $expected) 
       (value? $actual)
+      (type-check? (value-type $actual) (value-type $expected))
       (equal? (value-any $actual) (value-any $expected))
-      ; TODO: Should I pass $match here, or assume value types are top-level?
-      (type-match $match (value-type $actual) (value-type $expected)))
+      $match)
     (and 
       (field? $expected) 
       (field? $actual) 
