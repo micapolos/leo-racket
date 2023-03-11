@@ -25,7 +25,7 @@
         $symbol
         `(,$symbol ,@(structure-sexp-list $structure))))
     ((choice? $type)
-      `(choice ,@(structure-sexp-list (choice-structure $type))))
+      `(choice ,@(structure-sexp-list (choice-type-stack $type))))
     ((arrow? $type) 
       (define $lhs-structure (arrow-from-structure $type))
       (define $rhs-structure (arrow-to-structure $type))

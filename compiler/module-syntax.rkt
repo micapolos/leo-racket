@@ -61,7 +61,7 @@
           ,(structure-syntax (field-structure $type))))
       ((choice? $type) 
         `(choice 
-          ,(structure-syntax (choice-structure $type))))
+          ,(structure-syntax (choice-type-stack $type))))
       ((arrow? $type)
         `(arrow
           ,(structure-syntax (arrow-from-structure $type))

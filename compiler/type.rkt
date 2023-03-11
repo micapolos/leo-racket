@@ -29,7 +29,7 @@
   (symbol : Symbol) 
   (structure : Structure))
 
-(data choice (structure : Structure))
+(data choice (type-stack : (Stackof Type)))
 
 (data generic (type : Type))
 

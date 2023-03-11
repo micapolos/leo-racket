@@ -43,7 +43,7 @@
 
 
 (define (any-choice-value ($any : Any) ($choice : Choice)) : Value
-  (define $structure (choice-structure $choice))
+  (define $structure (choice-type-stack $choice))
   (define $size (length $structure))
   (case $size
     ((0) (error "null choice"))

@@ -65,7 +65,7 @@
   (ormap type-dynamic? $structure))
 
 (define (choice-dynamic? ($choice : Choice)) : Boolean
-  (bind $structure (choice-structure $choice)
+  (bind $structure (choice-type-stack $choice)
     (case (length $structure)
       ((0) #f)
       ((1) (type-dynamic? (top $structure)))
