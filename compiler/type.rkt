@@ -60,6 +60,14 @@
     ((_ $type ...)
       (syntax (choice (stack $type ...))))))
 
+(define-syntax (recipe! $syntax)
+  (syntax-case $syntax (does)
+    ((_ $from ... (does $to ...))
+      (syntax 
+        (arrow 
+          (structure $from ...) 
+          (structure $to ...))))))
+
 ; --------------------------------------------------------------------------
 
 (define structure stack)
