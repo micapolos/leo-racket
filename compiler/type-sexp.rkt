@@ -33,7 +33,10 @@
         ,@(structure-sexp-list $lhs-structure)
         (doing ,@(structure-sexp-list $rhs-structure))))
     ((a? $type) `(a ,(type-sexp (a-type $type))))
-    ((recursive? $type) `(recursive ,(type-sexp (recursive-type $type))))
+    ((generic? $type) 
+      `(generic ,(type-sexp (generic-type $type))))
+    ((recursive? $type) 
+      `(recursive ,(type-sexp (recursive-type $type))))
     ((recurse? $type) 
       (bind $index (recurse-index $type)
         (if (= $index 0) 
@@ -61,6 +64,7 @@
 (check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
 
 (check-equal? (type-sexp (recursive (null-field `foo))) `(recursive foo))
+(check-equal? (type-sexp (generic (null-field `foo))) `(generic foo))
 
 (check-equal? (type-sexp (recurse 0)) `recurse)
 (check-equal? (type-sexp (recurse 128)) `(recurse (depth 129)))

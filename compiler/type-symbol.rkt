@@ -13,6 +13,7 @@
     ((racket? $type) `racket)
     ((arrow? $type) `recipe)
     ((a? $type) `type)
+    ((generic? $type) (type-symbol (generic-type $type)))
     ((recursive? $type) (type-symbol (recursive-type $type)))
     ((recurse? $type) (error "impossible"))))
 
@@ -21,4 +22,5 @@
 (check-equal? (type-symbol (racket)) `racket)
 (check-equal? (type-symbol (arrow null null)) `recipe)
 (check-equal? (type-symbol (a (racket))) `type)
+(check-equal? (type-symbol (generic (null-field `foo))) `foo)
 (check-equal? (type-symbol (recursive (null-field `foo))) `foo)

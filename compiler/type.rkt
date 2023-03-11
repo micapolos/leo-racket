@@ -6,7 +6,16 @@
   leo/typed/base
   leo/typed/stack)
 
-(define-type Type (U Racket Field Choice Arrow A Recursive Recurse))
+(define-type Type 
+  (U 
+    Racket 
+    Field 
+    Choice 
+    Arrow 
+    A 
+    Generic
+    Recursive 
+    Recurse))
 
 (define-type Structure (Stackof Type))
 
@@ -23,6 +32,8 @@
 (data racket)
 
 (data a (type : Type))
+
+(data generic (type : Type))
 
 (data recursive (type : Type))
 

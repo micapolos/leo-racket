@@ -37,6 +37,7 @@
       (value-sexp (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
     ((a? $type) `(a ,(type-sexp (a-type $type))))
+    ((generic? $type) (error "TODO"))
     ((recursive? $type) (error "TODO"))
     ((recurse? $type) (error "TODO"))))
 

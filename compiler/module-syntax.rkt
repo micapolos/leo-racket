@@ -68,6 +68,8 @@
           ,(structure-syntax (arrow-rhs-structure $type))))
       ((a? $type)
         `(a ,(type-syntax (a-type $type))))
+      ((generic? $type)
+        `(generic ,(type-syntax (generic-type $type))))
       ((recursive? $type)
         `(recursive ,(type-syntax (recursive-type $type))))
       ((recurse? $type)
