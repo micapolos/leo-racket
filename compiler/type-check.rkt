@@ -124,3 +124,10 @@
       $expected-type-stack)))
 
 (define structure-match type-stack-match)
+
+(check-equal? (type-check? (racket) (racket)) #t)
+(check-equal? (type-check? (field! `non-racket) (racket)) #f)
+
+(check-equal? (type-check? (value 1 (field! `a)) (value 1 (field! `a))) #t)
+(check-equal? (type-check? (value 1 (field! `a)) (value 1 (field! `b))) #f)
+(check-equal? (type-check? (value 1 (field! `a)) (value 2 (field! `a))) #f)

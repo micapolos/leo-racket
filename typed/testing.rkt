@@ -24,6 +24,17 @@
             #,actual-value
             #,expected-value))))))
 
+; TODO: These two do not report errors in the tested code, but in check-equal? macro.
+(define-syntax (check-true $syntax)
+  (syntax-case $syntax ()
+    ((_ $expr)
+      #`(check-equal? $expr #t))))
+
+(define-syntax (check-false $syntax)
+  (syntax-case $syntax ()
+    ((_ $expr)
+      #`(check-equal? $expr #f))))
+
 (define (check ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
   (unless (equal? $actual $expected)
     (error
