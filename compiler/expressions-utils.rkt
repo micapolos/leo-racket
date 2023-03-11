@@ -21,7 +21,7 @@
   leo/compiler/expression-utils
   leo/compiler/syntax-utils
   leo/compiler/type
-  leo/compiler/type-check
+  leo/compiler/type-match
   leo/compiler/typed
   leo/compiler/type-utils)
 

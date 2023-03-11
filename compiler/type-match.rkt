@@ -13,10 +13,10 @@
 
 (define-type Match (Stackof (Option Type)))
 
-(define (type-check? ($actual : Type) ($expected : Type)) : Boolean
+(define (type-matches? ($actual : Type) ($expected : Type)) : Boolean
   (and (type-match null $actual $expected) #t))
 
-(define (structure-check? ($actual : Structure) ($expected : Structure)) : Boolean
+(define (structure-matches? ($actual : Structure) ($expected : Structure)) : Boolean
   (and (structure-match null $actual $expected) #t))
 
 (define (type-match ($match : Match) ($actual : Type) ($expected : Type)) : (Option Match)
@@ -28,7 +28,7 @@
     ((value? $expected)
       (and
         (value? $actual)
-        (type-check? (value-type $actual) (value-type $expected))
+        (type-matches? (value-type $actual) (value-type $expected))
         (equal? (value-any $actual) (value-any $expected))
         $match))
     ((field? $expected)
@@ -103,18 +103,18 @@
         $match))
     (else #f)))
 
-(define (type-check-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
+(define (type-matches-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
   (and
     (field? $type)
     (equal? (field-symbol $type) $symbol)))
 
-(define (type-check-selector? ($type : Type) ($selector : Type)) : Boolean
+(define (type-matches-selector? ($type : Type) ($selector : Type)) : Boolean
   (or
-    ;(and (a? $selector) (type-check? $type (a-type $selector)))
+    ;(and (a? $selector) (type-matches? $type (a-type $selector)))
     (and
       (field? $selector) 
       (and (null? (field-structure $selector)))
-      (type-check-symbol? $type (field-symbol $selector)))))
+      (type-matches-symbol? $type (field-symbol $selector)))))
 
 (define (type-stack-match
   ($match : Match)
@@ -137,81 +137,81 @@
 
 ; racket
 (check 
-  (type-check? 
+  (type-matches? 
     (racket) 
     (racket)))
 
 (check-not 
-  (type-check? 
+  (type-matches? 
     (field! `non-racket)
     (racket)))
 
 ; field
 (check
-  (type-check?
+  (type-matches?
     (field! `foo)
     (field! `foo)))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `foo)
     (field! `bar)))
 
 (check
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `b))
     (field! `foo (field! `a) (field! `b))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `a))
     (field! `foo (field! `a) (field! `b))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `b))
     (field! `foo (field! `a))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a))
     (field! `foo (field! `a) (field! `b))))
 
 ; value
 (check 
-  (type-check? 
+  (type-matches? 
     (value 1 (field! `a)) 
     (value 1 (field! `a))))
 
 (check-not 
-  (type-check? 
+  (type-matches? 
     (value 1 (field! `a)) 
     (value 1 (field! `b))))
 
 (check-not 
-  (type-check? 
+  (type-matches? 
     (value 1 (field! `a)) 
     (value 2 (field! `a))))
 
 ; choice
 (check
-  (type-check?
+  (type-matches?
     (choice! (field! `a) (field! `b))
     (choice! (field! `a) (field! `b))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (choice! (field! `a) (field! `b))
     (choice! (field! `a) (field! `c))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (choice! (field! `a) (field! `b))
     (choice! (field! `a))))
 
 ; arrow
 (check
-  (type-check?
+  (type-matches?
     (recipe!
       (field! `a) (field! `b)
       (does (field! `c) (field! `d)))
@@ -220,7 +220,7 @@
       (does (field! `c) (field! `d)))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (recipe!
       (field! `a) (field! `b)
       (does (field! `c) (field! `d)))
@@ -229,7 +229,7 @@
       (does (field! `c) (field! `d)))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (recipe!
       (field! `a) (field! `b)
       (does (field! `c) (field! `d)))
@@ -239,94 +239,94 @@
 
 ; generic
 (check
-  (type-check?
+  (type-matches?
     (generic (field! `a))
     (generic (field! `a))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (generic (field! `a))
     (generic (field! `b))))
 
 (check
-  (type-check?
+  (type-matches?
     (field! `a)
     (generic (field! `a))))
 
 (check
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `a))
     (generic (field! `foo (variable 0) (variable 0)))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `b))
     (generic (field! `foo (variable 0) (variable 0)))))
 
 (check
-  (type-check?
+  (type-matches?
     (field! `foo (field! `a) (field! `b))
     (generic (generic (field! `foo (variable 0) (variable 1))))))
 
 ; specific
 (check
-  (type-check?
+  (type-matches?
     (specific (field! `stack) (field! `string))
     (specific (field! `stack) (field! `string))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (specific (field! `stack) (field! `string))
     (specific (field! `list) (field! `string))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (specific (field! `stack) (field! `string))
     (specific (field! `stack) (field! `number))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `stack)
     (specific (field! `stack) (field! `string))))
 
 ; recursive
 (check
-  (type-check?
+  (type-matches?
     (recursive (field! `a))
     (recursive (field! `a))))
 
 (check
-  (type-check?
+  (type-matches?
     (recursive (variable 0))
     (recursive (variable 0))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (recursive (field! `a))
     (recursive (field! `b))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (field! `a)
     (recursive (field! `a))))
 
 (check-not
-  (type-check?
+  (type-matches?
     (recursive (field! `a))
     (field! `a)))
     
 (check
-  (type-check?
+  (type-matches?
     (recursive (recursive (variable 0)))
     (recursive (recursive (variable 1)))))
 
 ; universe
 (check
-  (type-check?
+  (type-matches?
     (universe 0)
     (universe 0)))
 
 (check-not
-  (type-check?
+  (type-matches?
     (universe 0)
     (universe 1)))

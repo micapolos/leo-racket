@@ -14,7 +14,7 @@
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/type
-  leo/compiler/type-check
+  leo/compiler/type-match
   leo/compiler/type-sexp
   leo/compiler/typed
   leo/compiler/sourced

@@ -20,7 +20,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/typed
-  leo/compiler/type-check)
+  leo/compiler/type-match)
 
 ; ----------------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@
   ($selector : Expression))
   : (Option Expression)
   (and
-    (type-check-selector? 
+    (type-matches-selector? 
       (expression-type $expression) 
       (expression-type $selector))
     $expression))
@@ -52,7 +52,7 @@
   : (Option Expression)
   (define $expression-type (expression-type $expression))
   (and
-    (type-check-symbol? $expression-type $symbol)
+    (type-matches-symbol? $expression-type $symbol)
     (expression (expression-syntax $expression) $expression-type)))
 
 (check-equal?
@@ -73,7 +73,7 @@
   ($type : Type))
   : (Option Expression)
   (and
-    (type-check? $type (expression-type $expression))
+    (type-matches? $type (expression-type $expression))
     (expression (expression-syntax $expression) $type)))
 
 (check-equal?
@@ -199,7 +199,7 @@
       (define $arrow-from-structure (arrow-from-structure $arrow))
       (define $arrow-to-structure (arrow-to-structure $arrow))
       (and 
-        (structure-check? $structure $arrow-from-structure)
+        (structure-matches? $structure $arrow-from-structure)
         (expressions
           (make-syntax 
             `(

@@ -6,7 +6,7 @@
   racket/function
   leo/typed/option
   leo/compiler/type
-  leo/compiler/type-check
+  leo/compiler/type-match
   leo/typed/base
   leo/typed/stack
   leo/typed/testing)
@@ -167,7 +167,7 @@
   : (Option Structure)
   (and
     (arrow? $type)
-    (structure-check? $structure (arrow-from-structure $type))
+    (structure-matches? $structure (arrow-from-structure $type))
     (arrow-to-structure $type)))
 
 (check-equal?

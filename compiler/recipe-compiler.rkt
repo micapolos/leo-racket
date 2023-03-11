@@ -17,7 +17,7 @@
   leo/compiler/syntax-type
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/type-check
+  leo/compiler/type-match
   leo/compiler/compile-package)
 
 (data recipe-compiler 
@@ -72,7 +72,7 @@
                   (when 
                     (and 
                       $rhs-structure-option 
-                      (structure-check? 
+                      (structure-matches? 
                         (expressions-structure $expressions) 
                         $rhs-structure-option))
                     (error "recipe giving doing type mismatch"))
