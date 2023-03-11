@@ -8,7 +8,8 @@
 
 (define-type Type 
   (U 
-    Racket 
+    Racket
+    Value
     Field 
     Choice 
     Arrow 
@@ -18,6 +19,8 @@
     Universe))
 
 (define-type Structure (Stackof Type))
+
+(data value (any : Any) (type : Type))
 
 (data racket)
 

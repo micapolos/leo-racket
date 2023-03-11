@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/base
   leo/typed/option
   leo/typed/testing
   leo/compiler/binding
@@ -10,6 +11,7 @@
   leo/compiler/scope
   leo/compiler/scope-utils
   leo/compiler/syntax-utils
+  leo/compiler/any-sexp
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -73,7 +75,11 @@
       ((variable? $type)
         `(variable ,(variable-index $type)))
       ((universe? $type)
-        `(universe ,(universe-index $type))))))
+        `(universe ,(universe-index $type)))
+      ((value? $type)
+        `(value 
+          ,(sexp-datum (any-sexp (value-any $type)))
+          ,(type-syntax (value-type $type)))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax

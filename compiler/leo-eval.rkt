@@ -10,8 +10,7 @@
   leo/typed/testing
   leo/typed/environment
   leo/compiler/expressions
-  leo/compiler/value
-  leo/compiler/value-sexp
+  leo/compiler/type-sexp
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils)
 

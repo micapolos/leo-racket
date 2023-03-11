@@ -59,7 +59,8 @@
     ((generic? $type) #t)
     ((recursive? $type) #t)
     ((variable? $type) (error "impossible"))
-    ((universe? $type) #t)))
+    ((universe? $type) #t)
+    ((value? $type) #t)))
 
 (define (structure-dynamic? ($structure : Structure)) : Boolean
   (ormap type-dynamic? $structure))
@@ -95,6 +96,8 @@
 (check-equal? (type-dynamic? (recursive (variable 0))) #t)
 
 (check-equal? (type-dynamic? (universe 0)) #t)
+
+(check-equal? (type-dynamic? (value #f (null-field `foo))) #t)
 
 (define (structure-dynamic-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))

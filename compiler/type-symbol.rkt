@@ -15,7 +15,8 @@
     ((generic? $type) (type-symbol (generic-type $type)))
     ((recursive? $type) (type-symbol (recursive-type $type)))
     ((variable? $type) (error "impossible"))
-    ((universe? $type) `universe)))
+    ((universe? $type) `universe)
+    ((value? $type) `value)))
 
 (check-equal? (type-symbol (null-field `foo)) `foo)
 (check-equal? (type-symbol (choice null)) `choice)

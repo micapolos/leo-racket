@@ -6,11 +6,9 @@
     racket/base
     racket/unsafe/ops
     leo/compiler/type
-    leo/compiler/value
-    leo/compiler/value-sexp))
+    leo/compiler/type-sexp))
 
 (require 
   racket/unsafe/ops
   leo/compiler/type
-  leo/compiler/value
-  leo/compiler/value-sexp)
+  leo/compiler/type-sexp)
