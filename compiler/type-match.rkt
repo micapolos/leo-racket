@@ -90,7 +90,7 @@
           (recursive-type $expected))))
     ((variable? $expected)
       (bind $index (variable-index $expected)
-        (bind $type-option (stack-ref-default $match $index #f)
+        (bind $type-option (list-ref $match $index)
           (cond
             ($type-option (type-match $match $actual $type-option))
             (else (list-set $match $index $actual))))))
