@@ -16,7 +16,7 @@
           (field! `tail (variable 0)))))))
 
 (define stack-type 
-  (generic (stack-of-type (variable 1))))
+  (stack-of-type (variable 1)))
 
 (define racket-type
   (field! `racket))
@@ -35,8 +35,10 @@
 (define a-type
   (field! `a (variable 0)))
 
-(define generic-type
-  (field! `generic (variable 0)))
+(define specification-type
+  (field! `specification 
+    (field! `generic (variable 0))
+    (field! `argument (variable 0))))
 
 (define recursive-type
   (field! `recursive (variable 0)))
@@ -52,6 +54,6 @@
         field-type
         arrow-type
         a-type
-        generic-type
+        specification-type
         recursive-type
         variable-type))))
