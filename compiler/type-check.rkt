@@ -81,9 +81,9 @@
         (recursive-type $expected)))
     (and 
       (variable? $expected)
-      (bind $variable-item (list-ref $match (variable-index $expected))
+      (bind $type-option (list-ref $match (variable-index $expected))
         (or
-          (and $variable-item (type-match $match $actual $variable-item))
+          (and $type-option (type-match $match $actual $type-option))
           (list-set
             $match
             (variable-index $expected)
