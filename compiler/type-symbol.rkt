@@ -16,13 +16,15 @@
     ((choice? $type) `choice)
     ((racket? $type) `racket)
     ((arrow? $type) `recipe)
-    ((specification? $type)
+    ((generic? $type) 
+      (symbol-stack-type-symbol $symbol-stack (generic-type $type)))
+    ((specific? $type)
       (symbol-stack-type-symbol 
         (push $symbol-stack 
           (symbol-stack-type-symbol 
             $symbol-stack 
-            (specification-argument-type $type)))
-        (specification-generic-type $type)))
+            (specific-argument-type $type)))
+        (specific-type $type)))
     ((recursive? $type) 
       (symbol-stack-type-symbol 
         (push $symbol-stack `variable)
@@ -36,8 +38,9 @@
 (check-equal? (type-symbol (choice null)) `choice)
 (check-equal? (type-symbol (racket)) `racket)
 (check-equal? (type-symbol (arrow null null)) `recipe)
-(check-equal? (type-symbol (specification (field! `foo) (field! `bar))) `foo)
-(check-equal? (type-symbol (specification (variable 0) (field! `bar))) `bar)
+(check-equal? (type-symbol (generic (field! `foo))) `foo)
+(check-equal? (type-symbol (specific (field! `foo) (field! `bar))) `foo)
+(check-equal? (type-symbol (specific (variable 0) (field! `bar))) `bar)
 (check-equal? (type-symbol (recursive (field! `foo))) `foo)
 (check-equal? (type-symbol (recursive (variable 0))) `variable)
 (check-equal? (type-symbol (universe 0)) `universe)

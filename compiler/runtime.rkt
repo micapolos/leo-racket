@@ -35,8 +35,11 @@
 (define a-type
   (field! `a (variable 0)))
 
-(define specification-type
-  (field! `specification 
+(define generic-type
+  (field! `generic (variable 0)))
+
+(define specific-type
+  (field! `specific 
     (field! `generic (variable 0))
     (field! `argument (variable 0))))
 
@@ -54,6 +57,7 @@
         field-type
         arrow-type
         a-type
-        specification-type
+        generic-type
+        specific-type
         recursive-type
         variable-type))))

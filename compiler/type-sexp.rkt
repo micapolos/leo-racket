@@ -34,10 +34,12 @@
       `(recipe 
         ,@(structure-sexp-list $lhs-structure)
         (doing ,@(structure-sexp-list $rhs-structure))))
-    ((specification? $type) 
-      `(specification 
-        ,(type-sexp (specification-generic-type $type))
-        (of ,(type-sexp (specification-argument-type $type)))))
+    ((generic? $type) 
+      `(generic ,(type-sexp (generic-type $type))))
+    ((specific? $type) 
+      `(specific 
+        ,(type-sexp (specific-type $type))
+        (of ,(type-sexp (specific-argument-type $type)))))
     ((recursive? $type) 
       `(recursive ,(type-sexp (recursive-type $type))))
     ((variable? $type) 
@@ -67,7 +69,8 @@
 
 (check-equal? (type-sexp (recursive (field! `foo))) `(recursive foo))
 
-(check-equal? (type-sexp (specification (field! `foo) (field! `bar))) `(specification foo (of bar)))
+(check-equal? (type-sexp (generic (field! `foo))) `(generic foo))
+(check-equal? (type-sexp (specific (field! `foo) (field! `bar))) `(specific foo (of bar)))
 
 (check-equal? (type-sexp (variable 0)) `(variable 0))
 
@@ -117,10 +120,14 @@
     ((choice? $type)
       (type-stack-value-sexp $type-stack (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
-    ((specification? $type) 
+    ((generic? $type) 
       (type-stack-value-sexp
-        (push $type-stack (specification-argument-type $type))
-        (value $any (specification-generic-type $type))))
+        $type-stack 
+        (value $any (generic-type $type))))
+    ((specific? $type) 
+      (type-stack-value-sexp
+        (push $type-stack (specific-argument-type $type))
+        (value $any (specific-type $type))))
     ((recursive? $type) 
       (type-stack-value-sexp
         (push $type-stack (recursive-type $type))
