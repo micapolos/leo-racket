@@ -97,9 +97,7 @@
     ((universe? $expected)
       (and
         (universe? $actual)
-        (= 
-          (universe-index $actual)
-          (universe-index $expected))
+        (= (universe-index $actual) (universe-index $expected))
         $match))
     (else #f)))
 
