@@ -72,8 +72,8 @@
         `(generic ,(type-syntax (generic-type $type))))
       ((recursive? $type)
         `(recursive ,(type-syntax (recursive-type $type))))
-      ((recurse? $type)
-        `(recurse ,(recurse-index $type))))))
+      ((variable? $type)
+        `(variable ,(variable-index $type))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax

@@ -15,7 +15,7 @@
     A 
     Generic
     Recursive 
-    Recurse))
+    Variable))
 
 (define-type Structure (Stackof Type))
 
@@ -37,7 +37,7 @@
 
 (data recursive (type : Type))
 
-(data recurse (index : Exact-Nonnegative-Integer))
+(data variable (index : Exact-Nonnegative-Integer))
 
 (define structure stack)
 

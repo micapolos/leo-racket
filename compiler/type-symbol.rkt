@@ -15,7 +15,7 @@
     ((a? $type) `type)
     ((generic? $type) (type-symbol (generic-type $type)))
     ((recursive? $type) (type-symbol (recursive-type $type)))
-    ((recurse? $type) (error "impossible"))))
+    ((variable? $type) (error "impossible"))))
 
 (check-equal? (type-symbol (null-field `foo)) `foo)
 (check-equal? (type-symbol (choice null)) `choice)

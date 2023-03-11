@@ -37,11 +37,8 @@
       `(generic ,(type-sexp (generic-type $type))))
     ((recursive? $type) 
       `(recursive ,(type-sexp (recursive-type $type))))
-    ((recurse? $type) 
-      (bind $index (recurse-index $type)
-        (if (= $index 0) 
-          `recurse
-          `(recurse (depth ,(add1 $index))))))))
+    ((variable? $type) 
+      `(variable ,(variable-index $type)))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
@@ -66,8 +63,7 @@
 (check-equal? (type-sexp (recursive (null-field `foo))) `(recursive foo))
 (check-equal? (type-sexp (generic (null-field `foo))) `(generic foo))
 
-(check-equal? (type-sexp (recurse 0)) `recurse)
-(check-equal? (type-sexp (recurse 128)) `(recurse (depth 129)))
+(check-equal? (type-sexp (variable 0)) `(variable 0))
 
 (check-equal? 
   (type-sexp 
