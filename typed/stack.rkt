@@ -27,6 +27,14 @@
 (define pop-top cadr)
 (define stack? list?)
 
+(define #:forall (V) (stack-ref-default 
+  ($stack : (Stackof V)) 
+  ($index : Exact-Nonnegative-Integer) 
+  ($default : V)) : V
+  (with-handlers 
+    ((exn:fail:contract? (lambda (exn) $default)))
+    (list-ref $stack $index)))
+
 ; --------------------------------------------------------------------
 
 (: option-stack-first (All (V) (-> (Stackof V) (Option V))))
