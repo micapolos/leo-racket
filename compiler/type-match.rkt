@@ -60,17 +60,17 @@
           (arrow-to-structure $actual)
           (arrow-to-structure $expected))))
     ((generic? $expected)
-      (cond
-        ((generic? $actual) 
+      (or
+        (and 
+          (generic? $actual) 
           (type-match
             (push $match #f)
             (generic-type $actual)
             (generic-type $expected)))
-        (else
-          (type-match
-            (push $match #f)
-            $actual
-            (generic-type $expected)))))
+        (type-match
+          (push $match #f)
+          $actual
+          (generic-type $expected))))
     ((specific? $expected)
       (and
         (specific? $actual)
@@ -242,6 +242,11 @@
   (type-matches?
     (generic (field! `a))
     (generic (field! `a))))
+
+(check
+  (type-matches?
+    (generic (field! `a))
+    (generic (generic (field! `a)))))
 
 (check-not
   (type-matches?
