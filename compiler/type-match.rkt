@@ -82,11 +82,16 @@
           (specific-argument-type $actual)
           (specific-argument-type $expected))))
     ((recursive? $expected)
-      (and
-        (recursive? $actual)
+      (or
+        (and
+          (recursive? $actual)
+          (type-match
+            (push $match #f)
+            (recursive-type $actual)
+            (recursive-type $expected)))
         (type-match
           (push $match #f)
-          (recursive-type $actual)
+          $actual
           (recursive-type $expected))))
     ((variable? $expected)
       (bind $index (variable-index $expected)
@@ -295,8 +300,23 @@
 ; recursive
 (check
   (type-matches?
+    (field! `a)
+    (recursive (field! `a))))
+
+(check
+  (type-matches?
     (recursive (field! `a))
     (recursive (field! `a))))
+
+(check
+  (type-matches?
+    (recursive (field! `a (variable 0)))
+    (recursive (field! `a (variable 0)))))
+
+(check
+  (type-matches?
+    (recursive (field! `a (field! `a (variable 0))))
+    (recursive (field! `a (variable 0)))))
 
 (check
   (type-matches?
@@ -307,11 +327,6 @@
   (type-matches?
     (recursive (field! `a))
     (recursive (field! `b))))
-
-(check-not
-  (type-matches?
-    (field! `a)
-    (recursive (field! `a))))
 
 (check-not
   (type-matches?
