@@ -98,5 +98,5 @@
     `(lambda (tmp-number) recurse)
     (structure 
       (arrow 
-        (structure number-type (null-field `increment))
+        (structure number-type (field! `increment))
         (structure (racket))))))

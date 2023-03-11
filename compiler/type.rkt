@@ -4,7 +4,8 @@
 
 (require 
   leo/typed/base
-  leo/typed/stack)
+  leo/typed/stack
+  (for-syntax racket/base))
 
 (define-type Type 
   (U 
@@ -44,6 +45,19 @@
 
 ; --------------------------------------------------------------------------
 
+
+(define-syntax (field! $syntax)
+  (syntax-case $syntax ()
+    ((_ $symbol $type ...)
+      (syntax (field $symbol (structure $type ...))))))
+
+(define-syntax (choice! $syntax)
+  (syntax-case $syntax ()
+    ((_ $type ...)
+      (syntax (choice (stack $type ...))))))
+
+; --------------------------------------------------------------------------
+
 (define structure stack)
 
 (define null-structure null)
@@ -51,12 +65,11 @@
 (define racket-type (racket))
 
 (define (racket-field ($symbol : Symbol)) 
-  (field $symbol (structure (racket))))
+  (field! $symbol racket-type))
 
-(define (null-field ($symbol : Symbol)) 
-  (field $symbol null-structure))
+(define universe-type (universe 0))
 
 (define (type-universe ($type : Type)) : Universe
   (if (universe? $type) 
     (universe (add1 (universe-index $type)))
-    (universe 0)))
+    universe-type))

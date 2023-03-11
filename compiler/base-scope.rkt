@@ -32,7 +32,7 @@
     (unary-nested-binding-2 number-type `get `text text-type #`number->string)
 
     (binary-binding text-type `append text-type text-type #`string-append)
-    (unary-nested-binding-2 text-type `get `length (field `length (structure number-type)) #`string-length)
+    (unary-nested-binding-2 text-type `get `length (field! `length number-type) #`string-length)
     (binary-binding-2 text-type `check `equals text-type check-type #`string=?)
 
     ; deprecated

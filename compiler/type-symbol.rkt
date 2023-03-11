@@ -18,10 +18,10 @@
     ((universe? $type) `universe)
     ((value? $type) `value)))
 
-(check-equal? (type-symbol (null-field `foo)) `foo)
+(check-equal? (type-symbol (field! `foo)) `foo)
 (check-equal? (type-symbol (choice null)) `choice)
 (check-equal? (type-symbol (racket)) `racket)
 (check-equal? (type-symbol (arrow null null)) `recipe)
-(check-equal? (type-symbol (generic (null-field `foo))) `foo)
-(check-equal? (type-symbol (recursive (null-field `foo))) `foo)
+(check-equal? (type-symbol (generic (field! `foo))) `foo)
+(check-equal? (type-symbol (recursive (field! `foo))) `foo)
 (check-equal? (type-symbol (universe 0)) `universe)

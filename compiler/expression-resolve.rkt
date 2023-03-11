@@ -168,19 +168,19 @@
   (option-app expression-sexp-type
     (expression-resolve-get
       (expression syntax-b (field `a (stack type-b))) 
-      (expression syntax-a (field `get (structure (null-field `a))))))
+      (expression syntax-a (field `get (structure (field! `a))))))
   (pair `b (field `a (stack type-b))))
 
 (check-equal?
   (expression-resolve-get
-    (expression syntax-b (field `get (structure (null-field `b)) ))
+    (expression syntax-b (field `get (structure (field! `b)) ))
     (expression syntax-a type-a))
   #f)
 
 (check-equal?
   (expression-resolve-get
     (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `not-get (structure (null-field `a)))))
+    (expression syntax-a (field `not-get (structure (field! `a)))))
   #f)
 
 ; -----------------------------------------------------------------------
@@ -366,7 +366,7 @@
               (field `b (stack (racket))) 
               (field `c (stack (racket))) 
               (field `d (stack (racket)))))))
-        (expression syntax-b (field `get (structure (null-field `b)))))
+        (expression syntax-b (field `get (structure (field! `b)))))
     expressions-sexp-structure)
   (pair 
     `(unsafe-vector-ref a 0)
@@ -382,5 +382,5 @@
             (field `b (stack (racket))) 
             (field `c (stack (racket))) 
             (field `d (stack (racket)))))))
-    (expression syntax-b (field `get (structure (null-field `e)))))
+    (expression syntax-b (field `get (structure (field! `e)))))
   #f)

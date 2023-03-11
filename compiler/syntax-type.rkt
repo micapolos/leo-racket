@@ -20,7 +20,7 @@
         ((int) int-type)
         ((float) float-type)
         ((text) text-type)
-        (else (null-field $syntax-e))))
+        (else (field! $syntax-e))))
     ((list? $syntax-e)
       (define $list $syntax-e)
       (define $car (car $list))
@@ -69,9 +69,9 @@
     (else (push $structure (syntax-type $syntax)))))
 
 (check-equal? (syntax-type #`()) (racket))
-(check-equal? (syntax-type #`foo) (null-field `foo))
+(check-equal? (syntax-type #`foo) (field! `foo))
 
-(check-equal? (syntax-type #`(foo)) (null-field `foo))
+(check-equal? (syntax-type #`(foo)) (field! `foo))
 
 (check-equal? 
   (syntax-type #`(foo number text))
@@ -79,8 +79,8 @@
 
 (check-equal? 
   (syntax-list-structure (list #`foo #`bar))
-  (stack (null-field `foo) (null-field `bar)))
+  (stack (field! `foo) (field! `bar)))
 
 (check-equal? 
   (syntax-list-structure (list #`foo #`bar #`(giving zoo)))
-  (list (arrow (stack (null-field `foo) (null-field `bar)) (stack (null-field `zoo)))))
+  (list (arrow (stack (field! `foo) (field! `bar)) (stack (field! `zoo)))))

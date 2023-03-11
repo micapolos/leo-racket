@@ -30,7 +30,7 @@
 (define int-type (racket-field `int))
 (define float-type (racket-field `float))
 (define text-type (racket-field `text))
-(define check-type (field `check (structure (choice (structure (null-field `yes) (null-field `no))))))
+(define check-type (field `check (structure (choice (structure (field! `yes) (field! `no))))))
 
 (define static-structure-a (structure static-type-a))
 (define static-structure-b (structure static-type-b))
@@ -89,15 +89,15 @@
 (check-equal? (type-dynamic? (choice (structure dynamic-type-a))) #t)
 (check-equal? (type-dynamic? (choice (structure static-type-a static-type-b))) #t)
 
-(check-equal? (type-dynamic? (generic (null-field `foo))) #t)
+(check-equal? (type-dynamic? (generic (field! `foo))) #t)
 (check-equal? (type-dynamic? (generic (variable 0))) #t)
 
-(check-equal? (type-dynamic? (recursive (null-field `foo))) #t)
+(check-equal? (type-dynamic? (recursive (field! `foo))) #t)
 (check-equal? (type-dynamic? (recursive (variable 0))) #t)
 
 (check-equal? (type-dynamic? (universe 0)) #t)
 
-(check-equal? (type-dynamic? (value #f (null-field `foo))) #t)
+(check-equal? (type-dynamic? (value #f (field! `foo))) #t)
 
 (define (structure-dynamic-size ($structure : Structure)) : Exact-Nonnegative-Integer
   (length (filter type-dynamic? $structure)))

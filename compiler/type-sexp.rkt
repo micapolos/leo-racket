@@ -63,14 +63,14 @@
 (check-equal? (type-sexp (choice null)) `(choice))
 (check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
 
-(check-equal? (type-sexp (recursive (null-field `foo))) `(recursive foo))
-(check-equal? (type-sexp (generic (null-field `foo))) `(generic foo))
+(check-equal? (type-sexp (recursive (field! `foo))) `(recursive foo))
+(check-equal? (type-sexp (generic (field! `foo))) `(generic foo))
 
 (check-equal? (type-sexp (variable 0)) `(variable 0))
 
 (check-equal? 
   (type-sexp 
-    (field `foo (structure (null-field `bar) (null-field `zoo))))
+    (field `foo (structure (field! `bar) (field! `zoo))))
   `(foo bar zoo))
 
 (check-equal? 
@@ -204,21 +204,21 @@
   (value-sexp 
     (value 
       (cons 128 "foo") 
-      (field `foo (stack number-type (null-field `bar) text-type))))
+      (field `foo (stack number-type (field! `bar) text-type))))
   `(foo 128 bar "foo"))
 
 (check-equal?
   (value-sexp 
     (value 
       (vector 128 "foo" #t) 
-      (field `foo (stack number-type (null-field `bar) text-type boolean-type))))
+      (field `foo (stack number-type (field! `bar) text-type boolean-type))))
   `(foo 128 bar "foo" (boolean true)))
 
 (check-equal?
   (value-sexp 
     (value 
       #f
-      (choice (structure (null-field `foo)))))
+      (choice (structure (field! `foo)))))
   `foo)
 
 (check-equal?
@@ -232,14 +232,14 @@
   (value-sexp 
     (value 
       #t
-      (choice (structure (null-field `foo) (null-field `bar)))))
+      (choice (structure (field! `foo) (field! `bar)))))
   `foo)
 
 (check-equal?
   (value-sexp 
     (value 
       #f
-      (choice (structure (null-field `foo) (null-field `bar)))))
+      (choice (structure (field! `foo) (field! `bar)))))
   `bar)
 
 (check-equal?
@@ -260,40 +260,40 @@
   (value-sexp 
     (value 
       0
-      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+      (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
   `foo)
 
 (check-equal?
   (value-sexp 
     (value 
       1
-      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+      (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
   `bar)
 
 (check-equal?
   (value-sexp 
     (value 
       2
-      (choice (structure (null-field `foo) (null-field `bar) (null-field `zoo)))))
+      (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
   `zoo)
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 0 123) 
-      (choice (structure number-type (null-field `foo) text-type))))
+      (choice (structure number-type (field! `foo) text-type))))
   123)
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 1 #t) 
-      (choice (structure number-type (null-field `foo) text-type))))
+      (choice (structure number-type (field! `foo) text-type))))
   `foo)
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 2 "foo") 
-      (choice (structure number-type (null-field `foo) text-type))))
+      (choice (structure number-type (field! `foo) text-type))))
   "foo")

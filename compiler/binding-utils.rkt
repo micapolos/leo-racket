@@ -44,7 +44,7 @@
     (arrow
       (structure 
         $lhs-type
-        (null-field $symbol))
+        (field! $symbol))
       (structure $return-type))
     $identifier))
 
@@ -58,8 +58,8 @@
     (arrow
       (structure 
         $lhs-type
-        (null-field $symbol-1)
-        (null-field $symbol-2))
+        (field! $symbol-1)
+        (field! $symbol-2))
       (structure $return-type))
     $identifier))
 
@@ -75,7 +75,7 @@
         $lhs-type
         (field $symbol-1
           (structure
-            (null-field $symbol-2))))
+            (field! $symbol-2))))
       (structure $return-type))
     $identifier))
 
@@ -94,7 +94,7 @@
           (structure 
             (field $symbol-2
               (structure
-                (null-field $symbol-3))))))
+                (field! $symbol-3))))))
       (structure $return-type))
     $identifier))
 
