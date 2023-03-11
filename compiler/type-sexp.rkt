@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/base
   leo/typed/testing
   leo/typed/stack
   leo/compiler/any-sexp
@@ -33,7 +34,11 @@
         (doing ,@(structure-sexp-list $rhs-structure))))
     ((a? $type) `(a ,(type-sexp (a-type $type))))
     ((recursive? $type) `(recursive ,(type-sexp (recursive-type $type))))
-    ((recurse? $type) `(recurse (depth ,(add1 (recurse-index $type)))))))
+    ((recurse? $type) 
+      (bind $index (recurse-index $type)
+        (if (= $index 0) 
+          `recurse
+          `(recurse (depth ,(add1 $index))))))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
@@ -56,6 +61,8 @@
 (check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
 
 (check-equal? (type-sexp (recursive (null-field `foo))) `(recursive foo))
+
+(check-equal? (type-sexp (recurse 0)) `recurse)
 (check-equal? (type-sexp (recurse 128)) `(recurse (depth 129)))
 
 (check-equal? 
