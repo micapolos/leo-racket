@@ -125,9 +125,27 @@
 
 (define structure-match type-stack-match)
 
-(check-equal? (type-check? (racket) (racket)) #t)
-(check-equal? (type-check? (field! `non-racket) (racket)) #f)
+(check 
+  (type-check? 
+    (racket) 
+    (racket)))
 
-(check-equal? (type-check? (value 1 (field! `a)) (value 1 (field! `a))) #t)
-(check-equal? (type-check? (value 1 (field! `a)) (value 1 (field! `b))) #f)
-(check-equal? (type-check? (value 1 (field! `a)) (value 2 (field! `a))) #f)
+(check-not 
+  (type-check? 
+    (field! `non-racket)
+    (racket)))
+
+(check 
+  (type-check? 
+    (value 1 (field! `a)) 
+    (value 1 (field! `a))))
+
+(check-not 
+  (type-check? 
+    (value 1 (field! `a)) 
+    (value 1 (field! `b))))
+
+(check-not 
+  (type-check? 
+    (value 1 (field! `a)) 
+    (value 2 (field! `a))))

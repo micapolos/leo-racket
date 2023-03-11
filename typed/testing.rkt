@@ -18,24 +18,23 @@
             (actual-value #`actual)
             (expected-value #`expected))
         #`(parameterize ((testing? #t))
-          (check 
+          (check-expr
             #,srcloc
             #,expr
             #,actual-value
             #,expected-value))))))
 
-; TODO: These two do not report errors in the tested code, but in check-equal? macro.
-(define-syntax (check-true $syntax)
+(define-syntax (check $syntax)
   (syntax-case $syntax ()
     ((_ $expr)
-      #`(check-equal? $expr #t))))
+      (syntax/loc $syntax (check-equal? $expr #t)))))
 
-(define-syntax (check-false $syntax)
+(define-syntax (check-not $syntax)
   (syntax-case $syntax ()
     ((_ $expr)
-      #`(check-equal? $expr #f))))
+      (syntax/loc $syntax (check-equal? $expr #f)))))
 
-(define (check ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
+(define (check-expr ($srcloc : Any) ($expr : Any) ($actual : Any) ($expected : Any))
   (unless (equal? $actual $expected)
     (error
       (pretty-format 
