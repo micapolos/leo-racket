@@ -45,7 +45,6 @@
 
 ; --------------------------------------------------------------------------
 
-
 (define-syntax (field! $syntax)
   (syntax-case $syntax ()
     ((_ $symbol $type ...)
