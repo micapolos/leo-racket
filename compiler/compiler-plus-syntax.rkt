@@ -33,7 +33,6 @@
   leo/compiler/recipe-compiler
   leo/compiler/recipe-package
   leo/compiler/type
-  leo/compiler/type-type
   leo/compiler/type-sexp
   leo/compiler/type-utils)
 

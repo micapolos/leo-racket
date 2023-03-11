@@ -67,7 +67,11 @@
           ,(structure-syntax (arrow-lhs-structure $type))
           ,(structure-syntax (arrow-rhs-structure $type))))
       ((a? $type)
-        `(a ,(type-syntax (a-type $type)))))))
+        `(a ,(type-syntax (a-type $type))))
+      ((recursive? $type)
+        `(recursive ,(type-syntax (recursive-type $type))))
+      ((recurse? $type)
+        `(recurse ,(recurse-index $type))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax
