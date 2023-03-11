@@ -333,3 +333,8 @@
   (type-matches?
     (universe 0)
     (universe 1)))
+
+(check-not
+  (type-matches?
+    (universe 0)
+    (field! `not-universe)))
