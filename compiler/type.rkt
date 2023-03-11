@@ -21,15 +21,15 @@
 
 (data racket)
 
-(data arrow 
-  (from-structure : Structure) 
-  (to-structure : Structure))
-
 (data field 
   (symbol : Symbol) 
   (structure : Structure))
 
 (data choice (type-stack : (Stackof Type)))
+
+(data arrow
+  (from-structure : Structure) 
+  (to-structure : Structure))
 
 (data generic (type : Type))
 
