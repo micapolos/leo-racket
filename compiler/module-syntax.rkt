@@ -64,8 +64,8 @@
           ,(structure-syntax (choice-structure $type))))
       ((arrow? $type)
         `(arrow
-          ,(structure-syntax (arrow-lhs-structure $type))
-          ,(structure-syntax (arrow-rhs-structure $type))))
+          ,(structure-syntax (arrow-from-structure $type))
+          ,(structure-syntax (arrow-to-structure $type))))
       ((generic? $type)
         `(generic ,(type-syntax (generic-type $type))))
       ((recursive? $type)

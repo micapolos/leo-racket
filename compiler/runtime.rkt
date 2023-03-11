@@ -36,8 +36,8 @@
 (define arrow-type
   (field `arrow
     (structure
-      (field `start (structure (variable 0)))
-      (field `end (structure (variable 0))))))
+      (field `from (structure (variable 0)))
+      (field `to (structure (variable 0))))))
 
 (define a-type
   (field `a (structure (variable 0))))

@@ -27,8 +27,8 @@
     ((choice? $type)
       `(choice ,@(structure-sexp-list (choice-structure $type))))
     ((arrow? $type) 
-      (define $lhs-structure (arrow-lhs-structure $type))
-      (define $rhs-structure (arrow-rhs-structure $type))
+      (define $lhs-structure (arrow-from-structure $type))
+      (define $rhs-structure (arrow-to-structure $type))
       `(recipe 
         ,@(structure-sexp-list $lhs-structure)
         (doing ,@(structure-sexp-list $rhs-structure))))

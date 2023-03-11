@@ -53,7 +53,7 @@
 (define (type-dynamic? ($type : Type)) : Boolean
   (cond
     ((racket? $type) #t)
-    ((arrow? $type) (structure-dynamic? (arrow-rhs-structure $type)))
+    ((arrow? $type) (structure-dynamic? (arrow-to-structure $type)))
     ((field? $type) (structure-dynamic? (field-structure $type)))
     ((choice? $type) (choice-dynamic? $type))
     ((generic? $type) #t)

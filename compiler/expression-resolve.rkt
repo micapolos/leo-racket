@@ -196,16 +196,16 @@
     (arrow? $expression-type)
     (let ()
       (define $arrow $expression-type)
-      (define $arrow-lhs-structure (arrow-lhs-structure $arrow))
-      (define $arrow-rhs-structure (arrow-rhs-structure $arrow))
+      (define $arrow-from-structure (arrow-from-structure $arrow))
+      (define $arrow-to-structure (arrow-to-structure $arrow))
       (and 
-        (structure-check? $structure $arrow-lhs-structure)
+        (structure-check? $structure $arrow-from-structure)
         (expressions
           (make-syntax 
             `(
               ,(expression-syntax $lhs-expression)
               ,@(reverse $dynamic-syntax-stack)))
-          $arrow-rhs-structure)))))
+          $arrow-to-structure)))))
 
 (check-equal?
   (option-app expressions-sexp-structure

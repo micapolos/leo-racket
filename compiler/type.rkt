@@ -19,17 +19,17 @@
 
 (define-type Structure (Stackof Type))
 
+(data racket)
+
 (data arrow 
-  (lhs-structure : Structure) 
-  (rhs-structure : Structure))
+  (from-structure : Structure) 
+  (to-structure : Structure))
 
 (data field 
   (symbol : Symbol) 
   (structure : Structure))
 
 (data choice (structure : Structure))
-
-(data racket)
 
 (data generic (type : Type))
 
@@ -38,6 +38,8 @@
 (data variable (index : Exact-Nonnegative-Integer))
 
 (data universe (index : Exact-Nonnegative-Integer))
+
+; --------------------------------------------------------------------------
 
 (define structure stack)
 

@@ -38,8 +38,8 @@
   : (Option Structure)
   (and
     (arrow? $type)
-    (structure-check? $structure (arrow-lhs-structure $type))
-    (arrow-rhs-structure $type)))
+    (structure-check? $structure (arrow-from-structure $type))
+    (arrow-to-structure $type)))
 
 (check-equal?
   (type-apply-structure
