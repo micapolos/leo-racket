@@ -10,7 +10,7 @@
   leo/compiler/binding
   leo/compiler/scope
   leo/compiler/scope-utils
-  leo/compiler/package
+  leo/compiler/expressions-part
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/syntax-utils
@@ -22,19 +22,19 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
-(define (package-plus ($lhs-package : Package) ($rhs-package : Package)) : Package
-  (push-stack $lhs-package $rhs-package))
+(define (expressions-part-plus ($lhs-expressions-part : Expressions-Part) ($rhs-expressions-part : Expressions-Part)) : Expressions-Part
+  (push-stack $lhs-expressions-part $rhs-expressions-part))
 
-(define (package-plus-tuple ($package : Package) ($tuple : Tuple)) : Package
-  (push-stack $package (map expression-expressions $tuple)))
+(define (expressions-part-plus-tuple ($expressions-part : Expressions-Part) ($tuple : Tuple)) : Expressions-Part
+  (push-stack $expressions-part (map expression-expressions $tuple)))
 
-(define (package-structure ($package : Package)) : Structure
-  (apply append (map expressions-structure $package)))
+(define (expressions-part-structure ($expressions-part : Expressions-Part)) : Structure
+  (apply append (map expressions-structure $expressions-part)))
 
-(define (package-resolve-fn
-  ($package : Package)
+(define (expressions-part-resolve-fn
+  ($expressions-part : Expressions-Part)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $expressions-stack $package)
+  (define $expressions-stack $expressions-part)
   (define $let-values-entry-stack
     (map expressions-let-values-entry $expressions-stack))
   (define $tuple 
@@ -58,16 +58,16 @@
 ; not resolved
 (check-equal?
   (option-app expressions-sexp
-    (package-resolve-fn
-      (package expressions-ab expressions-cd)
+    (expressions-part-resolve-fn
+      (expressions-part expressions-ab expressions-cd)
       (lambda (($tuple : Tuple)) #f)))
   #f)
 
 ; resolved to static
 (check-equal?
   (option-app expressions-sexp
-    (package-resolve-fn
-      (package expressions-ab expressions-cd)
+    (expressions-part-resolve-fn
+      (expressions-part expressions-ab expressions-cd)
       (lambda (($tuple : Tuple)) 
         (expressions null-syntax static-structure-a))))
   `(expressions #f (structure a)))
@@ -75,8 +75,8 @@
 ; single-expression
 (check-equal?
   (option-app expressions-sexp
-    (package-resolve-fn
-      (package expressions-a)
+    (expressions-part-resolve-fn
+      (expressions-part expressions-a)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions result (structure (a racket))))
@@ -84,8 +84,8 @@
 ; single-expression & multi-expression
 (check-equal?
   (option-app expressions-sexp
-    (package-resolve-fn
-      (package expressions-a expressions-cd)
+    (expressions-part-resolve-fn
+      (expressions-part expressions-a expressions-cd)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions 
@@ -95,8 +95,8 @@
 ; multi-expressions
 (check-equal?
   (option-app expressions-sexp
-    (package-resolve-fn
-      (package expressions-ab expressions-cd)
+    (expressions-part-resolve-fn
+      (expressions-part expressions-ab expressions-cd)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions 
@@ -107,15 +107,15 @@
 
 ; --------------------------------------------------------------------------------
 
-(define (package-apply-fn
-  ($package : Package)
+(define (expressions-part-apply-fn
+  ($expressions-part : Expressions-Part)
   ($fn : (-> Tuple Expressions))) : Expressions
-  (option-ref (package-resolve-fn $package $fn)))
+  (option-ref (expressions-part-resolve-fn $expressions-part $fn)))
 
 ; --------------------------------------------------------------------------------
 
-(define (package-do ($package : Package) ($fn : (-> Scope Expressions))) : Expressions
-  (define $expressions-stack $package)
+(define (expressions-part-do ($expressions-part : Expressions-Part) ($fn : (-> Scope Expressions))) : Expressions
+  (define $expressions-stack $expressions-part)
   (define $syntax-option-stack (map expressions-syntax-option $expressions-stack))
   (define $structure-stack (map expressions-structure $expressions-stack))
   (define $scope-stack (map structure-generate-scope $structure-stack))
@@ -143,8 +143,8 @@
 ; do static
 (check-equal?
   (expressions-sexp
-    (package-do
-      (package expressions-ab expressions-cd)
+    (expressions-part-do
+      (expressions-part expressions-ab expressions-cd)
       (lambda (($scope : Scope)) 
         (expressions null-syntax static-structure-a))))
   `(expressions #f (structure a)))
@@ -152,8 +152,8 @@
 ; static-expressions
 (check-equal?
   (expressions-sexp
-    (package-do
-      (package static-expressions-a expressions-b)
+    (expressions-part-do
+      (expressions-part static-expressions-a expressions-b)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -163,8 +163,8 @@
 ; single-expressions
 (check-equal?
   (expressions-sexp
-    (package-do
-      (package expressions-a expressions-b)
+    (expressions-part-do
+      (expressions-part expressions-a expressions-b)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -174,8 +174,8 @@
 ; mutli-expressions
 (check-equal?
   (expressions-sexp
-    (package-do
-      (package expressions-ab expressions-cd)
+    (expressions-part-do
+      (expressions-part expressions-ab expressions-cd)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -186,8 +186,8 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (symbol-package-expressions ($symbol : Symbol) ($package : Package)) : Expressions
-  (package-apply-fn $package
+(define (symbol-expressions-part-expressions ($symbol : Symbol) ($expressions-part : Expressions-Part)) : Expressions
+  (expressions-part-apply-fn $expressions-part
     (lambda (($tuple : Tuple))
       (make-expressions
         (tuple-syntax $tuple)
@@ -195,9 +195,9 @@
 
 (check-equal?
   (expressions-sexp
-    (symbol-package-expressions
+    (symbol-expressions-part-expressions
       `foo
-      (package expressions-a expressions-cd)))
+      (expressions-part expressions-a expressions-cd)))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd))
       (vector a tmp-c tmp-d))
@@ -205,8 +205,8 @@
 
 ; --------------------------------------------------------------------------
 
-(define (package-expressions ($package : Package)) : Expressions
-  (package-apply-fn $package
+(define (expressions-part-expressions ($expressions-part : Expressions-Part)) : Expressions
+  (expressions-part-apply-fn $expressions-part
     (lambda (($tuple : Tuple))
       (expressions
         (make-syntax
@@ -219,41 +219,41 @@
 ; single-expression
 (check-equal?
   (expressions-sexp
-    (package-expressions
-      (package expressions-a)))
+    (expressions-part-expressions
+      (expressions-part expressions-a)))
   `(expressions a (structure (a racket))))
 
 ; single-expression & multi-expression
 (check-equal?
   (expressions-sexp
-    (package-expressions
-      (package expressions-a expressions-cd)))
+    (expressions-part-expressions
+      (expressions-part expressions-a expressions-cd)))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
     (structure (a racket) (c racket) (d racket))))
 
 ; ----------------------------------------------------------------------
 
-(define (package-sexp-list ($package : Package)) : (Listof Sexp)
-  (reverse (filter-false (map expressions-sexp-option $package))))
+(define (expressions-part-sexp-list ($expressions-part : Expressions-Part)) : (Listof Sexp)
+  (reverse (filter-false (map expressions-sexp-option $expressions-part))))
 
-(define (scope-doing-package ($scope : Scope) ($package : Package)) : Package
-  (package (scope-doing-expressions $scope (package-expressions $package))))
+(define (scope-doing-expressions-part ($scope : Scope) ($expressions-part : Expressions-Part)) : Expressions-Part
+  (expressions-part (scope-doing-expressions $scope (expressions-part-expressions $expressions-part))))
 
-(define (package-apply-type ($package : Package)) : Package
+(define (expressions-part-apply-type ($expressions-part : Expressions-Part)) : Expressions-Part
   (map expression-expressions
     (map type-expression
-      (package-structure $package))))
+      (expressions-part-structure $expressions-part))))
 
-(define (package-apply-racket ($package : Package)) : Package
-  (package
+(define (expressions-part-apply-racket ($expressions-part : Expressions-Part)) : Expressions-Part
+  (expressions-part
     (expressions 
       (make-syntax 
         `(quote 
           ,(reverse 
             (filter-false 
-              (map expressions-syntax-option $package)))))
+              (map expressions-syntax-option $expressions-part)))))
       (structure (racket)))))
 
-(define (package-lift-structure ($package : Package)) : (Option Structure)
-  (structure-lift (package-structure $package)))
+(define (expressions-part-lift-structure ($expressions-part : Expressions-Part)) : (Option Structure)
+  (structure-lift (expressions-part-structure $expressions-part)))

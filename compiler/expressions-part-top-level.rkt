@@ -8,8 +8,8 @@
   leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/expressions-utils
-  leo/compiler/package
-  leo/compiler/package-utils
+  leo/compiler/expressions-part
+  leo/compiler/expressions-part-utils
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-utils
@@ -17,20 +17,20 @@
 
 (define top-level-string? : (Parameter Boolean) (make-parameter #f))
 
-(define (package-top-level-syntax ($package : Package)) : Syntax
+(define (expressions-part-top-level-syntax ($expressions-part : Expressions-Part)) : Syntax
   (cond
     ((top-level-string?)
       (make-syntax 
         `(for-each
           (lambda ($sexp) (displayln (sexp-string $sexp)))
-          ,(expressions-syntax (package-top-level-expressions $package)))))
+          ,(expressions-syntax (expressions-part-top-level-expressions $expressions-part)))))
     (else
       (make-syntax 
         `(for-each writeln
-          ,(expressions-syntax (package-top-level-expressions $package)))))))
+          ,(expressions-syntax (expressions-part-top-level-expressions $expressions-part)))))))
 
-(define (package-top-level-expressions ($package : Package)) : Expressions
-  (package-apply-fn $package tuple-top-level-expressions))
+(define (expressions-part-top-level-expressions ($expressions-part : Expressions-Part)) : Expressions
+  (expressions-part-apply-fn $expressions-part tuple-top-level-expressions))
 
 (define (tuple-top-level-expressions ($tuple : Tuple)) : Expressions
   (expressions 
@@ -50,8 +50,8 @@
 
 (check-equal?
   (syntax->datum
-    (package-top-level-syntax
-      (package
+    (expressions-part-top-level-syntax
+      (expressions-part
         (expressions #`expr
           (structure number-type text-type)))))
   `(for-each

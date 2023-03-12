@@ -5,7 +5,7 @@
   racket/port
   racket/function
   leo/script/core/syntax
-  leo/compiler/package-top-level
+  leo/compiler/expressions-part-top-level
   leo/compiler/leo-compile)
 
 (provide 

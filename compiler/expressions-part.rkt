@@ -7,8 +7,8 @@
   leo/typed/stack
   leo/compiler/expressions)
 
-(define-type Package (Stackof Expressions))
+(define-type Expressions-Part (Stackof Expressions))
 
-(define null-package null)
+(define null-expressions-part null)
 
-(define package stack)
+(define expressions-part stack)

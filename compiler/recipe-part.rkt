@@ -6,7 +6,7 @@
   leo/typed/base
   leo/typed/option
   leo/compiler/type
-  leo/compiler/package
+  leo/compiler/expressions-part
   leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/type)

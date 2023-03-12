@@ -8,7 +8,7 @@
   leo/compiler/type
   leo/compiler/expressions)
 
-(data match-package
+(data match-expressions-part
   (case-stack : (Stackof Case))
   (type-list : (Listof Type)))
 

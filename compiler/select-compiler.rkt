@@ -10,23 +10,23 @@
   leo/compiler/scope
   leo/compiler/syntax-type
   leo/compiler/type
-  leo/compiler/compile-package
+  leo/compiler/compile-expressions-part
   leo/compiler/expression-utils
   leo/compiler/expressions-utils
-  leo/compiler/package-utils
-  leo/compiler/select-package)
+  leo/compiler/expressions-part-utils
+  leo/compiler/select-expressions-part)
 
 (data select-compiler
   (scope : Scope)
-  (package : Select-Package))
+  (expressions-part : Select-Expressions-Part))
 
-(define (compile-select-package
+(define (compile-select-expressions-part
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
-  : Select-Package
-  (select-compiler-package
+  : Select-Expressions-Part
+  (select-compiler-expressions-part
     (fold
-      (select-compiler $scope null-select-package)
+      (select-compiler $scope null-select-expressions-part)
       $syntax-list
       select-compiler-plus-syntax)))
 
@@ -35,27 +35,27 @@
   ($syntax : Syntax))
   : Select-Compiler
   (define $scope (select-compiler-scope $compiler))
-  (define $package (select-compiler-package $compiler))
+  (define $expressions-part (select-compiler-expressions-part $compiler))
   (or
     (syntax-match-symbol-args $syntax $symbol $syntax-list
       (cond
         ((equal? $symbol `not)
           (select-compiler
             $scope
-            (select-package-plus-not 
-              $package
+            (select-expressions-part-plus-not 
+              $expressions-part
               (option-ref-or 
                 (single (syntax-list-structure $syntax-list))
                 (error "not must have single type")))))
         ((equal? $symbol `the)
           (select-compiler
             $scope
-            (select-package-plus-the 
-              $package 
+            (select-expressions-part-plus-the 
+              $expressions-part 
               (option-ref-or
                 (expressions-expression-option
-                  (package-expressions
-                    (compile-package $scope $syntax-list)))
+                  (expressions-part-expressions
+                    (compile-expressions-part $scope $syntax-list)))
                 (error "the must have single expression")))))
         (else 
           (error "select-compiler, expected not or the"))))

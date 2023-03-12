@@ -21,27 +21,27 @@
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
-  leo/compiler/compile-package
+  leo/compiler/compile-expressions-part
   leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
   leo/compiler/compiler-utils
-  leo/compiler/package-utils
-  leo/compiler/package-sexp
-  leo/compiler/package
+  leo/compiler/expressions-part-utils
+  leo/compiler/expressions-part-sexp
+  leo/compiler/expressions-part
   leo/compiler/select-compiler
-  leo/compiler/select-package
+  leo/compiler/select-expressions-part
   leo/compiler/recipe-compiler
   leo/compiler/recipe-part
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils)
 
-(define (scope-syntax-list-package 
+(define (scope-syntax-list-expressions-part 
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
-  : Package
-  (parameterize ((compile-package-parameter scope-syntax-list-package))
-    (compiler-package
+  : Expressions-Part
+  (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
+    (compiler-expressions-part
       (fold 
         (compiler $scope null-tuple)
         $syntax-list
@@ -51,8 +51,8 @@
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (package-expressions
-    (scope-syntax-list-package
+  (expressions-part-expressions
+    (scope-syntax-list-expressions-part
       $scope $syntax-list)))
 
 (define (compiler-plus-syntax 
@@ -99,7 +99,7 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `select $syntax-list
-    (parameterize ((compile-package-parameter scope-syntax-list-package))
+    (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
       (compiler-apply-select $compiler $syntax-list))))
 
 (define (compiler-syntax-resolve-quote
@@ -185,18 +185,18 @@
   ($symbol : Symbol)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (define $package (scope-syntax-list-package $scope $syntax-list))
-  (define $structure (package-structure $package))
-  (symbol-package-expressions $symbol $package))
+  (define $expressions-part (scope-syntax-list-expressions-part $scope $syntax-list))
+  (define $structure (expressions-part-structure $expressions-part))
+  (symbol-expressions-part-expressions $symbol $expressions-part))
 
 ; ------------------------------------------------------------------------------------
 
 (define (compiler-apply-do 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-with-package $compiler
-    (package
-      (package-do (compiler-package $compiler)
+  (compiler-with-expressions-part $compiler
+    (expressions-part
+      (expressions-part-do (compiler-expressions-part $compiler)
         (lambda (($scope : Scope))
           (scope-syntax-list-expressions 
             (push-stack (compiler-scope $compiler) $scope) 
@@ -206,18 +206,18 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-package $compiler
-    (package-plus
-      (compiler-package $compiler)
-      (scope-syntax-list-package
+  (compiler-with-expressions-part $compiler
+    (expressions-part-plus
+      (compiler-expressions-part $compiler)
+      (scope-syntax-list-expressions-part
         (compiler-scope $compiler)
         $syntax-list))))
 
 (define (compiler-apply-time ($compiler : Compiler)) : Compiler
-  (compiler-with-package $compiler
-    (package
+  (compiler-with-expressions-part $compiler
+    (expressions-part
       (bind $expressions
-        (package-expressions (compiler-package $compiler))
+        (expressions-part-expressions (compiler-expressions-part $compiler))
         (expressions
           (make-syntax `(time ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
@@ -225,10 +225,10 @@
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-with-package $compiler
-    (package-plus (compiler-package $compiler)
-      (package
-        (package-do (compiler-package $compiler)
+  (compiler-with-expressions-part $compiler
+    (expressions-part-plus (compiler-expressions-part $compiler)
+      (expressions-part
+        (expressions-part-do (compiler-expressions-part $compiler)
           (lambda (($scope : Scope))
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
@@ -240,9 +240,9 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-package $compiler
+  (compiler-with-expressions-part $compiler
     (push-stack
-      (compiler-package $compiler)
+      (compiler-expressions-part $compiler)
       (map expression-expressions 
         (map type-expression 
           (syntax-list-structure $syntax-list))))))
@@ -251,11 +251,11 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-package $compiler
+  (compiler-with-expressions-part $compiler
     (push-stack
-      (compiler-package $compiler)
-      (parameterize ((compile-package-parameter scope-syntax-list-package))
-        (scope-syntax-list-arrow-package
+      (compiler-expressions-part $compiler)
+      (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
+        (scope-syntax-list-arrow-expressions-part
           (compiler-scope $compiler)
           $syntax-list)))))
 
@@ -263,12 +263,12 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-package $compiler
+  (compiler-with-expressions-part $compiler
     (push
-      (compiler-package $compiler)
+      (compiler-expressions-part $compiler)
       (expression-expressions
-        (select-package-expression
-          (compile-select-package
+        (select-expressions-part-expression
+          (compile-select-expressions-part
             (compiler-scope $compiler)
             $syntax-list))))))
 
@@ -276,43 +276,43 @@
 
 ; number plus static
 (check-equal?
-  (package-sexp
-    (compiler-package
+  (expressions-part-sexp
+    (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (package 
+          (expressions-part 
             (expression-expressions 
               (number-expression 3.14))))
         #`b)))
-  `(package
+  `(expressions-part
     (expressions 3.14 (structure number))
     (expressions #f (structure b))))
 
 ; number plus field
 (check-equal?
-  (package-sexp
-    (compiler-package
+  (expressions-part-sexp
+    (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (package 
+          (expressions-part 
             (expression-expressions 
               (number-expression 3.14))))
         #`foo)))
-  `(package
+  `(expressions-part
     (expressions 3.14 (structure number))
     (expressions #f (structure foo))))
 
 ; number plus string
 (check-equal?
-  (package-sexp
-    (compiler-package
+  (expressions-part-sexp
+    (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (package
+          (expressions-part
             (expression-expressions 
               (number-expression 3.14))))
         #`"foo")))
-  `(package
+  `(expressions-part
     (expressions 3.14 (structure number))
     (expressions "foo" (structure text))))
 
