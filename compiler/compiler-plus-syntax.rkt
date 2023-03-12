@@ -31,7 +31,7 @@
   leo/compiler/select-compiler
   leo/compiler/select-package
   leo/compiler/recipe-compiler
-  leo/compiler/recipe-package
+  leo/compiler/recipe-part
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils)

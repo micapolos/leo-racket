@@ -11,9 +11,9 @@
   leo/compiler/expressions
   leo/compiler/type)
 
-(data recipe-package
+(data recipe-part
   (lhs-structure : Structure)
   (rhs-structure-option : (Option Structure)))
 
-(define null-recipe-package 
-  (recipe-package null #f))
+(define null-recipe-part 
+  (recipe-part null #f))

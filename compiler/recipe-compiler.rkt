@@ -14,7 +14,7 @@
   leo/compiler/base-scope
   leo/compiler/scope
   leo/compiler/scope-utils
-  leo/compiler/recipe-package
+  leo/compiler/recipe-part
   leo/compiler/syntax-type
   leo/compiler/type
   leo/compiler/type-utils
@@ -24,10 +24,10 @@
 (data recipe-compiler 
   (scope : Scope) 
   (package : Package)
-  (recipe-package : Recipe-Package))
+  (recipe-part : Recipe-Part))
 
 (define (null-recipe-compiler ($scope : Scope))
-  (recipe-compiler $scope null null-recipe-package))
+  (recipe-compiler $scope null null-recipe-part))
 
 (define (scope-syntax-list-arrow-package
   ($scope : Scope) 
@@ -44,16 +44,16 @@
   ($syntax : Syntax))
   : Recipe-Compiler
   (define $scope (recipe-compiler-scope $recipe-compiler))
-  (define $recipe-package (recipe-compiler-recipe-package $recipe-compiler))
+  (define $recipe-part (recipe-compiler-recipe-part $recipe-compiler))
   (define $package (recipe-compiler-package $recipe-compiler))
-  (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
-  (define $rhs-structure-option (recipe-package-rhs-structure-option $recipe-package))
+  (define $lhs-structure (recipe-part-lhs-structure $recipe-part))
+  (define $rhs-structure-option (recipe-part-rhs-structure-option $recipe-part))
   (or
     (syntax-symbol-match-args $syntax `giving $syntax-list
       (when $rhs-structure-option (error "Recipe already has giving"))
       (struct-copy recipe-compiler $recipe-compiler
-        (recipe-package
-          (struct-copy recipe-package $recipe-package
+        (recipe-part
+          (struct-copy recipe-part $recipe-part
             (rhs-structure-option (syntax-list-structure $syntax-list))))))
     (syntax-symbol-match-args $syntax `does $syntax-list
       (bind $lhs-scope (structure-generate-scope $lhs-structure)
@@ -76,12 +76,12 @@
                       $rhs-structure-option))
                   (error "recipe giving doing type mismatch"))
                 $expressions)))
-          (recipe-package null-recipe-package))))
+          (recipe-part null-recipe-part))))
     (let ()
       (when $rhs-structure-option (error "recipe expected does"))
       (struct-copy recipe-compiler $recipe-compiler
-        (recipe-package 
-          (struct-copy recipe-package $recipe-package
+        (recipe-part 
+          (struct-copy recipe-part $recipe-part
             (lhs-structure 
               (push 
                 $lhs-structure 
