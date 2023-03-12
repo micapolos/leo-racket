@@ -23,13 +23,10 @@
 
 (data recipe-compiler 
   (scope : Scope) 
-  (package : Recipe-Package))
+  (package-stack : (Stackof Recipe-Package)))
 
 (define (null-recipe-compiler ($scope : Scope))
-  (recipe-compiler $scope null-recipe-package))
-
-(define (recipe-compiler-package-stack ($compiler : Recipe-Compiler)) : (Stackof Recipe-Package)
-  (stack (recipe-compiler-package $compiler)))
+  (recipe-compiler $scope null))
 
 (define (scope-syntax-list-arrow-package
   ($scope : Scope) 
@@ -47,12 +44,21 @@
   ($syntax : Syntax))
   : Recipe-Compiler
   (define $scope (recipe-compiler-scope $recipe-compiler))
-  (define $recipe-package (recipe-compiler-package $recipe-compiler))
+  (define $recipe-package-stack (recipe-compiler-package-stack $recipe-compiler))
+  (define $recipe-package (top-option $recipe-package-stack))
+  (define $partial-recipe-package (and $recipe-package (recipe-package-partial? $recipe-package)))
+  
   (define $arrow-expressions-option (recipe-package-arrow-expressions-option $recipe-package))
   (when $arrow-expressions-option (error "Recipe already have a body"))
   (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
   (define $rhs-structure-option (recipe-package-rhs-structure-option $recipe-package))
-  (or
+  (cond
+    (and 
+      (or 
+        (null? $recipe-package-stack) 
+        (recipe-package-arrow-expressions (car $recipe-package-stack)))
+
+
     (syntax-symbol-match-args $syntax `giving $syntax-list
       (when $rhs-structure-option (error "Recipe already has giving"))
       (struct-copy recipe-compiler $recipe-compiler

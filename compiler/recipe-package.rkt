@@ -23,3 +23,6 @@
   (or
     (recipe-package-arrow-expressions-option $recipe-package)
     (error "recipe must have a does body")))
+
+(define (recipe-package-partial? ($recipe-package : Recipe-Package)) : Boolean
+  (and (recipe-package-arrow-expressions-option $recipe-package) #t))
