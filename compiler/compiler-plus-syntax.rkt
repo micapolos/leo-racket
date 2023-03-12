@@ -252,10 +252,10 @@
   ($syntax-list : (Listof Syntax))) 
   : Compiler
   (compiler-with-package $compiler
-    (push
+    (push-stack
       (compiler-package $compiler)
       (parameterize ((compile-package-parameter scope-syntax-list-package))
-        (scope-syntax-list-arrow-expressions
+        (scope-syntax-list-arrow-package
           (compiler-scope $compiler)
           $syntax-list)))))
 

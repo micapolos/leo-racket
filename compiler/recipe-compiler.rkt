@@ -7,6 +7,7 @@
   leo/typed/stack
   leo/typed/testing
   leo/typed/syntax-match
+  leo/compiler/package
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/package-utils
@@ -27,12 +28,15 @@
 (define (null-recipe-compiler ($scope : Scope))
   (recipe-compiler $scope null-recipe-package))
 
-(define (scope-syntax-list-arrow-expressions
+(define (recipe-compiler-package-stack ($compiler : Recipe-Compiler)) : (Stackof Recipe-Package)
+  (stack (recipe-compiler-package $compiler)))
+
+(define (scope-syntax-list-arrow-package
   ($scope : Scope) 
   ($syntax-list : (Listof Syntax))) 
-  : Expressions
-  (recipe-package-arrow-expressions
-    (recipe-compiler-package
+  : Package
+  (map recipe-package-arrow-expressions
+    (recipe-compiler-package-stack
       (fold
         (null-recipe-compiler $scope)
         $syntax-list
@@ -90,13 +94,14 @@
 ; ---------------------------------------------------------------------
 
 (check-equal?
-  (expressions-sexp-structure
-    (scope-syntax-list-arrow-expressions
+  (map expressions-sexp-structure
+    (scope-syntax-list-arrow-package
       base-scope
       (syntax-e #`(number increment (does number (plus 1))))))
-  (pair
-    `(lambda (tmp-number) recurse)
-    (structure 
-      (arrow 
-        (structure number-type (field! `increment))
-        (structure (racket))))))
+  (stack
+    (pair
+      `(lambda (tmp-number) recurse)
+      (structure 
+        (arrow 
+          (structure number-type (field! `increment))
+          (structure (racket)))))))

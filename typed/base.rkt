@@ -26,7 +26,7 @@
     ((_ name fields ...)
       #`(struct name (fields ...) 
         #:transparent 
-        #:type-name 
+        #:type-name
         #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))))
 
 (define-syntax (lazy $syntax)
