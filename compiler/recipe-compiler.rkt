@@ -23,74 +23,64 @@
 
 (data recipe-compiler 
   (scope : Scope) 
-  (package-stack : (Stackof Recipe-Package)))
+  (package : Package)
+  (recipe-package : Recipe-Package))
 
 (define (null-recipe-compiler ($scope : Scope))
-  (recipe-compiler $scope null))
+  (recipe-compiler $scope null null-recipe-package))
 
 (define (scope-syntax-list-arrow-package
   ($scope : Scope) 
   ($syntax-list : (Listof Syntax))) 
   : Package
-  (map recipe-package-arrow-expressions
-    (recipe-compiler-package-stack
-      (fold
-        (null-recipe-compiler $scope)
-        $syntax-list
-        recipe-compiler-plus-syntax))))
+  (recipe-compiler-package
+    (fold
+      (null-recipe-compiler $scope)
+      $syntax-list
+      recipe-compiler-plus-syntax)))
 
 (define (recipe-compiler-plus-syntax 
   ($recipe-compiler : Recipe-Compiler) 
   ($syntax : Syntax))
   : Recipe-Compiler
   (define $scope (recipe-compiler-scope $recipe-compiler))
-  (define $recipe-package-stack (recipe-compiler-package-stack $recipe-compiler))
-  (define $recipe-package (top-option $recipe-package-stack))
-  (define $partial-recipe-package (and $recipe-package (recipe-package-partial? $recipe-package)))
-  
-  (define $arrow-expressions-option (recipe-package-arrow-expressions-option $recipe-package))
-  (when $arrow-expressions-option (error "Recipe already have a body"))
+  (define $recipe-package (recipe-compiler-recipe-package $recipe-compiler))
+  (define $package (recipe-compiler-package $recipe-compiler))
   (define $lhs-structure (recipe-package-lhs-structure $recipe-package))
   (define $rhs-structure-option (recipe-package-rhs-structure-option $recipe-package))
-  (cond
-    (and 
-      (or 
-        (null? $recipe-package-stack) 
-        (recipe-package-arrow-expressions (car $recipe-package-stack)))
-
-
+  (or
     (syntax-symbol-match-args $syntax `giving $syntax-list
       (when $rhs-structure-option (error "Recipe already has giving"))
       (struct-copy recipe-compiler $recipe-compiler
-        (package
+        (recipe-package
           (struct-copy recipe-package $recipe-package
             (rhs-structure-option (syntax-list-structure $syntax-list))))))
     (syntax-symbol-match-args $syntax `does $syntax-list
       (bind $lhs-scope (structure-generate-scope $lhs-structure)
         (struct-copy recipe-compiler $recipe-compiler
           (package
-            (struct-copy recipe-package $recipe-package
-              (arrow-expressions-option
-                (let ()
-                  (define $expressions 
-                    (scope-doing-expressions
-                      $lhs-scope
-                      (package-expressions
-                        (compile-package
-                          (push-stack $scope $lhs-scope) 
-                          $syntax-list))))
-                  (when 
-                    (and 
-                      $rhs-structure-option 
-                      (structure-matches? 
-                        (expressions-structure $expressions) 
-                        $rhs-structure-option))
-                    (error "recipe giving doing type mismatch"))
-                  $expressions)))))))
+            (push $package
+              (let ()
+                (define $expressions 
+                  (scope-doing-expressions
+                    $lhs-scope
+                    (package-expressions
+                      (compile-package
+                        (push-stack $scope $lhs-scope) 
+                        $syntax-list))))
+                (when 
+                  (and 
+                    $rhs-structure-option 
+                    (structure-matches? 
+                      (expressions-structure $expressions) 
+                      $rhs-structure-option))
+                  (error "recipe giving doing type mismatch"))
+                $expressions)))
+          (recipe-package null-recipe-package))))
     (let ()
       (when $rhs-structure-option (error "recipe expected does"))
       (struct-copy recipe-compiler $recipe-compiler
-        (package 
+        (recipe-package 
           (struct-copy recipe-package $recipe-package
             (lhs-structure 
               (push 

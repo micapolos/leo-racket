@@ -13,16 +13,7 @@
 
 (data recipe-package
   (lhs-structure : Structure)
-  (rhs-structure-option : (Option Structure))
-  (arrow-expressions-option : (Option Expressions)))
+  (rhs-structure-option : (Option Structure)))
 
 (define null-recipe-package 
-  (recipe-package null #f #f))
-
-(define (recipe-package-arrow-expressions ($recipe-package : Recipe-Package)) : Expressions
-  (or
-    (recipe-package-arrow-expressions-option $recipe-package)
-    (error "recipe must have a does body")))
-
-(define (recipe-package-partial? ($recipe-package : Recipe-Package)) : Boolean
-  (and (recipe-package-arrow-expressions-option $recipe-package) #t))
+  (recipe-package null #f))
