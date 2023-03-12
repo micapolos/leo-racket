@@ -1,20 +1,21 @@
 #lang leo/script
 
 number
-fibonacci
+leonardo
 does
   number
   less-than? 2
-  if true? number
+  if true? 1
   else
     number
     minus 2
-    fibonacci
+    leonardo
     plus
       number
       minus 1
-      fibonacci
+      leonardo
+    plus 1
 
 42
-fibonacci
+leonardo
 time
