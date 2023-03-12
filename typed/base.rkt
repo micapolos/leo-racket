@@ -118,10 +118,13 @@
   (define $rhs-e (syntax-e $lhs))
   (and
     (cond
-      ((null? $lhs-e) (null? $rhs-e))
+      ((null? $lhs-e) 
+        (null? $rhs-e))
       ((pair? $lhs-e) 
         (and 
           (equal? (car $lhs-e) (car $rhs-e))
           (equal? (cdr $lhs-e) (cdr $rhs-e))))
       (else (equal? $lhs-e $rhs-e)))
-    (equal? (syntax-srcloc $lhs) (syntax-srcloc $rhs))))
+    (equal? 
+      (syntax-srcloc $lhs) 
+      (syntax-srcloc $rhs))))
