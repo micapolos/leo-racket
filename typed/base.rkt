@@ -9,6 +9,7 @@
   (for-syntax 
     racket/base
     racket/string
+    racket/require
     leo/typed/symbol-type-name))
 
 (define-syntax (data syntax)
@@ -128,3 +129,21 @@
     (equal? 
       (syntax-srcloc $lhs) 
       (syntax-srcloc $rhs))))
+
+; -----------------------------------------------------------------------------------------------
+
+(define-syntax (local $syntax)
+  (syntax-case $syntax ()
+    ((_ $module $identifier)
+      #`(let () (local-require (only-in $module $identifier)) $identifier))))
+
+(check-equal? (local racket/vector vector-map) vector-map)
+
+; ------------------------------------------------------------------------------------------------
+
+(define-syntax (local-app $syntax)
+  (syntax-case $syntax ()
+    ((_ $module $identifier $body ...)
+      #`(#%app (local $module $identifier) $body ...))))
+
+(check-equal? (local-app racket/unsafe/ops unsafe-fx- 3 2) 1)
