@@ -1,6 +1,8 @@
 #lang leo
 
 point
-  10
-  "foo"
-number
+  x 10
+  y 20
+do
+  point.x.number
+  plus point.y.number

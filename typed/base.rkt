@@ -5,6 +5,7 @@
 (require
   leo/typed/testing
   racket/vector
+  racket/syntax-srcloc
   (for-syntax 
     racket/base
     racket/string
@@ -99,3 +100,28 @@
 (check-equal? (single (list 1 2)) #f)
 
 (define nil (void))
+
+; ---------------------------------------------------------------------------
+
+(define (syntax-srcloc ($syntax : Syntax)) : srcloc
+  (srcloc
+    (syntax-source $syntax)
+    (syntax-line $syntax)
+    (syntax-column $syntax)
+    (syntax-position $syntax)
+    (syntax-span $syntax)))
+
+; ---------------------------------------------------------------------------
+
+(define (syntax-equal? ($lhs : Syntax) ($rhs : Syntax)) : Boolean
+  (define $lhs-e (syntax-e $lhs))
+  (define $rhs-e (syntax-e $lhs))
+  (and
+    (cond
+      ((null? $lhs-e) (null? $rhs-e))
+      ((pair? $lhs-e) 
+        (and 
+          (equal? (car $lhs-e) (car $rhs-e))
+          (equal? (cdr $lhs-e) (cdr $rhs-e))))
+      (else (equal? $lhs-e $rhs-e)))
+    (equal? (syntax-srcloc $lhs) (syntax-srcloc $rhs))))

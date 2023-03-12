@@ -8,7 +8,7 @@
   leo/typed/testing
   leo/compiler/script
   leo/compiler/syntax-utils
-  leo/compiler/srcloc)
+  leo/typed/srcloc)
 
 (define (syntax-line ($syntax : Syntax)) : (Lineof srcloc)
   (define $syntax-e (syntax-e $syntax))

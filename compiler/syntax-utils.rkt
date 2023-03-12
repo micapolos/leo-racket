@@ -7,8 +7,7 @@
   leo/typed/testing
   leo/compiler/sexp-utils
   leo/compiler/sourced
-  leo/compiler/srcloc
-  racket/syntax-srcloc)
+  leo/typed/srcloc)
 
 (define (make-syntax ($datum : (Sexpof Syntax)) ($srcloc : (Option srcloc) #f)) : Syntax
   (datum->syntax #f $datum 
@@ -24,14 +23,6 @@
   (sourced 
     (syntax->datum $syntax) 
     (syntax-srcloc $syntax)))
-
-(define (syntax-srcloc ($syntax : Syntax)) : srcloc
-  (srcloc
-    (syntax-source $syntax)
-    (syntax-line $syntax)
-    (syntax-column $syntax)
-    (syntax-position $syntax)
-    (syntax-span $syntax)))
 
 (define (syntax-e-with-srcloc ($syntax : Syntax))
   (with-srcloc (syntax-srcloc $syntax) (lambda () (syntax-e $syntax))))

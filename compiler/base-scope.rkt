@@ -2,7 +2,7 @@
 
 (provide (all-defined-out))
 
-(require 
+(require
   leo/compiler/scope
   leo/compiler/binding
   leo/compiler/binding-utils

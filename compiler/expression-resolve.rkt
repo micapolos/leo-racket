@@ -16,7 +16,7 @@
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/sourced
-  leo/compiler/srcloc
+  leo/typed/srcloc
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/typed

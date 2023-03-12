@@ -4,7 +4,7 @@
 
 (require 
   leo/compiler/sourced
-  leo/compiler/srcloc
+  leo/typed/srcloc
   racket/syntax-srcloc)
 
 (define (make-identifier ($srcloc : srcloc) ($symbol : Symbol)) : Identifier
