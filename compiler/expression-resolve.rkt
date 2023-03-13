@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  racket/function
   leo/typed/stack
   leo/typed/option
   leo/typed/base
@@ -228,9 +229,15 @@
 (define (choice-expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple)) : (Option Expressions)
-  (bind $expression-type (expression-type $lhs-expression)
+  (let (($expression-type (expression-type $lhs-expression)))
     (and (choice? $expression-type)
-      #f)))
+      (let* (($choice-type-stack (choice-type-stack $expression-type))
+             ($choice-structure-stack (map structure $choice-type-stack))
+             ($case-type-stack (tuple-structure $rhs-tuple))
+             ($apply-structure-option-stack (map type-apply-structure $case-type-stack $choice-structure-stack)))
+        (and
+          (andmap (ann identity (-> (Option Structure) (Option Structure))) $apply-structure-option-stack)
+          #f)))))
 
 ; ------------------------------------------------------------------------
 
