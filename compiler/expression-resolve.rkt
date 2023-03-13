@@ -225,6 +225,13 @@
 
 ; ------------------------------------------------------------------------
 
+(define (option-expression-resolve-tuple
+  ($lhs-expression : Expression)
+  ($rhs-tuple : Tuple)) : (Option Expressions)
+  #f)
+
+; ------------------------------------------------------------------------
+
 (define (expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
@@ -236,6 +243,9 @@
       (option-app expression-expressions
         (expression-resolve-get $lhs-expression $single-rhs-expression)))
     (arrow-expression-resolve-tuple 
+      $lhs-expression 
+      $rhs-tuple)
+    (option-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)))
 
