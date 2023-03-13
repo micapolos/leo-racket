@@ -259,21 +259,24 @@
   (Option Expressions)
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
-  (define $compiled-size (structure-dynamic-size $structure))
-  (case $compiled-size
-    ((0 1) 
-      ($fn (map (curry expression $syntax) $structure)))
-    (else 
-      (define $scope (structure-generate-scope $structure))
-      (define $tmp-stack (scope-identifier-stack $scope))
-      (define $fn-expressions ($fn (map binding-expression $scope)))
-      (and $fn-expressions
-        (make-expressions
+  (define $scope (structure-generate-scope $structure))
+  (define $tmp-stack (scope-identifier-stack $scope))
+  (define $fn-expressions ($fn (map binding-expression $scope)))
+  (and $fn-expressions
+    (make-expressions
+      (case (length $tmp-stack)
+        ((0) null-syntax)
+        ((1) 
+          (make-syntax 
+            `(let
+              ((,(top $tmp-stack) ,$syntax))
+              ,(expressions-syntax $fn-expressions))))
+        (else 
           (make-syntax 
             `(let-values
               (((,@(reverse $tmp-stack)) ,$syntax))
-              ,(expressions-syntax $fn-expressions)))
-          (expressions-structure $fn-expressions))))))
+              ,(expressions-syntax $fn-expressions)))))
+      (expressions-structure $fn-expressions))))
 
 (check-equal?
   (option-app expressions-sexp-structure
@@ -283,7 +286,7 @@
           (make-syntax (reverse (map expression-syntax $tuple)))
           (tuple-structure $tuple)))))
   (pair 
-    `(a)
+    `(let ((tmp-a a)) (tmp-a))
     structure-a))
 
 (check-equal?
