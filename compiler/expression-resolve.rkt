@@ -225,10 +225,12 @@
 
 ; ------------------------------------------------------------------------
 
-(define (option-expression-resolve-tuple
+(define (choice-expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple)) : (Option Expressions)
-  #f)
+  (bind $expression-type (expression-type $lhs-expression)
+    (and (choice? $expression-type)
+      #f)))
 
 ; ------------------------------------------------------------------------
 
@@ -245,7 +247,7 @@
     (arrow-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)
-    (option-expression-resolve-tuple 
+    (choice-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)))
 
