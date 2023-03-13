@@ -22,4 +22,4 @@
 (check-equal?
   (option-app expressions-sexp-structure
     (binding-resolve-tuple binding-ab tuple-a))
-  (pair `(ab a) structure-b))
+  (pair `(#%app ab a) structure-b))

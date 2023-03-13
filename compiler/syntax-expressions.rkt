@@ -30,4 +30,4 @@
 (check-equal?
   (expressions-sexp-structure
     (sexp-expressions `(1 (plus 2) text)))
-  (pair `(number->string (+ 1 2)) (structure text-type)))
+  (pair `(#%app number->string (#%app + 1 2)) (structure text-type)))

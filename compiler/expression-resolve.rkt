@@ -202,7 +202,7 @@
         (structure-matches? $structure $arrow-from-structure)
         (expressions
           (make-syntax 
-            `(
+            `(#%app
               ,(expression-syntax $lhs-expression)
               ,@(reverse $dynamic-syntax-stack)))
           $arrow-to-structure)))))
@@ -215,7 +215,7 @@
           (stack type-a type-b) 
           (stack type-c type-d)))
       (stack expression-a expression-b)))
-  (pair `(d a b) (structure type-c type-d)))
+  (pair `(#%app d a b) (structure type-c type-d)))
 
 (check-equal?
   (arrow-expression-resolve-tuple

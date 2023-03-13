@@ -84,5 +84,5 @@
             (tuple (text-expression "world!")))))))
   `(expressions-part
     (expressions
-      (string-append "Hello, " "world!") 
+      (#%app string-append "Hello, " "world!") 
       (structure text))))

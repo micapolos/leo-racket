@@ -325,7 +325,7 @@
         #`(plus 2)
         #`text)))
   (pair 
-    `(number->string (+ 1 2)) 
+    `(#%app number->string (#%app + 1 2)) 
     (structure text-type)))
 
 (check-equal?
@@ -338,5 +338,5 @@
         #`(do number (add dodać number)))))
   (pair 
     `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
-      (+ tmp-number tmp-dodać))
+      (#%app + tmp-number tmp-dodać))
     (structure number-type)))
