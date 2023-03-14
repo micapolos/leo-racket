@@ -43,52 +43,6 @@
 (define (expressions-size ($expressions : Expressions)) : Exact-Nonnegative-Integer
   (length (expressions-structure $expressions)))
 
-; ----------------------------------------------------------------------------
-
-(define (expressions-ref
-  ($expressions : Expressions)
-  ($index : Exact-Nonnegative-Integer))
-  : Expression
-  (define $syntax (expressions-syntax $expressions))
-  (define $structure (expressions-structure $expressions))
-  (define $structure-dynamic-size (structure-dynamic-size $structure))
-  (define $dynamic-index (structure-dynamic-ref $structure $index))
-  (define $type (list-ref $structure $index))
-  (expression
-    (make-syntax
-      (and
-        $dynamic-index
-        (case $structure-dynamic-size
-          ((0) #f)
-          ((1) $syntax)
-          ((2)
-            `(
-              ,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr)
-              ,$syntax))
-          (else
-            `(unsafe-vector-ref 
-              ,$syntax
-              ,(- $structure-dynamic-size $dynamic-index 1))))))
-    $type))
-
-(define (expressions-tuple ($expressions : Expressions)) : Tuple
-  (map 
-    (curry expressions-ref $expressions)
-    (range (expressions-size $expressions))))
-
-(check-equal?
-  (map
-    expression-sexp-type
-    (expressions-tuple
-      (expressions
-        syntax-a
-        (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d))))
-  (stack
-    (pair `(unsafe-vector-ref a 0) dynamic-type-a)
-    (pair `(unsafe-vector-ref a 1) dynamic-type-b)
-    (pair `#f static-type-c)
-    (pair `(unsafe-vector-ref a 2) dynamic-type-d)))
-
 (define (expression-expressions ($expression : Expression)) : Expressions
   (tuple-expressions (stack $expression)))
 
@@ -134,20 +88,20 @@
           (expression-syntax $expression)
           (field-structure $type))))))
 
-(define (expressions-rhs-option ($expressions : Expressions)) : (Option Expressions)
-  (option-bind (single (expressions-structure $expressions)) $type
-    (and (field? $type)
-      (expressions 
-        (expressions-syntax $expressions) 
-        (field-structure $type)))))
+(define (expressions-rhs-option ($expressions : Expressions)) : (Option Tuple)
+  (option-app expression-field-rhs
+    (expressions-expression-option $expressions)))
 
 (check-equal?
-  (expressions-rhs-option
-    (expressions syntax-a 
-      (structure 
-        (field `foo
-          (structure type-b type-c)))))
-  (expressions syntax-a (structure type-b type-c)))
+  (option-app map expression-sexp-type
+    (expressions-rhs-option
+      (expressions syntax-a 
+        (structure 
+          (field `foo
+            (structure type-b type-c))))))
+  (stack
+    (pair `(unsafe-car a) type-b)
+    (pair `(unsafe-cdr a) type-c)))
 
 (check-equal?
   (expressions-rhs-option

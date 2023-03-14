@@ -1,10 +1,7 @@
 #lang leo
 
-10
-plus 20
-"apple"
+x 10
+y 20
 do
-  number.text
-  plus " "
-  plus text
-  plus "s"
+  x.number
+  plus y.number

@@ -152,8 +152,9 @@
 ; -----------------------------------------------------------------------
 
 (define (expression-rhs-get ($expression : Expression) ($selector : Expression)) : (Option Expression)
-  (option-bind (expression-field-rhs $expression) $rhs-expressions
-    (tuple-resolve-selector (expressions-tuple $rhs-expressions) $selector)))
+  (option-app tuple-resolve-selector 
+    (expression-field-rhs $expression) 
+    $selector))
 
 (define (expression-resolve-get
   ($lhs-expression : Expression)
@@ -294,28 +295,35 @@
 
 ; -----------------------------------------------------------------------
 
-(define (tuple-do ($tuple : Tuple) ($fn : (-> Scope Expressions))) : Expressions
+(define (tuple-resolve-fn 
+  ($tuple : Tuple) 
+  ($fn : (-> Scope (Option Expressions))))
+  : (Option Expressions)
   (define $structure (tuple-structure $tuple))
   (define $dynamic-syntax-stack (tuple-syntax-stack $tuple))
   (define $values-syntax (tuple-values-syntax-option $tuple))
   (define $scope (structure-generate-scope $structure))
-  (define $fn-expressions ($fn $scope))
-  (define $fn-syntax (expressions-syntax $fn-expressions))
-  (define $fn-structure (expressions-structure $fn-expressions))
-  (define $tmp-stack (scope-identifier-stack $scope))
-  (make-expressions
-    (make-syntax 
-      (case (length $tmp-stack)
-        ((0) $fn-syntax)
-        ((1)
-          `(let
-            ((,(car $tmp-stack) ,$values-syntax))
-            ,$fn-syntax))
-        (else 
-          `(let-values 
-            (((,@(reverse $tmp-stack)) ,$values-syntax))
-            ,$fn-syntax))))
-    $fn-structure))
+  (define $fn-expressions-option ($fn $scope))
+  (option-bind $fn-expressions-option $fn-expressions
+    (define $fn-syntax (expressions-syntax $fn-expressions))
+    (define $fn-structure (expressions-structure $fn-expressions))
+    (define $tmp-stack (scope-identifier-stack $scope))
+    (make-expressions
+      (make-syntax 
+        (case (length $tmp-stack)
+          ((0) $fn-syntax)
+          ((1)
+            `(let
+              ((,(car $tmp-stack) ,$values-syntax))
+              ,$fn-syntax))
+          (else 
+            `(let-values 
+              (((,@(reverse $tmp-stack)) ,$values-syntax))
+              ,$fn-syntax))))
+      $fn-structure)))
+
+(define (tuple-do ($tuple : Tuple) ($fn : (-> Scope Expressions))) : Expressions
+  (option-ref (tuple-resolve-fn $tuple $fn)))
 
 (check-equal?
   (expressions-sexp-structure
@@ -365,13 +373,13 @@
   ($expressions : Expressions)
   ($expression : Expression))
   : (Option Expressions)
-  (option-bind (expressions-rhs-option $expressions) $rhs-expressions
+  (option-bind (expressions-rhs-option $expressions) $tuple
     (option-map
       (option-stack-first 
         (map
           (lambda (($lhs-expression : Expression)) 
             (expression-resolve-get $lhs-expression $expression))
-          (expressions-tuple $rhs-expressions)))
+          $tuple))
       expression-expressions)))
 
 (check-equal?

@@ -144,20 +144,70 @@
   (expression-symbol-content (expression syntax-a (racket)) `bar)
   #f)
 
+; ----------------------------------------------------------------------------
+
+(define (syntax-structure-ref
+  ($syntax : Syntax)
+  ($structure : Structure)
+  ($index : Exact-Nonnegative-Integer))
+  : Expression
+  (define $structure-dynamic-size (structure-dynamic-size $structure))
+  (define $dynamic-index (structure-dynamic-ref $structure $index))
+  (define $type (list-ref $structure $index))
+  (expression
+    (make-syntax
+      (and
+        $dynamic-index
+        (case $structure-dynamic-size
+          ((0) #f)
+          ((1) $syntax)
+          ((2)
+            `(
+              ,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr)
+              ,$syntax))
+          (else
+            `(unsafe-vector-ref 
+              ,$syntax
+              ,(- $structure-dynamic-size $dynamic-index 1))))))
+    $type))
+
 ; ------------------------------------------------------------
-(define (expression-field-rhs ($expression : Expression)) : (Option Expressions)
+
+(define (syntax-structure-tuple ($syntax : Syntax) ($structure : Structure)) : Tuple
+  (map 
+    (curry (curry syntax-structure-ref $syntax) $structure)
+    (range (length $structure))))
+
+(check-equal?
+  (map
+    expression-sexp-type
+    (syntax-structure-tuple
+      syntax-a
+      (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)))
+  (stack
+    (pair `(unsafe-vector-ref a 0) dynamic-type-a)
+    (pair `(unsafe-vector-ref a 1) dynamic-type-b)
+    (pair `#f static-type-c)
+    (pair `(unsafe-vector-ref a 2) dynamic-type-d)))
+
+; ------------------------------------------------------------
+
+(define (expression-field-rhs ($expression : Expression)) : (Option Tuple)
   (define $type (expression-type $expression))
   (and (field? $type)
-    (expressions
+    (syntax-structure-tuple 
       (expression-syntax $expression) 
       (field-structure $type))))
 
 (check-equal?
-  (expression-field-rhs
-    (expression syntax-a 
-      (field `foo
-        (structure type-b type-c))))
-  (expressions syntax-a (structure type-b type-c)))
+  (option-app map expression-sexp-type
+    (expression-field-rhs
+      (expression syntax-a 
+        (field `foo
+          (structure type-b type-c)))))
+  (stack
+    (cons `(unsafe-car a) type-b)
+    (cons `(unsafe-cdr a) type-c)))
 
 (check-equal?
   (expression-field-rhs (expression syntax-a (racket)))
