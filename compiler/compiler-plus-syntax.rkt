@@ -10,7 +10,6 @@
   leo/typed/syntax-match
   leo/compiler/compiler
   leo/compiler/base-scope
-  leo/compiler/binding-utils
   leo/compiler/scope
   leo/compiler/sexp-expression
   leo/compiler/expressions
@@ -29,7 +28,6 @@
   leo/compiler/expressions-part-utils
   leo/compiler/expressions-part-sexp
   leo/compiler/expressions-part
-  leo/compiler/expressions-sexp
   leo/compiler/select-compiler
   leo/compiler/select-expressions-part
   leo/compiler/recipe-compiler
@@ -197,11 +195,12 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-expressions-part $compiler
-    (expressions-part-do (compiler-expressions-part $compiler)
-      (lambda (($tuple : Tuple))
-        (scope-syntax-list-expressions 
-          (push-stack (compiler-scope $compiler) (tuple-scope $tuple))
-          $syntax-list)))))
+    (expressions-part
+      (expressions-part-do (compiler-expressions-part $compiler)
+        (lambda (($scope : Scope))
+          (scope-syntax-list-expressions 
+            (push-stack (compiler-scope $compiler) $scope) 
+            $syntax-list))))))
 
 (define (compiler-apply-the 
   ($compiler : Compiler) 
@@ -216,22 +215,24 @@
 
 (define (compiler-apply-time ($compiler : Compiler)) : Compiler
   (compiler-with-expressions-part $compiler
-    (bind $expressions
-      (expressions-part-expressions (compiler-expressions-part $compiler))
-      (expressions
-        (make-syntax `(time ,(expressions-syntax $expressions)))
-        (expressions-structure $expressions)))))
+    (expressions-part
+      (bind $expressions
+        (expressions-part-expressions (compiler-expressions-part $compiler))
+        (expressions
+          (make-syntax `(time ,(expressions-syntax $expressions)))
+          (expressions-structure $expressions))))))
 
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-expressions-part $compiler
     (expressions-part-plus (compiler-expressions-part $compiler)
-      (expressions-part-do (compiler-expressions-part $compiler)
-        (lambda (($tuple : Tuple))
-          (scope-syntax-list-expressions 
-            (push-stack (compiler-scope $compiler) (tuple-scope $tuple))
-            $syntax-list))))))
+      (expressions-part
+        (expressions-part-do (compiler-expressions-part $compiler)
+          (lambda (($scope : Scope))
+            (scope-syntax-list-expressions 
+              (push-stack (compiler-scope $compiler) $scope) 
+              $syntax-list)))))))
 
 ; ----------------------------------------------------------------------------
 
@@ -240,17 +241,18 @@
   ($syntax-list : (Listof Syntax))) 
   : Compiler
   (compiler-with-expressions-part $compiler
-    (expressions-part-plus-tuple
+    (push-stack
       (compiler-expressions-part $compiler)
-      (map type-expression 
-        (syntax-list-structure $syntax-list)))))
+      (map expression-expressions 
+        (map type-expression 
+          (syntax-list-structure $syntax-list))))))
 
 (define (compiler-apply-recipe 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
   (compiler-with-expressions-part $compiler
-    (expressions-part-plus
+    (push-stack
       (compiler-expressions-part $compiler)
       (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
         (scope-syntax-list-arrow-expressions-part
@@ -262,7 +264,7 @@
   ($syntax-list : (Listof Syntax))) 
   : Compiler
   (compiler-with-expressions-part $compiler
-    (expressions-part-plus
+    (push
       (compiler-expressions-part $compiler)
       (expression-expressions
         (select-expressions-part-expression
@@ -278,13 +280,13 @@
     (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (expression-expressions 
-            (number-expression 3.14)))
+          (expressions-part 
+            (expression-expressions 
+              (number-expression 3.14))))
         #`b)))
   `(expressions-part
-    (expressions
-      (let-values (((tmp-number) 3.14)) tmp-number)
-      (structure number b))))
+    (expressions 3.14 (structure number))
+    (expressions #f (structure b))))
 
 ; number plus field
 (check-equal?
@@ -292,13 +294,13 @@
     (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (expression-expressions 
-            (number-expression 3.14)))
+          (expressions-part 
+            (expression-expressions 
+              (number-expression 3.14))))
         #`foo)))
   `(expressions-part
-    (expressions
-      (let-values (((tmp-number) 3.14)) tmp-number)
-      (structure number foo))))
+    (expressions 3.14 (structure number))
+    (expressions #f (structure foo))))
 
 ; number plus string
 (check-equal?
@@ -306,74 +308,35 @@
     (compiler-expressions-part
       (compiler-plus-syntax
         (compiler null-scope 
-          (expression-expressions 
-            (number-expression 3.14)))
+          (expressions-part
+            (expression-expressions 
+              (number-expression 3.14))))
         #`"foo")))
   `(expressions-part
-    (expressions
-      (let-values (((tmp-number) 3.14))
-        (let-values (((tmp-text) "foo")) (values tmp-number tmp-text)))
-    (structure number text))))
+    (expressions 3.14 (structure number))
+    (expressions "foo" (structure text))))
 
 (check-equal?
-  (expressions-sexp
+  (expressions-sexp-structure
     (scope-syntax-list-expressions
       base-scope
       (list
         #`1
         #`(plus 2)
         #`text)))
-  `(expressions
-   (let-values (((tmp-number)
-                 (let-values (((tmp-number)
-                               (let-values (((tmp-number tmp-plus)
-                                             (let-values (((tmp-number)
-                                                           (let-values (((tmp-number)
-                                                                         1))
-                                                             tmp-number)))
-                                               (let-values (((tmp-plus)
-                                                             (let-values (((tmp-number)
-                                                                           (let-values (((tmp-number)
-                                                                                         2))
-                                                                             tmp-number)))
-                                                               tmp-number)))
-                                                 (values
-                                                  tmp-number
-                                                  tmp-plus)))))
-                                 (#%app + tmp-number tmp-plus))))
-                   tmp-number)))
-     (#%app number->string tmp-number))
-   (structure text)))
+  (pair 
+    `(#%app number->string (#%app + 1 2)) 
+    (structure text-type)))
 
 (check-equal?
-  (expressions-sexp
+  (expressions-sexp-structure
     (scope-syntax-list-expressions
       base-scope
       (list
         #`1
         #`(dodać 2)
         #`(do number (add dodać number)))))
-  `(expressions
-   (let-values (((tmp-number tmp-dodać)
-                 (let-values (((tmp-number)
-                               (let-values (((tmp-number) 1)) tmp-number)))
-                   (let-values (((tmp-dodać)
-                                 (let-values (((tmp-number)
-                                               (let-values (((tmp-number) 2))
-                                                 tmp-number)))
-                                   tmp-number)))
-                     (values tmp-number tmp-dodać)))))
-     (let-values (((tmp-number tmp-add)
-                   (let-values (((tmp-number) tmp-number))
-                     (let-values (((tmp-add)
-                                   (let-values (((tmp-number)
-                                                 (let-values (((tmp-dodać)
-                                                               (let-values (((tmp-dodać)
-                                                                             tmp-dodać))
-                                                                 tmp-dodać)))
-                                                   tmp-dodać)))
-                                     tmp-number)))
-                       (values tmp-number tmp-add)))))
-       (#%app + tmp-number tmp-add)))
-   (structure number)))
-
+  (pair 
+    `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
+      (#%app + tmp-number tmp-dodać))
+    (structure number-type)))

@@ -17,12 +17,6 @@
 (define binding-ab (binding (arrow (structure type-a) (structure type-b)) #`ab))
 (define binding-cd (binding (arrow (structure type-c) (structure type-d)) #`cd))
 
-(define (expression-binding ($expression : Expression)) : Binding
-  (define $syntax (expression-syntax $expression))
-  (binding
-    (expression-type $expression)
-    (and (identifier? $syntax) $syntax)))
-
 (define (binding-expression ($binding : Binding)) : Expression
   (define $identifier-option (binding-identifier-option $binding))
   (expression

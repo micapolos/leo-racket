@@ -42,5 +42,14 @@
       (else (list $sexp)))))
 
 (check-equal?
-  (leo-eval `("Hello, " (plus "world!")))
-  "Hello, world!")
+  (leo-eval 
+    `(
+      1
+      (add 2) 
+      text
+      (append " ")
+      (append "pieces")
+      (do
+        text
+        (append "!!!"))))
+  "3 pieces!!!")

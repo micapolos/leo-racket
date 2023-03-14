@@ -23,6 +23,3 @@
 
 (define (scope-tuple ($scope : Scope)) : Tuple
   (map binding-expression $scope))
-
-(define (tuple-scope ($tuple : Tuple)) : Scope
-  (map expression-binding $tuple))

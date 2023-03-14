@@ -9,7 +9,6 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/generate-temporary
   leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/sexp-utils
@@ -22,20 +21,15 @@
   leo/compiler/type-utils
   leo/compiler/module-syntax)
 
-(define dynamic-expression-a (expression dynamic-syntax-a dynamic-type-a))
-(define dynamic-expression-b (expression dynamic-syntax-b dynamic-type-b))
-(define dynamic-expression-c (expression dynamic-syntax-c dynamic-type-c))
-(define dynamic-expression-d (expression dynamic-syntax-d dynamic-type-d))
+(define dynamic-expression-a (expression syntax-a dynamic-type-a))
+(define dynamic-expression-b (expression syntax-b dynamic-type-b))
+(define dynamic-expression-c (expression syntax-c dynamic-type-c))
+(define dynamic-expression-d (expression syntax-d dynamic-type-d))
 
-(define atomic-expression-a (expression atomic-syntax-a dynamic-type-a))
-(define atomic-expression-b (expression atomic-syntax-b dynamic-type-b))
-(define atomic-expression-c (expression atomic-syntax-c dynamic-type-c))
-(define atomic-expression-d (expression atomic-syntax-d dynamic-type-d))
-
-(define static-expression-a (expression null-syntax static-type-a))
-(define static-expression-b (expression null-syntax static-type-b))
-(define static-expression-c (expression null-syntax static-type-c))
-(define static-expression-d (expression null-syntax static-type-d))
+(define static-expression-a (expression syntax-a static-type-a))
+(define static-expression-b (expression syntax-b static-type-b))
+(define static-expression-c (expression syntax-c static-type-c))
+(define static-expression-d (expression syntax-d static-type-d))
 
 (define expression-a dynamic-expression-a)
 (define expression-b dynamic-expression-b)
@@ -71,14 +65,14 @@
 
 (check-equal?
   (expression-sexp (expression syntax-a static-type-b))
-  `(expression (dynamic-a) b))
+  `(expression a b))
 
 (define (tuple-sexp ($tuple : Tuple)) : Sexp
   `(tuple ,@(reverse (map expression-sexp $tuple))))
 
 (check-equal?
-  (tuple-sexp (tuple dynamic-expression-a dynamic-expression-b))
-  `(tuple (expression (dynamic-a) (a racket)) (expression (dynamic-b) (b racket))))
+  (tuple-sexp (tuple expression-a expression-b))
+  `(tuple (expression a (a racket)) (expression b (b racket))))
 
 (define (racket-expression ($sexp : Sexp)) 
   (expression (make-syntax (sexp-datum $sexp)) (racket)))
@@ -188,13 +182,13 @@
   (map
     expression-sexp-type
     (syntax-structure-tuple
-      dynamic-syntax-a
+      syntax-a
       (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)))
   (stack
-    (pair `(unsafe-vector-ref (dynamic-a) 0) dynamic-type-a)
-    (pair `(unsafe-vector-ref (dynamic-a) 1) dynamic-type-b)
+    (pair `(unsafe-vector-ref a 0) dynamic-type-a)
+    (pair `(unsafe-vector-ref a 1) dynamic-type-b)
     (pair `#f static-type-c)
-    (pair `(unsafe-vector-ref (dynamic-a) 2) dynamic-type-d)))
+    (pair `(unsafe-vector-ref a 2) dynamic-type-d)))
 
 ; ------------------------------------------------------------
 
@@ -208,12 +202,12 @@
 (check-equal?
   (option-app map expression-sexp-type
     (expression-rhs-tuple-option
-      (expression dynamic-syntax-a 
+      (expression syntax-a 
         (field `foo
           (structure type-b type-c)))))
   (stack
-    (cons `(unsafe-car (dynamic-a)) type-b)
-    (cons `(unsafe-cdr (dynamic-a)) type-c)))
+    (cons `(unsafe-car a) type-b)
+    (cons `(unsafe-cdr a) type-c)))
 
 (check-equal?
   (expression-rhs-tuple-option (expression syntax-a (racket)))
@@ -252,9 +246,9 @@
       (stack 
         dynamic-expression-a 
         static-expression-b 
-        atomic-expression-c)))
+        dynamic-expression-c)))
   (pair 
-    `(fn (dynamic-a) atomic-c)
+    `(fn a c) 
     (stack 
       dynamic-type-c 
       static-type-d)))
@@ -308,7 +302,7 @@
   (syntax->datum
     (tuple-syntax
       (stack dynamic-expression-a)))
-  `(dynamic-a))
+  `a)
 
 (check-equal?
   (syntax->datum
@@ -316,7 +310,7 @@
       (stack 
         dynamic-expression-a 
         static-expression-a)))
-  `(dynamic-a))
+  `a)
 
 (check-equal?
   (syntax->datum
@@ -324,39 +318,39 @@
       (stack 
         dynamic-expression-a 
         dynamic-expression-b)))
-  `(cons (dynamic-a) (dynamic-b)))
+  `(cons a b))
 
 (check-equal?
   (syntax->datum
     (tuple-syntax
       (stack 
         dynamic-expression-a 
-        atomic-expression-b 
+        dynamic-expression-b 
         static-expression-c)))
-  `(cons (dynamic-a) atomic-b))
+  `(cons a b))
 
 (check-equal?
   (syntax->datum
     (tuple-syntax
       (stack 
         dynamic-expression-a 
-        atomic-expression-b 
+        dynamic-expression-b 
         dynamic-expression-c)))
-  `(vector (dynamic-a) atomic-b (dynamic-c)))
+  `(vector a b c))
 
 (check-equal?
   (syntax->datum
     (tuple-syntax
       (stack 
         dynamic-expression-a 
-        atomic-expression-b 
+        dynamic-expression-b 
         dynamic-expression-c 
         static-expression-d)))
-  `(vector (dynamic-a) atomic-b (dynamic-c)))
+  `(vector a b c))
 
 ; -----------------------------------------------------------------
 
-(define (tuple-expressions-syntax-option ($tuple : Tuple)) : (Option Syntax)
+(define (tuple-values-syntax-option ($tuple : Tuple)) : (Option Syntax)
   (define $dynamic-tuple (filter expression-dynamic? $tuple))
   (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
   (make-syntax
@@ -367,31 +361,31 @@
 
 (define (tuple-values-syntax ($tuple : Tuple)) : Syntax
   (or
-    (tuple-expressions-syntax-option $tuple)
+    (tuple-values-syntax-option $tuple)
     (make-syntax `(values))))
 
 (check-equal?
   (option-map
-    (tuple-expressions-syntax-option null)
+    (tuple-values-syntax-option null)
     syntax->datum)
   #f)
 
 (check-equal?
   (option-map
-    (tuple-expressions-syntax-option
+    (tuple-values-syntax-option
       (stack dynamic-expression-a))
     syntax->datum)
-  `(dynamic-a))
+  `a)
 
 (check-equal?
   (option-map
-    (tuple-expressions-syntax-option
+    (tuple-values-syntax-option
       (stack 
         dynamic-expression-a 
         static-expression-b 
-        atomic-expression-c))
+        dynamic-expression-c))
     syntax->datum)
-  `(values (dynamic-a) atomic-c))
+  `(values a c))
 
 ; ---------------------------------------------------------
 
@@ -402,7 +396,7 @@
 
 (check-equal?
   (expression-sexp-type (field-expression `foo tuple-ab))
-  (pair `(cons (dynamic-a) (dynamic-b)) (field `foo structure-ab)))
+  (pair `(cons a b) (field `foo structure-ab)))
 
 ; ---------------------------------------------------------
 
@@ -411,42 +405,3 @@
 
 (define (tuple-lift-structure ($tuple : Tuple)) : (Option Structure)
   (structure-lift (tuple-structure $tuple)))
-
-; ---------------------------------------------------------
-
-(define (expression-generate-temporary ($expression : Expression)) : (Option Identifier)
-  (and 
-    (syntax-dynamic? (expression-syntax $expression))
-    (type-generate-temporary (expression-type $expression))))
-
-(define (tuple-generate-temporary-stack ($tuple : Tuple)) : (Stackof (Option Identifier))
-  (map expression-generate-temporary $tuple))
-
-(check-equal?
-  (option-app syntax->datum (expression-generate-temporary (expression null-syntax static-type-a)))
-  #f)
-
-(check-equal?
-  (option-app syntax->datum (expression-generate-temporary (expression static-syntax dynamic-type-a)))
-  #f)
-
-(check-equal?
-  (option-app syntax->datum (expression-generate-temporary (expression dynamic-syntax dynamic-type-a)))
-  `tmp-a)
-
-; ---------------------------------------------------------
-
-(data binder 
-  (syntax-option : (Option Syntax))
-  (expression : Expression))
-
-(define (expression-binder ($expression : Expression)) : Binder
-  (bind $temporary (expression-generate-temporary $expression)
-    (if $temporary
-      (binder 
-        (make-syntax (list $temporary (expression-syntax $expression))) 
-        (expression $temporary (expression-type $expression)))
-      (binder #f $expression))))
-
-(define (tuple-binder-stack ($tuple : Tuple)) : (Stackof Binder)
-  (map expression-binder $tuple))

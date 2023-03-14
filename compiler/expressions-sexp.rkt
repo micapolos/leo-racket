@@ -20,4 +20,4 @@
 (check-equal?
   (expressions-sexp
     (expressions syntax-a (structure static-type-b static-type-c)))
-  `(expressions (dynamic-a) (structure b c)))
+  `(expressions a (structure b c)))

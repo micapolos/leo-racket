@@ -12,7 +12,8 @@
 (define compile-expressions-part-parameter : (Parameterof (-> Scope (Listof Syntax) Expressions-Part))
   (make-parameter
     (lambda (($scope : Scope) ($syntax-list : (Listof Syntax))) : Expressions-Part
-      (expressions #`recurse (structure (racket))))))
+      (expressions-part
+        (expressions #`recurse (structure (racket)))))))
 
 (define (compile-expressions-part
   ($scope : Scope) 

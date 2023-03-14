@@ -39,16 +39,15 @@
     (expressions-part 
       (scope-apply-expressions-part 
         (compiler-scope $compiler)
-        (expressions-part-plus 
-          (compiler-expressions-part $compiler) 
-          $expressions)))))
+        (push (compiler-expressions-part $compiler) $expressions)))))
 
 (define (scope-apply-expressions-part
   ($scope : Scope) 
   ($expressions-part : Expressions-Part)) : Expressions-Part
   (or
-    (expressions-part-resolve-fn $expressions-part
-      (curry scope-or-tuple-resolve-tuple $scope))
+    (option-app expressions-part
+      (expressions-part-resolve-fn $expressions-part
+        (curry scope-or-tuple-resolve-tuple $scope)))
     $expressions-part))
 
 (define (scope-or-tuple-resolve-tuple
@@ -62,12 +61,11 @@
   (expressions-part-sexp
     (compiler-expressions-part
       (compiler-plus-expressions
-        (compiler null-scope expressions-a)
+        (compiler null-scope (expressions-part expressions-a))
         expressions-b)))
-  `(expressions-part
-    (expressions
-      (let-values (((tmp-a) a)) (let-values (((tmp-b) b)) (values tmp-a tmp-b)))
-      (structure (a racket) (b racket)))))
+  `(expressions-part 
+    (expressions a (structure (a racket)))
+    (expressions b (structure (b racket)))))
 
 (check-equal?
   (expressions-part-sexp
@@ -80,15 +78,11 @@
                 (structure text-type (field `plus (structure text-type)))
                 (structure text-type))
               #`string-append))
-          (expression-expressions (text-expression "Hello, ")))
+          (expressions-part (expression-expressions (text-expression "Hello, "))))
         (expression-expressions 
           (field-expression `plus 
             (tuple (text-expression "world!")))))))
   `(expressions-part
     (expressions
-      (let-values (((tmp-text tmp-plus)
-                  (let-values (((tmp-text) "Hello, "))
-                    (let-values (((tmp-plus) "world!"))
-                      (values tmp-text tmp-plus)))))
-      (#%app string-append tmp-text tmp-plus))
-    (structure text))))
+      (#%app string-append "Hello, " "world!") 
+      (structure text))))
