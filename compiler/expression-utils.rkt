@@ -192,7 +192,7 @@
 
 ; ------------------------------------------------------------
 
-(define (expression-field-rhs ($expression : Expression)) : (Option Tuple)
+(define (expression-rhs-tuple-option ($expression : Expression)) : (Option Tuple)
   (define $type (expression-type $expression))
   (and (field? $type)
     (syntax-structure-tuple 
@@ -201,7 +201,7 @@
 
 (check-equal?
   (option-app map expression-sexp-type
-    (expression-field-rhs
+    (expression-rhs-tuple-option
       (expression syntax-a 
         (field `foo
           (structure type-b type-c)))))
@@ -210,7 +210,7 @@
     (cons `(unsafe-cdr a) type-c)))
 
 (check-equal?
-  (expression-field-rhs (expression syntax-a (racket)))
+  (expression-rhs-tuple-option (expression syntax-a (racket)))
   #f)
 
 ; ---------------------------------------------------------

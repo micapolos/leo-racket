@@ -89,7 +89,7 @@
           (field-structure $type))))))
 
 (define (expressions-rhs-option ($expressions : Expressions)) : (Option Tuple)
-  (option-app expression-field-rhs
+  (option-app expression-rhs-tuple-option
     (expressions-expression-option $expressions)))
 
 (check-equal?

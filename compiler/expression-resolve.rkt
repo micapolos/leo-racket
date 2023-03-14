@@ -153,7 +153,7 @@
 
 (define (expression-rhs-get ($expression : Expression) ($selector : Expression)) : (Option Expression)
   (option-app tuple-resolve-selector 
-    (expression-field-rhs $expression) 
+    (expression-rhs-tuple-option $expression) 
     $selector))
 
 (define (expression-resolve-get
