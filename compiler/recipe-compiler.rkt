@@ -11,6 +11,7 @@
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expressions-part-utils
+  leo/compiler/expressions-part-sexp
   leo/compiler/base-scope
   leo/compiler/scope
   leo/compiler/scope-utils
@@ -59,7 +60,7 @@
       (bind $lhs-scope (structure-generate-scope $lhs-structure)
         (struct-copy recipe-compiler $recipe-compiler
           (expressions-part
-            (push $expressions-part
+            (expressions-part-plus $expressions-part
               (let ()
                 (define $expressions 
                   (scope-doing-expressions
@@ -90,14 +91,11 @@
 ; ---------------------------------------------------------------------
 
 (check-equal?
-  (map expressions-sexp-structure
+  (expressions-part-sexp
     (scope-syntax-list-arrow-expressions-part
       base-scope
       (syntax-e #`(number increment (does number (plus 1))))))
-  (stack
-    (pair
-      `(lambda (tmp-number) recurse)
-      (structure 
-        (arrow 
-          (structure number-type (field! `increment))
-          (structure (racket)))))))
+  `(expressions-part
+    (expressions
+      (let-values (((tmp-recipe) (lambda (tmp-number) recurse))) tmp-recipe)
+      (structure (recipe number increment (doing racket))))))

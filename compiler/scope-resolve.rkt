@@ -30,12 +30,12 @@
 (check-equal?
   (option-app expressions-sexp-structure
     (scope-resolve-tuple (scope binding-ab binding-cd) tuple-a))
-  (pair `(#%app ab a) structure-b))
+  (pair `(#%app ab (dynamic-a)) structure-b))
 
 (check-equal?
   (option-app expressions-sexp-structure
     (scope-resolve-tuple (scope binding-ab binding-cd) tuple-c))
-  (pair `(#%app cd c) structure-d))
+  (pair `(#%app cd (dynamic-c)) structure-d))
 
 (check-equal?
   (scope-resolve-tuple (scope binding-ab binding-cd) tuple-b)

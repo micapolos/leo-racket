@@ -12,6 +12,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expressions-part
+  leo/compiler/expressions-sexp
   leo/compiler/compiler-plus-syntax)
 
 (define (syntax-list-expressions-part ($syntax-list : (Listof Syntax))) : Expressions-Part
@@ -28,6 +29,26 @@
       (else (list (make-syntax $datum))))))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (sexp-expressions `(1 (plus 2) text)))
-  (pair `(#%app number->string (#%app + 1 2)) (structure text-type)))
+  `(expressions
+   (let-values (((tmp-number)
+                 (let-values (((tmp-number)
+                               (let-values (((tmp-number tmp-plus)
+                                             (let-values (((tmp-number)
+                                                           (let-values (((tmp-number)
+                                                                         1))
+                                                             tmp-number)))
+                                               (let-values (((tmp-plus)
+                                                             (let-values (((tmp-number)
+                                                                           (let-values (((tmp-number)
+                                                                                         2))
+                                                                             tmp-number)))
+                                                               tmp-number)))
+                                                 (values
+                                                  tmp-number
+                                                  tmp-plus)))))
+                                 (#%app + tmp-number tmp-plus))))
+                   tmp-number)))
+     (#%app number->string tmp-number))
+   (structure text)))

@@ -48,28 +48,26 @@
 
 (define (tuple-expressions ($tuple : Tuple)) : Expressions
   (expressions
-    (or (tuple-values-syntax-option $tuple) null-syntax)
+    (or (tuple-expressions-syntax-option $tuple) null-syntax)
     (tuple-structure $tuple)))
 
 (check-equal?
-  (expressions-sexp-structure (tuple-expressions (tuple static-expression-a)))
-  (pair null-sexp (structure static-type-a)))
+  (expressions-sexp (tuple-expressions (tuple static-expression-a)))
+  `(expressions #f (structure a)))
 
 (check-equal?
   (expressions-sexp-structure
     (tuple-expressions
       (tuple dynamic-expression-a static-expression-b)))
-  (pair 
-    `a 
-    (structure dynamic-type-a static-type-b)))
+  (pair `(dynamic-a) (structure dynamic-type-a static-type-b)))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (tuple-expressions
-      (tuple dynamic-expression-a static-expression-b dynamic-expression-c)))
-  (pair 
-    `(values a c) 
-    (structure dynamic-type-a static-type-b dynamic-type-c)))
+      (tuple dynamic-expression-a static-expression-b atomic-expression-c)))
+  `(expressions
+    (values (dynamic-a) atomic-c)
+    (structure (a racket) b (c racket))))
 
 ; -------------------------------------------------------------------
 
@@ -100,8 +98,8 @@
           (field `foo
             (structure type-b type-c))))))
   (stack
-    (pair `(unsafe-car a) type-b)
-    (pair `(unsafe-cdr a) type-c)))
+    (pair `(unsafe-car (dynamic-a)) type-b)
+    (pair `(unsafe-cdr (dynamic-a)) type-c)))
 
 (check-equal?
   (expressions-rhs-option
@@ -219,48 +217,49 @@
   (and $fn-expressions
     (make-expressions
       (case (length $tmp-stack)
-        ((0) null-syntax)
-        ((1) 
-          (make-syntax 
-            `(let
-              ((,(top $tmp-stack) ,$syntax))
-              ,(expressions-syntax $fn-expressions))))
+        ((0) (expressions-syntax $fn-expressions))
+        ;((1) (expressions-syntax $fn-expressions))
         (else 
           (make-syntax 
             `(let-values
-              (((,@(reverse $tmp-stack)) ,$syntax))
+              ((,(reverse $tmp-stack) ,$syntax))
               ,(expressions-syntax $fn-expressions)))))
       (expressions-structure $fn-expressions))))
 
 (check-equal?
-  (option-app expressions-sexp-structure
+  (option-app expressions-sexp
     (expressions-resolve-fn expressions-a
       (lambda (($tuple : Tuple))
-        (expressions
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
-  (pair 
-    `(let ((tmp-a a)) (tmp-a))
-    structure-a))
+        (expression-expressions 
+          (field-expression `resolved $tuple)))))
+  `(expressions
+    (let-values (((tmp-a) a)) tmp-a)
+    (structure (resolved (a racket)))))
 
 (check-equal?
-  (option-app expressions-sexp-structure
+  (option-app expressions-sexp
     (expressions-resolve-fn expressions-ab
       (lambda (($tuple : Tuple))
-        (expressions 
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
-  (pair 
-    `(let-values (((tmp-a tmp-b) ab)) (tmp-a tmp-b))
-    structure-ab))
+        (expression-expressions 
+          (field-expression `resolved $tuple)))))
+  `(expressions
+    (let-values (((tmp-a tmp-b) ab)) (cons tmp-a tmp-b))
+    (structure (resolved (a racket) (b racket)))))
 
 ; ---------------------------------------------------------------------
 
-(define (expressions-do ($expressions : Expressions) ($fn : (-> Scope Expressions))) : Expressions
+(define (expressions-apply-fn ($expressions : Expressions) ($fn : (-> Tuple Expressions))) : Expressions
+  (option-ref-or
+    (expressions-resolve-fn $expressions $fn)
+    $expressions))
+
+; ---------------------------------------------------------------------
+
+(define (expressions-do ($expressions : Expressions) ($fn : (-> Tuple Expressions))) : Expressions
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
   (define $scope (structure-generate-scope $structure))
-  (define $fn-expressions ($fn $scope))
+  (define $fn-expressions ($fn (scope-tuple $scope)))
   (define $fn-syntax (expressions-syntax $fn-expressions))
   (define $fn-structure (expressions-structure $fn-expressions))
   (define $tmp-stack (scope-identifier-stack $scope))
@@ -279,44 +278,37 @@
     $fn-structure))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (expressions-do
       (make-expressions #`pkg (structure static-type-a))
-      (lambda (($scope : Scope)) 
-        (make-expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    #f
-    (structure static-type-a)))
+      (lambda (($tuple : Tuple)) 
+        (expression-expressions
+          (field-expression `done $tuple)))))
+  `(expressions #f (structure (done a))))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (expressions-do
       (expressions #`pkg (structure dynamic-type-a static-type-b))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    `(let ((tmp-a pkg)) (values tmp-a)) 
-    (structure static-type-b dynamic-type-a)))
+      (lambda (($tuple : Tuple)) 
+        (expression-expressions
+          (field-expression `done $tuple)))))
+  `(expressions (let ((tmp-a pkg)) tmp-a) (structure (done (a racket) b))))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (expressions-do
       (expressions #`pkg 
         (structure 
           dynamic-type-a
           static-type-b
           dynamic-type-c))
-      (lambda (($scope : Scope)) 
-        (expressions 
-          (make-syntax `(values ,@(scope-identifier-stack $scope)))
-          (reverse (scope-structure $scope))))))
-  (pair 
-    `(let-values (((tmp-a tmp-c) pkg)) (values tmp-c tmp-a)) 
-    (structure dynamic-type-c static-type-b dynamic-type-a)))
+      (lambda (($tuple : Tuple)) 
+        (expression-expressions
+          (field-expression `done $tuple)))))
+  `(expressions
+    (let-values (((tmp-a tmp-c) pkg)) (cons tmp-a tmp-c))
+    (structure (done (a racket) b (c racket)))))
 
 ; -------------------------------------------------------------------------
 
@@ -331,9 +323,9 @@
       (if (= (expressions-size $expressions) 1)
         $expressions
         (expressions-do $expressions 
-          (lambda (($scope : Scope))
+          (lambda (($tuple : Tuple))
             (expressions 
-              (tuple-syntax (map binding-expression $scope))
+              (tuple-syntax $tuple)
               (expressions-structure $expressions))))))
     (field $symbol (expressions-structure $expressions))))
 
@@ -347,10 +339,10 @@
           static-type-b 
           dynamic-type-c))))
   (pair
-    `(let-values (((tmp-a tmp-c) a)) (cons tmp-a tmp-c))
+    `(let-values (((tmp-a tmp-c) (dynamic-a))) (cons tmp-a tmp-c))
     (field `point 
       (stack 
-        dynamic-type-a 
+        dynamic-type-a
         static-type-b 
         dynamic-type-c))))
 

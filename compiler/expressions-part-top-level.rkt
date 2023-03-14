@@ -51,9 +51,8 @@
 (check-equal?
   (syntax->datum
     (expressions-part-top-level-syntax
-      (expressions-part
-        (expressions #`expr
-          (structure number-type text-type)))))
+      (expressions #`expr
+        (structure number-type text-type))))
   `(for-each
      writeln
      (let-values (((tmp-number tmp-text) expr))

@@ -3,12 +3,9 @@
 (provide (all-defined-out))
 
 (require 
-  leo/typed/base
-  leo/typed/stack
+  leo/compiler/expression
   leo/compiler/expressions)
 
-(define-type Expressions-Part (Stackof Expressions))
+(define-type Expressions-Part (U Expressions Tuple))
 
-(define null-expressions-part null)
-
-(define expressions-part stack)
+(define null-expressions-part null-tuple)

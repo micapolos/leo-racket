@@ -17,13 +17,20 @@
   leo/compiler/expressions-utils)
 
 (define (expressions-part-sexp ($expressions-part : Expressions-Part)) : Sexp
-  `(expressions-part
-    ,@(reverse 
-      (map expressions-sexp $expressions-part))))
+  (cond
+    ((expressions? $expressions-part)
+      `(expressions-part ,(expressions-sexp $expressions-part)))
+    (else 
+      `(expressions-part
+        ,@(reverse (map expression-sexp $expressions-part))))))
 
 (check-equal?
-  (expressions-part-sexp
-    (expressions-part expressions-ab expressions-cd))
+  (expressions-part-sexp expressions-ab)
   `(expressions-part
-    (expressions ab (structure (a racket) (b racket)))
-    (expressions cd (structure (c racket) (d racket)))))
+    (expressions ab (structure (a racket) (b racket)))))
+
+(check-equal?
+  (expressions-part-sexp (tuple expression-a expression-b))
+  `(expressions-part
+    (expression (dynamic-a) (a racket))
+    (expression (dynamic-b) (b racket))))
