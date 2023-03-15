@@ -7,6 +7,7 @@
   leo/typed/option
   leo/typed/testing
   leo/compiler/block
+  leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
@@ -14,6 +15,29 @@
   leo/compiler/type
   leo/compiler/type-match
   leo/compiler/type-utils)
+
+(define (expression-resolve-block ($expression : Expression)) : (Option Block)
+  (let (($type (expression-type $expression)))
+    (and
+      (arrow? $type)
+      (block (expression-syntax $expression) $type))))
+
+(check-equal? 
+  (option-app block-sexp
+    (expression-resolve-block 
+      (expression #`expression 
+        (arrow structure-ab structure-cd))))
+  `(block 
+    expression
+    (recipe (a racket) (b racket) (doing (c racket) (d racket)))))
+
+(check-not
+  (option-app block-sexp
+    (expression-resolve-block 
+      (expression #`expression 
+        (field! `foo)))))
+
+; ----------------------------------------------------------------------------------
 
 (define (block-resolve-do ($block : Block) ($expressions : Expressions)) : (Option Expressions)
   (let* (($block-arrow (block-arrow $block))
