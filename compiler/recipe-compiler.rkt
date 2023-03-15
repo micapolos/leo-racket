@@ -7,10 +7,10 @@
   leo/typed/stack
   leo/typed/testing
   leo/typed/syntax-match
-  leo/compiler/expressions-part
+  leo/compiler/ingredients
   leo/compiler/expressions
   leo/compiler/expressions-utils
-  leo/compiler/expressions-part-utils
+  leo/compiler/ingredients-utils
   leo/compiler/base-scope
   leo/compiler/scope
   leo/compiler/scope-utils
@@ -19,21 +19,21 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-match
-  leo/compiler/compile-expressions-part)
+  leo/compiler/compile-ingredients)
 
 (data recipe-compiler 
   (scope : Scope) 
-  (expressions-part : Expressions-Part)
+  (ingredients : Ingredients)
   (recipe-part : Recipe-Part))
 
 (define (null-recipe-compiler ($scope : Scope))
   (recipe-compiler $scope null null-recipe-part))
 
-(define (scope-syntax-list-arrow-expressions-part
+(define (scope-syntax-list-arrow-ingredients
   ($scope : Scope) 
   ($syntax-list : (Listof Syntax))) 
-  : Expressions-Part
-  (recipe-compiler-expressions-part
+  : Ingredients
+  (recipe-compiler-ingredients
     (fold
       (null-recipe-compiler $scope)
       $syntax-list
@@ -45,7 +45,7 @@
   : Recipe-Compiler
   (define $scope (recipe-compiler-scope $recipe-compiler))
   (define $recipe-part (recipe-compiler-recipe-part $recipe-compiler))
-  (define $expressions-part (recipe-compiler-expressions-part $recipe-compiler))
+  (define $ingredients (recipe-compiler-ingredients $recipe-compiler))
   (define $lhs-structure (recipe-part-lhs-structure $recipe-part))
   (define $rhs-structure-option (recipe-part-rhs-structure-option $recipe-part))
   (or
@@ -58,14 +58,14 @@
     (syntax-symbol-match-args $syntax `does $syntax-list
       (bind $lhs-scope (structure-generate-scope $lhs-structure)
         (struct-copy recipe-compiler $recipe-compiler
-          (expressions-part
-            (push $expressions-part
+          (ingredients
+            (push $ingredients
               (let ()
                 (define $expressions 
                   (scope-doing-expressions
                     $lhs-scope
-                    (expressions-part-expressions
-                      (compile-expressions-part
+                    (ingredients-expressions
+                      (compile-ingredients
                         (push-stack $scope $lhs-scope) 
                         $syntax-list))))
                 (when 
@@ -91,7 +91,7 @@
 
 (check-equal?
   (map expressions-sexp-structure
-    (scope-syntax-list-arrow-expressions-part
+    (scope-syntax-list-arrow-ingredients
       base-scope
       (syntax-e #`(number increment (does number (plus 1))))))
   (stack

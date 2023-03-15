@@ -11,11 +11,11 @@
   leo/compiler/expressions-utils
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/expressions-part
+  leo/compiler/ingredients
   leo/compiler/compiler-plus-syntax)
 
-(define (syntax-list-expressions-part ($syntax-list : (Listof Syntax))) : Expressions-Part
-  (scope-syntax-list-expressions-part base-scope $syntax-list))
+(define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
+  (scope-syntax-list-ingredients base-scope $syntax-list))
 
 (define (syntax-list-expressions ($syntax-list : (Listof Syntax))) : Expressions
   (scope-syntax-list-expressions base-scope $syntax-list))

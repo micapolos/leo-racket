@@ -7,7 +7,7 @@
   leo/typed/stack
   leo/typed/option
   leo/typed/testing
-  leo/compiler/expressions-part
+  leo/compiler/ingredients
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expression
@@ -16,14 +16,14 @@
   leo/compiler/expressions-sexp
   leo/compiler/expressions-utils)
 
-(define (expressions-part-sexp ($expressions-part : Expressions-Part)) : Sexp
-  `(expressions-part
+(define (ingredients-sexp ($ingredients : Ingredients)) : Sexp
+  `(ingredients
     ,@(reverse 
-      (map expressions-sexp $expressions-part))))
+      (map expressions-sexp $ingredients))))
 
 (check-equal?
-  (expressions-part-sexp
-    (expressions-part expressions-ab expressions-cd))
-  `(expressions-part
+  (ingredients-sexp
+    (ingredients expressions-ab expressions-cd))
+  `(ingredients
     (expressions ab (structure (a racket) (b racket)))
     (expressions cd (structure (c racket) (d racket)))))

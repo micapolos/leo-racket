@@ -10,7 +10,7 @@
   leo/compiler/binding
   leo/compiler/scope
   leo/compiler/scope-utils
-  leo/compiler/expressions-part
+  leo/compiler/ingredients
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/syntax-utils
@@ -22,19 +22,19 @@
   leo/compiler/expression-utils
   leo/compiler/expression-resolve)
 
-(define (expressions-part-plus ($lhs-expressions-part : Expressions-Part) ($rhs-expressions-part : Expressions-Part)) : Expressions-Part
-  (push-stack $lhs-expressions-part $rhs-expressions-part))
+(define (ingredients-plus ($lhs-ingredients : Ingredients) ($rhs-ingredients : Ingredients)) : Ingredients
+  (push-stack $lhs-ingredients $rhs-ingredients))
 
-(define (expressions-part-plus-tuple ($expressions-part : Expressions-Part) ($tuple : Tuple)) : Expressions-Part
-  (push-stack $expressions-part (map expression-expressions $tuple)))
+(define (ingredients-plus-tuple ($ingredients : Ingredients) ($tuple : Tuple)) : Ingredients
+  (push-stack $ingredients (map expression-expressions $tuple)))
 
-(define (expressions-part-structure ($expressions-part : Expressions-Part)) : Structure
-  (apply append (map expressions-structure $expressions-part)))
+(define (ingredients-structure ($ingredients : Ingredients)) : Structure
+  (apply append (map expressions-structure $ingredients)))
 
-(define (expressions-part-resolve-fn
-  ($expressions-part : Expressions-Part)
+(define (ingredients-resolve-fn
+  ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $expressions-stack $expressions-part)
+  (define $expressions-stack $ingredients)
   (define $let-values-entry-stack
     (map expressions-let-values-entry $expressions-stack))
   (define $tuple 
@@ -58,16 +58,16 @@
 ; not resolved
 (check-equal?
   (option-app expressions-sexp
-    (expressions-part-resolve-fn
-      (expressions-part expressions-ab expressions-cd)
+    (ingredients-resolve-fn
+      (ingredients expressions-ab expressions-cd)
       (lambda (($tuple : Tuple)) #f)))
   #f)
 
 ; resolved to static
 (check-equal?
   (option-app expressions-sexp
-    (expressions-part-resolve-fn
-      (expressions-part expressions-ab expressions-cd)
+    (ingredients-resolve-fn
+      (ingredients expressions-ab expressions-cd)
       (lambda (($tuple : Tuple)) 
         (expressions null-syntax static-structure-a))))
   `(expressions #f (structure a)))
@@ -75,8 +75,8 @@
 ; single-expression
 (check-equal?
   (option-app expressions-sexp
-    (expressions-part-resolve-fn
-      (expressions-part expressions-a)
+    (ingredients-resolve-fn
+      (ingredients expressions-a)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions result (structure (a racket))))
@@ -84,8 +84,8 @@
 ; single-expression & multi-expression
 (check-equal?
   (option-app expressions-sexp
-    (expressions-part-resolve-fn
-      (expressions-part expressions-a expressions-cd)
+    (ingredients-resolve-fn
+      (ingredients expressions-a expressions-cd)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions 
@@ -95,8 +95,8 @@
 ; multi-expressions
 (check-equal?
   (option-app expressions-sexp
-    (expressions-part-resolve-fn
-      (expressions-part expressions-ab expressions-cd)
+    (ingredients-resolve-fn
+      (ingredients expressions-ab expressions-cd)
       (lambda (($tuple : Tuple))
         (make-expressions #`result (tuple-structure $tuple)))))
   `(expressions 
@@ -107,15 +107,15 @@
 
 ; --------------------------------------------------------------------------------
 
-(define (expressions-part-apply-fn
-  ($expressions-part : Expressions-Part)
+(define (ingredients-apply-fn
+  ($ingredients : Ingredients)
   ($fn : (-> Tuple Expressions))) : Expressions
-  (option-ref (expressions-part-resolve-fn $expressions-part $fn)))
+  (option-ref (ingredients-resolve-fn $ingredients $fn)))
 
 ; --------------------------------------------------------------------------------
 
-(define (expressions-part-do ($expressions-part : Expressions-Part) ($fn : (-> Scope Expressions))) : Expressions
-  (define $expressions-stack $expressions-part)
+(define (ingredients-do ($ingredients : Ingredients) ($fn : (-> Scope Expressions))) : Expressions
+  (define $expressions-stack $ingredients)
   (define $syntax-option-stack (map expressions-syntax-option $expressions-stack))
   (define $structure-stack (map expressions-structure $expressions-stack))
   (define $scope-stack (map structure-generate-scope $structure-stack))
@@ -143,8 +143,8 @@
 ; do static
 (check-equal?
   (expressions-sexp
-    (expressions-part-do
-      (expressions-part expressions-ab expressions-cd)
+    (ingredients-do
+      (ingredients expressions-ab expressions-cd)
       (lambda (($scope : Scope)) 
         (expressions null-syntax static-structure-a))))
   `(expressions #f (structure a)))
@@ -152,8 +152,8 @@
 ; static-expressions
 (check-equal?
   (expressions-sexp
-    (expressions-part-do
-      (expressions-part static-expressions-a expressions-b)
+    (ingredients-do
+      (ingredients static-expressions-a expressions-b)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -163,8 +163,8 @@
 ; single-expressions
 (check-equal?
   (expressions-sexp
-    (expressions-part-do
-      (expressions-part expressions-a expressions-b)
+    (ingredients-do
+      (ingredients expressions-a expressions-b)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -174,8 +174,8 @@
 ; mutli-expressions
 (check-equal?
   (expressions-sexp
-    (expressions-part-do
-      (expressions-part expressions-ab expressions-cd)
+    (ingredients-do
+      (ingredients expressions-ab expressions-cd)
       (lambda (($scope : Scope))
         (make-expressions #`result (map binding-type $scope)))))
   `(expressions 
@@ -186,8 +186,8 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (symbol-expressions-part-expressions ($symbol : Symbol) ($expressions-part : Expressions-Part)) : Expressions
-  (expressions-part-apply-fn $expressions-part
+(define (symbol-ingredients-expressions ($symbol : Symbol) ($ingredients : Ingredients)) : Expressions
+  (ingredients-apply-fn $ingredients
     (lambda (($tuple : Tuple))
       (make-expressions
         (tuple-syntax $tuple)
@@ -195,9 +195,9 @@
 
 (check-equal?
   (expressions-sexp
-    (symbol-expressions-part-expressions
+    (symbol-ingredients-expressions
       `foo
-      (expressions-part expressions-a expressions-cd)))
+      (ingredients expressions-a expressions-cd)))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd))
       (vector a tmp-c tmp-d))
@@ -205,8 +205,8 @@
 
 ; --------------------------------------------------------------------------
 
-(define (expressions-part-expressions ($expressions-part : Expressions-Part)) : Expressions
-  (expressions-part-apply-fn $expressions-part
+(define (ingredients-expressions ($ingredients : Ingredients)) : Expressions
+  (ingredients-apply-fn $ingredients
     (lambda (($tuple : Tuple))
       (expressions
         (make-syntax
@@ -219,41 +219,41 @@
 ; single-expression
 (check-equal?
   (expressions-sexp
-    (expressions-part-expressions
-      (expressions-part expressions-a)))
+    (ingredients-expressions
+      (ingredients expressions-a)))
   `(expressions a (structure (a racket))))
 
 ; single-expression & multi-expression
 (check-equal?
   (expressions-sexp
-    (expressions-part-expressions
-      (expressions-part expressions-a expressions-cd)))
+    (ingredients-expressions
+      (ingredients expressions-a expressions-cd)))
   `(expressions 
     (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
     (structure (a racket) (c racket) (d racket))))
 
 ; ----------------------------------------------------------------------
 
-(define (expressions-part-sexp-list ($expressions-part : Expressions-Part)) : (Listof Sexp)
-  (reverse (filter-false (map expressions-sexp-option $expressions-part))))
+(define (ingredients-sexp-list ($ingredients : Ingredients)) : (Listof Sexp)
+  (reverse (filter-false (map expressions-sexp-option $ingredients))))
 
-(define (scope-doing-expressions-part ($scope : Scope) ($expressions-part : Expressions-Part)) : Expressions-Part
-  (expressions-part (scope-doing-expressions $scope (expressions-part-expressions $expressions-part))))
+(define (scope-doing-ingredients ($scope : Scope) ($ingredients : Ingredients)) : Ingredients
+  (ingredients (scope-doing-expressions $scope (ingredients-expressions $ingredients))))
 
-(define (expressions-part-apply-type ($expressions-part : Expressions-Part)) : Expressions-Part
+(define (ingredients-apply-type ($ingredients : Ingredients)) : Ingredients
   (map expression-expressions
     (map type-expression
-      (expressions-part-structure $expressions-part))))
+      (ingredients-structure $ingredients))))
 
-(define (expressions-part-apply-racket ($expressions-part : Expressions-Part)) : Expressions-Part
-  (expressions-part
+(define (ingredients-apply-racket ($ingredients : Ingredients)) : Ingredients
+  (ingredients
     (expressions 
       (make-syntax 
         `(quote 
           ,(reverse 
             (filter-false 
-              (map expressions-syntax-option $expressions-part)))))
+              (map expressions-syntax-option $ingredients)))))
       (structure (racket)))))
 
-(define (expressions-part-lift-structure ($expressions-part : Expressions-Part)) : (Option Structure)
-  (structure-lift (expressions-part-structure $expressions-part)))
+(define (ingredients-lift-structure ($ingredients : Ingredients)) : (Option Structure)
+  (structure-lift (ingredients-structure $ingredients)))

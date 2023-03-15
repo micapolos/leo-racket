@@ -16,9 +16,9 @@
   leo/compiler/expression-resolve
   leo/compiler/expressions
   leo/compiler/expressions-utils
-  leo/compiler/expressions-part
-  leo/compiler/expressions-part-utils
-  leo/compiler/expressions-part-sexp
+  leo/compiler/ingredients
+  leo/compiler/ingredients-utils
+  leo/compiler/ingredients-sexp
   leo/compiler/scope-resolve
   leo/compiler/type
   leo/compiler/type-utils)
@@ -27,28 +27,28 @@
   ($compiler : Compiler) 
   ($tuple : Tuple)) : Compiler
   (struct-copy compiler $compiler
-    (expressions-part 
-      (expressions-part-plus-tuple 
-        (compiler-expressions-part $compiler) 
+    (ingredients 
+      (ingredients-plus-tuple 
+        (compiler-ingredients $compiler) 
         $tuple))))
 
 (define (compiler-plus-expressions
   ($compiler : Compiler) 
   ($expressions : Expressions)) : Compiler
   (struct-copy compiler $compiler
-    (expressions-part 
-      (scope-apply-expressions-part 
+    (ingredients 
+      (scope-apply-ingredients 
         (compiler-scope $compiler)
-        (push (compiler-expressions-part $compiler) $expressions)))))
+        (push (compiler-ingredients $compiler) $expressions)))))
 
-(define (scope-apply-expressions-part
+(define (scope-apply-ingredients
   ($scope : Scope) 
-  ($expressions-part : Expressions-Part)) : Expressions-Part
+  ($ingredients : Ingredients)) : Ingredients
   (or
-    (option-app expressions-part
-      (expressions-part-resolve-fn $expressions-part
+    (option-app ingredients
+      (ingredients-resolve-fn $ingredients
         (curry scope-or-tuple-resolve-tuple $scope)))
-    $expressions-part))
+    $ingredients))
 
 (define (scope-or-tuple-resolve-tuple
   ($scope : Scope) 
@@ -58,18 +58,18 @@
     (tuple-resolve $tuple)))
 
 (check-equal?
-  (expressions-part-sexp
-    (compiler-expressions-part
+  (ingredients-sexp
+    (compiler-ingredients
       (compiler-plus-expressions
-        (compiler null-scope (expressions-part expressions-a))
+        (compiler null-scope (ingredients expressions-a))
         expressions-b)))
-  `(expressions-part 
+  `(ingredients 
     (expressions a (structure (a racket)))
     (expressions b (structure (b racket)))))
 
 (check-equal?
-  (expressions-part-sexp
-    (compiler-expressions-part
+  (ingredients-sexp
+    (compiler-ingredients
       (compiler-plus-expressions
         (compiler
           (scope
@@ -78,11 +78,11 @@
                 (structure text-type (field `plus (structure text-type)))
                 (structure text-type))
               #`string-append))
-          (expressions-part (expression-expressions (text-expression "Hello, "))))
+          (ingredients (expression-expressions (text-expression "Hello, "))))
         (expression-expressions 
           (field-expression `plus 
             (tuple (text-expression "world!")))))))
-  `(expressions-part
+  `(ingredients
     (expressions
       (#%app string-append "Hello, " "world!") 
       (structure text))))

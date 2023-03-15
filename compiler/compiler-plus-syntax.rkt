@@ -21,27 +21,27 @@
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
-  leo/compiler/compile-expressions-part
+  leo/compiler/compile-ingredients
   leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
   leo/compiler/compiler-utils
-  leo/compiler/expressions-part-utils
-  leo/compiler/expressions-part-sexp
-  leo/compiler/expressions-part
+  leo/compiler/ingredients-utils
+  leo/compiler/ingredients-sexp
+  leo/compiler/ingredients
   leo/compiler/select-compiler
-  leo/compiler/select-expressions-part
+  leo/compiler/select-ingredients
   leo/compiler/recipe-compiler
   leo/compiler/recipe-part
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils)
 
-(define (scope-syntax-list-expressions-part 
+(define (scope-syntax-list-ingredients 
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
-  : Expressions-Part
-  (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
-    (compiler-expressions-part
+  : Ingredients
+  (parameterize ((compile-ingredients-parameter scope-syntax-list-ingredients))
+    (compiler-ingredients
       (fold 
         (compiler $scope null-tuple)
         $syntax-list
@@ -51,8 +51,8 @@
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (expressions-part-expressions
-    (scope-syntax-list-expressions-part
+  (ingredients-expressions
+    (scope-syntax-list-ingredients
       $scope $syntax-list)))
 
 (define (compiler-plus-syntax 
@@ -99,7 +99,7 @@
   ($syntax : Syntax))
   : (Option Compiler)
   (syntax-symbol-match-args $syntax `select $syntax-list
-    (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
+    (parameterize ((compile-ingredients-parameter scope-syntax-list-ingredients))
       (compiler-apply-select $compiler $syntax-list))))
 
 (define (compiler-syntax-resolve-quote
@@ -185,18 +185,18 @@
   ($symbol : Symbol)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (define $expressions-part (scope-syntax-list-expressions-part $scope $syntax-list))
-  (define $structure (expressions-part-structure $expressions-part))
-  (symbol-expressions-part-expressions $symbol $expressions-part))
+  (define $ingredients (scope-syntax-list-ingredients $scope $syntax-list))
+  (define $structure (ingredients-structure $ingredients))
+  (symbol-ingredients-expressions $symbol $ingredients))
 
 ; ------------------------------------------------------------------------------------
 
 (define (compiler-apply-do 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-with-expressions-part $compiler
-    (expressions-part
-      (expressions-part-do (compiler-expressions-part $compiler)
+  (compiler-with-ingredients $compiler
+    (ingredients
+      (ingredients-do (compiler-ingredients $compiler)
         (lambda (($scope : Scope))
           (scope-syntax-list-expressions 
             (push-stack (compiler-scope $compiler) $scope) 
@@ -206,18 +206,18 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-expressions-part $compiler
-    (expressions-part-plus
-      (compiler-expressions-part $compiler)
-      (scope-syntax-list-expressions-part
+  (compiler-with-ingredients $compiler
+    (ingredients-plus
+      (compiler-ingredients $compiler)
+      (scope-syntax-list-ingredients
         (compiler-scope $compiler)
         $syntax-list))))
 
 (define (compiler-apply-time ($compiler : Compiler)) : Compiler
-  (compiler-with-expressions-part $compiler
-    (expressions-part
+  (compiler-with-ingredients $compiler
+    (ingredients
       (bind $expressions
-        (expressions-part-expressions (compiler-expressions-part $compiler))
+        (ingredients-expressions (compiler-ingredients $compiler))
         (expressions
           (make-syntax `(time ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
@@ -225,10 +225,10 @@
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-with-expressions-part $compiler
-    (expressions-part-plus (compiler-expressions-part $compiler)
-      (expressions-part
-        (expressions-part-do (compiler-expressions-part $compiler)
+  (compiler-with-ingredients $compiler
+    (ingredients-plus (compiler-ingredients $compiler)
+      (ingredients
+        (ingredients-do (compiler-ingredients $compiler)
           (lambda (($scope : Scope))
             (scope-syntax-list-expressions 
               (push-stack (compiler-scope $compiler) $scope) 
@@ -240,9 +240,9 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-expressions-part $compiler
+  (compiler-with-ingredients $compiler
     (push-stack
-      (compiler-expressions-part $compiler)
+      (compiler-ingredients $compiler)
       (map expression-expressions 
         (map type-expression 
           (syntax-list-structure $syntax-list))))))
@@ -251,11 +251,11 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-expressions-part $compiler
+  (compiler-with-ingredients $compiler
     (push-stack
-      (compiler-expressions-part $compiler)
-      (parameterize ((compile-expressions-part-parameter scope-syntax-list-expressions-part))
-        (scope-syntax-list-arrow-expressions-part
+      (compiler-ingredients $compiler)
+      (parameterize ((compile-ingredients-parameter scope-syntax-list-ingredients))
+        (scope-syntax-list-arrow-ingredients
           (compiler-scope $compiler)
           $syntax-list)))))
 
@@ -263,12 +263,12 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-expressions-part $compiler
+  (compiler-with-ingredients $compiler
     (push
-      (compiler-expressions-part $compiler)
+      (compiler-ingredients $compiler)
       (expression-expressions
-        (select-expressions-part-expression
-          (compile-select-expressions-part
+        (select-ingredients-expression
+          (compile-select-ingredients
             (compiler-scope $compiler)
             $syntax-list))))))
 
@@ -276,43 +276,43 @@
 
 ; number plus static
 (check-equal?
-  (expressions-part-sexp
-    (compiler-expressions-part
+  (ingredients-sexp
+    (compiler-ingredients
       (compiler-plus-syntax
         (compiler null-scope 
-          (expressions-part 
+          (ingredients 
             (expression-expressions 
               (number-expression 3.14))))
         #`b)))
-  `(expressions-part
+  `(ingredients
     (expressions 3.14 (structure number))
     (expressions #f (structure b))))
 
 ; number plus field
 (check-equal?
-  (expressions-part-sexp
-    (compiler-expressions-part
+  (ingredients-sexp
+    (compiler-ingredients
       (compiler-plus-syntax
         (compiler null-scope 
-          (expressions-part 
+          (ingredients 
             (expression-expressions 
               (number-expression 3.14))))
         #`foo)))
-  `(expressions-part
+  `(ingredients
     (expressions 3.14 (structure number))
     (expressions #f (structure foo))))
 
 ; number plus string
 (check-equal?
-  (expressions-part-sexp
-    (compiler-expressions-part
+  (ingredients-sexp
+    (compiler-ingredients
       (compiler-plus-syntax
         (compiler null-scope 
-          (expressions-part
+          (ingredients
             (expression-expressions 
               (number-expression 3.14))))
         #`"foo")))
-  `(expressions-part
+  `(ingredients
     (expressions 3.14 (structure number))
     (expressions "foo" (structure text))))
 

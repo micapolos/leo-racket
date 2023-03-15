@@ -11,8 +11,8 @@
   leo/compiler/expressions
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils
-  leo/compiler/expressions-part
-  leo/compiler/expressions-part-top-level
+  leo/compiler/ingredients
+  leo/compiler/ingredients-top-level
   leo/typed/syntax-match)
 
 (define (leo-compile ($sexp-list : (Listof Sexp))) : (Pairof Sexp Structure)
@@ -27,8 +27,8 @@
       (syntax-syntax-list (any-syntax $any)))))
 
 (define (leo-compile-any-list ($any-list : (Listof Any))) : Syntax
-  (expressions-part-top-level-syntax 
-    (syntax-list-expressions-part
+  (ingredients-top-level-syntax 
+    (syntax-list-ingredients
       (map syntax-normalize (map any-syntax $any-list)))))
 
 (check-equal?

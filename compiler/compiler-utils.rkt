@@ -4,21 +4,21 @@
 
 (require
   leo/compiler/compiler
-  leo/compiler/expressions-part
-  leo/compiler/expressions-part-utils
+  leo/compiler/ingredients
+  leo/compiler/ingredients-utils
   leo/compiler/compiler-plus-expressions
   leo/compiler/sexp-expression)
 
-(define (compiler-with-expressions-part ($compiler : Compiler) ($expressions-part : Expressions-Part)) : Compiler
-  (struct-copy compiler $compiler (expressions-part $expressions-part)))
+(define (compiler-with-ingredients ($compiler : Compiler) ($ingredients : Ingredients)) : Compiler
+  (struct-copy compiler $compiler (ingredients $ingredients)))
 
 (define (compiler-apply-type ($compiler : Compiler)) : Compiler
-  (compiler-with-expressions-part $compiler
-    (expressions-part-apply-type (compiler-expressions-part $compiler))))
+  (compiler-with-ingredients $compiler
+    (ingredients-apply-type (compiler-ingredients $compiler))))
 
 (define (compiler-apply-racket ($compiler : Compiler)) : Compiler 
-  (compiler-with-expressions-part $compiler
-    (expressions-part-apply-racket (compiler-expressions-part $compiler))))
+  (compiler-with-ingredients $compiler
+    (ingredients-apply-racket (compiler-ingredients $compiler))))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-plus-quoted-tuple $compiler
@@ -26,7 +26,7 @@
       (map syntax->datum $syntax-list))))
 
 (define (compiler-apply-apply ($compiler : Compiler)) : Compiler
-  (compiler-with-expressions-part $compiler
-    (scope-apply-expressions-part
+  (compiler-with-ingredients $compiler
+    (scope-apply-ingredients
       (compiler-scope $compiler)
-      (compiler-expressions-part $compiler))))
+      (compiler-ingredients $compiler))))

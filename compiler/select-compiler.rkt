@@ -10,23 +10,23 @@
   leo/compiler/scope
   leo/compiler/syntax-type
   leo/compiler/type
-  leo/compiler/compile-expressions-part
+  leo/compiler/compile-ingredients
   leo/compiler/expression-utils
   leo/compiler/expressions-utils
-  leo/compiler/expressions-part-utils
-  leo/compiler/select-expressions-part)
+  leo/compiler/ingredients-utils
+  leo/compiler/select-ingredients)
 
 (data select-compiler
   (scope : Scope)
-  (expressions-part : Select-Expressions-Part))
+  (ingredients : Select-Ingredients))
 
-(define (compile-select-expressions-part
+(define (compile-select-ingredients
   ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
-  : Select-Expressions-Part
-  (select-compiler-expressions-part
+  : Select-Ingredients
+  (select-compiler-ingredients
     (fold
-      (select-compiler $scope null-select-expressions-part)
+      (select-compiler $scope null-select-ingredients)
       $syntax-list
       select-compiler-plus-syntax)))
 
@@ -35,27 +35,27 @@
   ($syntax : Syntax))
   : Select-Compiler
   (define $scope (select-compiler-scope $compiler))
-  (define $expressions-part (select-compiler-expressions-part $compiler))
+  (define $ingredients (select-compiler-ingredients $compiler))
   (or
     (syntax-match-symbol-args $syntax $symbol $syntax-list
       (cond
         ((equal? $symbol `not)
           (select-compiler
             $scope
-            (select-expressions-part-plus-not 
-              $expressions-part
+            (select-ingredients-plus-not 
+              $ingredients
               (option-ref-or 
                 (single (syntax-list-structure $syntax-list))
                 (error "not must have single type")))))
         ((equal? $symbol `the)
           (select-compiler
             $scope
-            (select-expressions-part-plus-the 
-              $expressions-part 
+            (select-ingredients-plus-the 
+              $ingredients 
               (option-ref-or
                 (expressions-expression-option
-                  (expressions-part-expressions
-                    (compile-expressions-part $scope $syntax-list)))
+                  (ingredients-expressions
+                    (compile-ingredients $scope $syntax-list)))
                 (error "the must have single expression")))))
         (else 
           (error "select-compiler, expected not or the"))))
