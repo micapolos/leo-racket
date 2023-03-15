@@ -151,6 +151,15 @@
 
 ; ----------------------------------------------------------------------------
 
+(define (expression-symbol-option ($expression : Expression)) : (Option Symbol)
+  (define $type (expression-type $expression))
+  (and 
+    (field? $type)
+    (null? (field-structure $type))
+    (field-symbol $type)))
+
+; ----------------------------------------------------------------------------
+
 (define (syntax-structure-ref
   ($syntax : Syntax)
   ($structure : Structure)

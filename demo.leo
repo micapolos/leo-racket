@@ -1,7 +1,5 @@
 #lang leo
 
-x 10
-y 20
-do
-  x.number
-  plus y.number
+height 20
+width 30
+make rectangle

@@ -14,6 +14,7 @@
   leo/compiler/scope-utils
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/expressions-sexp
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/sourced
@@ -281,10 +282,9 @@
   ($lhs-tuple : Tuple)
   ($rhs-expression : Expression))
   : (Option Expressions)
-  (or 
-    (option-app expressions-resolve-expression
-      (option-app expression-expressions (single $lhs-tuple))
-      $rhs-expression)))
+  (expressions-resolve-expression
+    (tuple-expressions $lhs-tuple)
+    $rhs-expression))
 
 ; -----------------------------------------------------------------------
 
@@ -365,7 +365,9 @@
   ($expressions : Expressions)
   ($expression : Expression))
   : (Option Expressions)
-  (expressions-rhs-resolve-expression $expressions $expression))
+  (or
+    (expressions-resolve-make $expressions $expression)
+    (expressions-rhs-resolve-expression $expressions $expression)))
 
 ; ---------------------------------------------------------------------
 
@@ -411,3 +413,28 @@
             (field `d (stack (racket)))))))
     (expression syntax-b (field `get (structure (field! `e)))))
   #f)
+
+; -----------------------------------------------------------------------
+
+(define (expressions-resolve-make
+  ($lhs-expressions : Expressions)
+  ($rhs-expression : Expression))
+  : (Option Expressions)
+  (or
+    (option-bind (expression-symbol-content $rhs-expression `make) $make-content
+      (option-bind (expressions-expression-option $make-content) $make-expression
+        (option-bind (expression-symbol-option $make-expression) $make-symbol
+          (expressions-resolve-fn $lhs-expressions 
+            (lambda (($tuple : Tuple))
+              (expression-expressions
+                (field-expression $make-symbol $tuple)))))))))
+
+(check-equal?
+  (option-app expressions-sexp
+    (expressions-resolve-make 
+      expressions-ab
+      (field-expression `make 
+        (tuple (field-expression `foo null)))))
+  `(expressions
+    (let-values (((tmp-a tmp-b) ab)) (cons tmp-a tmp-b))
+    (structure (foo (a racket) (b racket)))))

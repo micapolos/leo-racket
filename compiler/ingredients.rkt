@@ -11,4 +11,4 @@
 
 (define null-ingredients null)
 
-(define ingredients stack)
+(define ingredients : (-> Expressions * (Stackof Expressions)) stack)
