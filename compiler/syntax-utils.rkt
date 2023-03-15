@@ -29,10 +29,33 @@
 
 (define null-syntax (make-syntax null-sexp))
 (define test-syntax (make-syntax `test test-srcloc))
+
 (define syntax-a (make-syntax `a srcloc-a))
 (define syntax-b (make-syntax `b srcloc-b))
 (define syntax-c (make-syntax `c srcloc-c))
 (define syntax-d (make-syntax `d srcloc-d))
+
+(define complex-syntax-a (make-syntax `(complex-a)))
+(define complex-syntax-b (make-syntax `(complex-b)))
+(define complex-syntax-c (make-syntax `(complex-c)))
+(define complex-syntax-d (make-syntax `(complex-d)))
+
+(define atomic-syntax-a (make-syntax `atomic-a))
+(define atomic-syntax-b (make-syntax `atomic-b))
+(define atomic-syntax-c (make-syntax `atomic-c))
+(define atomic-syntax-d (make-syntax `atomic-d))
+
+(define (syntax-atomic? ($syntax : Syntax)) : Boolean
+  (or 
+    (null? $syntax)
+    (symbol? $syntax)
+    (boolean? $syntax)
+    (number? $syntax)
+    (string? $syntax)
+    (keyword? $syntax)))
+
+(define (syntax-composite? ($syntax : Syntax)) : Boolean
+  (not (syntax-atomic? $syntax)))
 
 (define (syntax-syntax-list ($syntax : Syntax)) : (Listof Syntax)
   (define $syntax-e (syntax-e $syntax))
