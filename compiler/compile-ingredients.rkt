@@ -5,6 +5,8 @@
 (require
   leo/typed/base
   leo/compiler/expressions
+  leo/compiler/expressions-utils
+  leo/compiler/sexp-expression
   leo/compiler/ingredients
   leo/compiler/type
   leo/compiler/scope)
@@ -13,7 +15,12 @@
   (make-parameter
     (lambda (($scope : Scope) ($syntax-list : (Listof Syntax))) : Ingredients
       (ingredients
-        (expressions #`recurse (structure (racket)))))))
+        (expression-expressions
+          (sexp-expression
+            `(compiled
+              ,(scope-sexp $scope)
+              (script
+                ,@(map syntax->datum $syntax-list)))))))))
 
 (define (compile-ingredients
   ($scope : Scope) 

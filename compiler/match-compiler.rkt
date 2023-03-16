@@ -63,5 +63,9 @@
       syntax-c))
   `(match-compiler
     (scope ())
-    (cases (tuple (expression recurse racket)))
+    (cases
+      (tuple
+        (expression
+          ((binding (a racket) tmp-a))
+          (compiled (scope racket) (script c)))))
     (remaining ((b racket)))))

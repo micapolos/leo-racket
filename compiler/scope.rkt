@@ -15,4 +15,4 @@
 
 (define (scope-sexp ($scope : Scope)) : Sexp
   `(scope
-    ,(map binding-sexp $scope)))
+    ,(reverse (map binding-sexp $scope))))

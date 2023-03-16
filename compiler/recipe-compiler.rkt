@@ -10,7 +10,9 @@
   leo/compiler/ingredients
   leo/compiler/expressions
   leo/compiler/expressions-utils
+  leo/compiler/expressions-sexp
   leo/compiler/ingredients-utils
+  leo/compiler/ingredients-sexp
   leo/compiler/base-scope
   leo/compiler/scope
   leo/compiler/scope-utils
@@ -90,14 +92,11 @@
 ; ---------------------------------------------------------------------
 
 (check-equal?
-  (map expressions-sexp-structure
+  (ingredients-sexp
     (scope-syntax-list-arrow-ingredients
-      base-scope
-      (syntax-e #`(number increment (does number (plus 1))))))
-  (stack
-    (pair
-      `(lambda (tmp-number) recurse)
-      (structure 
-        (arrow 
-          (structure number-type (field! `increment))
-          (structure (racket)))))))
+      null-scope
+      (syntax-e #`(foo (does bar)))))
+  `(ingredients
+    (expressions
+      (lambda () ((binding foo #f)))
+      (structure (recipe foo (doing (compiled (scope racket) (script bar))))))))

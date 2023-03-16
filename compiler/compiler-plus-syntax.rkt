@@ -28,6 +28,7 @@
   leo/compiler/ingredients-utils
   leo/compiler/ingredients-sexp
   leo/compiler/ingredients
+  leo/compiler/match-compiler
   leo/compiler/select-compiler
   leo/compiler/select-ingredients
   leo/compiler/recipe-compiler
