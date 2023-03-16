@@ -1,6 +1,6 @@
 #lang leo
 
-choice
+select
   not text
   the 123
 match

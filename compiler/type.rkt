@@ -30,6 +30,9 @@
   (symbol : Symbol) 
   (structure : Structure))
 
+; TODO: "Choice" is a wrong term. It should be something like "options", "alternatives".
+; Then, the act of selection should be called "select" or "pick".
+; Then, the act of switching should be called "switch", "handle".
 (data choice (type-stack : (Stackof Type)))
 
 (data arrow
