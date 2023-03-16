@@ -58,10 +58,7 @@
     (scope-syntax-list-ingredients
       $scope $syntax-list)))
 
-(define (compiler-plus-syntax 
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : Compiler
+(define (compiler-plus-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
   (or
     (syntax-match-symbol-args $syntax $symbol $syntax-list
       (case $symbol
@@ -80,10 +77,7 @@
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
 
-(define (compiler-apply-syntax
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : Compiler
+(define (compiler-apply-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
   (compiler-plus-expressions
     $compiler
     (scope-syntax-expressions
