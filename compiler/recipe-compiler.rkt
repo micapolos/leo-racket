@@ -95,8 +95,14 @@
   (ingredients-sexp
     (scope-syntax-list-arrow-ingredients
       null-scope
-      (syntax-e #`(foo (does bar)))))
+      (syntax-e #`(number (does text)))))
   `(ingredients
     (expressions
-      (lambda () ((binding foo #f)))
-      (structure (recipe foo (doing (compiled (scope racket) (script bar))))))))
+      (lambda (tmp-number) #f)
+        (structure
+          (recipe 
+            number 
+            (doing 
+              (compiled 
+                (scope (binding number #'tmp-number)) 
+                (script text))))))))

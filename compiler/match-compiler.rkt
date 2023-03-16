@@ -67,10 +67,12 @@
         (list (field! `foo) (field! `bar)))
       (make-syntax `case)))
   `(match-compiler
-    (scope ())
-    (cases
-      (tuple
-        (expression 
-          ((binding foo #f))
-          (compiled (scope racket) (script case)))))
-    (remaining (bar))))
+    (scope)
+      (cases
+        (tuple 
+          (expression 
+            #f 
+            (compiled 
+              (scope (binding foo #'boolean))
+              (script case)))))
+      (remaining (bar))))

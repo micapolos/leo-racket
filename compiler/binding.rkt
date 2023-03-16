@@ -19,4 +19,4 @@
 (define (binding-sexp ($binding : Binding)) : Sexp
   `(binding
     ,(type-sexp (binding-type $binding))
-    ,(option-app syntax-e (binding-identifier-option $binding))))
+    (syntax ,(option-app syntax-e (binding-identifier-option $binding)))))
