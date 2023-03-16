@@ -63,106 +63,24 @@
   ($syntax : Syntax))
   : Compiler
   (or
-    (compiler-syntax-resolve-a $compiler $syntax)
-    (compiler-syntax-resolve-do $compiler $syntax)
-    (compiler-syntax-resolve-recipe $compiler $syntax)
-    (compiler-syntax-resolve-quote $compiler $syntax)
-    (compiler-syntax-resolve-apply $compiler $syntax)
-    (compiler-syntax-resolve-switch $compiler $syntax)
-    (compiler-syntax-resolve-racket $compiler $syntax)
-    (compiler-syntax-resolve-the $compiler $syntax)
-    (compiler-syntax-resolve-then $compiler $syntax)
-    (compiler-syntax-resolve-time $compiler $syntax)
-    (compiler-syntax-resolve-type $compiler $syntax)
-    (compiler-syntax-resolve-select $compiler $syntax)
-    (compiler-syntax-resolve-default $compiler $syntax)))
+    (syntax-match-symbol-args $syntax $symbol $syntax-list
+      (case $symbol
+        ((a) (compiler-apply-a $compiler $syntax-list))
+        ((do) (compiler-apply-do $compiler $syntax-list))
+        ((recipe) (compiler-apply-recipe $compiler $syntax-list))
+        ((quote) (compiler-apply-quote $compiler $syntax-list))
+        ((apply) (compiler-apply-apply $compiler $syntax-list))
+        ((switch) (compiler-apply-switch $compiler $syntax-list))
+        ((racket) (compiler-apply-racket $compiler $syntax-list))
+        ((the) (compiler-apply-the $compiler $syntax-list))
+        ((then) (compiler-apply-then $compiler $syntax-list))
+        ((time) (compiler-apply-time $compiler $syntax-list))
+        ((type) (compiler-apply-type $compiler $syntax-list))
+        ((select) (compiler-apply-select $compiler $syntax-list))
+        (else #f)))
+    (compiler-syntax-apply-default $compiler $syntax)))
 
-(define (compiler-syntax-resolve-a
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `a $syntax-list
-    (compiler-apply-a $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-do
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `do $syntax-list
-    (compiler-apply-do $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-recipe
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `recipe $syntax-list
-    (compiler-apply-recipe $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-select
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `select $syntax-list
-    (parameterize ((compile-ingredients-parameter scope-syntax-list-ingredients))
-      (compiler-apply-select $compiler $syntax-list))))
-
-(define (compiler-syntax-resolve-quote
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `quote $syntax-list
-    (compiler-apply-quote $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-apply
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (and (equal? (syntax->datum $syntax) `apply)
-    (compiler-apply-apply $compiler)))
-
-(define (compiler-syntax-resolve-switch
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `switch $syntax-list
-    (compiler-resolve-switch $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-racket
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (and (equal? (syntax->datum $syntax) `racket)
-    (compiler-apply-racket $compiler)))
-
-(define (compiler-syntax-resolve-the
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `the $syntax-list
-    (compiler-apply-the $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-time
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (and (equal? (syntax->datum $syntax) `time)
-    (compiler-apply-time $compiler)))
-
-(define (compiler-syntax-resolve-then
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (syntax-symbol-match-args $syntax `then $syntax-list
-    (compiler-apply-then $compiler $syntax-list)))
-
-(define (compiler-syntax-resolve-type
-  ($compiler : Compiler) 
-  ($syntax : Syntax))
-  : (Option Compiler)
-  (and (equal? (syntax->datum $syntax) `type)
-    (compiler-apply-type $compiler)))
-
-(define (compiler-syntax-resolve-default
+(define (compiler-syntax-apply-default
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
@@ -224,33 +142,39 @@
         (compiler-scope $compiler)
         $syntax-list))))
 
-(define (compiler-resolve-switch 
+(define (compiler-apply-switch 
   ($compiler : Compiler)
-  ($syntax-list : (Listof Syntax))) : (Option Compiler)
-  (option-app compiler-with-ingredients $compiler
-    (option-app ingredients
-      (ingredients-resolve-fn (compiler-ingredients $compiler)
-        (lambda (($tuple : Tuple))
-          (option-bind (single $tuple) $expression
-            (bind $type (expression-type $expression)
-              (and
-                (choice? $type)
-                (choice-expression-resolve-tuple 
-                  $expression ; TODO: Expression choice is unnecessarily checked twice
-                  (match-compiler-compiled-cases-tuple
-                    (fold
-                      (match-compiler 
-                        (compiler-scope $compiler) 
-                        null-tuple 
-                        (reverse (choice-type-stack $type)))
-                      $syntax-list
-                      match-compiler-plus-syntax)))))))))))
+  ($syntax-list : (Listof Syntax))) : Compiler
+  (compiler-with-ingredients $compiler
+    (ingredients
+      (option-ref ; report error message
+        (ingredients-resolve-fn (compiler-ingredients $compiler)
+          (lambda (($tuple : Tuple))
+            (option-bind (single $tuple) $expression
+              (bind $type (expression-type $expression)
+                (and
+                  (choice? $type)
+                  (choice-expression-resolve-tuple 
+                    $expression ; TODO: Expression choice is unnecessarily checked twice
+                    (match-compiler-compiled-cases-tuple
+                      (fold
+                        (match-compiler 
+                          (compiler-scope $compiler) 
+                          null-tuple 
+                          (reverse (choice-type-stack $type)))
+                        $syntax-list
+                        match-compiler-plus-syntax))))))))))))
 
-(define (compiler-apply-time ($compiler : Compiler)) : Compiler
+(define (compiler-apply-time ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
     (ingredients
       (bind $expressions
-        (ingredients-expressions (compiler-ingredients $compiler))
+        (ingredients-expressions 
+          (ingredients-plus 
+            (compiler-ingredients $compiler)
+            (compile-ingredients
+              (compiler-scope $compiler)
+              $syntax-list)))
         (expressions
           (make-syntax `(time ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
