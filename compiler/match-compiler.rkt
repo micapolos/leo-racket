@@ -26,6 +26,11 @@
 
 (define null-match-compiler (match-compiler null-scope null-tuple null))
 
+(define (match-compiler-compiled-cases-tuple ($match-compiler : Match-Compiler)) : Tuple
+  (unless (null? (match-compiler-remaining-type-list $match-compiler))
+    (error "not all cases handled"))
+  (match-compiler-cases-tuple $match-compiler))
+
 (define (match-compiler-sexp ($match-compiler : Match-Compiler)) : Sexp
   `(match-compiler
     ,(scope-sexp (match-compiler-scope $match-compiler))

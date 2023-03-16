@@ -228,6 +228,7 @@
 
 ; ------------------------------------------------------------------------
 
+; TODO: Extract choice-tuple-apply-tuple
 (define (choice-expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple)) : (Option Expressions)
