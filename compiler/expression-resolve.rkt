@@ -228,29 +228,6 @@
 
 ; ------------------------------------------------------------------------
 
-(define (choice-expression-resolve-tuple 
-  ($expression : Expression) 
-  ($tuple : Tuple)) 
-  : (Option Expressions)
-  (define $type (expression-type $expression))
-  (and 
-    (choice? $type)
-    (choice-syntax-resolve-tuple $type (expression-syntax $expression) $tuple)))
-
-(define (choice-syntax-resolve-tuple
-  ($choice : Choice)
-  ($syntax : Syntax)
-  ($rhs-tuple : Tuple)) : (Option Expressions)
-  (let* (($choice-type-stack (choice-type-stack $choice))
-         ($choice-structure-stack (map structure $choice-type-stack))
-         ($case-type-stack (tuple-structure $rhs-tuple))
-         ($apply-structure-option-stack (map type-apply-structure $case-type-stack $choice-structure-stack)))
-    (and
-      (andmap (ann identity (-> (Option Structure) (Option Structure))) $apply-structure-option-stack)
-      #f)))
-
-; ------------------------------------------------------------------------
-
 (define (expression-resolve-tuple
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
@@ -262,9 +239,6 @@
       (option-app expression-expressions
         (expression-resolve-get $lhs-expression $single-rhs-expression)))
     (arrow-expression-resolve-tuple 
-      $lhs-expression 
-      $rhs-tuple)
-    (choice-expression-resolve-tuple 
       $lhs-expression 
       $rhs-tuple)))
 

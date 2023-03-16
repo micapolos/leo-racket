@@ -148,17 +148,18 @@
               (bind $type (expression-type $expression)
                 (and
                   (choice? $type)
-                  (choice-syntax-resolve-tuple
-                    $type
-                    (expression-syntax $expression)
-                    (match-compiler-compiled-cases-tuple
-                      (fold
-                        (match-compiler 
-                          (compiler-scope $compiler) 
-                          null-tuple 
-                          (reverse (choice-type-stack $type)))
-                        $syntax-list
-                        match-compiler-plus-syntax))))))))))))
+                  #f)))))))))
+                  ; (choice-syntax-resolve-tuple
+                  ;   $type
+                  ;   (expression-syntax $expression)
+                  ;   (match-compiler-compiled-cases-tuple
+                  ;     (fold
+                  ;       (match-compiler 
+                  ;         (compiler-scope $compiler) 
+                  ;         null-tuple 
+                  ;         (reverse (choice-type-stack $type)))
+                  ;       $syntax-list
+                  ;       match-compiler-plus-syntax))))))))))))
 
 (define (compiler-apply-time ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler

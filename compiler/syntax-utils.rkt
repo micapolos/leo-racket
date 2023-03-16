@@ -3,7 +3,9 @@
 (provide (all-defined-out))
 
 (require 
+  racket/list
   leo/typed/base
+  leo/typed/stack
   leo/typed/testing
   leo/compiler/sexp-utils
   leo/compiler/sourced
@@ -74,3 +76,51 @@
 (check-equal? 
   (syntax->datum (syntax-normalize #`((1) ((2)) ((3) (3)))))
   `(1 2 (3 3)))
+
+; ------------------------------------------------------------------------
+
+(define (syntax-switch-syntax-list
+  ($syntax : Syntax)
+  ($syntax-stack : (Stackof Syntax))) : Syntax
+  (case (length $syntax-stack)
+    ((0) (error "impossible"))
+    ((1) (car $syntax-stack))
+    ((2) 
+      (make-syntax 
+        `(if 
+          ,$syntax
+          ,(pop-top $syntax-stack)
+          ,(top $syntax-stack))))
+    (else 
+      (make-syntax
+        `(case ,$syntax
+          ,@(map
+            (lambda (($index : Exact-Nonnegative-Integer) ($rhs-syntax : Syntax))
+              `((,$index) ,$rhs-syntax))
+            (range (sub1 (length $syntax-stack)))
+            (reverse (pop $syntax-stack)))
+          (else ,(top $syntax-stack)))))))
+
+(check-equal?
+  (syntax->datum
+    (syntax-switch-syntax-list
+      #`expr
+      (stack #`zero)))
+  `zero)
+
+(check-equal?
+  (syntax->datum
+    (syntax-switch-syntax-list
+      #`expr
+      (stack #`zero #`one)))
+  `(if expr zero one))
+
+(check-equal?
+  (syntax->datum
+    (syntax-switch-syntax-list
+      #`expr
+      (stack #`zero #`one #`two)))
+  `(case expr
+    ((0) zero)
+    ((1) one)
+    (else two)))
