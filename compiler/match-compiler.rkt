@@ -59,13 +59,13 @@
       (match-compiler 
         null-scope 
         null-tuple
-        (list type-a type-b))
-      syntax-c))
+        (list (field! `foo) (field! `bar)))
+      (make-syntax `case)))
   `(match-compiler
     (scope ())
     (cases
       (tuple
-        (expression
-          ((binding (a racket) tmp-a))
-          (compiled (scope racket) (script c)))))
-    (remaining ((b racket)))))
+        (expression 
+          ((binding foo #f))
+          (compiled (scope racket) (script case)))))
+    (remaining (bar))))
