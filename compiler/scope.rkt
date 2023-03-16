@@ -12,3 +12,7 @@
 (define null-scope null)
 
 (define scope stack)
+
+(define (scope-sexp ($scope : Scope)) : Sexp
+  `(scope
+    ,(map binding-sexp $scope)))
