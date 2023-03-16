@@ -228,19 +228,27 @@
 
 ; ------------------------------------------------------------------------
 
+(define (choice-expression-resolve-tuple 
+  ($expression : Expression) 
+  ($tuple : Tuple)) 
+  : (Option Expressions)
+  (define $type (expression-type $expression))
+  (and 
+    (choice? $type)
+    (choice-syntax-resolve-tuple $type (expression-syntax $expression) $tuple)))
+
 ; TODO: Extract choice-tuple-apply-tuple
-(define (choice-expression-resolve-tuple
-  ($lhs-expression : Expression)
+(define (choice-syntax-resolve-tuple
+  ($choice : Choice)
+  ($syntax : Syntax)
   ($rhs-tuple : Tuple)) : (Option Expressions)
-  (let (($expression-type (expression-type $lhs-expression)))
-    (and (choice? $expression-type)
-      (let* (($choice-type-stack (choice-type-stack $expression-type))
-             ($choice-structure-stack (map structure $choice-type-stack))
-             ($case-type-stack (tuple-structure $rhs-tuple))
-             ($apply-structure-option-stack (map type-apply-structure $case-type-stack $choice-structure-stack)))
-        (and
-          (andmap (ann identity (-> (Option Structure) (Option Structure))) $apply-structure-option-stack)
-          #f)))))
+  (let* (($choice-type-stack (choice-type-stack $choice))
+         ($choice-structure-stack (map structure $choice-type-stack))
+         ($case-type-stack (tuple-structure $rhs-tuple))
+         ($apply-structure-option-stack (map type-apply-structure $case-type-stack $choice-structure-stack)))
+    (and
+      (andmap (ann identity (-> (Option Structure) (Option Structure))) $apply-structure-option-stack)
+      #f)))
 
 ; ------------------------------------------------------------------------
 
