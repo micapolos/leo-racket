@@ -148,8 +148,9 @@
               (bind $type (expression-type $expression)
                 (and
                   (choice? $type)
-                  (choice-expression-resolve-tuple 
-                    $expression ; TODO: Expression choice is unnecessarily checked twice
+                  (choice-syntax-resolve-tuple
+                    $type
+                    (expression-syntax $expression)
                     (match-compiler-compiled-cases-tuple
                       (fold
                         (match-compiler 
