@@ -237,7 +237,6 @@
     (choice? $type)
     (choice-syntax-resolve-tuple $type (expression-syntax $expression) $tuple)))
 
-; TODO: Extract choice-tuple-apply-tuple
 (define (choice-syntax-resolve-tuple
   ($choice : Choice)
   ($syntax : Syntax)
