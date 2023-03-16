@@ -68,7 +68,7 @@
     (compiler-syntax-resolve-recipe $compiler $syntax)
     (compiler-syntax-resolve-quote $compiler $syntax)
     (compiler-syntax-resolve-apply $compiler $syntax)
-    (compiler-syntax-resolve-match $compiler $syntax)
+    (compiler-syntax-resolve-switch $compiler $syntax)
     (compiler-syntax-resolve-racket $compiler $syntax)
     (compiler-syntax-resolve-the $compiler $syntax)
     (compiler-syntax-resolve-then $compiler $syntax)
@@ -120,12 +120,12 @@
   (and (equal? (syntax->datum $syntax) `apply)
     (compiler-apply-apply $compiler)))
 
-(define (compiler-syntax-resolve-match
+(define (compiler-syntax-resolve-switch
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : (Option Compiler)
-  (syntax-symbol-match-args $syntax `match $syntax-list
-    (compiler-resolve-match $compiler $syntax-list)))
+  (syntax-symbol-match-args $syntax `switch $syntax-list
+    (compiler-resolve-switch $compiler $syntax-list)))
 
 (define (compiler-syntax-resolve-racket
   ($compiler : Compiler) 
@@ -224,7 +224,7 @@
         (compiler-scope $compiler)
         $syntax-list))))
 
-(define (compiler-resolve-match 
+(define (compiler-resolve-switch 
   ($compiler : Compiler)
   ($syntax-list : (Listof Syntax))) : (Option Compiler)
   (option-app compiler-with-ingredients $compiler
