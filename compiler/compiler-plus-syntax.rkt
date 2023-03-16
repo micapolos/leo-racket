@@ -78,9 +78,9 @@
         ((type) (compiler-apply-type $compiler $syntax-list))
         ((select) (compiler-apply-select $compiler $syntax-list))
         (else #f)))
-    (compiler-syntax-apply-syntax $compiler $syntax)))
+    (compiler-apply-syntax $compiler $syntax)))
 
-(define (compiler-syntax-apply-syntax
+(define (compiler-apply-syntax
   ($compiler : Compiler) 
   ($syntax : Syntax))
   : Compiler
