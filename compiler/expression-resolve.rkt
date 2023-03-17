@@ -28,7 +28,7 @@
   (and
     (not (null? $tuple))
     (or
-      ($fn (top $tuple))
+      ($fn (car $tuple))
       (tuple-resolve-first-fn (pop $tuple) $fn))))
 
 ; ----------------------------------------------------------------------------------------

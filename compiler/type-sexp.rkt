@@ -27,7 +27,7 @@
         $symbol
         `(,$symbol ,@(structure-sexp-list $structure))))
     ((choice? $type)
-      `(choice ,@(structure-sexp-list (choice-type-stack $type))))
+      `(one (of ,@(structure-sexp-list (choice-type-stack $type)))))
     ((arrow? $type) 
       (define $lhs-structure (arrow-from-structure $type))
       (define $rhs-structure (arrow-to-structure $type))
@@ -64,8 +64,8 @@
 (check-equal? (type-sexp (field `foo null)) `foo)
 (check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
 
-(check-equal? (type-sexp (choice null)) `(choice))
-(check-equal? (type-sexp (choice (structure (racket)))) `(choice racket))
+(check-equal? (type-sexp (choice!)) `(one (of)))
+(check-equal? (type-sexp (choice! (field! `zero) (field! `one))) `(one (of zero one)))
 
 (check-equal? (type-sexp (recursive (field! `foo))) `(recursive foo))
 

@@ -2,3 +2,4 @@
 
 "foo"
 check equals "foo"
+type

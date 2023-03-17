@@ -12,6 +12,7 @@
   leo/compiler/scope-utils
   leo/compiler/ingredients
   leo/compiler/type
+  leo/compiler/type-sexp
   leo/compiler/type-utils
   leo/compiler/syntax-utils
   leo/compiler/expressions
@@ -242,8 +243,9 @@
 
 (define (ingredients-apply-type ($ingredients : Ingredients)) : Ingredients
   (map expression-expressions
-    (map type-expression
-      (ingredients-structure $ingredients))))
+    (sexp-list-tuple
+      (structure-sexp-list
+        (ingredients-structure $ingredients)))))
 
 (define (ingredients-apply-racket ($ingredients : Ingredients)) : Ingredients
   (ingredients
