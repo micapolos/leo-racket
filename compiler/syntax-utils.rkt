@@ -80,7 +80,7 @@
 
 ; ------------------------------------------------------------------------
 
-(define (syntax-switch-syntax-list
+(define (syntax-switch-syntax-stack
   ($syntax : Syntax)
   ($syntax-stack : (Stackof Syntax))) : Syntax
   (case (length $syntax-stack)
@@ -104,21 +104,21 @@
 
 (check-equal?
   (syntax->datum
-    (syntax-switch-syntax-list
+    (syntax-switch-syntax-stack
       #`expr
       (stack #`zero)))
   `zero)
 
 (check-equal?
   (syntax->datum
-    (syntax-switch-syntax-list
+    (syntax-switch-syntax-stack
       #`expr
       (stack #`zero #`one)))
   `(if expr zero one))
 
 (check-equal?
   (syntax->datum
-    (syntax-switch-syntax-list
+    (syntax-switch-syntax-stack
       #`expr
       (stack #`zero #`one #`two)))
   `(case expr

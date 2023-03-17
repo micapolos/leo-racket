@@ -60,8 +60,12 @@
       $scope $syntax-list)))
 
 (define (compiler-plus-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
+  (define $normalized-syntax 
+    (cond
+      ((symbol? (syntax-e $syntax)) (make-syntax `(,$syntax)))
+      (else $syntax)))
   (or
-    (syntax-match-symbol-args $syntax $symbol $syntax-list
+    (syntax-match-symbol-args $normalized-syntax $symbol $syntax-list
       (case $symbol
         ((a) (compiler-apply-a $compiler $syntax-list))
         ((do) (compiler-apply-do $compiler $syntax-list))
@@ -161,9 +165,9 @@
                           match-compiler-plus-syntax))))
                     (expression-expressions
                       (expression
-                        (syntax-switch-syntax-list
+                        (syntax-switch-syntax-stack
                           (expression-syntax $expression)
-                          (reverse (switch-syntax-stack $switch)))
+                          (switch-syntax-stack $switch))
                         (switch-type $switch)))))))))))))
 
 (define (compiler-apply-time ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler

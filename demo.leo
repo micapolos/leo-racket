@@ -1,5 +1,11 @@
 #lang leo
 
-10
-"foo"
+select
+  not foo
+  the zoo
+  not bar
+switch
+  "zero"
+  "one"
+  "two"
 racket
