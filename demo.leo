@@ -1,5 +1,8 @@
 #lang leo
 
-"foo"
-check equals "foo"
-type
+select
+  not true
+  the false
+do switch
+  "true"
+  "false"

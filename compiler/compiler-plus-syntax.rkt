@@ -161,29 +161,29 @@
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
     (ingredients
-      (option-ref ; report error message
-        (ingredients-resolve-fn (compiler-ingredients $compiler)
-          (lambda (($tuple : Tuple))
-            (option-bind (single $tuple) $expression
-              (bind $type (expression-type $expression)
-                (and
-                  (choice? $type)
-                  (let 
-                    (($switch 
-                      (match-compiler-switch
-                        (fold
-                          (match-compiler 
-                            (compiler-scope $compiler) 
-                            null-switch-option 
-                            (reverse (choice-type-stack $type)))
-                          $syntax-list
-                          match-compiler-plus-syntax))))
-                    (expression-expressions
-                      (expression
-                        (syntax-switch-syntax-stack
-                          (expression-syntax $expression)
-                          (switch-syntax-stack $switch))
-                        (switch-type $switch)))))))))))))
+      (option-ref-or
+        (compiler-resolve-first-fn $compiler
+          (lambda (($expression : Expression))
+            (bind $type (expression-type $expression)
+              (and
+                (choice? $type)
+                (let 
+                  (($switch 
+                    (match-compiler-switch
+                      (fold
+                        (match-compiler 
+                          (compiler-scope $compiler) 
+                          null-switch-option 
+                          (reverse (choice-type-stack $type)))
+                        $syntax-list
+                        match-compiler-plus-syntax))))
+                  (expression-expressions
+                    (expression
+                      (syntax-switch-syntax-stack
+                        (expression-syntax $expression)
+                        (switch-syntax-stack $switch))
+                      (switch-type $switch))))))))
+        (error "no choice to resolve")))))
 
 (define (compiler-apply-time ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
