@@ -24,6 +24,13 @@
   leo/compiler/typed
   leo/compiler/type-match)
 
+(define (tuple-resolve-first-fn ($tuple : Tuple) ($fn : (-> Expression (Option Expressions)))) : (Option Expressions)
+  (and
+    (not (null? $tuple))
+    (or
+      ($fn (top $tuple))
+      (tuple-resolve-first-fn (pop $tuple) $fn))))
+
 ; ----------------------------------------------------------------------------------------
 
 (define (tuple-resolve-selector

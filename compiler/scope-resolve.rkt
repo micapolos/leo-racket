@@ -17,6 +17,13 @@
   leo/compiler/expression-utils
   leo/compiler/expressions)
 
+(define (scope-resolve-first-fn ($scope : Scope) ($fn : (-> Expression (Option Expressions)))) : (Option Expressions)
+  (and
+    (not (null? $scope))
+    (or
+      (binding-resolve-fn (top $scope) $fn)
+      (scope-resolve-first-fn (pop $scope) $fn))))
+
 (define (scope-resolve-tuple 
   ($scope : Scope)
   ($tuple : Tuple))

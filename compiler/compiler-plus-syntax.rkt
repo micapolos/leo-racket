@@ -13,6 +13,7 @@
   leo/compiler/binding-utils
   leo/compiler/base-scope
   leo/compiler/scope
+  leo/compiler/scope-resolve
   leo/compiler/switch
   leo/compiler/sexp-expression
   leo/compiler/expressions
@@ -21,6 +22,7 @@
   leo/compiler/expression
   leo/compiler/expression-resolve
   leo/compiler/expressions-utils
+  leo/compiler/expressions-resolve
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
@@ -81,6 +83,19 @@
         ((select) (compiler-apply-select $compiler $syntax-list))
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
+
+(define (compiler-resolve-first-fn 
+  ($compiler : Compiler) 
+  ($fn : (-> Expression (Option Expressions)))) 
+  : (Option Expressions)
+  (define $scope (compiler-scope $compiler))
+  (define $ingredients (compiler-ingredients $compiler))
+  (or
+    (option-app tuple-resolve-first-fn
+      (option-app expressions-rhs-option 
+        (ingredients-expressions $ingredients))
+      $fn)
+    (scope-resolve-first-fn $scope $fn)))
 
 (define (compiler-apply-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
   (compiler-plus-expressions
