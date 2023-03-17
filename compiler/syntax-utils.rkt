@@ -7,6 +7,7 @@
   leo/typed/base
   leo/typed/stack
   leo/typed/testing
+  leo/compiler/generate-temporary
   leo/compiler/sexp-utils
   leo/compiler/sourced
   leo/typed/srcloc)
@@ -124,3 +125,45 @@
     ((0) zero)
     ((1) one)
     (else two)))
+
+; -------------------------------------------------------------------------
+
+(define (syntax-symbol-do
+  ($syntax : Syntax) 
+  ($symbol : Symbol) 
+  ($fn : (-> Identifier Syntax))) : Syntax
+  (let (($tmp (symbol-temporary $symbol)))
+    (make-syntax
+      `(let 
+        ((,$tmp ,$syntax)) 
+        ,($fn $tmp)))))
+
+(check-equal?
+  (syntax->datum
+    (syntax-symbol-do #`expr `var
+      (lambda (($identifier : Syntax))
+        (make-syntax `(done ,$identifier)))))
+  `(let 
+    ((tmp-var expr)) 
+    (done tmp-var)))
+
+; -------------------------------------------------------------------------
+
+(define (syntax-symbol-stack-do
+  ($syntax : Syntax) 
+  ($symbol-stack : (Stackof Symbol))
+  ($fn : (-> (Stackof Identifier) Syntax))) : Syntax
+  (let (($tmps (map symbol-temporary $symbol-stack)))
+    (make-syntax
+      `(let-values 
+        ((,(reverse $tmps) ,$syntax)) 
+        ,($fn $tmps)))))
+
+(check-equal?
+  (syntax->datum
+    (syntax-symbol-stack-do #`expr (stack `a `b `c)
+      (lambda (($identifier-stack : (Stackof Syntax)))
+        (make-syntax `(done ,@(reverse $identifier-stack))))))
+  `(let-values 
+    (((tmp-a tmp-b tmp-c) expr)) 
+    (done tmp-a tmp-b tmp-c)))

@@ -13,6 +13,7 @@
   leo/compiler/binding-utils
   leo/compiler/base-scope
   leo/compiler/scope
+  leo/compiler/switch
   leo/compiler/sexp-expression
   leo/compiler/expressions
   leo/compiler/scope-utils
@@ -148,18 +149,22 @@
               (bind $type (expression-type $expression)
                 (and
                   (choice? $type)
-                  #f)))))))))
-                  ; (choice-syntax-resolve-tuple
-                  ;   $type
-                  ;   (expression-syntax $expression)
-                  ;   (match-compiler-compiled-cases-tuple
-                  ;     (fold
-                  ;       (match-compiler 
-                  ;         (compiler-scope $compiler) 
-                  ;         null-tuple 
-                  ;         (reverse (choice-type-stack $type)))
-                  ;       $syntax-list
-                  ;       match-compiler-plus-syntax))))))))))))
+                  (let 
+                    (($switch 
+                      (match-compiler-switch
+                        (fold
+                          (match-compiler 
+                            (compiler-scope $compiler) 
+                            null-switch-option 
+                            (reverse (choice-type-stack $type)))
+                          $syntax-list
+                          match-compiler-plus-syntax))))
+                    (expression-expressions
+                      (expression
+                        (syntax-switch-syntax-list
+                          (expression-syntax $expression)
+                          (reverse (switch-syntax-stack $switch)))
+                        (switch-type $switch)))))))))))))
 
 (define (compiler-apply-time ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler

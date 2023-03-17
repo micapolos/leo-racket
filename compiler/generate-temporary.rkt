@@ -13,13 +13,15 @@
   leo/compiler/typed
   (for-syntax racket/base))
 
-(define (type-generate-temporary ($type : Type)) : Identifier
-  (define $symbol (type-symbol $type))
+(define (symbol-temporary ($symbol : Symbol)) : Identifier
   (cond
     ((testing?)
       (datum->syntax #f 
         (string->symbol (string-append "tmp-" (symbol->string $symbol)))))
-    (else (car (generate-temporaries (list (type-symbol $type)))))))
+    (else (car (generate-temporaries (list $symbol))))))
+
+(define (type-generate-temporary ($type : Type)) : Identifier
+  (symbol-temporary (type-symbol $type)))
 
 (check-equal?
   (string-prefix?
