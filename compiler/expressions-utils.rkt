@@ -219,7 +219,7 @@
   (and $fn-expressions
     (make-expressions
       (case (length $tmp-stack)
-        ((0) null-syntax)
+        ((0) $syntax)
         ((1) 
           (make-syntax 
             `(let
@@ -233,26 +233,42 @@
       (expressions-structure $fn-expressions))))
 
 (check-equal?
-  (option-app expressions-sexp-structure
-    (expressions-resolve-fn expressions-a
+  (option-app expressions-sexp
+    (expressions-resolve-fn (expressions #`a (structure static-type-a))
       (lambda (($tuple : Tuple))
         (expressions
           (make-syntax (reverse (map expression-syntax $tuple)))
           (tuple-structure $tuple)))))
-  (pair 
-    `(let ((tmp-a a)) (tmp-a))
-    structure-a))
+  `(expressions #f (structure a)))
 
 (check-equal?
-  (option-app expressions-sexp-structure
+  (option-app expressions-sexp
+    (expressions-resolve-fn (expressions atomic-syntax-a (structure dynamic-type-a))
+      (lambda (($tuple : Tuple))
+        (expressions
+          (make-syntax (reverse (map expression-syntax $tuple)))
+          (tuple-structure $tuple)))))
+  `(expressions (let ((tmp-a atomic-a)) (tmp-a)) (structure (a racket))))
+
+(check-equal?
+  (option-app expressions-sexp
+    (expressions-resolve-fn (expressions complex-syntax-a (structure dynamic-type-a))
+      (lambda (($tuple : Tuple))
+        (expressions
+          (make-syntax (reverse (map expression-syntax $tuple)))
+          (tuple-structure $tuple)))))
+  `(expressions (let ((tmp-a (complex-a))) (tmp-a)) (structure (a racket))))
+
+(check-equal?
+  (option-app expressions-sexp
     (expressions-resolve-fn expressions-ab
       (lambda (($tuple : Tuple))
         (expressions 
           (make-syntax (reverse (map expression-syntax $tuple)))
           (tuple-structure $tuple)))))
-  (pair 
-    `(let-values (((tmp-a tmp-b) ab)) (tmp-a tmp-b))
-    structure-ab))
+  `(expressions
+    (let-values (((tmp-a tmp-b) ab)) (tmp-a tmp-b))
+    (structure (a racket) (b racket))))
 
 ; ---------------------------------------------------------------------
 
