@@ -6,11 +6,14 @@
   leo/typed/base
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/typed)
+  leo/compiler/typed
+  leo/compiler/syntax-utils)
 
 (data expressions 
   (syntax : Syntax)
   (structure : Structure))
+
+(define null-expressions (expressions null-syntax null-structure))
 
 ; TODO: Refactor expression-syntax
 (define (expressions-syntax-option ($expressions : Expressions)) : (Option Syntax)

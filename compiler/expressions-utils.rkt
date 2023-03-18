@@ -25,8 +25,6 @@
   leo/compiler/typed
   leo/compiler/type-utils)
 
-(define null-expressions (expressions null-syntax null-structure))
-
 (define static-expressions-a (expressions null-syntax static-structure-a))
 
 (define expressions-a (expressions #`a structure-a))

@@ -12,36 +12,36 @@
   leo/compiler/expression
   leo/compiler/expression-utils)
 
-(data binder-entry
+(data entry
   (identifier : Identifier)
   (syntax : Syntax))
 
 (data binder
-  (entry-option : (Option Binder-Entry))
+  (entry-option : (Option Entry))
   (bound-syntax : Syntax))
 
-(define (binder-entry-sexp ($binder-entry : Binder-Entry)) : Sexp
+(define (entry-sexp ($entry : Entry)) : Sexp
   `(entry
-    (identifier ,(syntax-e (binder-entry-identifier $binder-entry)))
-    (syntax ,(syntax->datum (binder-entry-syntax $binder-entry)))))
+    (identifier ,(syntax-e (entry-identifier $entry)))
+    (syntax ,(syntax->datum (entry-syntax $entry)))))
 
 (define (binder-sexp ($binder : Binder)) : Sexp
   `(binder
-    ,(option-app binder-entry-sexp (binder-entry-option $binder))
+    ,(option-app entry-sexp (binder-entry-option $binder))
     (bound (syntax ,(syntax->datum (binder-bound-syntax $binder))))))
 
-(define (binder-entry-let-syntax ($binder-entry : Binder-Entry)) : Syntax
+(define (binder-entry-let-syntax ($entry : Entry)) : Syntax
   (make-syntax 
     `(
-      ,(binder-entry-identifier $binder-entry)
-      ,(binder-entry-syntax $binder-entry))))
+      ,(entry-identifier $entry)
+      ,(entry-syntax $entry))))
 
 (define (expression-binder ($expression : Expression)) : Binder
   (define $type (expression-type $expression))
   (define $syntax (expression-syntax $expression))
   (define $tmp (type-generate-temporary-option $type))
   (or
-    (and $tmp (syntax-complex? $syntax) (binder (binder-entry $tmp $syntax) $tmp))
+    (and $tmp (syntax-complex? $syntax) (binder (entry $tmp $syntax) $tmp))
     (binder #f $syntax)))
 
 (check-equal?
