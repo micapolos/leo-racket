@@ -247,7 +247,9 @@
       $fn-structure)))
 
 (define (tuple-do ($tuple : Tuple) ($fn : (-> Scope Expressions))) : Expressions
-  (option-ref (tuple-resolve-fn $tuple $fn)))
+  (option-ref-or
+    (tuple-resolve-fn $tuple $fn)
+    (tuple-expressions $tuple)))
 
 (check-equal?
   (expressions-sexp-structure
