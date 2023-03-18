@@ -37,7 +37,7 @@
 (define (match-compiler-switch ($match-compiler : Match-Compiler)) : Switch
   (unless (null? (match-compiler-remaining-type-list $match-compiler))
     (error "not all cases handled"))
-  (option-ref-or (match-compiler-switch-option $match-compiler)
+  (option-or (match-compiler-switch-option $match-compiler)
     (error "empty switch")))
 
 (define (match-compiler-sexp ($match-compiler : Match-Compiler)) : Sexp

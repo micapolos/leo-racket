@@ -44,7 +44,7 @@
             $scope
             (select-ingredients-plus-not 
               $ingredients
-              (option-ref-or 
+              (option-or 
                 (single (syntax-list-structure $syntax-list))
                 (error "not must have single type")))))
         ((equal? $symbol `the)
@@ -52,7 +52,7 @@
             $scope
             (select-ingredients-plus-the 
               $ingredients 
-              (option-ref-or
+              (option-or
                 (expressions-expression-option
                   (ingredients-expressions
                     (compile-ingredients $scope $syntax-list)))

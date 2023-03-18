@@ -11,7 +11,7 @@
     (error "False!!!")
     $any))
 
-(define-syntax (option-ref-or $syntax)
+(define-syntax (option-or $syntax)
   (syntax-case $syntax ()
     ((_ $option $or ...)
       (let (($tmp (car (generate-temporaries `(tmp)))))
@@ -21,11 +21,11 @@
             (else $or ...)))))))
 
 (check-equal?
-  (option-ref-or #f 123)
+  (option-or #f 123)
   123)
 
 (check-equal?
-  (option-ref-or 123 128)
+  (option-or 123 128)
   123)
 
 (define #:forall (T R) (option-map 

@@ -164,7 +164,7 @@
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
     (ingredients
-      (option-ref-or
+      (option-or
         (compiler-resolve-first-fn $compiler
           (lambda (($expression : Expression))
             (let (($type (expression-type $expression)))
