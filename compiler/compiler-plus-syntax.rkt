@@ -320,10 +320,9 @@
         #`(plus 2)
         #`text)))
   `(expressions
-    (let-values (((tmp-text) (let-values (((tmp-number) (#%app + 1 2)))
-      (#%app number->string tmp-number))))
-     tmp-text)
-   (structure text)))
+    (let-values (((tmp-number) (#%app + 1 2)))
+      (#%app number->string tmp-number))
+    (structure text)))
 
 (check-equal?
   (expressions-sexp
@@ -334,9 +333,6 @@
         #`(dodać 2)
         #`(do number (add dodać number)))))
   `(expressions
-   (let-values (((tmp-number)
-                 (let-values (((tmp-number) 1) ((tmp-dodać) 2))
-                   (let-values (((tmp-number) (#%app + tmp-number tmp-dodać)))
-                     tmp-number))))
-     tmp-number)
-   (structure number)))
+    (let-values (((tmp-number) 1) ((tmp-dodać) 2))
+      (#%app + tmp-number tmp-dodać))
+    (structure number)))

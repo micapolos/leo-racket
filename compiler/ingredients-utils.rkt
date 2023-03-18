@@ -42,10 +42,13 @@
   (option-bind (#%app $fn $tuple) $expressions
     (define $syntax (expressions-syntax $expressions))
     (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
-    (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
+    (define $entry (single $entry-stack))
     (cond
+      ((and $entry (equal? $syntax (single (entry-identifier-stack $entry))))
+        (expressions (entry-syntax $entry) (expressions-structure $expressions)))
       ((null? $entry-stack) $expressions)
       (else 
+        (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
         (expressions
           (make-syntax
             `(let-values 
