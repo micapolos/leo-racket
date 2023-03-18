@@ -35,6 +35,9 @@
 (define expressions-ab (expressions #`ab structure-ab))
 (define expressions-cd (expressions #`cd structure-cd))
 
+(define-type Resolve-Fn (-> Tuple (Option Expressions)))
+(define-type Apply-Fn (-> Tuple Expressions))
+
 (define tuple-default-resolve-fn
   (lambda (($tuple : Tuple)) : (Option Expressions)
     (expression-expressions
