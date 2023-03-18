@@ -73,7 +73,7 @@
 
 ; --------------------------------------------------------------------------
 
-(define structure : (-> Type * (Listof Type)) stack)
+(define structure : (-> Type * Structure) stack)
 
 (define null-structure null)
 

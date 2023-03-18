@@ -23,7 +23,7 @@
 
 (define-type Tuple (Stackof Expression))
 
-(define tuple stack)
+(define tuple : (-> Expression * Tuple) stack)
 
 (define null-tuple null)
 

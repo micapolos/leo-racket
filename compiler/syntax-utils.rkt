@@ -49,15 +49,25 @@
 (define atomic-syntax-d (make-syntax `atomic-d))
 
 (define (syntax-atomic? ($syntax : Syntax)) : Boolean
-  (or 
-    (null? $syntax)
-    (symbol? $syntax)
-    (boolean? $syntax)
-    (number? $syntax)
-    (string? $syntax)
-    (keyword? $syntax)))
+  (bind $e (syntax-e $syntax)
+    (or 
+      (null? $e)
+      (symbol? $e)
+      (boolean? $e)
+      (number? $e)
+      (string? $e)
+      (keyword? $e))))
 
-(define (syntax-composite? ($syntax : Syntax)) : Boolean
+(check (syntax-atomic? #`()))
+(check (syntax-atomic? #`foo))
+(check (syntax-atomic? #`#f))
+(check (syntax-atomic? #`123))
+(check (syntax-atomic? #`"foo"))
+(check (syntax-atomic? #`#:foo))
+(check-not (syntax-atomic? #`(a . b)))
+(check-not (syntax-atomic? #`(foo)))
+
+(define (syntax-complex? ($syntax : Syntax)) : Boolean
   (not (syntax-atomic? $syntax)))
 
 (define (syntax-syntax-list ($syntax : Syntax)) : (Listof Syntax)

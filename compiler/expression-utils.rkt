@@ -19,7 +19,8 @@
   leo/compiler/typed
   leo/compiler/sourced
   leo/compiler/type-utils
-  leo/compiler/module-syntax)
+  leo/compiler/module-syntax
+  (for-syntax racket/base))
 
 (define dynamic-expression-a (expression syntax-a dynamic-type-a))
 (define dynamic-expression-b (expression syntax-b dynamic-type-b))
@@ -412,6 +413,15 @@
   (expression-sexp-type (field-expression `foo tuple-ab))
   (pair `(cons a b) (field `foo structure-ab)))
 
+(define-syntax (field-expression! $syntax)
+  (syntax-case $syntax ()
+    ((_ name expression ...)
+      #`(field-expression (quote name) (tuple expression ...)))))
+
+(check-equal?
+  (expression-sexp (field-expression! foo (text-expression "foo")))
+  `(expression "foo" (foo text)))
+
 ; ---------------------------------------------------------
 
 (define (expression-lift-type ($expression : Expression)) : (Option Type)
@@ -419,4 +429,3 @@
 
 (define (tuple-lift-structure ($tuple : Tuple)) : (Option Structure)
   (structure-lift (tuple-structure $tuple)))
-
