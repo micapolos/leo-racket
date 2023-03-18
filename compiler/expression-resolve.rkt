@@ -35,16 +35,6 @@
 
 ; ----------------------------------------------------------------------------------------
 
-(define (tuple-resolve-selector
-  ($tuple : Tuple)
-  ($selector : Expression))
-  : (Option Expression)
-  (and 
-    (not (null? $tuple))
-    (or
-      (expression-resolve-selector (top $tuple) $selector)
-      (tuple-resolve-selector (pop $tuple) $selector))))
-
 (define (expression-resolve-selector
   ($expression : Expression)
   ($selector : Expression))
@@ -54,28 +44,6 @@
       (expression-type $expression) 
       (expression-type $selector))
     $expression))
-
-; -----------------------------------------------------------------------------------------
-
-(define (expression-resolve-symbol
-  ($expression : Expression)
-  ($symbol : Symbol))
-  : (Option Expression)
-  (define $expression-type (expression-type $expression))
-  (and
-    (type-matches-symbol? $expression-type $symbol)
-    (expression (expression-syntax $expression) $expression-type)))
-
-(check-equal?
-  (option-app expression-sexp-type
-    (expression-resolve-symbol
-      (expression syntax-b (field `a (stack type-b))) `a))
-  (pair `b (field `a (stack type-b))))
-
-(check-equal?
-  (expression-resolve-symbol
-    (expression syntax-b (field `a (stack type-b))) `b)
-  #f)
 
 ; -----------------------------------------------------------------------
 
@@ -112,59 +80,6 @@
         (expression (expression-syntax $rhs-expression) $rhs-type)))))
 
 ; -----------------------------------------------------------------------
-
-(define (expression-resolve-symbol-expression
-  ($lhs-expression : Expression)
-  ($rhs-expression : Expression))
-  : (Option Expression)
-  (define $type (expression-type $rhs-expression))
-  (and
-    (field? $type)
-    (null? (field-structure $type))
-    (expression-resolve-symbol
-      $lhs-expression
-      (field-symbol $type))))
-
-(check-equal?
-  (option-app expression-sexp-type
-    (expression-resolve-symbol-expression
-      (expression syntax-b (field `a (stack type-b))) 
-      (expression syntax-a (field `a null))))
-  (pair `b (field `a (stack type-b))))
-
-(check-equal?
-  (expression-resolve-symbol-expression
-    (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a type-a))
-  #f)
-
-(check-equal?
-  (expression-resolve-symbol-expression
-    (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `not-a null)))
-  #f)
-
-(check-equal?
-  (expression-resolve-symbol-expression
-    (expression syntax-b (field `a (stack type-b))) 
-    (expression syntax-a (field `a (stack type-a))))
-  #f)
-
-; -----------------------------------------------------------------------
-
-(define (expression-resolve-expression
-  ($lhs-expression : Expression)
-  ($rhs-expression : Expression))
-  : (Option Expression)
-  (or
-    (expression-resolve-symbol-expression $lhs-expression $rhs-expression)))
-
-; -----------------------------------------------------------------------
-
-(define (expression-rhs-get ($expression : Expression) ($selector : Expression)) : (Option Expression)
-  (option-app tuple-resolve-selector 
-    (expression-rhs-tuple-option $expression) 
-    $selector))
 
 (define (expression-resolve-get
   ($lhs-expression : Expression)
