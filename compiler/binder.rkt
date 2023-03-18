@@ -30,6 +30,12 @@
     ,(option-app binder-entry-sexp (binder-entry-option $binder))
     (bound (syntax ,(syntax->datum (binder-bound-syntax $binder))))))
 
+(define (binder-entry-let-syntax ($binder-entry : Binder-Entry)) : Syntax
+  (make-syntax 
+    `(
+      ,(binder-entry-identifier $binder-entry)
+      ,(binder-entry-syntax $binder-entry))))
+
 (define (expression-binder ($expression : Expression)) : Binder
   (define $type (expression-type $expression))
   (define $syntax (expression-syntax $expression))
