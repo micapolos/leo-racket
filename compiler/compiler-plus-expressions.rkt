@@ -19,7 +19,6 @@
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
   leo/compiler/ingredients-sexp
-  leo/compiler/scope-resolve
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -37,25 +36,25 @@
   ($expressions : Expressions)) : Compiler
   (struct-copy compiler $compiler
     (ingredients 
-      (scope-apply-ingredients 
-        (compiler-scope $compiler)
+      (tuple-apply-ingredients 
+        (compiler-tuple $compiler)
         (push (compiler-ingredients $compiler) $expressions)))))
 
-(define (scope-apply-ingredients
-  ($scope : Scope) 
+(define (tuple-apply-ingredients
+  ($tuple : Tuple) 
   ($ingredients : Ingredients)) : Ingredients
   (or
     (option-app ingredients
       (ingredients-resolve-fn $ingredients
-        (curry scope-or-tuple-resolve-tuple $scope)))
+        (curry tuple-or-tuple-resolve-tuple $tuple)))
     $ingredients))
 
-(define (scope-or-tuple-resolve-tuple
-  ($scope : Scope) 
-  ($tuple : Tuple)) : (Option Expressions)
+(define (tuple-or-tuple-resolve-tuple
+  ($lhs-tuple : Tuple) 
+  ($rhs-tuple : Tuple)) : (Option Expressions)
   (or
-    (scope-resolve-tuple $scope $tuple)
-    (tuple-resolve $tuple)))
+    (tuple-resolve-tuple $lhs-tuple $rhs-tuple)
+    (tuple-resolve $rhs-tuple)))
 
 (check-equal?
   (ingredients-sexp
@@ -72,12 +71,12 @@
     (compiler-ingredients
       (compiler-plus-expressions
         (compiler
-          (scope
-            (binding
+          (tuple
+            (expression
+              #`string-append
               (arrow
                 (structure text-type (field `plus (structure text-type)))
-                (structure text-type))
-              #`string-append))
+                (structure text-type))))
           (ingredients (expression-expressions (text-expression "Hello, "))))
         (expression-expressions 
           (field-expression `plus 

@@ -4,11 +4,11 @@
 
 (require
   leo/typed/base
-  leo/compiler/scope
+  leo/compiler/expression
   leo/compiler/ingredients)
 
 (data compiler 
-  (scope : Scope) 
+  (tuple : Tuple) 
   (ingredients : Ingredients))
 
-(define null-compiler (compiler null-scope null-ingredients))
+(define null-compiler (compiler null-tuple null-ingredients))

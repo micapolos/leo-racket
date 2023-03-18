@@ -19,7 +19,7 @@
       (ingredients-plus 
         (compiler-ingredients $compiler)
         (compile-ingredients
-          (compiler-scope $compiler)
+          (compiler-tuple $compiler)
           $syntax-list)))))
 
 (define (compiler-apply-type ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler 
@@ -28,7 +28,7 @@
       (ingredients-plus 
         (compiler-ingredients $compiler)
         (compile-ingredients
-          (compiler-scope $compiler)
+          (compiler-tuple $compiler)
           $syntax-list)))))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
@@ -38,11 +38,11 @@
 
 (define (compiler-apply-apply ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
-    (scope-apply-ingredients
-      (compiler-scope $compiler)
+    (tuple-apply-ingredients
+      (compiler-tuple $compiler)
       (ingredients-plus 
         (compiler-ingredients $compiler)
         (compile-ingredients
-          (compiler-scope $compiler)
+          (compiler-tuple $compiler)
           $syntax-list)))))
       

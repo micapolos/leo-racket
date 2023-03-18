@@ -29,3 +29,7 @@
 
 (define (empty-expression ($type : Type)) : Expression 
   (expression null-syntax $type))
+
+(define (expression-identifier-option ($expression : Expression)) : (Option Identifier)
+  (define $syntax (expression-syntax $expression))
+  (and (identifier? $syntax) $syntax))

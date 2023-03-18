@@ -4,32 +4,34 @@
 
 (require
   leo/typed/base
+  leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/expressions-utils
+  leo/compiler/expression-utils
   leo/compiler/sexp-expression
   leo/compiler/ingredients
   leo/compiler/type
   leo/compiler/scope)
 
-(define compile-ingredients-parameter : (Parameterof (-> Scope (Listof Syntax) Ingredients))
+(define compile-ingredients-parameter : (Parameterof (-> Tuple (Listof Syntax) Ingredients))
   (make-parameter
-    (lambda (($scope : Scope) ($syntax-list : (Listof Syntax))) : Ingredients
+    (lambda (($tuple : Tuple) ($syntax-list : (Listof Syntax))) : Ingredients
       (ingredients
         (expression-expressions
           (sexp-expression
             `(compiled
-              ,(scope-sexp $scope)
+              ,(tuple-sexp $tuple)
               (script
                 ,@(map syntax->datum $syntax-list)))))))))
 
 (define (compile-ingredients
-  ($scope : Scope) 
+  ($tuple : Tuple) 
   ($syntax-list : (Listof Syntax))) : Ingredients
-  ((compile-ingredients-parameter) $scope $syntax-list))
+  ((compile-ingredients-parameter) $tuple $syntax-list))
 
 (define (recursive-compile-ingredients
-  ($recurse : (-> Scope (Listof Syntax) Ingredients))
-  ($scope : Scope) 
+  ($recurse : (-> Tuple (Listof Syntax) Ingredients))
+  ($tuple : Tuple) 
   ($syntax-list : (Listof Syntax))) : Ingredients
   (parameterize ((compile-ingredients-parameter $recurse))
-    (compile-ingredients $scope $syntax-list)))
+    (compile-ingredients $tuple $syntax-list)))
