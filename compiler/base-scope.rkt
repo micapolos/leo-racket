@@ -4,6 +4,7 @@
 
 (require
   leo/compiler/scope
+  leo/compiler/scopes
   leo/compiler/binding
   leo/compiler/binding-utils
   leo/compiler/type
@@ -85,3 +86,9 @@
     (binary-binding text-type `equals text-type boolean-type #`string=?)))
 
 (define base-scope base-value-scope)
+
+(define type-scopes
+  (scopes-push null-scopes base-type-scope))
+
+(define base-scopes
+  (scopes-push type-scopes base-value-scope))
