@@ -19,6 +19,9 @@
 
 (define base-value-scope
   (scope
+    (unary-binding boolean-type `disassemble (choice! (field! `true) (field! `false)) #`identity)
+    (binary-binding (choice! (field! `true) (field! `false)) `assemble (field! `boolean) boolean-type #`identity)
+
     (binary-binding number-type `add number-type number-type #`+)
     (binary-binding number-type `subtract number-type number-type #`-)
     (binary-binding-2 number-type `multiply `by number-type number-type #`*)
@@ -79,7 +82,4 @@
     (unary-binding-2 text-type `length `int int-type #`string-length)
     (binary-binding text-type `equals text-type boolean-type #`string=?)))
 
-(define base-scope
-  (scope-plus-scope
-    base-type-scope
-    base-value-scope))
+(define base-scope base-value-scope)
