@@ -242,10 +242,12 @@
   (ingredients (scope-doing-expressions $scope (ingredients-expressions $ingredients))))
 
 (define (ingredients-apply-type ($ingredients : Ingredients)) : Ingredients
-  (map expression-expressions
-    (sexp-list-tuple
-      (structure-sexp-list
-        (ingredients-structure $ingredients)))))
+  (ingredients
+    (ingredients-apply-fn $ingredients
+      (lambda (($tuple : Tuple))
+        (tuple-expressions
+          (map type-expression
+            (map expression-type $tuple)))))))
 
 (define (ingredients-apply-racket ($ingredients : Ingredients)) : Ingredients
   (ingredients
