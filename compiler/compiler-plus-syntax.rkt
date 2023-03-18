@@ -18,6 +18,7 @@
   leo/compiler/sexp-expression
   leo/compiler/generate-temporary
   leo/compiler/expressions
+  leo/compiler/expressions-sexp
   leo/compiler/scope-utils
   leo/compiler/sexp-utils
   leo/compiler/expression
@@ -311,26 +312,31 @@
     (expressions "foo" (structure text))))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (scope-syntax-list-expressions
       base-scope
       (list
         #`1
         #`(plus 2)
         #`text)))
-  (pair 
-    `(#%app number->string (#%app + 1 2)) 
-    (structure text-type)))
+  `(expressions
+    (let-values (((tmp-text) (let-values (((tmp-number) (#%app + 1 2)))
+      (#%app number->string tmp-number))))
+     tmp-text)
+   (structure text)))
 
 (check-equal?
-  (expressions-sexp-structure
+  (expressions-sexp
     (scope-syntax-list-expressions
       base-scope
       (list
         #`1
         #`(dodać 2)
         #`(do number (add dodać number)))))
-  (pair 
-    `(let-values (((tmp-number) 1) ((tmp-dodać) 2)) 
-      (#%app + tmp-number tmp-dodać))
-    (structure number-type)))
+  `(expressions
+   (let-values (((tmp-number)
+                 (let-values (((tmp-number) 1) ((tmp-dodać) 2))
+                   (let-values (((tmp-number) (#%app + tmp-number tmp-dodać)))
+                     tmp-number))))
+     tmp-number)
+   (structure number)))

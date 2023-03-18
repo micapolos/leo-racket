@@ -1,4 +1,7 @@
 #lang leo
 
-1
-equals 2
+10
+"foo"
+do
+  number.text
+  plus text

@@ -55,8 +55,7 @@
         (expressions #`expr
           (structure number-type text-type)))))
   `(for-each
-     writeln
-     (let-values (((tmp-number tmp-text) expr))
-       (list
-        (value-sexp (value tmp-number (field 'number (structure (racket)))))
-        (value-sexp (value tmp-text (field 'text (structure (racket)))))))))
+    writeln
+    (list
+      (value-sexp (value expr (field 'number (structure (racket)))))
+      (value-sexp (value expr (field 'text (structure (racket))))))))

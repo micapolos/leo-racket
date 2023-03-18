@@ -33,4 +33,6 @@
 
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))
-  (pair `(#%app string-append "Hello, " "world!") (structure text-type)))
+  (pair 
+    `(let-values (((tmp-text) (#%app string-append "Hello, " "world!"))) tmp-text)
+    (structure text-type)))

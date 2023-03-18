@@ -98,7 +98,7 @@
       (syntax-e #`(number (does text)))))
   `(ingredients
     (expressions
-      (lambda (tmp-number) #f)
+      (lambda (tmp-number) (values))
         (structure
           (recipe 
             number 

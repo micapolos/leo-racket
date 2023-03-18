@@ -16,6 +16,7 @@
   leo/compiler/type-utils
   leo/compiler/syntax-utils
   leo/compiler/expressions
+  leo/compiler/expressions-binder
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
   leo/compiler/expression
@@ -35,76 +36,77 @@
 (define (ingredients-resolve-fn
   ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $expressions-stack $ingredients)
-  (define $let-values-entry-stack
-    (map expressions-let-values-entry $expressions-stack))
-  (define $tuple 
-    (apply append (map let-values-entry-tuple $let-values-entry-stack)))
-  (option-bind ($fn $tuple) $expressions
-    (define $entries 
-      (filter-false
-        (map 
-          (lambda (($let-values-entry : Let-Values-Entry))
-            (option-app list
-              (reverse (let-values-entry-temporary-stack $let-values-entry))
-              (let-values-entry-syntax-option $let-values-entry)))
-          (reverse $let-values-entry-stack))))
-    (make-expressions
-      (make-syntax
-        (cond 
-          ((null? $entries) (expressions-syntax $expressions))
-          (else `(let-values ,$entries ,(expressions-syntax $expressions)))))
-      (expressions-structure $expressions))))
+  (define $binder-stack (map expressions-binder $ingredients))
+  (define $tuple-stack (map binder-tuple $binder-stack))
+  (define $tuple (apply append $tuple-stack))
+  (option-bind (#%app $fn $tuple) $expressions
+    (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
+    (cond
+      ((null? $entry-stack) $expressions)
+      (else 
+        (expressions
+          (make-syntax
+            `(let-values 
+              ,(reverse (map entry-let-syntax $entry-stack))
+              ,(expressions-syntax $expressions)))
+          (expressions-structure $expressions))))))
 
-; not resolved
+; (define (ingredients-resolve-fn
+;   ($ingredients : Ingredients)
+;   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
+;   (define $expressions-stack $ingredients)
+;   (define $let-values-entry-stack
+;     (map expressions-let-values-entry $expressions-stack))
+;   (define $tuple 
+;     (apply append (map let-values-entry-tuple $let-values-entry-stack)))
+;   (option-bind ($fn $tuple) $expressions
+;     (define $entries 
+;       (filter-false
+;         (map 
+;           (lambda (($let-values-entry : Let-Values-Entry))
+;             (option-app list
+;               (reverse (let-values-entry-temporary-stack $let-values-entry))
+;               (let-values-entry-syntax-option $let-values-entry)))
+;           (reverse $let-values-entry-stack))))
+;     (make-expressions
+;       (make-syntax
+;         (cond 
+;           ((null? $entries) (expressions-syntax $expressions))
+;           (else `(let-values ,$entries ,(expressions-syntax $expressions)))))
+;       (expressions-structure $expressions))))
+
 (check-equal?
   (option-app expressions-sexp
     (ingredients-resolve-fn
-      (ingredients expressions-ab expressions-cd)
-      (lambda (($tuple : Tuple)) #f)))
-  #f)
+      (ingredients 
+        (expressions null-syntax (structure static-type-a static-type-b))
+        (expressions null-syntax (structure static-type-c static-type-d)))
+      tuple-default-apply-fn))
+  `(expressions #f (structure (resolved a b c d))))
 
-; resolved to static
 (check-equal?
   (option-app expressions-sexp
     (ingredients-resolve-fn
-      (ingredients expressions-ab expressions-cd)
-      (lambda (($tuple : Tuple)) 
-        (expressions null-syntax static-structure-a))))
-  `(expressions #f (structure a)))
+      (ingredients 
+        (expressions atomic-syntax-a (structure dynamic-type-a dynamic-type-b))
+        (expressions atomic-syntax-b (structure dynamic-type-c dynamic-type-d)))
+      tuple-default-apply-fn))
+  `(expressions
+    (vector atomic-a atomic-a atomic-b atomic-b)
+    (structure (resolved (a racket) (b racket) (c racket) (d racket)))))
 
-; single-expression
 (check-equal?
   (option-app expressions-sexp
     (ingredients-resolve-fn
-      (ingredients expressions-a)
-      (lambda (($tuple : Tuple))
-        (make-expressions #`result (tuple-structure $tuple)))))
-  `(expressions result (structure (a racket))))
-
-; single-expression & multi-expression
-(check-equal?
-  (option-app expressions-sexp
-    (ingredients-resolve-fn
-      (ingredients expressions-a expressions-cd)
-      (lambda (($tuple : Tuple))
-        (make-expressions #`result (tuple-structure $tuple)))))
-  `(expressions 
-    (let-values (((tmp-c tmp-d) cd)) result)
-    (structure (a racket) (c racket) (d racket))))
-
-; multi-expressions
-(check-equal?
-  (option-app expressions-sexp
-    (ingredients-resolve-fn
-      (ingredients expressions-ab expressions-cd)
-      (lambda (($tuple : Tuple))
-        (make-expressions #`result (tuple-structure $tuple)))))
-  `(expressions 
-    (let-values (((tmp-a tmp-b) ab)
-                 ((tmp-c tmp-d) cd))
-        result)
-    (structure (a racket) (b racket) (c racket) (d racket))))
+      (ingredients 
+        (expressions complex-syntax-a (structure dynamic-type-a dynamic-type-b))
+        (expressions complex-syntax-b (structure dynamic-type-c dynamic-type-d)))
+      tuple-default-apply-fn))
+  `(expressions
+    (let-values (((tmp-a tmp-b) (complex-a)) 
+                 ((tmp-c tmp-d) (complex-b)))
+       (vector tmp-a tmp-b tmp-c tmp-d))
+    (structure (resolved (a racket) (b racket) (c racket) (d racket)))))
 
 ; --------------------------------------------------------------------------------
 
@@ -199,9 +201,8 @@
     (symbol-ingredients-expressions
       `foo
       (ingredients expressions-a expressions-cd)))
-  `(expressions 
-    (let-values (((tmp-c tmp-d) cd))
-      (vector a tmp-c tmp-d))
+  `(expressions
+    (vector a cd cd)
     (structure (foo (a racket) (c racket) (d racket)))))
 
 ; --------------------------------------------------------------------------
@@ -230,7 +231,7 @@
     (ingredients-expressions
       (ingredients expressions-a expressions-cd)))
   `(expressions 
-    (let-values (((tmp-c tmp-d) cd)) (values a tmp-c tmp-d))
+    (values a cd cd) 
     (structure (a racket) (c racket) (d racket))))
 
 ; ----------------------------------------------------------------------

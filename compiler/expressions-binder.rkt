@@ -86,3 +86,9 @@
     (tuple 
       (expression tmp-a (a racket)) 
       (expression tmp-b (b racket)))))
+
+(define (entry-let-syntax ($entry : Entry)) : Syntax
+  (make-syntax
+    `(
+      ,(reverse (entry-identifier-stack $entry))
+      ,(entry-syntax $entry))))
