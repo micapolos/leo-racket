@@ -419,3 +419,4 @@
 
 (define (tuple-lift-structure ($tuple : Tuple)) : (Option Structure)
   (structure-lift (tuple-structure $tuple)))
+

@@ -28,10 +28,11 @@
 
 (data match-compiler
   (scope : Scope)
+  (identifier-option : (Option Identifier))
   (switch-option : (Option Switch))
   (remaining-type-list : (Listof Type)))
 
-(define null-match-compiler (match-compiler null-scope #f null))
+(define null-match-compiler (match-compiler null-scope #f #f null))
 
 (define (match-compiler-switch ($match-compiler : Match-Compiler)) : Switch
   (unless (null? (match-compiler-remaining-type-list $match-compiler))
@@ -50,19 +51,20 @@
   ($syntax : Syntax))
   : Match-Compiler
   (define $scope (match-compiler-scope $match-compiler))
+  (define $identifier-option (match-compiler-identifier-option $match-compiler))
   (define $switch-option (match-compiler-switch-option $match-compiler))
   (define $remaining-type-list (match-compiler-remaining-type-list $match-compiler))
   (when (null? $remaining-type-list) (error "no more remaining choices"))
   (define $type (car $remaining-type-list))
-  (define $tmp (type-generate-temporary-option $type))
-  (define $binding (binding $type $tmp))
+  (define $binding (binding $type $identifier-option))
   (define $new-scope (push $scope $binding))
   (define $ingredients (compile-ingredients $new-scope (list $syntax)))
   (define $expressions (ingredients-expressions $ingredients))
   (define $expression (expressions-expression-option $expressions))
   (unless $expression (error "match expected expression"))
   (match-compiler 
-    $scope 
+    $scope
+    $identifier-option
     (switch-option-plus-expression $switch-option $expression)
     (cdr $remaining-type-list)))
 
@@ -77,7 +79,8 @@
     (match-compiler-sexp
       (match-compiler-plus-syntax
         (match-compiler 
-          null-scope 
+          null-scope
+          #`value
           null-switch-option
           (list (field! `foo) (field! `bar)))
         (make-syntax `case)))
@@ -91,6 +94,7 @@
       (match-compiler-plus-syntax
         (match-compiler 
           null-scope 
+          #`value
           (switch
             (stack #`zero #`one)
             (field! `switched))

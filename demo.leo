@@ -1,8 +1,12 @@
 #lang leo
 
 select
-  not true
-  the false
+  the "foo"
+  not number
 do switch
-  "true"
-  "false"
+  the
+    "text: "
+    append text
+  the
+    "number: "
+    append number.text

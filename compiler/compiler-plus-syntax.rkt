@@ -16,10 +16,12 @@
   leo/compiler/scope-resolve
   leo/compiler/switch
   leo/compiler/sexp-expression
+  leo/compiler/generate-temporary
   leo/compiler/expressions
   leo/compiler/scope-utils
   leo/compiler/sexp-utils
   leo/compiler/expression
+  leo/compiler/syntax-utils
   leo/compiler/expression-resolve
   leo/compiler/expressions-utils
   leo/compiler/expressions-resolve
@@ -40,6 +42,7 @@
   leo/compiler/recipe-part
   leo/compiler/type
   leo/compiler/type-sexp
+  leo/compiler/type-symbol
   leo/compiler/type-utils)
 
 (define (scope-syntax-list-ingredients 
@@ -164,24 +167,38 @@
       (option-ref-or
         (compiler-resolve-first-fn $compiler
           (lambda (($expression : Expression))
-            (bind $type (expression-type $expression)
+            (let (($type (expression-type $expression)))
               (and
                 (choice? $type)
-                (let 
-                  (($switch 
+                (let ()
+                  (define $syntax (expression-syntax $expression))
+                  (define $choice-type-stack (choice-type-stack $type))
+                  (define $dynamic? (structure-dynamic? $choice-type-stack))
+                  (define $selector-syntax (if $dynamic? (make-syntax `(car ,$syntax)) $syntax))
+                  (define $value-syntax (if $dynamic? (make-syntax `(cdr ,$syntax)) null-syntax))
+                  (define $identifier-option (if $dynamic? (symbol-temporary `value) #f))
+                  (define $switch
                     (match-compiler-switch
                       (fold
-                        (match-compiler 
-                          (compiler-scope $compiler) 
-                          null-switch-option 
+                        (match-compiler
+                          (compiler-scope $compiler)
+                          $identifier-option
+                          null-switch-option
                           (reverse (choice-type-stack $type)))
                         $syntax-list
-                        match-compiler-plus-syntax))))
+                        match-compiler-plus-syntax)))
+                  (define $switch-body
+                    (syntax-switch-syntax-stack
+                          $selector-syntax
+                          (switch-syntax-stack $switch)))
+                  (define $switch-syntax
+                    (or
+                      (and $identifier-option 
+                        (make-syntax `(let ((,$identifier-option ,$value-syntax)) ,$switch-body)))
+                      $switch-body))
                   (expression-expressions
                     (expression
-                      (syntax-switch-syntax-stack
-                        (expression-syntax $expression)
-                        (switch-syntax-stack $switch))
+                      $switch-syntax
                       (switch-type $switch))))))))
         (error "no choice to resolve")))))
 

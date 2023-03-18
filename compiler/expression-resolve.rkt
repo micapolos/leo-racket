@@ -8,6 +8,8 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
+  leo/compiler/binding
+  leo/compiler/binding-utils
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/scope
@@ -283,6 +285,24 @@
     (tuple-expression-resolve (cdr $tuple) (car $tuple)))
 
 ; -----------------------------------------------------------------------
+
+(define (expression-resolve-fn
+  ($expression : Expression) 
+  ($fn : (-> Binding (Option Expressions))))
+  : (Option Expressions)
+  (define $type (expression-type $expression))
+  (define $syntax (expression-syntax $expression))
+  (define $binding (type-generate-binding $type))
+  (define $tmp-option (binding-identifier-option $binding))
+  (define $fn-expressions-option ($fn $binding))
+  (option-bind $fn-expressions-option $fn-expressions
+    (define $fn-syntax (expressions-syntax $fn-expressions))
+    (define $fn-structure (expressions-structure $fn-expressions))
+    (expressions
+      (or
+        (and $tmp-option (make-syntax `(let ((,$tmp-option ,$syntax)) ,$fn-syntax)))
+        $fn-syntax)
+      $fn-structure)))
 
 (define (tuple-resolve-fn 
   ($tuple : Tuple) 
