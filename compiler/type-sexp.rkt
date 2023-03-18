@@ -137,10 +137,9 @@
         $type-stack 
         (value $any (list-ref $type-stack (variable-index $type)))))
     ((universe? $type)
-      `(universe 
-        (if (= (universe-index $type) 0)
-          (type-sexp (cast $any Type))
-          (value-sexp (value $any (sub1 (universe-index $type)))))))
+      (if (= (universe-index $type) 0)
+        (type-sexp (cast $any Type))
+        (value-sexp (value $any (universe (sub1 (universe-index $type)))))))
     ((value? $type) 
       `(value ,(type-stack-value-sexp $type-stack $type)))))
 
@@ -335,3 +334,17 @@
       (cons 2 "foo") 
       (choice (structure number-type (field! `foo) text-type))))
   "foo")
+
+(check-equal?
+  (value-sexp 
+    (value 
+      number-type
+      type-type))
+  `number)
+
+(check-equal?
+  (value-sexp 
+    (value 
+      (universe 0)
+      (universe 1)))
+  `(universe 0))

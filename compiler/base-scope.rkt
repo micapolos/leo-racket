@@ -9,7 +9,15 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define base-scope
+(define base-type-scope
+  (scope
+    (symbol-binding `boolean type-type #`boolean-type)
+    (symbol-binding `number type-type #`number-type)
+    (symbol-binding `int type-type #`int-type)
+    (symbol-binding `float type-type #`float-type)
+    (symbol-binding `text type-type #`text-type)))
+
+(define base-value-scope
   (scope
     (binary-binding number-type `add number-type number-type #`+)
     (binary-binding number-type `subtract number-type number-type #`-)
@@ -69,6 +77,9 @@
     (binary-binding text-type `plus text-type text-type #`string-append)
     (unary-binding-2 text-type `length `number number-type #`string-length)
     (unary-binding-2 text-type `length `int int-type #`string-length)
-    (binary-binding text-type `equals text-type boolean-type #`string=?)
-  )
-)
+    (binary-binding text-type `equals text-type boolean-type #`string=?)))
+
+(define base-scope
+  (scope-plus-scope
+    base-type-scope
+    base-value-scope))

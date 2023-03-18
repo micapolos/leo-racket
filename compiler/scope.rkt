@@ -13,6 +13,9 @@
 
 (define scope stack)
 
+(define scope-plus-binding : (-> Scope Binding Scope) push)
+(define scope-plus-scope : (-> Scope Scope Scope) push-stack)
+
 (define (scope-sexp ($scope : Scope)) : Sexp
   `(scope
     ,@(reverse (map binding-sexp $scope))))

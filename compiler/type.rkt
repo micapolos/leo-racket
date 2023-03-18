@@ -82,7 +82,8 @@
 (define (racket-field ($symbol : Symbol)) 
   (field! $symbol racket-type))
 
-(define universe-type (universe 0))
+(define type-type (universe 0))
+(define universe-type type-type)
 
 (define (type-universe ($type : Type)) : Universe
   (if (universe? $type) 

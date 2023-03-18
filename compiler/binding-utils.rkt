@@ -35,6 +35,16 @@
 (define (type-generate-binding ($type : Type)) : Binding
   (binding $type (type-generate-temporary-option $type)))
 
+(define (symbol-binding 
+  ($symbol : Symbol)
+  ($return-type : Type)
+  ($identifier-option : (Option Identifier)))
+  (binding
+    (arrow
+      (structure (field! $symbol))
+      (structure $return-type))
+    $identifier-option))
+
 (define (unary-binding 
   ($lhs-type : Type)
   ($symbol : Symbol)
