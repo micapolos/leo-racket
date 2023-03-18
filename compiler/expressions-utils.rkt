@@ -41,6 +41,9 @@
     (expression-expressions
       (field-expression `resolved $tuple))))
 
+(define tuple-non-resolve-fn
+  (lambda (($tuple : Tuple)) : (Option Expressions) #f))
+
 (define tuple-default-apply-fn
   (lambda (($tuple : Tuple)) : Expressions
     (expression-expressions

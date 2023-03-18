@@ -40,40 +40,28 @@
   (define $tuple-stack (map binder-tuple $binder-stack))
   (define $tuple (apply append $tuple-stack))
   (option-bind (#%app $fn $tuple) $expressions
+    (define $syntax (expressions-syntax $expressions))
     (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
+    (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
     (cond
       ((null? $entry-stack) $expressions)
       (else 
         (expressions
           (make-syntax
             `(let-values 
-              ,(reverse (map entry-let-syntax $entry-stack))
+              ,(reverse $entry-let-syntax-stack)
               ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
 
-; (define (ingredients-resolve-fn
-;   ($ingredients : Ingredients)
-;   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-;   (define $expressions-stack $ingredients)
-;   (define $let-values-entry-stack
-;     (map expressions-let-values-entry $expressions-stack))
-;   (define $tuple 
-;     (apply append (map let-values-entry-tuple $let-values-entry-stack)))
-;   (option-bind ($fn $tuple) $expressions
-;     (define $entries 
-;       (filter-false
-;         (map 
-;           (lambda (($let-values-entry : Let-Values-Entry))
-;             (option-app list
-;               (reverse (let-values-entry-temporary-stack $let-values-entry))
-;               (let-values-entry-syntax-option $let-values-entry)))
-;           (reverse $let-values-entry-stack))))
-;     (make-expressions
-;       (make-syntax
-;         (cond 
-;           ((null? $entries) (expressions-syntax $expressions))
-;           (else `(let-values ,$entries ,(expressions-syntax $expressions)))))
-;       (expressions-structure $expressions))))
+(check-equal?
+  (option-app expressions-sexp
+    (ingredients-resolve-fn
+      (ingredients 
+        (expressions null-syntax (structure static-type-a static-type-b))
+        (expressions null-syntax (structure static-type-c static-type-d)))
+      (lambda (($tuple : Tuple)) 
+        (expressions atomic-syntax-a (structure dynamic-type-a)))))
+  `(expressions atomic-a (structure (a racket))))
 
 (check-equal?
   (option-app expressions-sexp

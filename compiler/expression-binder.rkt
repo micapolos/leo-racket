@@ -41,7 +41,8 @@
   (define $syntax (expression-syntax $expression))
   (define $tmp (type-generate-temporary-option $type))
   (or
-    (and $tmp (syntax-complex? $syntax) (binder (entry $tmp $syntax) $tmp))
+    (and $tmp (syntax-complex? $syntax) 
+      (binder (entry $tmp $syntax) $tmp))
     (binder #f $syntax)))
 
 (check-equal?
