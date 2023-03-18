@@ -9,6 +9,11 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
+(define assembly-scope
+  (scope
+    (unary-binding boolean-type `disassemble (choice! (field! `true) (field! `false)) #`identity)
+    (binary-binding (choice! (field! `true) (field! `false)) `assemble (field! `boolean) boolean-type #`identity)))
+
 (define base-type-scope
   (scope
     (symbol-binding `boolean type-type #`boolean-type)
@@ -19,9 +24,6 @@
 
 (define base-value-scope
   (scope
-    (unary-binding boolean-type `disassemble (choice! (field! `true) (field! `false)) #`identity)
-    (binary-binding (choice! (field! `true) (field! `false)) `assemble (field! `boolean) boolean-type #`identity)
-
     (binary-binding number-type `add number-type number-type #`+)
     (binary-binding number-type `subtract number-type number-type #`-)
     (binary-binding-2 number-type `multiply `by number-type number-type #`*)
