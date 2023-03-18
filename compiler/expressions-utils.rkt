@@ -35,6 +35,16 @@
 (define expressions-ab (expressions #`ab structure-ab))
 (define expressions-cd (expressions #`cd structure-cd))
 
+(define tuple-default-resolve-fn
+  (lambda (($tuple : Tuple)) : (Option Expressions)
+    (expression-expressions
+      (field-expression `resolved $tuple))))
+
+(define tuple-default-apply-fn
+  (lambda (($tuple : Tuple)) : Expressions
+    (expression-expressions
+      (field-expression `resolved $tuple))))
+
 (define (make-expressions ($syntax : Syntax) ($structure : Structure)) : Expressions
   (expressions
     (or (and (structure-dynamic? $structure) $syntax) null-syntax)
@@ -213,62 +223,52 @@
   (Option Expressions)
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
-  (define $scope (structure-generate-scope $structure))
-  (define $tmp-stack (scope-identifier-stack $scope))
-  (define $fn-expressions ($fn (map binding-expression $scope)))
-  (and $fn-expressions
-    (make-expressions
-      (case (length $tmp-stack)
-        ((0) $syntax)
-        ((1) 
-          (make-syntax 
-            `(let
-              ((,(top $tmp-stack) ,$syntax))
-              ,(expressions-syntax $fn-expressions))))
-        (else 
-          (make-syntax 
-            `(let-values
-              (((,@(reverse $tmp-stack)) ,$syntax))
-              ,(expressions-syntax $fn-expressions)))))
-      (expressions-structure $fn-expressions))))
+  (cond
+    ((syntax-atomic? $syntax)
+      (define $tuple (map (curry expression $syntax) $structure))
+      ($fn $tuple))
+    (else
+      (define $scope (structure-generate-scope $structure))
+      (define $tmp-stack (scope-identifier-stack $scope))
+      (define $fn-expressions ($fn (map binding-expression $scope)))
+      (and $fn-expressions
+        (make-expressions
+          (case (length $tmp-stack)
+            ((0) $syntax)
+            ((1)
+              (make-syntax
+                `(let
+                  ((,(top $tmp-stack) ,$syntax))
+                  ,(expressions-syntax $fn-expressions))))
+            (else 
+              (make-syntax 
+                `(let-values
+                  (((,@(reverse $tmp-stack)) ,$syntax))
+                  ,(expressions-syntax $fn-expressions)))))
+          (expressions-structure $fn-expressions))))))
 
 (check-equal?
   (option-app expressions-sexp
-    (expressions-resolve-fn (expressions #`a (structure static-type-a))
-      (lambda (($tuple : Tuple))
-        (expressions
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
-  `(expressions #f (structure a)))
+    (expressions-resolve-fn 
+      (expressions #`a (structure static-type-a))
+      tuple-default-resolve-fn))
+  `(expressions #f (structure (resolved a))))
 
 (check-equal?
   (option-app expressions-sexp
-    (expressions-resolve-fn (expressions atomic-syntax-a (structure dynamic-type-a))
-      (lambda (($tuple : Tuple))
-        (expressions
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
-  `(expressions (let ((tmp-a atomic-a)) (tmp-a)) (structure (a racket))))
+    (expressions-resolve-fn 
+      (expressions atomic-syntax-a (structure dynamic-type-a))
+      tuple-default-resolve-fn))
+  `(expressions atomic-a (structure (resolved (a racket)))))
 
 (check-equal?
   (option-app expressions-sexp
-    (expressions-resolve-fn (expressions complex-syntax-a (structure dynamic-type-a))
-      (lambda (($tuple : Tuple))
-        (expressions
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
-  `(expressions (let ((tmp-a (complex-a))) (tmp-a)) (structure (a racket))))
-
-(check-equal?
-  (option-app expressions-sexp
-    (expressions-resolve-fn expressions-ab
-      (lambda (($tuple : Tuple))
-        (expressions 
-          (make-syntax (reverse (map expression-syntax $tuple)))
-          (tuple-structure $tuple)))))
+    (expressions-resolve-fn 
+      (expressions complex-syntax-a (structure dynamic-type-a))
+      tuple-default-resolve-fn))
   `(expressions
-    (let-values (((tmp-a tmp-b) ab)) (tmp-a tmp-b))
-    (structure (a racket) (b racket))))
+    (let ((tmp-a (complex-a))) tmp-a)
+    (structure (resolved (a racket)))))
 
 ; ---------------------------------------------------------------------
 

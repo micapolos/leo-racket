@@ -254,9 +254,7 @@
       (tuple
         (expression null-syntax static-type-a)
         (expression null-syntax static-type-b))
-      (lambda (($tuple : Tuple)) 
-        (expression-expressions
-          (field-expression `resolved $tuple)))))
+      tuple-default-apply-fn))
   `(expressions #f (structure (resolved a b))))
 
 (check-equal?
@@ -373,9 +371,9 @@
 (check-equal?
   (option-app expressions-sexp
     (expressions-resolve-make 
-      expressions-ab
+      (expressions complex-syntax-a structure-ab)
       (field-expression `make 
         (tuple (field-expression `foo null)))))
   `(expressions
-    (let-values (((tmp-a tmp-b) ab)) (cons tmp-a tmp-b))
+    (let-values (((tmp-a tmp-b) (complex-a))) (cons tmp-a tmp-b))
     (structure (foo (a racket) (b racket)))))
