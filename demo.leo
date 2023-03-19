@@ -8,4 +8,9 @@ circle
   radius
     "foo"
     plus "bar"
+do
+  circle.point
+  do
+    point.x.number
+    plus point.y.number
 racket
