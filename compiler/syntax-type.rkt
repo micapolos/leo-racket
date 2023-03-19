@@ -15,7 +15,6 @@
     ((null? $syntax-e) (racket))
     ((symbol? $syntax-e) 
       (case $syntax-e
-        ((boolean) boolean-type)
         ((number) number-type)
         ((int) int-type)
         ((float) float-type)

@@ -24,6 +24,19 @@
       (structure (field! $symbol))
       (structure $return-type))))
 
+(define (unit-expression-2
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($return-type : Type)
+  ($syntax : Syntax))
+  (expression
+    $syntax
+    (arrow
+      (structure 
+        (field! $symbol-1
+          (field! $symbol-2)))
+      (structure $return-type))))
+
 (define (unary-expression 
   ($lhs-type : Type)
   ($symbol : Symbol)

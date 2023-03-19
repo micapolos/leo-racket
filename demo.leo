@@ -1,9 +1,5 @@
 #lang leo
 
-"Hello, "
-plus "world!"
-length.number
-plus 10
-do
-  number
-  plus number
+1
+less than 1
+switch: "true" "false"

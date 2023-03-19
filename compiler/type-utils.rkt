@@ -26,7 +26,7 @@
 (define type-c dynamic-type-c)
 (define type-d dynamic-type-d)
 
-(define boolean-type (racket-field `boolean))
+(define boolean-type (field! `boolean (choice! (field! `true) (field! `false))))
 (define number-type (racket-field `number))
 (define int-type (racket-field `int))
 (define float-type (racket-field `float))

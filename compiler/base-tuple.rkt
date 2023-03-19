@@ -15,7 +15,6 @@
 
 (define base-type-tuple
   (tuple
-    (symbol-expression `boolean type-type #`boolean-type)
     (symbol-expression `number type-type #`number-type)
     (symbol-expression `int type-type #`int-type)
     (symbol-expression `float type-type #`float-type)
@@ -23,6 +22,9 @@
 
 (define base-value-tuple
   (tuple
+    (unit-expression-2 `boolean `true boolean-type #`(lambda () #t))
+    (unit-expression-2 `boolean `false boolean-type #`(lambda () #f))
+
     (binary-expression number-type `plus number-type number-type #`+)
     (binary-expression number-type `minus number-type number-type #`-)
     (binary-expression number-type `times number-type number-type #`*)

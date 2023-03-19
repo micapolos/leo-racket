@@ -27,11 +27,7 @@
         (define $rhs (syntax-e (cadr $syntax-e)))
         (or
           (and (equal? $lhs `int) (fixnum? $rhs) (int-expression $rhs))
-          (and (equal? $lhs `float) (flonum? $rhs) (float-expression $rhs))
-          (and (equal? $lhs `boolean) 
-            (or
-              (and (equal? $rhs `true) (boolean-expression #t))
-              (and (equal? $rhs `false) (boolean-expression #f)))))))))
+          (and (equal? $lhs `float) (flonum? $rhs) (float-expression $rhs)))))))
 
 (check-equal?
   (option-map 
@@ -56,16 +52,3 @@
     (syntax-expression-option (make-syntax "foo")) 
     expression-sexp-type)
   (pair "foo" text-type))
-
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `(boolean true)))
-    expression-sexp-type)
-  (pair #t boolean-type))
-
-(check-equal?
-  (option-map 
-    (syntax-expression-option (make-syntax `(boolean false)))
-    expression-sexp-type)
-  (pair #f boolean-type))
-

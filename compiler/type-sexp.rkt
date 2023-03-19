@@ -19,7 +19,6 @@
     ((equal? $type text-type) `text)
     ((equal? $type int-type) `int)
     ((equal? $type float-type) `float)
-    ((equal? $type boolean-type) `boolean)
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))
@@ -59,7 +58,7 @@
 (check-equal? (type-sexp text-type) `text)
 (check-equal? (type-sexp float-type) `float)
 (check-equal? (type-sexp int-type) `int)
-(check-equal? (type-sexp boolean-type) `boolean)
+(check-equal? (type-sexp boolean-type) `(boolean (one (of true false))))
 
 (check-equal? (type-sexp (field `foo null)) `foo)
 (check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
@@ -83,8 +82,8 @@
   (type-sexp 
     (arrow 
       (stack number-type text-type)
-      (stack boolean-type int-type)))
-  `(recipe number text (doing boolean int)))
+      (stack text-type int-type)))
+  `(recipe number text (doing text int)))
 
 (check-equal? (type-sexp (universe 128)) `(universe 128))
 
