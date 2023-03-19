@@ -22,7 +22,7 @@
   (index : Exact-Nonnegative-Integer))
 
 (data abstraction
-  (parameter-symbol-stack : (Stackof Symbol))
+  (symbol-stack : (Stackof Symbol))
   (body : Term))
 
 (data application
@@ -53,7 +53,7 @@
       (stack-ref $identifier-stack (variable-index $term)))
     ((abstraction? $term)
       (define $tmp-stack 
-        (map symbol-temporary (abstraction-parameter-symbol-stack $term)))
+        (map symbol-temporary (abstraction-symbol-stack $term)))
       (make-syntax
         `(lambda 
           ,(reverse $tmp-stack)
