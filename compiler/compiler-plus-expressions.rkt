@@ -43,7 +43,7 @@
   ($ingredients : Ingredients)) : Ingredients
   (or
     (option-app ingredients
-      (ingredients-resolve-fn $ingredients
+      (single-use-ingredients-resolve-fn #t $ingredients
         (curry tuple-or-tuple-resolve-tuple $tuple)))
     $ingredients))
 
@@ -81,5 +81,5 @@
             (tuple (text-expression "world!")))))))
   `(ingredients
     (expressions
-      (#%app string-append "Hello, " "world!") 
+      (string-append "Hello, " "world!") 
       (structure text))))

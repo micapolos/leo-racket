@@ -313,10 +313,7 @@
         #`1
         #`(plus 2)
         #`text)))
-  `(expressions
-    (let-values (((tmp-number) (#%app + 1 2)))
-      (#%app number->string tmp-number))
-    (structure text)))
+  `(expressions (number->string (+ 1 2)) (structure text)))
 
 (check-equal?
   (expressions-sexp
@@ -326,4 +323,4 @@
         #`1
         #`(dodać 2)
         #`(do number (add dodać number)))))
-  `(expressions (#%app + 1 2) (structure number)))
+  `(expressions (+ 1 2) (structure number)))

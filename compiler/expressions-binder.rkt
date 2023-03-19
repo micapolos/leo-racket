@@ -35,7 +35,7 @@
     ,(option-app entry-sexp (binder-entry-option $binder))
     ,(tuple-sexp (binder-tuple $binder))))
 
-(define (expressions-binder ($expressions : Expressions) ($single-use? : Boolean #f)) : Binder
+(define (single-use-expressions-binder ($single-use? : Boolean) ($expressions : Expressions)) : Binder
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
   (define $type-option (single $structure))
@@ -60,6 +60,9 @@
           $structure))
       (binder $entry $tuple))))
 
+(define (expressions-binder ($expressions : Expressions)) : Binder
+  (single-use-expressions-binder #f $expressions))
+
 (check-equal?
   (binder-sexp
     (expressions-binder
@@ -81,10 +84,9 @@
 
 (check-equal?
   (binder-sexp
-    (expressions-binder
+    (single-use-expressions-binder #t
       (expressions complex-syntax-a
-        (structure dynamic-type-a))
-      #t))
+        (structure dynamic-type-a))))
   `(binder #f (tuple (expression (complex-a) (a racket)))))
 
 (check-equal?

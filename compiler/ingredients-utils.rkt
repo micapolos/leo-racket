@@ -3,6 +3,7 @@
 (provide (all-defined-out))
 
 (require 
+  racket/function
   leo/typed/base
   leo/typed/option
   leo/typed/stack
@@ -29,13 +30,14 @@
 (define (ingredients-structure ($ingredients : Ingredients)) : Structure
   (apply append (map expressions-structure $ingredients)))
 
-(define (ingredients-resolve-fn
+(define (single-use-ingredients-resolve-fn
+  ($single-use? : Boolean)
   ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $binder-stack (map expressions-binder $ingredients))
+  (define $binder-stack (map (curry single-use-expressions-binder $single-use?) $ingredients))
   (define $tuple-stack (map binder-tuple $binder-stack))
   (define $tuple (apply append $tuple-stack))
-  (option-bind (#%app $fn $tuple) $expressions
+  (option-bind ($fn $tuple) $expressions
     (define $syntax (expressions-syntax $expressions))
     (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
     (define $entry (single $entry-stack))
@@ -51,6 +53,11 @@
               ,(reverse $entry-let-syntax-stack)
               ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
+
+(define (ingredients-resolve-fn
+  ($ingredients : Ingredients)
+  ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
+  (single-use-ingredients-resolve-fn #f $ingredients $fn))
 
 (check-equal?
   (option-app expressions-sexp

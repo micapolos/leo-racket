@@ -127,7 +127,7 @@
         (structure-matches? $structure $arrow-from-structure)
         (expressions
           (make-syntax 
-            `(#%app
+            `(
               ,(expression-syntax $lhs-expression)
               ,@(reverse $dynamic-syntax-stack)))
           $arrow-to-structure)))))
@@ -140,7 +140,7 @@
           (stack type-a type-b) 
           (stack type-c type-d)))
       (stack expression-a expression-b)))
-  (pair `(#%app d a b) (structure type-c type-d)))
+  (pair `(d a b) (structure type-c type-d)))
 
 (check-equal?
   (arrow-expression-resolve-tuple
@@ -260,7 +260,7 @@
     (option-bind (expression-symbol-content $rhs-expression `make) $make-content
       (option-bind (expressions-expression-option $make-content) $make-expression
         (option-bind (expression-symbol-option $make-expression) $make-symbol
-          (ingredients-resolve-fn (ingredients $lhs-expressions)
+          (single-use-ingredients-resolve-fn #t (ingredients $lhs-expressions)
             (lambda (($tuple : Tuple))
               (expression-expressions
                 (field-expression $make-symbol $tuple)))))))))

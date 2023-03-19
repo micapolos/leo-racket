@@ -34,5 +34,5 @@
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))
   (pair 
-    `(#%app string-append "Hello, " "world!")
+    `(string-append "Hello, " "world!")
     (structure text-type)))
