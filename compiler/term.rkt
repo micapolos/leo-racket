@@ -34,8 +34,11 @@
   (body : Term))
 
 (data binder
+  (recursiveness : Recursiveness)
   (binding-stack : (Stackof Binding))
   (body : Term))
+
+(define-type Recursiveness (U 'non-recursive 'recursive))
 
 (define (term-syntax ($term : Term)) : Syntax
   (identifier-stack-term-syntax null $term))
@@ -73,7 +76,10 @@
           (curry identifier-stack-binding-tmp-stack-syntax-pair $identifier-stack)
           (binder-binding-stack $term)))
       (make-syntax
-        `(let-values
+        `(
+          ,(case (binder-recursiveness $term)
+            ((non-recursive) `let-values)
+            ((recursive) `letrec-values))
           ,(reverse
             (map 
               (lambda (($tmp-stack-syntax-pair : (Pairof (Stackof Identifier) Syntax)))
@@ -116,7 +122,8 @@
 (check-equal?
   (syntax->datum
     (term-syntax 
-      (binder 
+      (binder
+        `non-recursive
         (stack
           (binding (stack `a `b) #`term-1)
           (binding (stack `c `d) #`term-2))
@@ -127,5 +134,23 @@
             (variable 1) 
             (variable 0))))))
   `(let-values (((tmp-a tmp-b) term-1) 
+                ((tmp-c tmp-d) term-2))
+    (tmp-a tmp-b tmp-c tmp-d)))
+
+(check-equal?
+  (syntax->datum
+    (term-syntax 
+      (binder
+        `recursive
+        (stack
+          (binding (stack `a `b) #`term-1)
+          (binding (stack `c `d) #`term-2))
+        (application 
+          (variable 3) 
+          (stack
+            (variable 2) 
+            (variable 1) 
+            (variable 0))))))
+  `(letrec-values (((tmp-a tmp-b) term-1) 
                 ((tmp-c tmp-d) term-2))
     (tmp-a tmp-b tmp-c tmp-d)))
