@@ -23,31 +23,6 @@
 
 (define base-value-tuple
   (tuple
-    (binary-expression number-type `add number-type number-type #`+)
-    (binary-expression number-type `subtract number-type number-type #`-)
-    (binary-expression-2 number-type `multiply `by number-type number-type #`*)
-    (binary-expression-2 number-type `divide `by number-type number-type #`/)
-    (unary-expression number-type `increment number-type #`add1)
-    (unary-expression number-type `decrement number-type #`sub1)
-
-    (binary-expression-2 number-type `check `equals number-type check-type #`=)
-    (binary-expression-3 number-type `check `less `than number-type check-type #`<)
-    (binary-expression-3 number-type `check `greater `than number-type check-type #`>)
-
-    (unary-nested-expression-3 number-type `get `square `root number-type #`sqrt)
-    (unary-nested-expression-2 number-type `get `square number-type #`sqr)
-
-    (unary-nested-expression-2 number-type `get `sinus number-type #`sin)
-    (unary-nested-expression-2 number-type `get `cosinus number-type #`cos)
-    (unary-nested-expression-2 number-type `get `tangens number-type #`tan)
-
-    (unary-nested-expression-2 number-type `get `text text-type #`number->string)
-
-    (binary-expression text-type `append text-type text-type #`string-append)
-    (unary-nested-expression-2 text-type `get `length (field! `length number-type) #`string-length)
-    (binary-expression-2 text-type `check `equals text-type check-type #`string=?)
-
-    ; deprecated
     (binary-expression number-type `plus number-type number-type #`+)
     (binary-expression number-type `minus number-type number-type #`-)
     (binary-expression number-type `times number-type number-type #`*)
@@ -79,8 +54,7 @@
     (unary-expression int-type `text text-type #`number->string)
 
     (binary-expression text-type `plus text-type text-type #`string-append)
-    (unary-expression-2 text-type `length `number number-type #`string-length)
-    (unary-expression-2 text-type `length `int int-type #`string-length)
+    (unary-expression text-type `length (field! `length number-type) #`string-length)
     (binary-expression text-type `equals text-type boolean-type #`string=?)))
 
 (define base-tuple base-value-tuple)

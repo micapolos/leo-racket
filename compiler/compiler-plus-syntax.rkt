@@ -79,6 +79,7 @@
         ((time) (compiler-apply-time $compiler $syntax-list))
         ((type) (compiler-apply-type $compiler $syntax-list))
         ((select) (compiler-apply-select $compiler $syntax-list))
+        ((debug) (compiler-apply-debug $compiler $syntax-list))
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
 
@@ -322,5 +323,5 @@
       (list
         #`1
         #`(dodać 2)
-        #`(do number (add dodać number)))))
+        #`(do number (plus dodać number)))))
   `(expressions (+ 1 2) (structure number)))

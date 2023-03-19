@@ -1,16 +1,9 @@
 #lang leo
 
-circle
-  point
-    x 10
-    y 20
-    z 30
-  radius
-    "foo"
-    plus "bar"
+"Hello, "
+plus "world!"
+length.number
+plus 10
 do
-  circle.point
-  do
-    point.x.number
-    plus point.y.number
-racket
+  number
+  plus number

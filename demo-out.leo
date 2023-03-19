@@ -1,2 +1,1 @@
-jajko 10
-name 20
+(string-length (string-append "Hello, " "world!"))
