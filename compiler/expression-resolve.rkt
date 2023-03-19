@@ -8,7 +8,6 @@
   leo/typed/option
   leo/typed/base
   leo/typed/testing
-  leo/compiler/expression-binder
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expression

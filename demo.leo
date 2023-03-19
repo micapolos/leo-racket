@@ -1,7 +1,7 @@
 #lang leo
 
 10
-"foo"
-do
-  number.text
-  plus text
+plus 20
+text
+plus " apples!"
+racket
