@@ -8,15 +8,14 @@
   leo/typed/testing
   leo/typed/syntax-match
   leo/compiler/ingredients
+  leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
   leo/compiler/ingredients-utils
   leo/compiler/ingredients-sexp
-  leo/compiler/base-scope
-  leo/compiler/scope
-  leo/compiler/scope-utils
+  leo/compiler/base-tuple
   leo/compiler/recipe-part
   leo/compiler/syntax-type
   leo/compiler/type
@@ -59,7 +58,7 @@
           (struct-copy recipe-part $recipe-part
             (rhs-structure-option (syntax-list-structure $syntax-list))))))
     (syntax-symbol-match-args $syntax `does $syntax-list
-      (bind $lhs-tuple (scope-tuple (structure-generate-scope $lhs-structure))
+      (bind $lhs-tuple (structure-generate-tuple $lhs-structure)
         (struct-copy recipe-compiler $recipe-compiler
           (ingredients
             (push $ingredients

@@ -10,8 +10,7 @@
   leo/compiler/expression-utils
   leo/compiler/sexp-expression
   leo/compiler/ingredients
-  leo/compiler/type
-  leo/compiler/scope)
+  leo/compiler/type)
 
 (define compile-ingredients-parameter : (Parameterof (-> Tuple (Listof Syntax) Ingredients))
   (make-parameter

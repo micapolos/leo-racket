@@ -7,10 +7,12 @@
   leo/typed/base
   leo/typed/stack
   leo/typed/testing
+  leo/compiler/expression
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-symbol
   leo/compiler/typed
+  leo/compiler/syntax-utils
   (for-syntax racket/base))
 
 (define (symbol-temporary ($symbol : Symbol)) : Identifier
@@ -39,6 +41,13 @@
   (and 
     (type-dynamic? $type)
     (type-generate-temporary $type)))
+
+(define (type-generate-expression ($type : Type)) : Expression
+  (define $tmp-option (type-generate-temporary-option $type))
+  (expression (or $tmp-option null-syntax) $type))
+
+(define (structure-generate-tuple ($structure : Structure)) : Tuple
+  (map type-generate-expression $structure))
 
 ; -------------------------------------------------------------------------
 

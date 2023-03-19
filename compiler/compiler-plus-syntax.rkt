@@ -9,22 +9,17 @@
   leo/typed/testing
   leo/typed/syntax-match
   leo/compiler/compiler
-  leo/compiler/binding
-  leo/compiler/binding-utils
-  leo/compiler/base-scope
-  leo/compiler/scope
+  leo/compiler/base-tuple
   leo/compiler/switch
   leo/compiler/sexp-expression
   leo/compiler/generate-temporary
   leo/compiler/expressions
   leo/compiler/expressions-sexp
-  leo/compiler/scope-utils
   leo/compiler/sexp-utils
   leo/compiler/expression
   leo/compiler/syntax-utils
   leo/compiler/expression-resolve
   leo/compiler/expressions-utils
-  leo/compiler/expressions-resolve
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
@@ -273,7 +268,7 @@
   (ingredients-sexp
     (compiler-ingredients
       (compiler-plus-syntax
-        (compiler null-scope 
+        (compiler null-tuple 
           (ingredients 
             (expression-expressions 
               (number-expression 3.14))))
@@ -287,7 +282,7 @@
   (ingredients-sexp
     (compiler-ingredients
       (compiler-plus-syntax
-        (compiler null-scope 
+        (compiler null-tuple 
           (ingredients 
             (expression-expressions 
               (number-expression 3.14))))
@@ -301,7 +296,7 @@
   (ingredients-sexp
     (compiler-ingredients
       (compiler-plus-syntax
-        (compiler null-scope 
+        (compiler null-tuple 
           (ingredients
             (expression-expressions 
               (number-expression 3.14))))
@@ -313,7 +308,7 @@
 (check-equal?
   (expressions-sexp
     (tuple-syntax-list-expressions
-      (scope-tuple base-scope)
+      base-tuple
       (list
         #`1
         #`(plus 2)
@@ -326,7 +321,7 @@
 (check-equal?
   (expressions-sexp
     (tuple-syntax-list-expressions
-      (scope-tuple base-scope)
+      base-tuple
       (list
         #`1
         #`(dodać 2)

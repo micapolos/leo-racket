@@ -6,52 +6,49 @@
   leo/typed/base
   leo/typed/option
   leo/typed/testing
-  leo/compiler/binding
   leo/compiler/expressions
-  leo/compiler/scope
-  leo/compiler/scope-utils
   leo/compiler/syntax-utils
   leo/compiler/any-sexp
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define (expressions-module-syntax ($expressions : Expressions)) : Syntax
-  (define $syntax (expressions-syntax $expressions))
-  (define $structure (expressions-structure $expressions))
-  (define $scope (structure-generate-scope $structure))
-  (define $tmp-stack (scope-identifier-stack $scope))
-  (make-syntax 
-    `(module leo racket/base
-      ,(scope-module-syntax $scope)
-      ,@(case (length $tmp-stack)
-        ((0) null)
-        ((1)
-          (list 
-            `(define 
-              ,(car $tmp-stack) 
-              ,$syntax)))
-        (else 
-          (list 
-            `(define-values 
-              (,@(reverse $tmp-stack)) 
-              ,$syntax)))))))
+; (define (expressions-module-syntax ($expressions : Expressions)) : Syntax
+;   (define $syntax (expressions-syntax $expressions))
+;   (define $structure (expressions-structure $expressions))
+;   (define $scope (structure-generate-scope $structure))
+;   (define $tmp-stack (scope-identifier-stack $scope))
+;   (make-syntax 
+;     `(module leo racket/base
+;       ,(scope-module-syntax $scope)
+;       ,@(case (length $tmp-stack)
+;         ((0) null)
+;         ((1)
+;           (list 
+;             `(define 
+;               ,(car $tmp-stack) 
+;               ,$syntax)))
+;         (else 
+;           (list 
+;             `(define-values 
+;               (,@(reverse $tmp-stack)) 
+;               ,$syntax)))))))
 
-(define (scope-module-syntax ($scope : Scope)) : Syntax
-  (make-syntax 
-    `(module* scope 
-      (define scope ,(scope-syntax $scope)))))
+; (define (scope-module-syntax ($scope : Scope)) : Syntax
+;   (make-syntax 
+;     `(module* scope 
+;       (define scope ,(scope-syntax $scope)))))
 
-(define (scope-syntax ($scope : Scope)) : Syntax
-  (make-syntax 
-    `(scope
-      ,@(reverse (map binding-syntax $scope)))))
+; (define (scope-syntax ($scope : Scope)) : Syntax
+;   (make-syntax 
+;     `(scope
+;       ,@(reverse (map binding-syntax $scope)))))
 
-(define (binding-syntax ($binding : Binding)) : Syntax
-  (make-syntax
-    `(binding 
-      ,(type-syntax (binding-type $binding))
-      ,(option-bind (binding-identifier-option $binding) $identifier
-        `(quote ,$identifier)))))
+; (define (binding-syntax ($binding : Binding)) : Syntax
+;   (make-syntax
+;     `(binding 
+;       ,(type-syntax (binding-type $binding))
+;       ,(option-bind (binding-identifier-option $binding) $identifier
+;         `(quote ,$identifier)))))
 
 (define (type-syntax ($type : Type)) : Syntax
   (make-syntax
@@ -90,40 +87,40 @@
   (make-syntax
     `(structure ,@(reverse (map type-syntax $structure)))))
 
-(check-equal?
-  (syntax->datum
-    (expressions-module-syntax
-      (expressions #`pkg
-        (structure static-type-a))))
-  `(module leo racket/base
-    (module* scope 
-      (define scope 
-        (scope
-          (binding (field 'a (structure)) #f))))))
+; (check-equal?
+;   (syntax->datum
+;     (expressions-module-syntax
+;       (expressions #`pkg
+;         (structure static-type-a))))
+;   `(module leo racket/base
+;     (module* scope 
+;       (define scope 
+;         (scope
+;           (binding (field 'a (structure)) #f))))))
 
-(check-equal?
-  (syntax->datum
-    (expressions-module-syntax
-      (expressions #`pkg
-        (structure static-type-a dynamic-type-b))))
-  `(module leo racket/base
-    (module* scope 
-      (define scope 
-        (scope
-          (binding (field 'a (structure)) #f)
-          (binding (field 'b (structure (racket))) 'tmp-b))))
-    (define tmp-b pkg)))
+; (check-equal?
+;   (syntax->datum
+;     (expressions-module-syntax
+;       (expressions #`pkg
+;         (structure static-type-a dynamic-type-b))))
+;   `(module leo racket/base
+;     (module* scope 
+;       (define scope 
+;         (scope
+;           (binding (field 'a (structure)) #f)
+;           (binding (field 'b (structure (racket))) 'tmp-b))))
+;     (define tmp-b pkg)))
 
-(check-equal?
-  (syntax->datum
-    (expressions-module-syntax
-      (expressions #`pkg
-        (structure dynamic-type-a static-type-b dynamic-type-c))))
-  `(module leo racket/base
-    (module* scope 
-      (define scope 
-        (scope
-          (binding (field 'a (structure (racket))) 'tmp-a)
-          (binding (field 'b (structure)) #f)
-          (binding (field 'c (structure (racket))) 'tmp-c))))
-    (define-values (tmp-a tmp-c) pkg)))
+; (check-equal?
+;   (syntax->datum
+;     (expressions-module-syntax
+;       (expressions #`pkg
+;         (structure dynamic-type-a static-type-b dynamic-type-c))))
+;   `(module leo racket/base
+;     (module* scope 
+;       (define scope 
+;         (scope
+;           (binding (field 'a (structure (racket))) 'tmp-a)
+;           (binding (field 'b (structure)) #f)
+;           (binding (field 'c (structure (racket))) 'tmp-c))))
+;     (define-values (tmp-a tmp-c) pkg)))

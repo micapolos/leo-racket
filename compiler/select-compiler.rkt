@@ -7,7 +7,6 @@
   leo/typed/stack
   leo/typed/option
   leo/typed/syntax-match
-  leo/compiler/scope
   leo/compiler/syntax-type
   leo/compiler/expression
   leo/compiler/type

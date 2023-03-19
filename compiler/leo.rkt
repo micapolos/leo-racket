@@ -6,7 +6,7 @@
   (for-syntax 
     racket/base
     syntax/strip-context
-    leo/compiler/base-scope
+    leo/compiler/base-tuple
     leo/compiler/leo-eval
     leo/compiler/leo-compile
     leo/compiler/expressions

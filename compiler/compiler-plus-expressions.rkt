@@ -9,8 +9,6 @@
   leo/typed/stack
   leo/typed/testing
   leo/compiler/compiler
-  leo/compiler/scope
-  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expression-resolve
@@ -60,7 +58,7 @@
   (ingredients-sexp
     (compiler-ingredients
       (compiler-plus-expressions
-        (compiler null-scope (ingredients expressions-a))
+        (compiler null-tuple (ingredients expressions-a))
         expressions-b)))
   `(ingredients 
     (expressions a (structure (a racket)))

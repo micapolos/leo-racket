@@ -11,8 +11,6 @@
   leo/compiler/type-utils
   leo/compiler/type-sexp
   leo/compiler/ingredients
-  leo/compiler/binding
-  leo/compiler/scope
   leo/compiler/switch
   leo/compiler/syntax-utils
   leo/compiler/expression

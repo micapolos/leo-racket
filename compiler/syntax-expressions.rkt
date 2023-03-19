@@ -6,8 +6,7 @@
   leo/typed/base
   leo/typed/testing
   leo/compiler/expressions
-  leo/compiler/base-scope
-  leo/compiler/scope-utils
+  leo/compiler/base-tuple
   leo/compiler/syntax-utils
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
@@ -17,10 +16,10 @@
   leo/compiler/compiler-plus-syntax)
 
 (define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
-  (tuple-syntax-list-ingredients (scope-tuple base-scope) $syntax-list))
+  (tuple-syntax-list-ingredients base-tuple $syntax-list))
 
 (define (syntax-list-expressions ($syntax-list : (Listof Syntax))) : Expressions
-  (tuple-syntax-list-expressions (scope-tuple base-scope) $syntax-list))
+  (tuple-syntax-list-expressions base-tuple $syntax-list))
 
 (define (sexp-expressions ($sexp : Sexp)) : Expressions
   (define $datum (sexp-datum $sexp))

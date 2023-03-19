@@ -9,15 +9,13 @@
   leo/typed/base
   leo/typed/testing
   leo/compiler/expression-binder
-  leo/compiler/binding
-  leo/compiler/binding-utils
   leo/compiler/expressions
   leo/compiler/expressions-utils
-  leo/compiler/scope
-  leo/compiler/scope-utils
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expressions-sexp
+  leo/compiler/ingredients
+  leo/compiler/ingredients-utils
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/sourced
@@ -200,106 +198,6 @@
     (>= (length $tuple) 2))
     (tuple-expression-resolve (cdr $tuple) (car $tuple)))
 
-; -----------------------------------------------------------------------
-
-(define (expression-resolve-fn
-  ($expression : Expression) 
-  ($fn : (-> Binding (Option Expressions))))
-  : (Option Expressions)
-  (define $type (expression-type $expression))
-  (define $syntax (expression-syntax $expression))
-  (define $binding (type-generate-binding $type))
-  (define $tmp-option (binding-identifier-option $binding))
-  (define $fn-expressions-option ($fn $binding))
-  (option-bind $fn-expressions-option $fn-expressions
-    (define $fn-syntax (expressions-syntax $fn-expressions))
-    (define $fn-structure (expressions-structure $fn-expressions))
-    (expressions
-      (or
-        (and $tmp-option (make-syntax `(let ((,$tmp-option ,$syntax)) ,$fn-syntax)))
-        $fn-syntax)
-      $fn-structure)))
-
-(define (tuple-resolve-fn 
-  ($tuple : Tuple) 
-  ($fn : (-> Tuple (Option Expressions))))
-  : (Option Expressions)
-  (define $structure (tuple-structure $tuple))
-  (define $binder-stack (map expression-binder $tuple))
-  (define $binder-entry-stack (filter-false (map binder-entry-option $binder-stack)))
-  (define $bound-syntax-stack (map binder-bound-syntax $binder-stack))
-  (define $bound-tuple (map expression $bound-syntax-stack $structure))
-  (define $fn-expressions-option ($fn $bound-tuple))
-  (option-bind $fn-expressions-option $fn-expressions
-    (define $fn-syntax (expressions-syntax $fn-expressions))
-    (define $fn-structure (expressions-structure $fn-expressions))
-    (make-expressions
-      (make-syntax 
-        (case (length $binder-entry-stack)
-          ((0) $fn-syntax)
-          (else 
-            `(let
-              (,@(reverse (map binder-entry-let-syntax $binder-entry-stack)))
-              ,$fn-syntax))))
-      $fn-structure)))
-
-(define (tuple-do ($tuple : Tuple) ($fn : (-> Tuple Expressions))) : Expressions
-  (option-or
-    (tuple-resolve-fn $tuple $fn)
-    (tuple-expressions $tuple)))
-
-(check-equal?
-  (expressions-sexp
-    (tuple-do
-      (tuple
-        (expression null-syntax static-type-a)
-        (expression null-syntax static-type-b))
-      tuple-default-apply-fn))
-  `(expressions #f (structure (resolved a b))))
-
-(check-equal?
-  (expressions-sexp
-    (tuple-do
-      (tuple
-        (expression null-syntax static-type-a)
-        (expression atomic-syntax-b dynamic-type-b))
-      (lambda (($tuple : Tuple)) 
-        (expression-expressions
-          (field-expression `resolved $tuple)))))
-  `(expressions atomic-b (structure (resolved a (b racket)))))
-
-(check-equal?
-  (expressions-sexp
-    (tuple-do
-      (tuple 
-        (expression null-syntax static-type-a)
-        (expression atomic-syntax-b dynamic-type-b)
-        (expression complex-syntax-c dynamic-type-c))
-      (lambda (($tuple : Tuple)) 
-        (expression-expressions
-          (field-expression `resolved $tuple)))))
-  `(expressions
-    (let ((tmp-c (complex-c))) (cons atomic-b tmp-c))
-    (structure (resolved a (b racket) (c racket)))))
-
-(check-equal?
-  (expressions-sexp
-    (tuple-do
-      (tuple 
-        (expression null-syntax static-type-a)
-        (expression atomic-syntax-b dynamic-type-b)
-        (expression complex-syntax-c dynamic-type-c)
-        (expression complex-syntax-d dynamic-type-d))
-      (lambda (($tuple : Tuple)) 
-        (expression-expressions
-          (field-expression `resolved $tuple)))))
-  `(expressions
-    (let ((tmp-c (complex-c)) 
-          (tmp-d (complex-d)))
-      (vector atomic-b tmp-c tmp-d))
-    (structure 
-      (resolved a (b racket) (c racket) (d racket)))))
-
 (define (expressions-resolve-expression
   ($expressions : Expressions)
   ($expression : Expression))
@@ -363,7 +261,7 @@
     (option-bind (expression-symbol-content $rhs-expression `make) $make-content
       (option-bind (expressions-expression-option $make-content) $make-expression
         (option-bind (expression-symbol-option $make-expression) $make-symbol
-          (expressions-resolve-fn $lhs-expressions 
+          (ingredients-resolve-fn (ingredients $lhs-expressions)
             (lambda (($tuple : Tuple))
               (expression-expressions
                 (field-expression $make-symbol $tuple)))))))))

@@ -7,9 +7,6 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/binding
-  leo/compiler/scope
-  leo/compiler/scope-utils
   leo/compiler/ingredients
   leo/compiler/type
   leo/compiler/type-sexp
@@ -21,8 +18,7 @@
   leo/compiler/expressions-sexp
   leo/compiler/expression
   leo/compiler/sexp-expression
-  leo/compiler/expression-utils
-  leo/compiler/expression-resolve)
+  leo/compiler/expression-utils)
 
 (define (ingredients-plus ($lhs-ingredients : Ingredients) ($rhs-ingredients : Ingredients)) : Ingredients
   (push-stack $lhs-ingredients $rhs-ingredients))
@@ -105,78 +101,6 @@
   ($ingredients : Ingredients)
   ($fn : (-> Tuple Expressions))) : Expressions
   (option-ref (ingredients-resolve-fn $ingredients $fn)))
-
-; --------------------------------------------------------------------------------
-
-(define (ingredients-do ($ingredients : Ingredients) ($fn : (-> Scope Expressions))) : Expressions
-  (define $expressions-stack $ingredients)
-  (define $syntax-option-stack (map expressions-syntax-option $expressions-stack))
-  (define $structure-stack (map expressions-structure $expressions-stack))
-  (define $scope-stack (map structure-generate-scope $structure-stack))
-  (define $scope (apply append $scope-stack))
-  (define $fn-expressions ($fn $scope))
-  (define $identifier-stack-stack (map scope-identifier-stack $scope-stack))
-  (make-expressions
-    (make-syntax 
-      `(let-values
-        ,(reverse 
-          (filter-false 
-            (map
-              (lambda (
-                ($identifier-stack : (Stackof Identifier)) 
-                ($syntax-option : (Option Syntax)))
-                (and $syntax-option
-                  `(
-                    ,(reverse $identifier-stack)
-                    ,$syntax-option)))
-              $identifier-stack-stack
-              $syntax-option-stack)))
-        ,(expressions-syntax $fn-expressions)))
-    (expressions-structure $fn-expressions)))
-
-; do static
-(check-equal?
-  (expressions-sexp
-    (ingredients-do
-      (ingredients expressions-ab expressions-cd)
-      (lambda (($scope : Scope)) 
-        (expressions null-syntax static-structure-a))))
-  `(expressions #f (structure a)))
-
-; static-expressions
-(check-equal?
-  (expressions-sexp
-    (ingredients-do
-      (ingredients static-expressions-a expressions-b)
-      (lambda (($scope : Scope))
-        (make-expressions #`result (map binding-type $scope)))))
-  `(expressions 
-    (let-values (((tmp-b) b)) result)
-    (structure a (b racket))))
-
-; single-expressions
-(check-equal?
-  (expressions-sexp
-    (ingredients-do
-      (ingredients expressions-a expressions-b)
-      (lambda (($scope : Scope))
-        (make-expressions #`result (map binding-type $scope)))))
-  `(expressions 
-    (let-values (((tmp-a) a) ((tmp-b) b)) result)
-    (structure (a racket) (b racket))))
-
-; mutli-expressions
-(check-equal?
-  (expressions-sexp
-    (ingredients-do
-      (ingredients expressions-ab expressions-cd)
-      (lambda (($scope : Scope))
-        (make-expressions #`result (map binding-type $scope)))))
-  `(expressions 
-    (let-values (((tmp-a tmp-b) ab)
-                 ((tmp-c tmp-d) cd))
-        result)
-    (structure (a racket) (b racket) (c racket) (d racket))))
 
 ; ----------------------------------------------------------------------------
 
