@@ -109,10 +109,15 @@
   ($fn : (-> Tuple Expressions))) : Expressions
   (option-ref (ingredients-resolve-fn $ingredients $fn)))
 
+(define (ingredients-gather-fn
+  ($ingredients : Ingredients)
+  ($fn : (-> Tuple Expressions))) : Expressions
+  (option-ref (single-use-ingredients-resolve-fn #t $ingredients $fn)))
+
 ; ----------------------------------------------------------------------------
 
 (define (symbol-ingredients-expressions ($symbol : Symbol) ($ingredients : Ingredients)) : Expressions
-  (ingredients-apply-fn $ingredients
+  (ingredients-gather-fn $ingredients
     (lambda (($tuple : Tuple))
       (make-expressions
         (tuple-syntax $tuple)
