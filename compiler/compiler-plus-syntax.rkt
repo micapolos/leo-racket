@@ -212,17 +212,21 @@
           (make-syntax `(time ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
 
+; TODO: Fix it, it does not bind ingredients.
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
-    (ingredients-plus (compiler-ingredients $compiler)
-      (ingredients
-        (ingredients-apply-fn (compiler-ingredients $compiler)
-          (lambda (($tuple : Tuple))
-            (tuple-syntax-list-expressions 
-              (push-stack (compiler-tuple $compiler) $tuple) 
-              $syntax-list)))))))
+    (ingredients
+      (ingredients-apply-fn (compiler-ingredients $compiler)
+        (lambda (($tuple : Tuple))
+          (ingredients-expressions
+            (ingredients-plus
+              (map expression-expressions $tuple)
+              (ingredients
+                (tuple-syntax-list-expressions 
+                  (push-stack (compiler-tuple $compiler) $tuple) 
+                  $syntax-list)))))))))
 
 ; ----------------------------------------------------------------------------
 

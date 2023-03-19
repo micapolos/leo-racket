@@ -1,5 +1,12 @@
 #lang leo
 
-1
-less than 1
-switch: "true" "false"
+the
+  10
+  plus 20
+the
+  "foo"
+  plus "bar"
+then
+  number.text
+  plus text
+racket
