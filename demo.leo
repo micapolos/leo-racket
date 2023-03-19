@@ -4,9 +4,10 @@ the
   10
   plus 20
 the
-  "foo"
-  plus "bar"
+  "green"
+  plus " "
+  plus "apples"
 then
   number.text
+  plus " "
   plus text
-racket
