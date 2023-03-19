@@ -40,10 +40,15 @@
                   (else 
                     (string-indent 
                       (string-append "\n" (sexp-list-rhs-string $list)))))))))))
-    (pretty-format 
-      $sexp 
-      (if (testing?) 10000 64) 
-      #:mode `write)))
+    (and (list? $sexp)
+      (string-join (map native-sexp-string $sexp) "\n"))
+    (native-sexp-string $sexp)))
+
+(define (native-sexp-string ($sexp : Sexp)) : String 
+  (pretty-format 
+    $sexp
+    (if (testing?) 10000 64) 
+    #:mode `write))
 
 (define (sexp-list-rhs-string ($sexp-list : (Listof Sexp))) : String
   (string-join (map sexp-string $sexp-list) "\n"))
@@ -62,7 +67,7 @@
 
 (check-equal? 
   (sexp-string `("foo" bar))
-  "(\"foo\" bar)")
+  "\"foo\"\nbar")
 
 (check-equal? 
   (sexp-string 1)
