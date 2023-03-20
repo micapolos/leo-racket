@@ -8,7 +8,8 @@
   leo/typed/stack
   leo/typed/testing
   leo/compiler/syntax-utils
-  leo/compiler/generate-temporary)
+  leo/compiler/generate-temporary
+  (for-syntax racket/base))
 
 (define-type Term 
   (U
@@ -38,7 +39,59 @@
   (binding-stack : (Stackof Binding))
   (body : Term))
 
-(define-type Recursiveness (U 'non-recursive 'recursive))
+(define-type Recursiveness 
+  (U 
+    'non-recursive 
+    'recursive))
+
+; -----------------------------------------------------------------------------
+
+(define v0 (variable 0))
+(define v1 (variable 1))
+(define v2 (variable 2))
+(define v3 (variable 3))
+
+(define-syntax (lambda! $syntax)
+  (syntax-case $syntax ()
+    ((_ (symbol ...) term)
+      #`(abstraction 
+        (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...))))
+        term))))
+
+(define-syntax (app! $syntax)
+  (syntax-case $syntax ()
+    ((_ lhs rhs ...)
+      #`(application 
+        lhs 
+        (stack rhs ...)))))
+
+(define-syntax (binding! $syntax)
+  (syntax-case $syntax ()
+    ((_ (symbol ...) body)
+      #`(binding
+        (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...))))
+        body))))
+
+(define-syntax (let! $syntax)
+  (syntax-case $syntax ()
+    ((_ (binding ...) body)
+      #`(binder
+        (quote non-recursive)
+        (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
+        body))))
+
+(define-syntax (letrec! $syntax)
+  (syntax-case $syntax ()
+    ((_ (binding ...) body)
+      #`(binder
+        (quote recursive)
+        (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
+        body))))
+
+; -------------------------------------------------------------------------------------
+
+(define (term-sexp ($term : Term)) : Sexp
+  (syntax->datum (term-syntax $term)))
 
 (define (term-syntax ($term : Term)) : Syntax
   (identifier-stack-term-syntax null $term))
@@ -107,50 +160,33 @@
       (push-stack $identifier-stack $tmp-stack)
       (binding-body $binding))))
 
+; --------------------------------------------------------------------------------
+
 (check-equal?
   (syntax->datum (term-syntax #`some-syntax))
   `some-syntax)
 
 (check-equal?
-  (syntax->datum
-    (term-syntax 
-      (abstraction 
-        (stack `a `b `c) 
-        (application (variable 2) (stack (variable 1) (variable 0))))))
+  (term-sexp (lambda! (a b c) (app! v2 v1 v0)))
   `(lambda (tmp-a tmp-b tmp-c) (tmp-a tmp-b tmp-c)))
 
 (check-equal?
-  (syntax->datum
-    (term-syntax 
-      (binder
-        `non-recursive
-        (stack
-          (binding (stack `a `b) #`term-1)
-          (binding (stack `c `d) #`term-2))
-        (application 
-          (variable 3) 
-          (stack
-            (variable 2) 
-            (variable 1) 
-            (variable 0))))))
-  `(let-values (((tmp-a tmp-b) term-1) 
-                ((tmp-c tmp-d) term-2))
+  (term-sexp 
+    (let! (((a b) #`term-1)
+           ((c d) #`term-2))
+      (app! v3 v2 v1 v0)))
+  `(let-values 
+    (((tmp-a tmp-b) term-1) 
+     ((tmp-c tmp-d) term-2))
     (tmp-a tmp-b tmp-c tmp-d)))
 
 (check-equal?
-  (syntax->datum
-    (term-syntax 
-      (binder
-        `recursive
-        (stack
-          (binding (stack `a `b) #`term-1)
-          (binding (stack `c `d) #`term-2))
-        (application 
-          (variable 3) 
-          (stack
-            (variable 2) 
-            (variable 1) 
-            (variable 0))))))
-  `(letrec-values (((tmp-a tmp-b) term-1) 
-                ((tmp-c tmp-d) term-2))
+  (term-sexp 
+    (letrec!
+      (((a b) #`term-1)
+       ((c d) #`term-2))
+      (app! v3 v2 v1 v0)))
+  `(letrec-values 
+    (((tmp-a tmp-b) term-1) 
+     ((tmp-c tmp-d) term-2))
     (tmp-a tmp-b tmp-c tmp-d)))
