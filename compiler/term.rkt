@@ -17,7 +17,8 @@
     Variable
     Abstraction
     Application
-    Binder))
+    Binder
+    Conditional))
 
 (data variable
   (index : Exact-Nonnegative-Integer))
@@ -38,6 +39,11 @@
   (recursiveness : Recursiveness)
   (binding-stack : (Stackof Binding))
   (body : Term))
+
+(data conditional
+  (condition : Term)
+  (consequent : Term)
+  (alternate : Term))
 
 (define-type Recursiveness 
   (U 
@@ -87,6 +93,11 @@
         (quote recursive)
         (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
         body))))
+
+(define-syntax (if! $syntax)
+  (syntax-case $syntax ()
+    ((_ condition consequent alternate)
+      #`(conditional condition consequent alternate))))
 
 ; -------------------------------------------------------------------------------------
 
@@ -147,7 +158,13 @@
                 (map 
                   (ann car (-> (Pairof (Stackof Identifier) Syntax) (Stackof Identifier)))
                   $tmp-stack-syntax-pair-stack)))
-            (binder-body $term)))))))
+            (binder-body $term)))))
+    ((conditional? $term)
+      (make-syntax
+        `(if
+          ,(identifier-stack-term-syntax $identifier-stack (conditional-condition $term))
+          ,(identifier-stack-term-syntax $identifier-stack (conditional-consequent $term))
+          ,(identifier-stack-term-syntax $identifier-stack (conditional-alternate $term)))))))
 
 (define (identifier-stack-binding-tmp-stack-syntax-pair
   ($identifier-stack : (Stackof Identifier))
@@ -190,3 +207,7 @@
     (((tmp-a tmp-b) term-1) 
      ((tmp-c tmp-d) term-2))
     (tmp-a tmp-b tmp-c tmp-d)))
+
+(check-equal?
+  (term-sexp (if! #`a #`b #`c))
+  `(if a b c))
