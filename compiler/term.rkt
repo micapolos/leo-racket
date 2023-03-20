@@ -55,11 +55,6 @@
   (body : V))
 
 (data (V) binder
-  (recursiveness : Recursiveness)
+  (recursiveness : (U 'recursive 'non-recursive))
   (binding-stack : (Stackof (Binding V)))
   (packet : (Packet V)))
-
-(define-type Recursiveness 
-  (U 
-    'non-recursive 
-    'recursive))
