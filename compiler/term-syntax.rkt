@@ -37,40 +37,46 @@
 
 (define-syntax (lambda! $syntax)
   (syntax-case $syntax ()
-    ((_ (symbol ...) term)
+    ((_ (symbol ...) term ...)
       #`(abstraction 
-        (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...))))
-        term))))
+        (ann (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...)))) (Stackof Symbol))
+        (packet (ann (stack term ...) (Stackof (Term Syntax))))))))
 
 (define-syntax (app! $syntax)
   (syntax-case $syntax ()
     ((_ lhs rhs ...)
       #`(application 
         lhs 
-        (stack rhs ...)))))
+        (ann (stack rhs ...) (Stackof (Term Syntax)))))))
 
 (define-syntax (binding! $syntax)
   (syntax-case $syntax ()
     ((_ (symbol ...) body)
       #`(binding
-        (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...))))
+        (ann 
+          (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...))))
+          (Stackof Symbol))
         body))))
 
 (define-syntax (let! $syntax)
   (syntax-case $syntax ()
-    ((_ (binding ...) body)
+    ((_ (binding ...) body ...)
       #`(binder
         (quote non-recursive)
-        (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
-        body))))
+        (ann 
+          (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
+          (Stackof (Binding (Term Syntax))))
+        (packet (ann (stack body ...) (Stackof (Term Syntax))))))))
 
 (define-syntax (letrec! $syntax)
   (syntax-case $syntax ()
-    ((_ (binding ...) body)
+    ((_ (binding ...) body ...)
       #`(binder
         (quote recursive)
-        (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
-        body))))
+        (ann 
+          (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
+          (Stackof (Binding (Term Syntax))))
+        (packet (ann (stack body ...) (Stackof (Term Syntax))))))))
 
 ; -------------------------------------------------------------------------------------
 
@@ -151,9 +157,9 @@
       (make-syntax
         `(lambda 
           ,(reverse $tmp-stack)
-          ,(identifier-stack-term-syntax
+          ,@(identifier-stack-packet-syntax-list
             (push-stack $identifier-stack $tmp-stack)
-            (abstraction-body $term)))))
+            (abstraction-packet $term)))))
     ((application? $term)
       (make-syntax
         `(
@@ -181,14 +187,14 @@
                   ,(reverse (car $tmp-stack-syntax-pair))
                   ,(cdr $tmp-stack-syntax-pair)))
               $tmp-stack-syntax-pair-stack))
-          ,(identifier-stack-term-syntax
+          ,@(identifier-stack-packet-syntax-list
             (push-stack 
               $identifier-stack
               (apply append 
                 (map 
                   (ann car (-> (Pairof (Stackof Identifier) Syntax) (Stackof Identifier)))
                   $tmp-stack-syntax-pair-stack)))
-            (binder-body $term)))))))
+            (binder-packet $term)))))))
 
 (define (identifier-stack-binding-tmp-stack-syntax-pair
   ($identifier-stack : (Stackof Identifier))
@@ -200,6 +206,20 @@
     (identifier-stack-term-syntax
       (push-stack $identifier-stack $tmp-stack)
       (binding-body $binding))))
+
+(define (identifier-stack-packet-syntax-list
+  ($identifier-stack : (Stackof Identifier))
+  ($packet : (Packet (Term Syntax))))
+: (Listof Syntax)
+  (define $syntax-stack 
+    (map
+      (curry identifier-stack-term-syntax $identifier-stack)
+      (packet-stack $packet)))
+  (define $size (length $syntax-stack))
+  (case $size
+    ((0) null)
+    ((1) (list (top $syntax-stack)))
+    (else (list (make-syntax `(values ,@(reverse $syntax-stack)))))))
 
 ; --------------------------------------------------------------------------------
 
@@ -275,26 +295,62 @@
     (else c)))
 
 (check-equal?
-  (term-sexp (lambda! (a b c) (app! v2 v1 v0)))
-  `(lambda (tmp-a tmp-b tmp-c) (tmp-a tmp-b tmp-c)))
+  (term-sexp (app! (native! a)))
+  `(a))
+
+(check-equal?
+  (term-sexp (app! (native! a) (native! b) (native! c)))
+  `(a b c))
+
+(check-equal?
+  (term-sexp (lambda! ()))
+  `(lambda ()))
+
+(check-equal?
+  (term-sexp (lambda! (a) v0))
+  `(lambda (tmp-a) tmp-a))
+
+(check-equal?
+  (term-sexp (lambda! (a b c) v2))
+  `(lambda (tmp-a tmp-b tmp-c) tmp-a))
+
+(check-equal?
+  (term-sexp (lambda! (a b c) v2 v1 v0))
+  `(lambda (tmp-a tmp-b tmp-c) (values tmp-a tmp-b tmp-c)))
+
+(check-equal?
+  (term-sexp (let! ()))
+  `(let-values ()))
+
+(check-equal?
+  (term-sexp (let! ((() (native! a))) (native! b)))
+  `(let-values ((() a)) b))
 
 (check-equal?
   (term-sexp 
     (let! (((a b) (native! term-1))
            ((c d) (native! term-2)))
-      (app! v3 v2 v1 v0)))
+      v3 v2 v1 v0))
   `(let-values 
     (((tmp-a tmp-b) term-1) 
      ((tmp-c tmp-d) term-2))
-    (tmp-a tmp-b tmp-c tmp-d)))
+    (values tmp-a tmp-b tmp-c tmp-d)))
 
 (check-equal?
-  (term-sexp 
+  (term-sexp (letrec! ()))
+  `(letrec-values ()))
+
+(check-equal?
+  (term-sexp (letrec! ((() (native! a))) (native! b)))
+  `(letrec-values ((() a)) b))
+
+(check-equal?
+  (term-sexp
     (letrec!
       (((a b) (native! term-1))
        ((c d) (native! term-2)))
-      (app! v3 v2 v1 v0)))
+      v3 v2 v1 v0))
   `(letrec-values 
     (((tmp-a tmp-b) term-1) 
      ((tmp-c tmp-d) term-2))
-    (tmp-a tmp-b tmp-c tmp-d)))
+    (values tmp-a tmp-b tmp-c tmp-d)))

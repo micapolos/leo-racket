@@ -28,6 +28,9 @@
 (data (V) tuple
   (stack : (Stackof V)))
 
+(data (V) packet
+  (stack : (Stackof V)))
+
 (data (V) ref
   (tuple : V)
   (index : Index))
@@ -41,7 +44,7 @@
 
 (data (V) abstraction
   (symbol-stack : (Stackof Symbol))
-  (body : V))
+  (packet : (Packet V)))
 
 (data (V) application
   (lhs : V)
@@ -54,7 +57,7 @@
 (data (V) binder
   (recursiveness : Recursiveness)
   (binding-stack : (Stackof (Binding V)))
-  (body : V))
+  (packet : (Packet V)))
 
 (define-type Recursiveness 
   (U 
