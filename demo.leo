@@ -1,3 +1,4 @@
 #lang leo
 
-everything
+10
+plus 20
