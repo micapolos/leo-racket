@@ -1,4 +1,4 @@
 #lang leo
 
-32767
-square root
+10
+to the power of 12
