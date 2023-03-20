@@ -17,7 +17,6 @@
   leo/compiler/type-match
   leo/compiler/type-sexp
   leo/compiler/typed
-  leo/compiler/sourced
   leo/compiler/type-utils
   leo/compiler/module-syntax
   (for-syntax racket/base))
