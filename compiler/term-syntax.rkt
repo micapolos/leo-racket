@@ -97,7 +97,7 @@
       (define $value (index-value $term))
       (make-syntax
         (case (index-size $term)
-          ((0) (error "impossible"))
+          ((0) (error "index size 0"))
           ((2) (= $value 0))
           (else $value))))
     ((tuple? $term)
