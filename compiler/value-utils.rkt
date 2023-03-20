@@ -80,7 +80,7 @@
       (lambda () 128)
       (recipe!
         (field! `foo)
-        (does number-type)))
+        (doing number-type)))
     (packet
       (value `() (field! `foo))))
   (packet

@@ -217,28 +217,28 @@
   (type-matches?
     (recipe!
       (field! `a) (field! `b)
-      (does (field! `c) (field! `d)))
+      (doing (field! `c) (field! `d)))
     (recipe!
       (field! `a) (field! `b)
-      (does (field! `c) (field! `d)))))
+      (doing (field! `c) (field! `d)))))
 
 (check-not
   (type-matches?
     (recipe!
       (field! `a) (field! `b)
-      (does (field! `c) (field! `d)))
+      (doing (field! `c) (field! `d)))
     (recipe!
       (field! `a) (field! `c)
-      (does (field! `c) (field! `d)))))
+      (doing (field! `c) (field! `d)))))
 
 (check-not
   (type-matches?
     (recipe!
       (field! `a) (field! `b)
-      (does (field! `c) (field! `d)))
+      (doing (field! `c) (field! `d)))
     (recipe!
       (field! `a) (field! `b)
-      (does (field! `c) (field! `e)))))
+      (doing (field! `c) (field! `e)))))
 
 ; generic
 (check

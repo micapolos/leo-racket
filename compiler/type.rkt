@@ -69,7 +69,7 @@
 
 (define-syntax (recipe! $syntax)
   (syntax-case $syntax (does)
-    ((_ $from ... (does $to ...))
+    ((_ $from ... (doing $to ...))
       (syntax 
         (arrow 
           (structure $from ...) 
