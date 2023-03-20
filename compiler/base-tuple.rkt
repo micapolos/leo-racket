@@ -38,8 +38,8 @@
     (binary-expression-2 number-type `less `than number-type boolean-type #`<)
     (binary-expression-2 number-type `greater `than number-type boolean-type #`>)
 
-    (unary-expression-2 number-type `square `root number-type #`sqrt)
-    (unary-expression-2 number-type `squared `root number-type #`sqr)
+    (unary-nested-expression-2 number-type `square `root number-type #`sqrt)
+    (unary-expression number-type `squared number-type #`sqr)
 
     (unary-expression number-type `sinus number-type #`sin)
     (unary-expression number-type `cosinus number-type #`cos)
