@@ -118,6 +118,7 @@
             ,$symbol
             ,@(type-stack-any-structure-sexp-list $type-stack $any $structure)))))
     ((choice? $type)
+      ; TODO: Return expanded form, like: "boolean choice: not true, the false"
       (type-stack-value-sexp $type-stack (any-choice-value $any $type)))
     ((arrow? $type) (type-sexp $type))
     ((generic? $type) 
