@@ -68,18 +68,19 @@
     (syntax-match-symbol-args $normalized-syntax $symbol $syntax-list
       (case $symbol
         ((a) (compiler-apply-a $compiler $syntax-list))
-        ((do) (compiler-apply-do $compiler $syntax-list))
-        ((recipe) (compiler-apply-recipe $compiler $syntax-list))
-        ((quote) (compiler-apply-quote $compiler $syntax-list))
         ((apply) (compiler-apply-apply $compiler $syntax-list))
-        ((switch) (compiler-apply-switch $compiler $syntax-list))
+        ((debug) (compiler-apply-debug $compiler $syntax-list))
+        ((do) (compiler-apply-do $compiler $syntax-list))
+        ((quote) (compiler-apply-quote $compiler $syntax-list))
         ((racket) (compiler-apply-racket $compiler $syntax-list))
+        ((recipe) (compiler-apply-recipe $compiler $syntax-list))
+        ((select) (compiler-apply-select $compiler $syntax-list))
+        ((switch) (compiler-apply-switch $compiler $syntax-list))
+        ((time) (compiler-apply-time $compiler $syntax-list))
         ((the) (compiler-apply-the $compiler $syntax-list))
         ((then) (compiler-apply-then $compiler $syntax-list))
-        ((time) (compiler-apply-time $compiler $syntax-list))
+        ((top) (compiler-apply-top $compiler $syntax-list))
         ((type) (compiler-apply-type $compiler $syntax-list))
-        ((select) (compiler-apply-select $compiler $syntax-list))
-        ((debug) (compiler-apply-debug $compiler $syntax-list))
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
 
@@ -212,7 +213,6 @@
           (make-syntax `(time ,(expressions-syntax $expressions)))
           (expressions-structure $expressions))))))
 
-; TODO: Fix it, it does not bind ingredients.
 (define (compiler-apply-then 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
@@ -227,6 +227,18 @@
                 (tuple-syntax-list-expressions 
                   (push-stack (compiler-tuple $compiler) $tuple) 
                   $syntax-list)))))))))
+
+(define (compiler-apply-top 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax)))
+: Compiler
+  (define $syntax 
+    (option-or (single $syntax-list)
+      (error "top syntax error")))
+  (define $index (syntax-e $syntax))
+  (unless (exact-nonnegative-integer? $index)
+    (error "top syntax error"))
+  (compiler-top $compiler $index))
 
 ; ----------------------------------------------------------------------------
 

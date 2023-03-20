@@ -3,7 +3,11 @@
 (provide (all-defined-out))
 
 (require
+  leo/typed/option
+  leo/typed/stack
   leo/compiler/compiler
+  leo/compiler/expression
+  leo/compiler/expressions
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
   leo/compiler/expressions-utils
@@ -61,4 +65,25 @@
         (compile-ingredients
           (compiler-tuple $compiler)
           $syntax-list)))))
-      
+
+(define (compiler-apply-fn
+  ($compiler : Compiler) 
+  ($fn : (-> Tuple Expressions))) : Compiler
+  (define $ingredients (compiler-ingredients $compiler))
+  (compiler-with-ingredients $compiler
+    (ingredients
+      (cond
+        ((null? (ingredients-structure $ingredients))
+          ($fn (compiler-tuple $compiler)))
+        (else
+          ($fn 
+            (option-or
+              (expressions-rhs-option
+                (ingredients-expressions $ingredients))
+              (error "top: no rhs"))))))))
+
+(define (compiler-top ($compiler : Compiler) ($index : Exact-Nonnegative-Integer)) : Compiler
+  (compiler-apply-fn $compiler
+    (lambda (($tuple : Tuple))
+      (expression-expressions 
+        (tuple-top $tuple $index)))))

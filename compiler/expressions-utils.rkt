@@ -191,3 +191,10 @@
   `(expressions
     (lambda (nul txt) (string-append (number->string num) txt))
     (structure (recipe number text (doing text)))))
+
+; --------------------------------------------------------------------
+
+(define (tuple-top ($tuple : Tuple) ($index : Exact-Nonnegative-Integer)) : Expression
+  (option-or 
+    (stack-ref-default $tuple $index #f)
+    (error "top: index out of bounds")))
