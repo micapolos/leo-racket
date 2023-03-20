@@ -152,3 +152,23 @@
                 (field $symbol-3
                   (structure $rhs-type)))))))
       (structure $return-type))))
+
+(define (binary-expression-4
+  ($lhs-type : Type)
+  ($symbol-1 : Symbol)
+  ($symbol-2 : Symbol)
+  ($symbol-3 : Symbol)
+  ($symbol-4 : Symbol)
+  ($rhs-type : Type)
+  ($return-type : Type)
+  ($identifier : Identifier))
+  (expression
+    $identifier
+    (arrow
+      (structure 
+        $lhs-type
+        (field! $symbol-1
+          (field! $symbol-2 
+            (field! $symbol-3
+              (field! $symbol-4 $rhs-type)))))
+      (structure $return-type))))

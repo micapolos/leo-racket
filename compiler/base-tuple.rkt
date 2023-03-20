@@ -40,7 +40,7 @@
 
     (unary-nested-expression-2 number-type `square `root number-type #`sqrt)
     (unary-expression number-type `squared number-type #`sqr)
-    (binary-expression-3 number-type `to `power `of number-type number-type #`expt)
+    (binary-expression-4 number-type `to `the `power `of number-type number-type #`expt)
 
     (unary-expression number-type `sinus number-type #`sin)
     (unary-expression number-type `cosinus number-type #`cos)
