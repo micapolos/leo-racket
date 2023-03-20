@@ -194,7 +194,7 @@
 
 ; --------------------------------------------------------------------
 
-(define (tuple-top ($tuple : Tuple) ($index : Exact-Nonnegative-Integer)) : Expression
+(define (tuple-ref ($tuple : Tuple) ($index : Exact-Nonnegative-Integer)) : Expression
   (option-or 
     (stack-ref-default $tuple $index #f)
     (error "top: index out of bounds")))

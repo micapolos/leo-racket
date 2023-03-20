@@ -79,7 +79,7 @@
         ((time) (compiler-apply-time $compiler $syntax-list))
         ((the) (compiler-apply-the $compiler $syntax-list))
         ((then) (compiler-apply-then $compiler $syntax-list))
-        ((top) (compiler-apply-top $compiler $syntax-list))
+        ((ref) (compiler-apply-ref $compiler $syntax-list))
         ((type) (compiler-apply-type $compiler $syntax-list))
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
@@ -228,7 +228,7 @@
                   (push-stack (compiler-tuple $compiler) $tuple) 
                   $syntax-list)))))))))
 
-(define (compiler-apply-top 
+(define (compiler-apply-ref 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax)))
 : Compiler
@@ -238,7 +238,7 @@
   (define $index (syntax-e $syntax))
   (unless (exact-nonnegative-integer? $index)
     (error "top syntax error"))
-  (compiler-top $compiler $index))
+  (compiler-ref $compiler $index))
 
 ; ----------------------------------------------------------------------------
 
