@@ -26,7 +26,7 @@
 
 (check-equal?
   (expression-sexp (sexp-expression #t))
-  `(expression #t (boolean (one (of true false)))))
+  `(expression #t boolean))
 
 (check-equal?
   (expression-sexp (sexp-expression 3.14))

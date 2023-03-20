@@ -1,3 +1,6 @@
 #lang leo
 
-all
+point
+  x 10
+  y 20
+  do everything

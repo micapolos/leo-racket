@@ -68,7 +68,7 @@
     (syntax-match-symbol-args $normalized-syntax $symbol $syntax-list
       (case $symbol
         ((a) (compiler-apply-a $compiler $syntax-list))
-        ((all) (compiler-apply-all $compiler $syntax-list))
+        ((everything) (compiler-apply-everything $compiler $syntax-list))
         ((apply) (compiler-apply-apply $compiler $syntax-list))
         ((debug) (compiler-apply-debug $compiler $syntax-list))
         ((do) (compiler-apply-do $compiler $syntax-list))
@@ -80,7 +80,7 @@
         ((time) (compiler-apply-time $compiler $syntax-list))
         ((the) (compiler-apply-the $compiler $syntax-list))
         ((then) (compiler-apply-then $compiler $syntax-list))
-        ((ref) (compiler-apply-ref $compiler $syntax-list))
+        ((thing) (compiler-apply-thing $compiler $syntax-list))
         ((type) (compiler-apply-type $compiler $syntax-list))
         (else #f)))
     (compiler-apply-syntax $compiler $syntax)))
@@ -229,7 +229,7 @@
                   (push-stack (compiler-tuple $compiler) $tuple) 
                   $syntax-list)))))))))
 
-(define (compiler-apply-ref 
+(define (compiler-apply-thing
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax)))
 : Compiler
@@ -238,16 +238,16 @@
       (error "top syntax error")))
   (define $index (syntax-e $syntax))
   (unless (exact-nonnegative-integer? $index)
-    (error "top syntax error"))
-  (compiler-ref $compiler $index))
+    (error "thing: syntax error, index expected"))
+  (compiler-thing $compiler $index))
 
-(define (compiler-apply-all 
+(define (compiler-apply-everything 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax)))
 : Compiler
   (unless (null? $syntax-list)
-    (error "all: syntax error"))
-  (compiler-all $compiler))
+    (error "everything: syntax error"))
+  (compiler-everything $compiler))
 
 ; ----------------------------------------------------------------------------
 
