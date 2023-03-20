@@ -78,9 +78,9 @@
   (value-resolve
     (value 
       (lambda () 128)
-      (arrow 
-        (structure (field! `foo))
-        (structure number-type)))
+      (recipe!
+        (field! `foo)
+        (does number-type)))
     (packet
       (value `() (field! `foo))))
   (packet
