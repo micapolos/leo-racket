@@ -24,6 +24,10 @@
 
 (data value (any : Any) (type : Type))
 
+(define-type Packet (Stackof Value))
+
+(define packet : (-> Value * Packet) stack)
+
 (data racket)
 
 (data field 
