@@ -237,8 +237,8 @@
     (option-or (single $syntax-list)
       (error "top syntax error")))
   (define $index (syntax-e $syntax))
-  (unless (exact-nonnegative-integer? $index)
-    (error "thing: syntax error, index expected"))
+  (unless (exact-positive-integer? $index)
+    (error "thing: syntax error, positive integer expected"))
   (compiler-thing $compiler $index))
 
 (define (compiler-apply-everything 

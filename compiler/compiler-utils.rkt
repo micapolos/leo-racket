@@ -82,11 +82,11 @@
                 (ingredients-expressions $ingredients))
               (error "top: no rhs"))))))))
 
-(define (compiler-thing ($compiler : Compiler) ($index : Exact-Nonnegative-Integer)) : Compiler
+(define (compiler-thing ($compiler : Compiler) ($index : Exact-Positive-Integer)) : Compiler
   (compiler-apply-fn $compiler
     (lambda (($tuple : Tuple))
       (expression-expressions 
-        (tuple-ref $tuple $index)))))
+        (tuple-ref $tuple (sub1 $index))))))
 
 (define (compiler-everything ($compiler : Compiler)) : Compiler
   (compiler-apply-fn $compiler
