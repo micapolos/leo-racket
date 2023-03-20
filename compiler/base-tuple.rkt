@@ -3,6 +3,8 @@
 (provide (all-defined-out))
 
 (require
+  racket/math
+  racket/unsafe/ops
   leo/compiler/expression
   leo/compiler/base-utils
   leo/compiler/type
@@ -45,9 +47,9 @@
 
     (unary-expression number-type `text text-type #`number->string)
 
-    (binary-expression int-type `plus int-type int-type #`unsafe-fx/wraparound+)
-    (binary-expression int-type `minus int-type int-type #`unsafe-fx/wraparound-)
-    (binary-expression int-type `times int-type int-type #`unsafe-fx/wraparound*)
+    (binary-expression int-type `plus int-type int-type #`unsafe-fx+/wraparound)
+    (binary-expression int-type `minus int-type int-type #`unsafe-fx-/wraparound)
+    (binary-expression int-type `times int-type int-type #`unsafe-fx*/wraparound)
     
     (binary-expression int-type `equals int-type boolean-type #`unsafe-fx=)
     (binary-expression-2 int-type `less `than int-type boolean-type #`unsafe-fx<)

@@ -87,3 +87,8 @@
     (lambda (($tuple : Tuple))
       (expression-expressions 
         (tuple-ref $tuple $index)))))
+
+(define (compiler-all ($compiler : Compiler)) : Compiler
+  (compiler-apply-fn $compiler
+    (lambda (($tuple : Tuple))
+      (tuple-expressions $tuple))))

@@ -6,6 +6,7 @@
     racket/base
     racket/unsafe/ops
     racket/function
+    racket/math
     leo/compiler/type
     leo/compiler/type-sexp
     leo/compiler/type-utils
@@ -14,6 +15,7 @@
 (require 
   racket/unsafe/ops
   racket/function
+  racket/math
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils

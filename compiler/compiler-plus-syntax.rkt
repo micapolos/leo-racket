@@ -68,6 +68,7 @@
     (syntax-match-symbol-args $normalized-syntax $symbol $syntax-list
       (case $symbol
         ((a) (compiler-apply-a $compiler $syntax-list))
+        ((all) (compiler-apply-all $compiler $syntax-list))
         ((apply) (compiler-apply-apply $compiler $syntax-list))
         ((debug) (compiler-apply-debug $compiler $syntax-list))
         ((do) (compiler-apply-do $compiler $syntax-list))
@@ -239,6 +240,14 @@
   (unless (exact-nonnegative-integer? $index)
     (error "top syntax error"))
   (compiler-ref $compiler $index))
+
+(define (compiler-apply-all 
+  ($compiler : Compiler) 
+  ($syntax-list : (Listof Syntax)))
+: Compiler
+  (unless (null? $syntax-list)
+    (error "all: syntax error"))
+  (compiler-all $compiler))
 
 ; ----------------------------------------------------------------------------
 
