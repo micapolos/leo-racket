@@ -4,8 +4,7 @@
 
 (require
   leo/typed/base
-  leo/typed/testing
-  leo/compiler/sourced)
+  leo/typed/testing)
 
 (define empty-srcloc (srcloc #f #f #f #f #f))
 (define test-srcloc (srcloc "test.leo" 1 2 3 4))
@@ -26,6 +25,3 @@
 
 (check-equal? (any-srcloc (gensym)) #f)
 (check-equal? (any-srcloc (with-srcloc srcloc-a (lambda () (gensym)))) srcloc-a)
-
-(define #:forall (V) (any-sourced ($value : V)) : (Sourced V)
-  (sourced $value (any-srcloc $value)))

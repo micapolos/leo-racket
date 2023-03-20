@@ -3,7 +3,6 @@
 (provide (all-defined-out))
 
 (require 
-  leo/compiler/sourced
   leo/typed/srcloc
   racket/syntax-srcloc)
 
