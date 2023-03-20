@@ -40,7 +40,7 @@
     ((_ (symbol ...) term ...)
       #`(abstraction 
         (ann (stack #,@(map (lambda (s) #`(quote #,s)) (syntax-e #`(symbol ...)))) (Stackof Symbol))
-        (packet (ann (stack term ...) (Stackof (Term Syntax))))))))
+        (terms (ann (stack term ...) (Stackof (Term Syntax))))))))
 
 (define-syntax (app! $syntax)
   (syntax-case $syntax ()
@@ -66,7 +66,7 @@
         (ann 
           (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
           (Stackof (Binding (Term Syntax))))
-        (packet (ann (stack body ...) (Stackof (Term Syntax))))))))
+        (terms (ann (stack body ...) (Stackof (Term Syntax))))))))
 
 (define-syntax (letrec! $syntax)
   (syntax-case $syntax ()
@@ -76,7 +76,7 @@
         (ann 
           (stack #,@(map (lambda (s) #`(binding! #,@s)) (syntax-e #`(binding ...))))
           (Stackof (Binding (Term Syntax))))
-        (packet (ann (stack body ...) (Stackof (Term Syntax))))))))
+        (terms (ann (stack body ...) (Stackof (Term Syntax))))))))
 
 ; -------------------------------------------------------------------------------------
 
@@ -157,9 +157,9 @@
       (make-syntax
         `(lambda 
           ,(reverse $tmp-stack)
-          ,@(identifier-stack-packet-syntax-list
+          ,@(identifier-stack-terms-syntax-list
             (push-stack $identifier-stack $tmp-stack)
-            (abstraction-packet $term)))))
+            (abstraction-terms $term)))))
     ((application? $term)
       (make-syntax
         `(
@@ -187,14 +187,14 @@
                   ,(reverse (car $tmp-stack-syntax-pair))
                   ,(cdr $tmp-stack-syntax-pair)))
               $tmp-stack-syntax-pair-stack))
-          ,@(identifier-stack-packet-syntax-list
+          ,@(identifier-stack-terms-syntax-list
             (push-stack 
               $identifier-stack
               (apply append 
                 (map 
                   (ann car (-> (Pairof (Stackof Identifier) Syntax) (Stackof Identifier)))
                   $tmp-stack-syntax-pair-stack)))
-            (binder-packet $term)))))))
+            (binder-terms $term)))))))
 
 (define (identifier-stack-binding-tmp-stack-syntax-pair
   ($identifier-stack : (Stackof Identifier))
@@ -207,14 +207,14 @@
       (push-stack $identifier-stack $tmp-stack)
       (binding-body $binding))))
 
-(define (identifier-stack-packet-syntax-list
+(define (identifier-stack-terms-syntax-list
   ($identifier-stack : (Stackof Identifier))
-  ($packet : (Packet (Term Syntax))))
+  ($terms : (Terms (Term Syntax))))
 : (Listof Syntax)
   (define $syntax-stack 
     (map
       (curry identifier-stack-term-syntax $identifier-stack)
-      (packet-stack $packet)))
+      (terms-stack $terms)))
   (define $size (length $syntax-stack))
   (case $size
     ((0) null)
