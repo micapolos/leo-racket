@@ -48,31 +48,16 @@
 
 (define (top-level-syntax-stack ($tuple : Tuple)) : (Stackof Syntax)
   (define $structure (tuple-structure $tuple))
-  (define $tmp-option-stack (map expression-generate-temporary-option $tuple))
-  (define $scope
-    (filter-false
-      (map
-        (lambda (($identifier-option : (Option Identifier)) ($expression : Expression))
-          (option-app binding
-            $identifier-option
-            (expression-syntax $expression)))
-        $tmp-option-stack 
-        $tuple)))
-  (define $syntax-tuple
-    (map
-      (lambda (($identifier-option : (Option Identifier)) ($expression : Expression))
-        (expression
-          (or $identifier-option (expression-syntax $expression))
-          (expression-type $expression)))
-      $tmp-option-stack
-      $tuple))
+  (define $binding-option-stack (tuple-binding-option-stack $tuple))
+  (define $scope (filter-false $binding-option-stack))
+  (define $bound-tuple (binding-option-stack-tuple-bound-tuple $binding-option-stack $tuple))
   (map make-syntax
     (stack
       (unsafe-module-syntax $scope)
       (structure-module-syntax (tuple-structure $tuple))
-      (syntax-module-syntax (map expression-syntax $syntax-tuple))
+      (syntax-module-syntax (map expression-syntax $bound-tuple))
       `(require leo/runtime/top-level 'unsafe 'structure)
-      `(define $any-stack (stack ,@(reverse (map expression-syntax $syntax-tuple))))
+      `(define $any-stack (stack ,@(reverse (map expression-syntax $bound-tuple))))
       `(for-each
         value-displayln
         (reverse (map value $any-stack $structure))))))
