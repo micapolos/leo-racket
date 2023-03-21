@@ -15,7 +15,8 @@
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expressions
-  leo/compiler/expressions-utils)
+  leo/compiler/expressions-utils
+  leo/compiler/sexp-utils)
 
 (data entry
   (identifier-stack : (Stackof Identifier))
@@ -68,10 +69,11 @@
     (expressions-binder
       (expressions null-syntax 
         (structure static-type-a static-type-b))))
-  `(binder #f 
-    (tuple 
-      (expression #f a) 
-      (expression #f b))))
+  (binder-sexp
+    (binder #f 
+      (tuple 
+        static-expression-a 
+        static-expression-b))))
 
 (check-equal?
   (binder-sexp

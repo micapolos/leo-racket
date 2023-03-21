@@ -19,7 +19,8 @@
   leo/compiler/expressions-sexp
   leo/compiler/expression
   leo/compiler/sexp-expression
-  leo/compiler/expression-utils)
+  leo/compiler/expression-utils
+  leo/compiler/sexp-utils)
 
 (define (ingredients-plus ($lhs-ingredients : Ingredients) ($rhs-ingredients : Ingredients)) : Ingredients
   (push-stack $lhs-ingredients $rhs-ingredients))
@@ -76,7 +77,14 @@
         (expressions null-syntax (structure static-type-a static-type-b))
         (expressions null-syntax (structure static-type-c static-type-d)))
       tuple-default-apply-fn))
-  `(expressions #f (structure (resolved a b c d))))
+  (expressions-sexp
+    (expressions null-syntax 
+      (structure 
+        (field! `resolved 
+          static-type-a 
+          static-type-b
+          static-type-c
+          static-type-d)))))
 
 (check-equal?
   (option-app expressions-sexp

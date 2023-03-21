@@ -37,10 +37,11 @@
   (pair `(error) (choice null-structure)))
 
 (check-equal?
-  (expression-sexp-type
+  (expression-sexp
     (index-syntax-structure-select-expression 0 null-syntax
       (structure static-type-a)))
-  (pair #f (choice (structure static-type-a))))
+  (expression-sexp
+    (expression null-syntax (choice! static-type-a))))
 
 (check-equal?
   (expression-sexp-type

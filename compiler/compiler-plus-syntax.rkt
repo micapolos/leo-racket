@@ -299,9 +299,10 @@
             (expression-expressions 
               (number-expression 3.14))))
         #`b)))
-  `(ingredients
-    (expressions 3.14 (structure number))
-    (expressions #f (structure b))))
+  (ingredients-sexp
+    (ingredients
+      (expressions #`3.14 (structure number-type))
+      (expressions null-syntax (structure static-type-b)))))
 
 ; number plus field
 (check-equal?
@@ -313,9 +314,10 @@
             (expression-expressions 
               (number-expression 3.14))))
         #`foo)))
-  `(ingredients
-    (expressions 3.14 (structure number))
-    (expressions #f (structure foo))))
+  (ingredients-sexp
+    (ingredients
+      (expressions #`3.14 (structure number-type))
+      (expressions null-syntax (structure (field! `foo))))))
 
 ; number plus string
 (check-equal?

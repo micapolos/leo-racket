@@ -369,7 +369,7 @@
   (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
   (make-syntax
     (case (length $dynamic-syntax-stack)
-      ((0) #f)
+      ((0) null-sexp)
       ((1) (top $dynamic-syntax-stack))
       (else `(values ,@(reverse $dynamic-syntax-stack))))))
 
@@ -382,7 +382,7 @@
   (option-map
     (tuple-values-syntax-option null)
     syntax->datum)
-  #f)
+  null-sexp)
 
 (check-equal?
   (option-map
