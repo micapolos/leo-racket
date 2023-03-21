@@ -1,20 +1,43 @@
 #lang racket/base
 
-(module library racket/base
+(module unsafe racket/base
   (provide (all-defined-out))
-  (define foo 128)
+  (define point (cons 10 20))
   (define (inc n) (+ n 1))
-  (define label (string-append (number->string (inc foo)) " apples!!!")))
+  (define label (string-append (number->string (inc (car point))) " apples!!!")))
 
-(module types typed/racket/base
+(module structure typed/racket/base
   (provide (all-defined-out))
-  (require leo/runtime/types)
-  (define foo-type number-type)
-  (define inc-type (recipe! number-type (doing number-type)))
-  (define label-type (field! `label text-type)))
+  (require leo/runtime/structure)
+  (define $structure
+    (structure
+      (field! `point (field! `x number-type) (field! `y number-type))
+      (field! `green (field! `apple))
+      (recipe! number-type (doing number-type))
+      text-type
+      (field! `label text-type))))
 
-(require leo/runtime/top-level 'library 'types)
+(module syntax typed/racket/base
+  (provide (all-defined-out))
+  (require leo/runtime/syntax)
+  (define $syntax-stack
+    (stack
+      #`point
+      #`()
+      #`inc
+      #`"inline-text"
+      #`label)))
 
-(displayln-any-list-type-list
-  (list foo inc label)
-  (list foo-type inc-type label-type))
+(require leo/runtime/top-level 'unsafe 'structure)
+
+(define $any-stack 
+  (stack
+    point
+    `() 
+    inc 
+    "inline-text" 
+    label))
+
+(for-each
+  value-displayln
+  (reverse (map value $any-stack $structure)))

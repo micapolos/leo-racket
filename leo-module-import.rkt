@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require (submod leo/leo-module-sample library))
+(require (submod leo/leo-module-sample unsafe))
 
 foo
 (inc foo)

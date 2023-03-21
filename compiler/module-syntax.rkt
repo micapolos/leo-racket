@@ -5,122 +5,111 @@
 (require
   leo/typed/base
   leo/typed/option
+  leo/typed/stack
   leo/typed/testing
   leo/compiler/expressions
   leo/compiler/syntax-utils
   leo/compiler/any-sexp
+  leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/type
-  leo/compiler/type-utils)
+  leo/compiler/type-utils
+  leo/compiler/type-syntax)
 
-; (define (expressions-module-syntax ($expressions : Expressions)) : Syntax
-;   (define $syntax (expressions-syntax $expressions))
-;   (define $structure (expressions-structure $expressions))
-;   (define $scope (structure-generate-scope $structure))
-;   (define $tmp-stack (scope-identifier-stack $scope))
-;   (make-syntax 
-;     `(module leo racket/base
-;       ,(scope-module-syntax $scope)
-;       ,@(case (length $tmp-stack)
-;         ((0) null)
-;         ((1)
-;           (list 
-;             `(define 
-;               ,(car $tmp-stack) 
-;               ,$syntax)))
-;         (else 
-;           (list 
-;             `(define-values 
-;               (,@(reverse $tmp-stack)) 
-;               ,$syntax)))))))
-
-; (define (scope-module-syntax ($scope : Scope)) : Syntax
-;   (make-syntax 
-;     `(module* scope 
-;       (define scope ,(scope-syntax $scope)))))
-
-; (define (scope-syntax ($scope : Scope)) : Syntax
-;   (make-syntax 
-;     `(scope
-;       ,@(reverse (map binding-syntax $scope)))))
-
-; (define (binding-syntax ($binding : Binding)) : Syntax
-;   (make-syntax
-;     `(binding 
-;       ,(type-syntax (binding-type $binding))
-;       ,(option-bind (binding-identifier-option $binding) $identifier
-;         `(quote ,$identifier)))))
-
-(define (type-syntax ($type : Type)) : Syntax
+(define (unsafe-module-syntax ($tuple : Tuple)) : Syntax
   (make-syntax
-    (cond
-      ((racket? $type) `(racket))
-      ((field? $type)
-        `(field 
-          (quote ,(field-symbol $type))
-          ,(structure-syntax (field-structure $type))))
-      ((choice? $type) 
-        `(choice 
-          ,(structure-syntax (choice-type-stack $type))))
-      ((arrow? $type)
-        `(arrow
-          ,(structure-syntax (arrow-from-structure $type))
-          ,(structure-syntax (arrow-to-structure $type))))
-      ((generic? $type)
-        `(generic
-          ,(type-syntax (generic-type $type))))
-      ((specific? $type)
-        `(specific
-          ,(type-syntax (specific-type $type))
-          ,(type-syntax (specific-argument-type $type))))
-      ((recursive? $type)
-        `(recursive ,(type-syntax (recursive-type $type))))
-      ((variable? $type)
-        `(variable ,(variable-index $type)))
-      ((universe? $type)
-        `(universe ,(universe-index $type)))
-      ((value? $type)
-        `(value 
-          ,(sexp-datum (any-sexp (value-any $type)))
-          ,(type-syntax (value-type $type)))))))
+    `(module unsafe racket/base
+      (provide (all-defined-out))
+      ,@(reverse
+        (map expression-syntax 
+          (filter-false
+            (filter expression-dynamic? $tuple)))))))
 
-(define (structure-syntax ($structure : Structure)) : Syntax
+(define (structure-module-syntax ($structure : Structure)) : Syntax
   (make-syntax
-    `(structure ,@(reverse (map type-syntax $structure)))))
+    `(module structure typed/racket/base
+      (provide (all-defined-out))
+      (require leo/runtime/structure)
+      (define $structure
+        ,(structure-syntax $structure)))))
 
-; (check-equal?
-;   (syntax->datum
-;     (expressions-module-syntax
-;       (expressions #`pkg
-;         (structure static-type-a))))
-;   `(module leo racket/base
-;     (module* scope 
-;       (define scope 
-;         (scope
-;           (binding (field 'a (structure)) #f))))))
+(define (syntax-module-syntax ($syntax-stack : (Stackof Syntax))) : Syntax
+  (make-syntax
+    `(module syntax typed/racket/base
+      (provide (all-defined-out))
+      (require leo/runtime/syntax)
+      (define $syntax-stack
+        (stack ,@(reverse $syntax-stack))))))
 
-; (check-equal?
-;   (syntax->datum
-;     (expressions-module-syntax
-;       (expressions #`pkg
-;         (structure static-type-a dynamic-type-b))))
-;   `(module leo racket/base
-;     (module* scope 
-;       (define scope 
-;         (scope
-;           (binding (field 'a (structure)) #f)
-;           (binding (field 'b (structure (racket))) 'tmp-b))))
-;     (define tmp-b pkg)))
+(define (top-level-syntax-stack ($tuple : Tuple)) : (Stackof Syntax)
+  (map make-syntax
+    (stack
+      (unsafe-module-syntax $tuple)
+      (structure-module-syntax (tuple-structure $tuple))
+      (syntax-module-syntax (map expression-syntax $tuple))
+      `(require leo/runtime/top-level 'unsafe 'structure)
+      `(define $any-stack (stack ,@(reverse (map expression-syntax $tuple))))
+      `(for-each
+        value-displayln
+        (reverse (map value $any-stack $structure))))))
 
-; (check-equal?
-;   (syntax->datum
-;     (expressions-module-syntax
-;       (expressions #`pkg
-;         (structure dynamic-type-a static-type-b dynamic-type-c))))
-;   `(module leo racket/base
-;     (module* scope 
-;       (define scope 
-;         (scope
-;           (binding (field 'a (structure (racket))) 'tmp-a)
-;           (binding (field 'b (structure)) #f)
-;           (binding (field 'c (structure (racket))) 'tmp-c))))
-;     (define-values (tmp-a tmp-c) pkg)))
+(check-equal?
+  (reverse 
+    (map syntax->datum
+      (top-level-syntax-stack 
+        (tuple
+          (expression 
+            #`(cons 10 20) 
+            (field! `point 
+              (field! `x number-type) 
+              (field! `y number-type)))
+          (expression
+            null-syntax
+            (field! `green (field! `apple)))
+          (expression
+            #`(lambda (n) (+ n 1))
+            number-type)
+          (expression
+            #`"inline-text"
+            text-type)
+          (expression
+            #`(string-append (number->string (inc (car point))) " apples!!!")
+            (field! `label text-type))))))
+  `((module unsafe racket/base
+     (provide (all-defined-out))
+     (cons 10 20)
+     (lambda (n) (+ n 1))
+     "inline-text"
+     (string-append (number->string (inc (car point))) " apples!!!"))
+   (module structure typed/racket/base
+     (provide (all-defined-out))
+     (require leo/runtime/structure)
+     (define $structure
+       (structure
+        (field 'point
+               (structure
+                (field 'x (structure (field 'number (structure (racket)))))
+                (field 'y (structure (field 'number (structure (racket)))))))
+        (field 'green (structure (field 'apple (structure))))
+        (field 'number (structure (racket)))
+        (field 'text (structure (racket)))
+        (field 'label (structure (field 'text (structure (racket))))))))
+   (module syntax typed/racket/base
+     (provide (all-defined-out))
+     (require leo/runtime/syntax)
+     (define $syntax-stack
+       (stack
+        (cons 10 20)
+        #f
+        (lambda (n) (+ n 1))
+        "inline-text"
+        (string-append (number->string (inc (car point))) " apples!!!"))))
+   (require leo/runtime/top-level 'unsafe 'structure)
+   (define $any-stack
+     (stack
+      (cons 10 20)
+      #f
+      (lambda (n) (+ n 1))
+      "inline-text"
+      (string-append (number->string (inc (car point))) " apples!!!")))
+   (for-each value-displayln (reverse (map value $any-stack $structure)))))

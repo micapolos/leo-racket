@@ -18,7 +18,7 @@
   leo/compiler/type-sexp
   leo/compiler/typed
   leo/compiler/type-utils
-  leo/compiler/module-syntax
+  leo/compiler/type-syntax
   (for-syntax racket/base))
 
 (define dynamic-expression-a (expression syntax-a dynamic-type-a))

@@ -13,7 +13,7 @@
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/module-syntax)
+  leo/compiler/type-syntax)
 
 (define top-level-string? : (Parameter Boolean) (make-parameter #f))
 
