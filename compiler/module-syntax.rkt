@@ -7,23 +7,23 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
+  leo/compiler/binding
   leo/compiler/expressions
   leo/compiler/syntax-utils
   leo/compiler/any-sexp
+  leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-syntax)
 
-(define (unsafe-module-syntax ($tuple : Tuple)) : Syntax
+(define (unsafe-module-syntax ($scope : Scope)) : Syntax
   (make-syntax
     `(module unsafe racket/base
       (provide (all-defined-out))
       ,@(reverse
-        (map expression-syntax 
-          (filter-false
-            (filter expression-dynamic? $tuple)))))))
+        (map binding-define-syntax $scope)))))
 
 (define (structure-module-syntax ($structure : Structure)) : Syntax
   (make-syntax
@@ -39,19 +39,49 @@
       (provide (all-defined-out))
       (require leo/runtime/syntax)
       (define $syntax-stack
-        (stack ,@(reverse $syntax-stack))))))
+        (stack 
+          ,@(reverse 
+            (map 
+              (lambda (($syntax : Syntax))
+                `(syntax ,$syntax))
+              $syntax-stack)))))))
 
 (define (top-level-syntax-stack ($tuple : Tuple)) : (Stackof Syntax)
+  (define $structure (tuple-structure $tuple))
+  (define $tmp-option-stack (map expression-generate-temporary-option $tuple))
+  (define $scope
+    (filter-false
+      (map
+        (lambda (($identifier-option : (Option Identifier)) ($expression : Expression))
+          (option-app binding
+            $identifier-option
+            (expression-syntax $expression)))
+        $tmp-option-stack 
+        $tuple)))
+  (define $syntax-tuple
+    (map
+      (lambda (($identifier-option : (Option Identifier)) ($expression : Expression))
+        (expression
+          (or $identifier-option (expression-syntax $expression))
+          (expression-type $expression)))
+      $tmp-option-stack
+      $tuple))
   (map make-syntax
     (stack
-      (unsafe-module-syntax $tuple)
+      (unsafe-module-syntax $scope)
       (structure-module-syntax (tuple-structure $tuple))
-      (syntax-module-syntax (map expression-syntax $tuple))
+      (syntax-module-syntax (map expression-syntax $syntax-tuple))
       `(require leo/runtime/top-level 'unsafe 'structure)
-      `(define $any-stack (stack ,@(reverse (map expression-syntax $tuple))))
+      `(define $any-stack (stack ,@(reverse (map expression-syntax $syntax-tuple))))
       `(for-each
         value-displayln
         (reverse (map value $any-stack $structure))))))
+
+(define (binding-define-syntax ($binding : Binding)) : Syntax
+  (make-syntax 
+    `(define 
+      ,(binding-identifier $binding)
+      ,(binding-syntax $binding))))
 
 (check-equal?
   (reverse 
@@ -77,10 +107,10 @@
             (field! `label text-type))))))
   `((module unsafe racket/base
      (provide (all-defined-out))
-     (cons 10 20)
-     (lambda (n) (+ n 1))
-     "inline-text"
-     (string-append (number->string (inc (car point))) " apples!!!"))
+     (define tmp-point (cons 10 20))
+     (define tmp-number (lambda (n) (+ n 1)))
+     (define tmp-label
+       (string-append (number->string (inc (car point))) " apples!!!")))
    (module structure typed/racket/base
      (provide (all-defined-out))
      (require leo/runtime/structure)
@@ -98,18 +128,7 @@
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack
-        (cons 10 20)
-        #f
-        (lambda (n) (+ n 1))
-        "inline-text"
-        (string-append (number->string (inc (car point))) " apples!!!"))))
+       (stack #'tmp-point #'#f #'tmp-number #'"inline-text" #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack
-     (stack
-      (cons 10 20)
-      #f
-      (lambda (n) (+ n 1))
-      "inline-text"
-      (string-append (number->string (inc (car point))) " apples!!!")))
+   (define $any-stack (stack tmp-point #f tmp-number "inline-text" tmp-label))
    (for-each value-displayln (reverse (map value $any-stack $structure)))))

@@ -37,6 +37,12 @@
 
 ; -------------------------------------------------------------------------
 
+(define (expression-generate-temporary-option ($expression : Expression)) : (Option Identifier)
+  (and
+    (type-dynamic? (expression-type $expression))
+    (syntax-complex? (expression-syntax $expression))
+    (type-generate-temporary (expression-type $expression))))
+
 (define (type-generate-temporary-option ($type : Type)) : (Option Identifier)
   (and 
     (type-dynamic? $type)
