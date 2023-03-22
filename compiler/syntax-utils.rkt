@@ -128,3 +128,13 @@
     ((0) zero)
     ((1) one)
     (else two)))
+
+; ----------------------------------------------------------------------
+
+(define (syntax-stack-values-syntax ($syntax-stack : (Stackof Syntax))) : Syntax
+  (make-syntax
+    (case (length $syntax-stack)
+      ((0) null-syntax)
+      ((1) (top $syntax-stack))
+      (else `(values ,@(reverse $syntax-stack))))))
+
