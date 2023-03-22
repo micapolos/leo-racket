@@ -19,7 +19,7 @@
  
 (define (leo-read-syntax src port)
   (strip-context
-    #`(module leo leo/lang/runtime
+    #`(module leo racket/base
       #,@(parameterize ((leo-writer? #t)
                        (read-decimal-as-inexact #f))
         (leo-compile-any-list
