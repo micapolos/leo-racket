@@ -17,6 +17,7 @@
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
   leo/compiler/ingredients-sexp
+  leo/compiler/module-resolver
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -43,8 +44,10 @@
   ($ingredients : Ingredients)) : Ingredients
   (or
     (option-app ingredients
-      (single-use-ingredients-resolve-fn #t $ingredients
-        (curry tuple-or-tuple-resolve-tuple $tuple)))
+      (or
+        (single-use-ingredients-resolve-fn #t $ingredients
+          (curry tuple-or-tuple-resolve-tuple $tuple))
+        (structure-resolve-module (ingredients-structure $ingredients))))
     $ingredients))
 
 (define (tuple-or-tuple-resolve-tuple
