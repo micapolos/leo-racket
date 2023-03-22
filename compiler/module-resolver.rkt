@@ -120,16 +120,16 @@
     (and
       (not (null? $structure))
       (fold
-        (ann null (Option (Stackof Symbol)))
+        null
         (map type-module-component-symbol-option $structure)
         (lambda (($symbol-stack-option : (Option (Stackof Symbol))) ($symbol-option : (Option Symbol)))
           (option-app push $symbol-stack-option $symbol-option))))
     $symbol-stack
-    (string->symbol (string-join (map symbol->string $symbol-stack) "/"))))
+    (string->symbol (string-join (map symbol->string (push $symbol-stack `leo)) "/"))))
 
 (check-equal?
-  (structure-module-symbol-option (structure (field! `leo) (field! `base)))
-  `leo/base)
+  (structure-module-symbol-option (structure (field! `foo) (field! `bar)))
+  `leo/foo/bar)
 
 (check-not
   (structure-module-symbol-option (structure)))
@@ -141,3 +141,12 @@
 
 (define (structure-resolve-module ($structure : Structure)) : (Option Expressions)
   (option-app resolve-module-symbol (structure-module-symbol-option $structure)))
+
+(check-equal?
+  (option-app expressions-sexp
+    (structure-resolve-module
+      (structure (field! `compiler) (field! `tester))))
+  (expressions-sexp
+    (expressions
+      #`(let () (local-require (submod leo/compiler/tester unsafe)) text2)
+      (structure text-type))))
