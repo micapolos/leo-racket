@@ -12,5 +12,9 @@
   leo/compiler/type-sexp
   leo/compiler/sexp-string)
 
+(define leo-writer? : (Parameter Boolean) (make-parameter #f))
+
 (define (value-displayln ($value : Value))
-  (displayln (sexp-string (value-sexp $value))))
+  (if (leo-writer?)
+    (displayln (sexp-string (value-sexp $value)))
+    (displayln (value-sexp $value))))

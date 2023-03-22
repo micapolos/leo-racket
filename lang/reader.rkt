@@ -5,7 +5,7 @@
   racket/port
   racket/function
   leo/script/core/syntax
-  leo/compiler/ingredients-top-level
+  leo/runtime/top-level
   leo/compiler/leo-compile)
 
 (provide 
@@ -20,7 +20,7 @@
 (define (leo-read-syntax src port)
   (strip-context
     #`(module leo leo/lang/runtime
-      #,@(parameterize ((top-level-string? #t)
+      #,@(parameterize ((leo-writer? #t)
                        (read-decimal-as-inexact #f))
         (leo-compile-any-list
           (parameterize ((read-leo-compiler? #t))

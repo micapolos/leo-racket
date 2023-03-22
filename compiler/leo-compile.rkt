@@ -12,7 +12,6 @@
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils
   leo/compiler/ingredients
-  leo/compiler/ingredients-top-level
   leo/compiler/module-syntax
   leo/typed/syntax-match)
 
