@@ -13,11 +13,11 @@
     (cond
       ((racket? $type) `(racket))
       ((field? $type)
-        `(field 
+        `(field
           (quote ,(field-symbol $type))
           ,(structure-syntax (field-structure $type))))
-      ((choice? $type) 
-        `(choice 
+      ((choice? $type)
+        `(choice
           ,(structure-syntax (choice-type-stack $type))))
       ((arrow? $type)
         `(arrow
@@ -37,7 +37,7 @@
       ((universe? $type)
         `(universe ,(universe-index $type)))
       ((value? $type)
-        `(value 
+        `(value
           ,(sexp-datum (any-sexp (value-any $type)))
           ,(type-syntax (value-type $type)))))))
 

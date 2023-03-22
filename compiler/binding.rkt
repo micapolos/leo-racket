@@ -2,7 +2,7 @@
 
 (provide (all-defined-out))
 
-(require 
+(require
   leo/typed/base
   leo/typed/option
   leo/typed/stack
@@ -27,10 +27,10 @@
   (map expression-binding-option $tuple))
 
 (define (binding-option-expression-bound-expression
-  ($binding-option : (Option Binding)) 
+  ($binding-option : (Option Binding))
   ($expression : Expression)) : Expression
   (expression
-    (or 
+    (or
       (option-app binding-identifier $binding-option)
       (expression-syntax $expression))
     (expression-type $expression)))

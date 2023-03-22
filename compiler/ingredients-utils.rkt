@@ -79,7 +79,7 @@
       tuple-default-apply-fn))
   (expressions-sexp
     (expressions null-syntax 
-      (structure 
+      (structure
         (field! `resolved 
           static-type-a 
           static-type-b
