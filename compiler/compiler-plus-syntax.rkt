@@ -71,7 +71,7 @@
         ((everything) (compiler-apply-everything $compiler $syntax-list))
         ((apply) (compiler-apply-apply $compiler $syntax-list))
         ((debug) (compiler-apply-debug $compiler $syntax-list))
-        ((do) (compiler-apply-do $compiler $syntax-list))
+        ((do in) (compiler-apply-do $compiler $syntax-list))
         ((it) (compiler-apply-it $compiler $syntax-list))
         ((quote) (compiler-apply-quote $compiler $syntax-list))
         ((racket) (compiler-apply-racket $compiler $syntax-list))

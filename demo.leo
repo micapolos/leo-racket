@@ -3,13 +3,15 @@
 recipe
   number
   doubled
-  does
+  gives
     number
     plus number
 recipe
   number
   halved
-  does
+  gives
     number
     divided by 2
-do everything
+in
+  10
+  doubled

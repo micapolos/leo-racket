@@ -57,30 +57,33 @@
         (recipe-part
           (struct-copy recipe-part $recipe-part
             (rhs-structure-option (syntax-list-structure $syntax-list))))))
-    (syntax-symbol-match-args $syntax `does $syntax-list
-      (bind $lhs-tuple (structure-generate-tuple $lhs-structure)
-        (struct-copy recipe-compiler $recipe-compiler
-          (ingredients
-            (push $ingredients
-              (let ()
-                (define $expressions 
-                  (tuple-does-expressions
-                    $lhs-tuple
-                    (ingredients-expressions
-                      (compile-ingredients
-                        (push-stack $tuple $lhs-tuple) 
-                        $syntax-list))))
-                (when 
-                  (and 
-                    $rhs-structure-option 
-                    (structure-matches? 
-                      (expressions-structure $expressions) 
-                      $rhs-structure-option))
-                  (error "recipe giving doing type mismatch"))
-                $expressions)))
-          (recipe-part null-recipe-part))))
+    (syntax-match-symbol-args $syntax $symbol $syntax-list
+      (case $symbol
+        ((does gives)
+          (bind $lhs-tuple (structure-generate-tuple $lhs-structure)
+            (struct-copy recipe-compiler $recipe-compiler
+              (ingredients
+                (push $ingredients
+                  (let ()
+                    (define $expressions
+                      (tuple-does-expressions
+                        $lhs-tuple
+                        (ingredients-expressions
+                          (compile-ingredients
+                            (push-stack $tuple $lhs-tuple)
+                            $syntax-list))))
+                    (when
+                      (and
+                        $rhs-structure-option
+                        (structure-matches?
+                          (expressions-structure $expressions)
+                          $rhs-structure-option))
+                      (error "recipe giving doing type mismatch"))
+                    $expressions)))
+              (recipe-part null-recipe-part))))
+        (else #f)))
     (let ()
-      (when $rhs-structure-option (error "recipe expected does"))
+      (when $rhs-structure-option (error "recipe expected does / gives"))
       (struct-copy recipe-compiler $recipe-compiler
         (recipe-part 
           (struct-copy recipe-part $recipe-part
