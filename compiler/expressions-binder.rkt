@@ -45,12 +45,12 @@
   (define $structure (expressions-structure $expressions))
   (define $type-option (single $structure))
   (cond
+    ((not (structure-dynamic? $structure))
+      (binder #f
+        (map (curry expression null-syntax) $structure)))
     ((and (equal? $usage `direct) $type-option)
       (binder #f 
         (tuple (expression $syntax $type-option))))
-    ((not (structure-dynamic? $structure))
-      (binder #f 
-        (map (curry expression $syntax) $structure)))
     (else
       (define $tmp-option-stack (map type-generate-temporary-option $structure))
       (define $identifier-stack (filter-false $tmp-option-stack))
