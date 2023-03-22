@@ -108,6 +108,11 @@
   : Structure
   (map expression-type $tuple))
 
+(define (expression-syntax-option ($expression : Expression)) : (Option Syntax)
+  (and
+    (type-dynamic? (expression-type $expression))
+    (expression-syntax $expression)))
+
 (define (tuple-syntax-stack
   ($tuple : Tuple))
   : (Stackof Syntax)

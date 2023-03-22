@@ -64,7 +64,7 @@
             (push $ingredients
               (let ()
                 (define $expressions 
-                  (tuple-doing-expressions
+                  (tuple-does-expressions
                     $lhs-tuple
                     (ingredients-expressions
                       (compile-ingredients

@@ -166,13 +166,13 @@
 (define (expressions-sexp-option ($expressions : Expressions)) : (Option Sexp)
   (option-app syntax->datum (expressions-syntax-option $expressions)))
 
-(define (tuple-doing-expressions
+(define (tuple-does-expressions
   ($tuple : Tuple)
   ($expressions : Expressions)) : Expressions
   (expressions
     (make-syntax 
       `(lambda 
-        ,(reverse (filter-false (map expression-identifier-option $tuple)))
+        ,(reverse (tuple-syntax-stack $tuple))
         ,(expressions-syntax $expressions)))
     (structure 
       (arrow
@@ -181,7 +181,7 @@
 
 (check-equal?
   (expressions-sexp
-    (tuple-doing-expressions
+    (tuple-does-expressions
       (tuple 
         (expression #`nul number-type)
         (expression #`txt text-type))
