@@ -351,4 +351,6 @@
         #`1
         #`(dodać 2)
         #`(do number (plus dodać number)))))
-  `(expressions (+ 1 2) (structure number)))
+  `(expressions
+    (let-values (((tmp-number) 1) ((tmp-dodać) 2)) (+ tmp-number tmp-dodać))
+    (structure number)))

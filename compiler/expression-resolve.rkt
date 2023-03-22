@@ -259,7 +259,7 @@
     (option-bind (expression-symbol-content $rhs-expression `make) $make-content
       (option-bind (expressions-expression-option $make-content) $make-expression
         (option-bind (expression-symbol-option $make-expression) $make-symbol
-          (single-use-ingredients-resolve-fn #t (ingredients $lhs-expressions)
+          (usage-ingredients-resolve-fn 'direct (ingredients $lhs-expressions)
             (lambda (($tuple : Tuple))
               (expression-expressions
                 (field-expression $make-symbol $tuple)))))))))
@@ -267,9 +267,9 @@
 (check-equal?
   (option-app expressions-sexp
     (expressions-resolve-make 
-      (expressions complex-syntax-a structure-ab)
+      (expressions syntax-a structure-ab)
       (field-expression `make 
         (tuple (field-expression `foo null)))))
   `(expressions
-    (let-values (((tmp-a tmp-b) (complex-a))) (cons tmp-a tmp-b))
+    (let-values (((tmp-a tmp-b) a)) (cons tmp-a tmp-b))
     (structure (foo (a racket) (b racket)))))

@@ -35,12 +35,16 @@
   (syntax->datum (type-generate-temporary type-a))
   `tmp-a)
 
+(define (tmp-syntax-a) (type-generate-temporary dynamic-type-a))
+(define (tmp-syntax-b) (type-generate-temporary dynamic-type-b))
+(define (tmp-syntax-c) (type-generate-temporary dynamic-type-c))
+(define (tmp-syntax-d) (type-generate-temporary dynamic-type-d))
+
 ; -------------------------------------------------------------------------
 
 (define (expression-generate-temporary-option ($expression : Expression)) : (Option Identifier)
   (and
     (type-dynamic? (expression-type $expression))
-    (syntax-complex? (expression-syntax $expression))
     (type-generate-temporary (expression-type $expression))))
 
 (define (type-generate-temporary-option ($type : Type)) : (Option Identifier)

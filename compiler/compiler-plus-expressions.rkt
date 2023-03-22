@@ -45,7 +45,7 @@
   (or
     (option-app ingredients
       (or
-        (single-use-ingredients-resolve-fn #t $ingredients
+        (usage-ingredients-resolve-fn 'direct $ingredients
           (curry tuple-or-tuple-resolve-tuple $tuple))
         (structure-resolve-module (ingredients-structure $ingredients))))
     $ingredients))

@@ -31,11 +31,6 @@
 (define static-expression-c (expression null-syntax static-type-c))
 (define static-expression-d (expression null-syntax static-type-d))
 
-(define complex-expression-a (expression complex-syntax-a dynamic-type-a))
-(define complex-expression-b (expression complex-syntax-b dynamic-type-b))
-(define complex-expression-c (expression complex-syntax-c dynamic-type-c))
-(define complex-expression-d (expression complex-syntax-d dynamic-type-d))
-
 (define expression-a dynamic-expression-a)
 (define expression-b dynamic-expression-b)
 (define expression-c dynamic-expression-c)

@@ -31,38 +31,6 @@
 (define syntax-c (make-syntax `c srcloc-c))
 (define syntax-d (make-syntax `d srcloc-d))
 
-(define complex-syntax-a (make-syntax `(complex-a)))
-(define complex-syntax-b (make-syntax `(complex-b)))
-(define complex-syntax-c (make-syntax `(complex-c)))
-(define complex-syntax-d (make-syntax `(complex-d)))
-
-(define atomic-syntax-a (make-syntax `atomic-a))
-(define atomic-syntax-b (make-syntax `atomic-b))
-(define atomic-syntax-c (make-syntax `atomic-c))
-(define atomic-syntax-d (make-syntax `atomic-d))
-
-(define (syntax-atomic? ($syntax : Syntax)) : Boolean
-  (bind $e (syntax-e $syntax)
-    (or 
-      (null? $e)
-      (symbol? $e)
-      (boolean? $e)
-      (number? $e)
-      (string? $e)
-      (keyword? $e))))
-
-(check (syntax-atomic? #`()))
-(check (syntax-atomic? #`foo))
-(check (syntax-atomic? #`#f))
-(check (syntax-atomic? #`123))
-(check (syntax-atomic? #`"foo"))
-(check (syntax-atomic? #`#:foo))
-(check-not (syntax-atomic? #`(a . b)))
-(check-not (syntax-atomic? #`(foo)))
-
-(define (syntax-complex? ($syntax : Syntax)) : Boolean
-  (not (syntax-atomic? $syntax)))
-
 (define (syntax-syntax-list ($syntax : Syntax)) : (Listof Syntax)
   (define $syntax-e (syntax-e $syntax))
   (or (and (list? $syntax-e) $syntax-e) (list $syntax)))

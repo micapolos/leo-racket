@@ -18,6 +18,8 @@
   leo/compiler/expressions-utils
   leo/compiler/sexp-utils)
 
+(define-type Usage (U 'direct 'indirect))
+
 (data entry
   (identifier-stack : (Stackof Identifier))
   (syntax : Syntax))
@@ -36,15 +38,17 @@
     ,(option-app entry-sexp (binder-entry-option $binder))
     ,(tuple-sexp (binder-tuple $binder))))
 
-(define (single-use-expressions-binder ($single-use? : Boolean) ($expressions : Expressions)) : Binder
+(define (usage-expressions-binder
+  ($usage : Usage)
+  ($expressions : Expressions)) : Binder
   (define $syntax (expressions-syntax $expressions))
   (define $structure (expressions-structure $expressions))
   (define $type-option (single $structure))
   (cond
-    ((and $single-use? $type-option)
+    ((and (equal? $usage `direct) $type-option)
       (binder #f 
         (tuple (expression $syntax $type-option))))
-    ((syntax-atomic? $syntax) 
+    ((not (structure-dynamic? $structure))
       (binder #f 
         (map (curry expression $syntax) $structure)))
     (else
@@ -61,12 +65,9 @@
           $structure))
       (binder $entry $tuple))))
 
-(define (expressions-binder ($expressions : Expressions)) : Binder
-  (single-use-expressions-binder #f $expressions))
-
 (check-equal?
   (binder-sexp
-    (expressions-binder
+    (usage-expressions-binder `direct
       (expressions null-syntax 
         (structure static-type-a static-type-b))))
   (binder-sexp
@@ -77,40 +78,58 @@
 
 (check-equal?
   (binder-sexp
-    (expressions-binder
-      (expressions complex-syntax-a
+    (usage-expressions-binder `indirect
+      (expressions null-syntax
+        (structure static-type-a static-type-b))))
+  (binder-sexp
+    (binder #f
+      (tuple
+        static-expression-a
+        static-expression-b))))
+
+(check-equal?
+  (binder-sexp
+    (usage-expressions-binder `direct
+      (expressions syntax-a
         (structure dynamic-type-a))))
-  `(binder
-    (entry (identifiers tmp-a) #'(complex-a))
-    (tuple (expression tmp-a (a racket)))))
+  (binder-sexp
+    (binder
+      #f
+      (tuple (expression syntax-a dynamic-type-a)))))
 
 (check-equal?
   (binder-sexp
-    (single-use-expressions-binder #t
-      (expressions complex-syntax-a
+    (usage-expressions-binder `indirect
+      (expressions syntax-a
         (structure dynamic-type-a))))
-  `(binder #f (tuple (expression (complex-a) (a racket)))))
+  (binder-sexp
+    (binder
+      (entry (stack (tmp-syntax-a)) syntax-a)
+      (tuple (expression (tmp-syntax-a) dynamic-type-a)))))
 
 (check-equal?
   (binder-sexp
-    (expressions-binder
-      (expressions atomic-syntax-a
+    (usage-expressions-binder `direct
+      (expressions syntax-a
         (structure dynamic-type-a dynamic-type-b))))
-  `(binder #f
-    (tuple 
-      (expression atomic-a (a racket)) 
-      (expression atomic-a (b racket)))))
+  (binder-sexp
+    (binder
+      (entry (stack (tmp-syntax-a) (tmp-syntax-b)) syntax-a)
+      (tuple
+        (expression (tmp-syntax-a) dynamic-type-a)
+        (expression (tmp-syntax-b) dynamic-type-b)))))
 
 (check-equal?
   (binder-sexp
-    (expressions-binder
-      (expressions complex-syntax-a
+    (usage-expressions-binder `indirect
+      (expressions syntax-a
         (structure dynamic-type-a dynamic-type-b))))
-  `(binder
-    (entry (identifiers tmp-a tmp-b) #'(complex-a))
-    (tuple 
-      (expression tmp-a (a racket)) 
-      (expression tmp-b (b racket)))))
+  (binder-sexp
+    (binder
+      (entry (stack (tmp-syntax-a) (tmp-syntax-b)) syntax-a)
+      (tuple
+        (expression (tmp-syntax-a) dynamic-type-a)
+        (expression (tmp-syntax-b) dynamic-type-b)))))
 
 (define (entry-let-syntax ($entry : Entry)) : Syntax
   (make-syntax

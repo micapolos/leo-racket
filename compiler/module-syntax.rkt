@@ -45,7 +45,7 @@
               $syntax-stack)))))))
 
 (define (ingredients-top-level-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
-  (define $binder-stack (map (curry single-use-expressions-binder #f) $ingredients))
+  (define $binder-stack (map (curry usage-expressions-binder 'indirect) $ingredients))
   (map make-syntax
     (stack
       (binder-stack-unsafe-module-syntax $binder-stack)

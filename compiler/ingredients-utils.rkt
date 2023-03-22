@@ -31,11 +31,11 @@
 (define (ingredients-structure ($ingredients : Ingredients)) : Structure
   (apply append (map expressions-structure $ingredients)))
 
-(define (single-use-ingredients-resolve-fn
-  ($single-use? : Boolean)
+(define (usage-ingredients-resolve-fn
+  ($usage : Usage)
   ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $binder-stack (map (curry single-use-expressions-binder $single-use?) $ingredients))
+  (define $binder-stack (map (curry usage-expressions-binder $usage) $ingredients))
   (define $tuple-stack (map binder-tuple $binder-stack))
   (define $tuple (apply append $tuple-stack))
   (option-bind ($fn $tuple) $expressions
@@ -58,7 +58,7 @@
 (define (ingredients-resolve-fn
   ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (single-use-ingredients-resolve-fn #f $ingredients $fn))
+  (usage-ingredients-resolve-fn 'indirect $ingredients $fn))
 
 (check-equal?
   (option-app expressions-sexp
@@ -67,8 +67,9 @@
         (expressions null-syntax (structure static-type-a static-type-b))
         (expressions null-syntax (structure static-type-c static-type-d)))
       (lambda (($tuple : Tuple)) 
-        (expressions atomic-syntax-a (structure dynamic-type-a)))))
-  `(expressions atomic-a (structure (a racket))))
+        (expressions syntax-a (structure dynamic-type-a)))))
+  (expressions-sexp
+    (expressions syntax-a (structure dynamic-type-a))))
 
 (check-equal?
   (option-app expressions-sexp
@@ -90,25 +91,19 @@
   (option-app expressions-sexp
     (ingredients-resolve-fn
       (ingredients 
-        (expressions atomic-syntax-a (structure dynamic-type-a dynamic-type-b))
-        (expressions atomic-syntax-b (structure dynamic-type-c dynamic-type-d)))
+        (expressions syntax-a (structure dynamic-type-a dynamic-type-b))
+        (expressions syntax-b (structure dynamic-type-c dynamic-type-d)))
       tuple-default-apply-fn))
-  `(expressions
-    (vector atomic-a atomic-a atomic-b atomic-b)
-    (structure (resolved (a racket) (b racket) (c racket) (d racket)))))
-
-(check-equal?
-  (option-app expressions-sexp
-    (ingredients-resolve-fn
-      (ingredients 
-        (expressions complex-syntax-a (structure dynamic-type-a dynamic-type-b))
-        (expressions complex-syntax-b (structure dynamic-type-c dynamic-type-d)))
-      tuple-default-apply-fn))
-  `(expressions
-    (let-values (((tmp-a tmp-b) (complex-a)) 
-                 ((tmp-c tmp-d) (complex-b)))
-       (vector tmp-a tmp-b tmp-c tmp-d))
-    (structure (resolved (a racket) (b racket) (c racket) (d racket)))))
+  (expressions-sexp
+    (expressions
+      #`(let-values (((tmp-a tmp-b) a) ((tmp-c tmp-d) b))
+         (vector tmp-a tmp-b tmp-c tmp-d))
+      (structure
+        (field! `resolved
+          dynamic-type-a
+          dynamic-type-b
+          dynamic-type-c
+          dynamic-type-d)))))
 
 ; --------------------------------------------------------------------------------
 
@@ -120,7 +115,7 @@
 (define (ingredients-gather-fn
   ($ingredients : Ingredients)
   ($fn : (-> Tuple Expressions))) : Expressions
-  (option-ref (single-use-ingredients-resolve-fn #t $ingredients $fn)))
+  (option-ref (usage-ingredients-resolve-fn 'direct $ingredients $fn)))
 
 ; ----------------------------------------------------------------------------
 
@@ -136,9 +131,11 @@
     (symbol-ingredients-expressions
       `foo
       (ingredients expressions-a expressions-cd)))
-  `(expressions
-    (vector a cd cd)
-    (structure (foo (a racket) (c racket) (d racket)))))
+  (expressions-sexp
+    (expressions
+      #`(let-values (((tmp-c tmp-d) cd)) (vector a tmp-c tmp-d))
+      (structure
+        (field! `foo dynamic-type-a dynamic-type-c dynamic-type-d)))))
 
 ; --------------------------------------------------------------------------
 
@@ -158,16 +155,18 @@
   (expressions-sexp
     (ingredients-expressions
       (ingredients expressions-a)))
-  `(expressions a (structure (a racket))))
+  (expressions-sexp
+    (expressions syntax-a (structure dynamic-type-a))))
 
 ; single-expression & multi-expression
 (check-equal?
   (expressions-sexp
     (ingredients-expressions
       (ingredients expressions-a expressions-cd)))
-  `(expressions 
-    (values a cd cd) 
-    (structure (a racket) (c racket) (d racket))))
+  (expressions-sexp
+    (expressions
+      #`(let-values (((tmp-a) a) ((tmp-c tmp-d) cd)) (values tmp-a tmp-c tmp-d))
+      (structure dynamic-type-a dynamic-type-c dynamic-type-d))))
 
 ; ----------------------------------------------------------------------
 
