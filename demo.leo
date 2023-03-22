@@ -1,4 +1,7 @@
 #lang leo
 
-10
-plus 20
+x 10
+y 20
+do
+  x.number
+  plus y.number
