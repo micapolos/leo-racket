@@ -12,6 +12,4 @@ recipe
   does
     number
     divided by 2
-do
-  10
-  doubled
+do everything
