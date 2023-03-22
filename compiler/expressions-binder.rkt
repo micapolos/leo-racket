@@ -117,3 +117,8 @@
     `(
       ,(reverse (entry-identifier-stack $entry))
       ,(entry-syntax $entry))))
+
+(define (binder-stack-syntax-stack ($binder-stack : (Stackof Binder))) : (Stackof Syntax)
+  (map expression-syntax
+    (apply append
+      (map binder-tuple $binder-stack))))

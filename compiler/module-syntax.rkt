@@ -3,17 +3,21 @@
 (provide (all-defined-out))
 
 (require
+  racket/function
   leo/typed/base
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
   leo/compiler/binding
   leo/compiler/expressions
+  leo/compiler/ingredients
+  leo/compiler/ingredients-utils
   leo/compiler/syntax-utils
   leo/compiler/any-sexp
   leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/expressions-binder
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-syntax)
@@ -62,34 +66,72 @@
         value-displayln
         (reverse (map value $any-stack $structure))))))
 
+(define (ingredients-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
+  (define $binder-stack (map (curry single-use-expressions-binder #f) $ingredients))
+  (map make-syntax
+    (stack
+      (binder-stack-unsafe-module-syntax $binder-stack)
+      (structure-module-syntax (ingredients-structure $ingredients))
+      (binder-stack-syntax-module-syntax $binder-stack)
+      `(require leo/runtime/top-level 'unsafe 'structure)
+      `(define $any-stack (stack ,@(reverse (binder-stack-syntax-stack $binder-stack))))
+      `(for-each
+        value-displayln
+        (reverse (map value $any-stack $structure))))))
+
 (define (binding-define-syntax ($binding : Binding)) : Syntax
   (make-syntax 
     `(define 
       ,(binding-identifier $binding)
       ,(binding-syntax $binding))))
 
+(define (binder-stack-unsafe-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
+  (make-syntax
+    `(module unsafe racket/base
+      (provide (all-defined-out))
+      ,@(reverse
+        (binder-stack-define-syntax-stack $binder-stack)))))
+
+(define (binder-stack-syntax-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
+  (syntax-module-syntax
+    (binder-stack-syntax-stack $binder-stack)))
+
+(define (binder-stack-define-syntax-stack ($binder-stack : (Stackof Binder))) : (Stackof Syntax)
+  (filter-false (map binder-define-syntax-option $binder-stack)))
+
+(define (binder-define-syntax-option ($binder : Binder)) : (Option Syntax)
+  (option-app binder-entry-define-syntax (binder-entry-option $binder)))
+
+(define (binder-entry-define-syntax ($entry : Entry)) : Syntax
+  (make-syntax
+    `(define-values
+      ,(reverse (entry-identifier-stack $entry))
+      ,(entry-syntax $entry))))
+
 (check-equal?
   (reverse 
     (map syntax->datum
-      (top-level-syntax-stack 
-        (tuple
-          (expression 
-            #`(cons 10 20) 
-            (field! `point 
-              (field! `x number-type) 
-              (field! `y number-type)))
-          (expression
+      (ingredients-syntax-stack
+        (ingredients
+          (expressions
+            #`(cons 10 20)
+            (structure
+              (field! `point
+                (field! `x number-type)
+                (field! `y number-type))))
+          (expressions
             null-syntax
-            (field! `green (field! `apple)))
-          (expression
+            (structure (field! `green (field! `apple))))
+          (expressions
             #`(lambda (n) (+ n 1))
-            number-type)
-          (expression
-            #`"inline-text"
-            text-type)
-          (expression
-            #`(string-append (number->string (inc (car point))) " apples!!!")
-            (field! `label text-type))))))
+            (structure number-type))
+          (expressions
+            #`(values
+              "inline-text"
+              (string-append (number->string (inc (car point))) " apples!!!"))
+            (structure
+              text-type
+              (field! `label text-type)))))))
   `((module unsafe racket/base
      (provide (all-defined-out))
      (define tmp-point (cons 10 20))
@@ -113,7 +155,7 @@
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack #'tmp-point #'() #'tmp-number #'"inline-text" #'tmp-label)))
+       (stack #'tmp-point #'null #'tmp-number #'"inline-text" #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point () tmp-number "inline-text" tmp-label))
+   (define $any-stack (stack tmp-point null tmp-number "inline-text" tmp-label))
    (for-each value-displayln (reverse (map value $any-stack $structure)))))
