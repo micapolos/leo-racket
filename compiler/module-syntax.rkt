@@ -113,7 +113,7 @@
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack #'tmp-point #'#f #'tmp-number #'"inline-text" #'tmp-label)))
+       (stack #'tmp-point #'() #'tmp-number #'"inline-text" #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point #f tmp-number "inline-text" tmp-label))
+   (define $any-stack (stack tmp-point () tmp-number "inline-text" tmp-label))
    (for-each value-displayln (reverse (map value $any-stack $structure)))))

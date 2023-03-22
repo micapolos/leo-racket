@@ -2,4 +2,4 @@
 
 (provide (all-defined-out))
 
-(define null-sexp `())
+(define null-sexp `null)

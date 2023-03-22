@@ -1,7 +1,11 @@
 #lang leo
 
-x 10
-y 20
+recipe
+  number
+  dodać number
+  does
+    number
+    plus dodać.number
 do
-  x.number
-  plus y.number
+  10
+  dodać 20

@@ -27,7 +27,7 @@
       (syntax-syntax-list (any-syntax $any)))))
 
 (define (leo-compile-any-list ($any-list : (Listof Any))) : Syntax
-  (ingredients-top-level-syntax 
+  (ingredients-top-level-syntax
     (syntax-list-ingredients
       (map syntax-normalize (map any-syntax $any-list)))))
 

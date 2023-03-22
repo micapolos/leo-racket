@@ -261,18 +261,20 @@
         dynamic-expression-a 
         static-expression-b 
         dynamic-expression-c)))
-  (pair 
-    `(fn a c) 
-    (stack 
-      dynamic-type-c 
-      static-type-d)))
+  (expressions-sexp-structure
+    (expressions
+      #`(fn a c)
+      (structure
+        dynamic-type-c
+        static-type-d))))
 
 (check-equal?
   (option-app expressions-sexp-structure
     (expression-apply-tuple
       (expression #`fn (arrow dynamic-structure-a static-structure-b))
       dynamic-tuple-a))
-  (pair null-sexp static-structure-b))
+  (expressions-sexp-structure
+    (expressions null-syntax static-structure-b)))
 
 (check-equal?
   (expression-apply-tuple
@@ -369,7 +371,7 @@
   (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
   (make-syntax
     (case (length $dynamic-syntax-stack)
-      ((0) null-sexp)
+      ((0) null-syntax)
       ((1) (top $dynamic-syntax-stack))
       (else `(values ,@(reverse $dynamic-syntax-stack))))))
 
