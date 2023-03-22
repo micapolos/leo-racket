@@ -13,16 +13,16 @@
     (cond
       ((racket? $type) `(racket))
       ((field? $type)
-        `(field
+        `(field!
           (quote ,(field-symbol $type))
-          ,(structure-syntax (field-structure $type))))
+          ,@(structure-syntax-list (field-structure $type))))
       ((choice? $type)
-        `(choice
-          ,(structure-syntax (choice-type-stack $type))))
+        `(choice!
+          ,@(structure-syntax-list (choice-type-stack $type))))
       ((arrow? $type)
-        `(arrow
-          ,(structure-syntax (arrow-from-structure $type))
-          ,(structure-syntax (arrow-to-structure $type))))
+        `(recipe!
+          ,@(structure-syntax-list(arrow-from-structure $type))
+          (does ,@(structure-syntax-list (arrow-to-structure $type)))))
       ((generic? $type)
         `(generic
           ,(type-syntax (generic-type $type))))
@@ -43,4 +43,7 @@
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax
-    `(structure ,@(reverse (map type-syntax $structure)))))
+    `(structure ,@(structure-syntax-list $structure))))
+
+(define (structure-syntax-list ($structure : Structure)) : (Listof Syntax)
+  (reverse (map type-syntax $structure)))

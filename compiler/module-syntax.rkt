@@ -152,18 +152,17 @@
      (require leo/runtime/structure)
      (define $structure
        (structure
-        (field 'point
-               (structure
-                (field 'x (structure (field 'number (structure (racket)))))
-                (field 'y (structure (field 'number (structure (racket)))))))
-        (field 'green (structure (field 'apple (structure))))
-        (arrow
-         (structure
-          (field 'number (structure (racket)))
-          (field 'inc (structure)))
-         (structure (field 'number (structure (racket)))))
-        (field 'text (structure (racket)))
-        (field 'label (structure (field 'text (structure (racket))))))))
+        (field!
+         'point
+         (field! 'x (field! 'number (racket)))
+         (field! 'y (field! 'number (racket))))
+        (field! 'green (field! 'apple))
+        (recipe!
+         (field! 'number (racket))
+         (field! 'inc)
+         (does (field! 'number (racket))))
+        (field! 'text (racket))
+        (field! 'label (field! 'text (racket))))))
    (module syntax typed/racket/base
      (provide (all-defined-out))
      (require leo/runtime/syntax)
