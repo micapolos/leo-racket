@@ -13,6 +13,7 @@
   leo/compiler/syntax-utils
   leo/compiler/ingredients
   leo/compiler/ingredients-top-level
+  leo/compiler/module-syntax
   leo/typed/syntax-match)
 
 (define (leo-compile ($sexp-list : (Listof Sexp))) : (Pairof Sexp Structure)
@@ -26,10 +27,11 @@
     (syntax-list-expressions 
       (syntax-syntax-list (any-syntax $any)))))
 
-(define (leo-compile-any-list ($any-list : (Listof Any))) : Syntax
-  (ingredients-top-level-syntax
-    (syntax-list-ingredients
-      (map syntax-normalize (map any-syntax $any-list)))))
+(define (leo-compile-any-list ($any-list : (Listof Any))) : (Listof Syntax)
+  (reverse
+    (ingredients-top-level-syntax-stack
+      (syntax-list-ingredients
+        (map syntax-normalize (map any-syntax $any-list))))))
 
 (check-equal?
   (leo-compile `("Hello, " (plus "world!")))

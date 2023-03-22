@@ -66,7 +66,7 @@
         value-displayln
         (reverse (map value $any-stack $structure))))))
 
-(define (ingredients-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
+(define (ingredients-top-level-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
   (define $binder-stack (map (curry single-use-expressions-binder #f) $ingredients))
   (map make-syntax
     (stack
@@ -111,7 +111,7 @@
 (check-equal?
   (reverse 
     (map syntax->datum
-      (ingredients-syntax-stack
+      (ingredients-top-level-syntax-stack
         (ingredients
           (expressions
             #`(cons 10 20)
