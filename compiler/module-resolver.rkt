@@ -148,5 +148,5 @@
       (structure (field! `compiler) (field! `tester))))
   (expressions-sexp
     (expressions
-      #`(let () (local-require (submod leo/compiler/tester unsafe)) text2)
+      #`(let () (local-require (submod leo/compiler/tester unsafe)) tmp-text)
       (structure text-type))))
