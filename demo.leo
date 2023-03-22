@@ -1,4 +1,3 @@
 #lang leo
 
-favourite
-do color
+favourite.text
