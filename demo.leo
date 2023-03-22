@@ -1,3 +1,3 @@
 #lang leo
 
-favourite.text
+everything

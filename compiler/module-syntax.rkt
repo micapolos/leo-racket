@@ -61,7 +61,7 @@
   (make-syntax
     `(module unsafe racket/base
       (provide (all-defined-out))
-      (require racket/unsafe/ops)
+      (require leo/runtime/unsafe)
       ,@(reverse
         (binder-stack-define-syntax-stack $binder-stack)))))
 
@@ -111,7 +111,7 @@
               (field! `label text-type)))))))
   `((module unsafe racket/base
      (provide (all-defined-out))
-     (require racket/unsafe/ops)
+     (require leo/runtime/unsafe)
      (define-values (tmp-point) (cons 10 20))
      (define-values (tmp-recipe) (lambda (n) (+ n 1)))
      (define-values
