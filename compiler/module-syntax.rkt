@@ -124,20 +124,29 @@
             (structure (field! `green (field! `apple))))
           (expressions
             #`(lambda (n) (+ n 1))
-            (structure number-type))
+            (structure
+              (recipe!
+                number-type
+                (field! `inc)
+                (does number-type))))
           (expressions
             #`(values
               "inline-text"
-              (string-append (number->string (inc (car point))) " apples!!!"))
+              (string-append (number->string (tmp-recipe (car tmp-point))) " apples!!!"))
             (structure
               text-type
               (field! `label text-type)))))))
   `((module unsafe racket/base
      (provide (all-defined-out))
-     (define tmp-point (cons 10 20))
-     (define tmp-number (lambda (n) (+ n 1)))
-     (define tmp-label
-       (string-append (number->string (inc (car point))) " apples!!!")))
+     (define-values (tmp-point) (cons 10 20))
+     (define-values (tmp-recipe) (lambda (n) (+ n 1)))
+     (define-values
+      (tmp-text tmp-label)
+      (values
+       "inline-text"
+       (string-append
+        (number->string (tmp-recipe (car tmp-point)))
+        " apples!!!"))))
    (module structure typed/racket/base
      (provide (all-defined-out))
      (require leo/runtime/structure)
@@ -148,14 +157,18 @@
                 (field 'x (structure (field 'number (structure (racket)))))
                 (field 'y (structure (field 'number (structure (racket)))))))
         (field 'green (structure (field 'apple (structure))))
-        (field 'number (structure (racket)))
+        (arrow
+         (structure
+          (field 'number (structure (racket)))
+          (field 'inc (structure)))
+         (structure (field 'number (structure (racket)))))
         (field 'text (structure (racket)))
         (field 'label (structure (field 'text (structure (racket))))))))
    (module syntax typed/racket/base
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack #'tmp-point #'null #'tmp-number #'"inline-text" #'tmp-label)))
+       (stack #'tmp-point #'null #'tmp-recipe #'tmp-text #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point null tmp-number "inline-text" tmp-label))
+   (define $any-stack (stack tmp-point null tmp-recipe tmp-text tmp-label))
    (for-each value-displayln (reverse (map value $any-stack $structure)))))
