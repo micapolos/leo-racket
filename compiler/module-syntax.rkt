@@ -8,7 +8,6 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
-  leo/compiler/binding
   leo/compiler/expressions
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
@@ -22,12 +21,7 @@
   leo/compiler/type-utils
   leo/compiler/type-syntax)
 
-(define (unsafe-module-syntax ($scope : Scope)) : Syntax
-  (make-syntax
-    `(module unsafe racket/base
-      (provide (all-defined-out))
-      ,@(reverse
-        (map binding-define-syntax $scope)))))
+(define leo-writer? : (Parameter Boolean) (make-parameter #f))
 
 (define (structure-module-syntax ($structure : Structure)) : Syntax
   (make-syntax
@@ -50,22 +44,6 @@
                 `(syntax ,$syntax))
               $syntax-stack)))))))
 
-(define (top-level-syntax-stack ($tuple : Tuple)) : (Stackof Syntax)
-  (define $structure (tuple-structure $tuple))
-  (define $binding-option-stack (tuple-binding-option-stack $tuple))
-  (define $scope (filter-false $binding-option-stack))
-  (define $bound-tuple (binding-option-stack-tuple-bound-tuple $binding-option-stack $tuple))
-  (map make-syntax
-    (stack
-      (unsafe-module-syntax $scope)
-      (structure-module-syntax (tuple-structure $tuple))
-      (syntax-module-syntax (map expression-syntax $bound-tuple))
-      `(require leo/runtime/top-level 'unsafe 'structure)
-      `(define $any-stack (stack ,@(reverse (map expression-syntax $bound-tuple))))
-      `(for-each
-        value-displayln
-        (reverse (map value $any-stack $structure))))))
-
 (define (ingredients-top-level-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
   (define $binder-stack (map (curry single-use-expressions-binder #f) $ingredients))
   (map make-syntax
@@ -76,14 +54,8 @@
       `(require leo/runtime/top-level 'unsafe 'structure)
       `(define $any-stack (stack ,@(reverse (binder-stack-syntax-stack $binder-stack))))
       `(for-each
-        value-displayln
+        (curry value-displayln ,(if (leo-writer?) ''leo ''racket))
         (reverse (map value $any-stack $structure))))))
-
-(define (binding-define-syntax ($binding : Binding)) : Syntax
-  (make-syntax 
-    `(define 
-      ,(binding-identifier $binding)
-      ,(binding-syntax $binding))))
 
 (define (binder-stack-unsafe-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
   (make-syntax
@@ -170,4 +142,6 @@
        (stack #'tmp-point #'null #'tmp-recipe #'tmp-text #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
    (define $any-stack (stack tmp-point null tmp-recipe tmp-text tmp-label))
-   (for-each value-displayln (reverse (map value $any-stack $structure)))))
+   (for-each
+    (curry value-displayln 'racket)
+    (reverse (map value $any-stack $structure)))))

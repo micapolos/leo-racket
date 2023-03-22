@@ -6,6 +6,3 @@
   (does
     number
     (plus dodać number)))
-(do
-  10
-  (dodać 20))
