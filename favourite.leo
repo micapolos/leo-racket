@@ -2,3 +2,4 @@
 
 "Hello, world!"
 128
+color red
