@@ -21,22 +21,28 @@
   (exn:missing-module? (-> Any Boolean)))
 
 (define (module-symbol-tuple-option ($symbol : Symbol)) : (Option Tuple)
-  (with-handlers ((exn:missing-module? (lambda ((e : Any)) #f)))
-    (define $structure
-      (dynamic-require
-        `(submod ,$symbol structure)
-        `$structure
-        (lambda () #f)))
-    (define $syntax-stack
-      (dynamic-require
-        `(submod ,$symbol syntax)
-        `$syntax-stack
-        (lambda () #f)))
-    (and $structure $syntax-stack
-      (map
-        expression
-        (any-syntax-stack $syntax-stack)
-        (any-structure $structure)))))
+  (with-handlers ((exn:missing-module? (lambda (_) #f)))
+    (and
+      (module-declared? $symbol #t)
+      (module-declared? `(submod ,$symbol structure) #t)
+      (module-declared? `(submod ,$symbol syntax) #t)
+      (module-declared? `(submod ,$symbol unsafe) #t)
+      (let ()
+        (define $structure
+          (dynamic-require
+            `(submod ,$symbol structure)
+            `$structure
+            (lambda () #f)))
+        (define $syntax-stack
+          (dynamic-require
+            `(submod ,$symbol syntax)
+            `$syntax-stack
+            (lambda () #f)))
+        (and $structure $syntax-stack
+          (map
+            expression
+            (any-syntax-stack $syntax-stack)
+            (any-structure $structure)))))))
 
 (define (any-syntax-stack ($any : Any)) : (Stackof Syntax)
   (unless (list? $any) (error "not a list"))
@@ -135,5 +141,3 @@
 
 (define (structure-resolve-module ($structure : Structure)) : (Option Expressions)
   (option-app resolve-module-symbol (structure-module-symbol-option $structure)))
-
-;(structure-resolve-module (structure (field! `leo) (field! `leo-module-sampl)))
