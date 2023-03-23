@@ -99,7 +99,8 @@
     (tuple-syntax-list-arrow-ingredients
       null-tuple
       (syntax-e #`(number (does text)))))
-  `(ingredients
-    (expressions
-      (lambda (tmp-number) (compiled text))
-      (structure (recipe number (doing number))))))
+  (ingredients-sexp
+    (ingredients
+      (expressions
+        #`(lambda (tmp-number) (compiled text))
+        (structure (recipe! number-type (doing number-type)))))))

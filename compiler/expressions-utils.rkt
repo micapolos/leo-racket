@@ -188,9 +188,10 @@
       (expressions 
         #`(string-append (number->string num) txt)
         (structure text-type))))
-  `(expressions
-    (lambda (nul txt) (string-append (number->string num) txt))
-    (structure (recipe number text (doing text)))))
+  (expressions-sexp
+    (expressions
+      #`(lambda (nul txt) (string-append (number->string num) txt))
+      (structure (recipe! number-type text-type (doing text-type))))))
 
 ; --------------------------------------------------------------------
 

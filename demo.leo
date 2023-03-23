@@ -1,6 +1,6 @@
 #lang leo
 
-use boolean
-use number
 use text
 
+"Hello, "
+plus "world!"

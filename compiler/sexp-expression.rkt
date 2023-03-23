@@ -5,7 +5,9 @@
 (require
   leo/typed/testing
   leo/compiler/expression
-  leo/compiler/expression-utils)
+  leo/compiler/expression-utils
+  leo/compiler/type
+  leo/compiler/type-utils)
 
 (define (sexp-expression ($sexp : Sexp)) : Expression
   (or
@@ -26,28 +28,28 @@
 
 (check-equal?
   (expression-sexp (sexp-expression #t))
-  `(expression #t boolean))
+  (expression-sexp (boolean-expression #t)))
 
 (check-equal?
   (expression-sexp (sexp-expression 3.14))
-  `(expression 3.14 number))
+  (expression-sexp (number-expression 3.14)))
 
 (check-equal?
   (expression-sexp (sexp-expression "foo"))
-  `(expression "foo" text))
+  (expression-sexp (text-expression "foo")))
 
 (check-equal?
   (expression-sexp (sexp-expression `foo))
-  `(expression #f foo))
+  (expression-sexp (field-expression `foo null-tuple)))
 
 (check-equal?
   (expression-sexp (sexp-expression `(foo 1)))
-  `(expression 1 (foo number)))
+  (expression-sexp (field-expression! foo (number-expression 1))))
 
 (check-equal?
   (expression-sexp (sexp-expression `(foo 1 "foo")))
-  `(expression (cons 1 "foo") (foo number text)))
+  (expression-sexp (expression #`(cons 1 "foo") (field! `foo number-type text-type))))
 
 (check-equal?
   (expression-sexp (sexp-expression `(foo 1 "foo" 2)))
-  `(expression (vector 1 "foo" 2) (foo number text number)))
+  (expression-sexp (expression #`(vector 1 "foo" 2) (field! `foo number-type text-type number-type))))

@@ -420,8 +420,8 @@
       #`(field-expression (quote name) (tuple expression ...)))))
 
 (check-equal?
-  (expression-sexp (field-expression! foo (text-expression "foo")))
-  `(expression "foo" (foo text)))
+  (expression-sexp (field-expression! foo (field-expression! bar)))
+  `(expression #f (foo bar)))
 
 ; ---------------------------------------------------------
 

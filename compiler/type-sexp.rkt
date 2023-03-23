@@ -15,11 +15,11 @@
 (define (type-sexp ($type : Type)) : Sexp
   (cond
     ((racket? $type) `racket)
-    ((equal? $type boolean-type) `boolean)
-    ((equal? $type number-type) `number)
-    ((equal? $type text-type) `text)
-    ((equal? $type int-type) `int)
-    ((equal? $type float-type) `float)
+    ;((equal? $type boolean-type) `boolean)
+    ;((equal? $type number-type) `number)
+    ;((equal? $type text-type) `text)
+    ;((equal? $type int-type) `int)
+    ;((equal? $type float-type) `float)
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))
@@ -55,11 +55,11 @@
 
 (check-equal? (type-sexp (racket)) `racket)
 
-(check-equal? (type-sexp number-type) `number)
-(check-equal? (type-sexp text-type) `text)
-(check-equal? (type-sexp float-type) `float)
-(check-equal? (type-sexp int-type) `int)
-(check-equal? (type-sexp boolean-type) `boolean)
+; (check-equal? (type-sexp number-type) `number)
+; (check-equal? (type-sexp text-type) `text)
+; (check-equal? (type-sexp float-type) `float)
+; (check-equal? (type-sexp int-type) `int)
+; (check-equal? (type-sexp boolean-type) (type-sexp boolean-type))
 
 (check-equal? (type-sexp (field `foo null)) `foo)
 (check-equal? (type-sexp (field `foo (structure (racket)))) `(foo racket))
@@ -84,7 +84,7 @@
     (arrow 
       (stack number-type text-type)
       (stack text-type int-type)))
-  `(recipe number text (doing text int)))
+  (type-sexp (recipe! number-type text-type (doing text-type int-type))))
 
 (check-equal? (type-sexp (universe 128)) `(universe 128))
 
@@ -232,7 +232,7 @@
       (arrow 
         (stack text-type) 
         (stack number-type))))
-  `(recipe text (doing number)))
+  `(recipe (text racket) (doing (number racket))))
 
 (check-equal?
   (value-sexp (value "foo" (field `foo (stack text-type))))
@@ -341,7 +341,7 @@
     (value 
       number-type
       type-type))
-  `number)
+  `(number racket))
 
 (check-equal?
   (value-sexp 

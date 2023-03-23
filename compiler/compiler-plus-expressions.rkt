@@ -82,7 +82,8 @@
         (expression-expressions 
           (field-expression `plus 
             (tuple (text-expression "world!")))))))
-  `(ingredients
-    (expressions
-      (string-append "Hello, " "world!") 
-      (structure text))))
+  (ingredients-sexp
+    (ingredients
+      (expressions
+        #`(string-append "Hello, " "world!")
+        (structure text-type)))))

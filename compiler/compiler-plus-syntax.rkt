@@ -309,28 +309,7 @@
             (expression-expressions 
               (number-expression 3.14))))
         #`"foo")))
-  `(ingredients
-    (expressions 3.14 (structure number))
-    (expressions "foo" (structure text))))
-
-; (check-equal?
-;   (expressions-sexp
-;     (tuple-syntax-list-expressions
-;       base-tuple
-;       (list
-;         #`1
-;         #`(plus 2)
-;         #`text)))
-;   `(expressions (number->string (+ 1 2)) (structure text)))
-
-; (check-equal?
-;   (expressions-sexp
-;     (tuple-syntax-list-expressions
-;       base-tuple
-;       (list
-;         #`1
-;         #`(dodać 2)
-;         #`(do number (plus dodać number)))))
-;   `(expressions
-;     (let-values (((tmp-number) 1) ((tmp-dodać) 2)) (+ tmp-number tmp-dodać))
-;     (structure number)))
+  (ingredients-sexp
+    (ingredients
+      (expressions #`3.14 (structure number-type))
+      (expressions #`"foo" (structure text-type)))))
