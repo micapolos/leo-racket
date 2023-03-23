@@ -5,7 +5,7 @@
 (require
   leo/typed/base
   leo/typed/stack
-  leo/compiler/expressions-binder
+  leo/compiler/binder
   leo/compiler/ingredients)
 
 (data program

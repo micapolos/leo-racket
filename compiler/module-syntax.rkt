@@ -16,7 +16,7 @@
   leo/compiler/generate-temporary
   leo/compiler/expression
   leo/compiler/expression-utils
-  leo/compiler/expressions-binder
+  leo/compiler/binder
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-syntax)

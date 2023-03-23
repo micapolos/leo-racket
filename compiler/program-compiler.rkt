@@ -7,7 +7,7 @@
   leo/typed/syntax-match
   leo/compiler/expression
   leo/compiler/program
-  leo/compiler/expressions-binder
+  leo/compiler/binder
   leo/compiler/compiler
   leo/compiler/compile-ingredients
   leo/compiler/compiler-plus-syntax)

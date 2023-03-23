@@ -14,7 +14,7 @@
   leo/compiler/type-utils
   leo/compiler/syntax-utils
   leo/compiler/expressions
-  leo/compiler/expressions-binder
+  leo/compiler/binder
   leo/compiler/expressions-utils
   leo/compiler/expressions-sexp
   leo/compiler/expression
