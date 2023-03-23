@@ -106,7 +106,7 @@
     ((equal? $type int-type) `(int ,(cast $any Fixnum)))
     ((equal? $type float-type) `(float ,(cast $any Flonum)))
     ((equal? $type number-type) (cast $any Number))
-    ((equal? $type boolean-type) `(boolean ,(if (cast $any Boolean) `true `false)))
+;    ((equal? $type boolean-type) `(boolean ,(if (cast $any Boolean) `true `false)))
     ((equal? $type text-type) (cast $any String))
     ((field? $type) 
       (define $symbol (field-symbol $type))
@@ -118,8 +118,7 @@
             ,$symbol
             ,@(type-stack-any-structure-sexp-list $type-stack $any $structure)))))
     ((choice? $type)
-      ; TODO: Return expanded form, like: "boolean choice: not true, the false"
-      (type-stack-value-sexp $type-stack (any-choice-value $any $type)))
+      (type-stack-any-choice-sexp $type-stack $any $type))
     ((arrow? $type) (type-sexp $type))
     ((generic? $type) 
       (type-stack-value-sexp
@@ -144,26 +143,40 @@
     ((value? $type) 
       `(value ,(type-stack-value-sexp $type-stack $type)))))
 
-(define (any-choice-value 
-  ($any : Any) 
-  ($choice : Choice)) : Value
+(define (type-stack-any-choice-sexp
+  ($type-stack : (Stackof Type))
+  ($any : Any)
+  ($choice : Choice)) : Sexp
   (define $structure (choice-type-stack $choice))
   (define $size (length $structure))
   (case $size
     ((0) (error "null choice"))
-    ((1) (value $any (top $structure)))
+    ((1)
+      (type-stack-value-sexp
+        $type-stack
+        (value $any (top $structure))))
     (else
       (define $dynamic? (structure-dynamic? $structure))
-      (define-values ($selector $value) 
-        (if $dynamic? 
+      (define-values ($selector $value)
+        (if $dynamic?
           (bind $pair (cast $any (Pairof (U Exact-Nonnegative-Integer Boolean) Any))
             (values (car $pair) (cdr $pair)))
           (values $any #f)))
-      (define $index 
-        (if (= $size 2) 
+      (define $index
+        (if (= $size 2)
           (if (cast $selector Boolean) 0 1)
           (cast $selector Exact-Nonnegative-Integer)))
-      (value $value (list-ref (reverse $structure) $index)))))
+      `(choice
+        ,@(map
+          (lambda (($map-index : Exact-Nonnegative-Integer) ($type : Type))
+            (if (= $index $map-index)
+              `(the
+                ,(type-stack-value-sexp
+                  $type-stack
+                  (value $value $type)))
+              `(not ,(type-sexp $type))))
+          (range (length $structure))
+          (reverse $structure))))))
 
 (define (type-stack-any-structure-sexp-list 
   ($type-stack : (Stackof Type)) 
@@ -200,11 +213,11 @@
 
 (check-equal?
   (value-sexp (value #t boolean-type))
-  `(boolean true))
+  `(boolean (choice (the true) (not false))))
 
 (check-equal?
   (value-sexp (value #f boolean-type))
-  `(boolean false))
+  `(boolean (choice (not true) (the false))))
 
 (check-equal?
   (value-sexp (value 3.14 number-type))
@@ -250,7 +263,7 @@
     (value 
       (vector 128 "foo" #t) 
       (field `foo (stack number-type (field! `bar) text-type boolean-type))))
-  `(foo 128 bar "foo" (boolean true)))
+  `(foo 128 bar "foo" (boolean (choice (the true) (not false)))))
 
 (check-equal?
   (value-sexp 
@@ -271,70 +284,70 @@
     (value 
       #t
       (choice (structure (field! `foo) (field! `bar)))))
-  `foo)
+  `(choice (the foo) (not bar)))
 
 (check-equal?
   (value-sexp 
     (value 
       #f
       (choice (structure (field! `foo) (field! `bar)))))
-  `bar)
+  `(choice (not foo) (the bar)))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons #t 123)
       (choice (structure number-type text-type))))
-  123)
+  `(choice (the 123) (not (text racket))))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons #f "foo") 
       (choice (structure number-type text-type))))
-  "foo")
+  `(choice (not (number racket)) (the "foo")))
 
 (check-equal?
   (value-sexp 
     (value 
       0
       (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
-  `foo)
+  `(choice (the foo) (not bar) (not zoo)))
 
 (check-equal?
   (value-sexp 
     (value 
       1
       (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
-  `bar)
+  `(choice (not foo) (the bar) (not zoo)))
 
 (check-equal?
   (value-sexp 
     (value 
       2
       (choice (structure (field! `foo) (field! `bar) (field! `zoo)))))
-  `zoo)
+  `(choice (not foo) (not bar) (the zoo)))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 0 123) 
       (choice (structure number-type (field! `foo) text-type))))
-  123)
+  `(choice (the 123) (not foo) (not (text racket))))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 1 #t) 
       (choice (structure number-type (field! `foo) text-type))))
-  `foo)
+  `(choice (not (number racket)) (the foo) (not (text racket))))
 
 (check-equal?
   (value-sexp 
     (value 
       (cons 2 "foo") 
       (choice (structure number-type (field! `foo) text-type))))
-  "foo")
+  `(choice (not (number racket)) (not foo) (the "foo")))
 
 (check-equal?
   (value-sexp 

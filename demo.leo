@@ -4,5 +4,5 @@ with boolean
 with text
 with number
 
-123
-text
+1
+equals 1
