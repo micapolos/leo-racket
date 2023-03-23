@@ -113,7 +113,7 @@
      (provide (all-defined-out))
      (require leo/runtime/unsafe)
      (define-values (tmp-point) (cons 10 20))
-     (define-values (tmp-recipe) (lambda (n) (+ n 1)))
+     (define-values (tmp-inc) (lambda (n) (+ n 1)))
      (define-values
       (tmp-text tmp-label)
       (values
@@ -141,9 +141,9 @@
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack #'tmp-point #'null #'tmp-recipe #'tmp-text #'tmp-label)))
+       (stack #'tmp-point #'null #'tmp-inc #'tmp-text #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point null tmp-recipe tmp-text tmp-label))
+   (define $any-stack (stack tmp-point null tmp-inc tmp-text tmp-label))
    (for-each
     (curry value-displayln 'racket)
     (reverse (map value $any-stack $structure)))))

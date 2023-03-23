@@ -1,13 +1,13 @@
 #lang leo
 
-racket
-  (lambda () #t)
-  of recipe
-    boolean true
-    doing boolean
+recipe
+  boolean true
+  does boolean select
+    the true
+    not false
 
-racket
-  (lambda () #f)
-  of recipe
-    boolean false
-    doing boolean
+recipe
+  boolean false
+  does boolean select
+    not true
+    the false

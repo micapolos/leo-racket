@@ -6,6 +6,7 @@
   racket/string
   leo/typed/base
   leo/typed/stack
+  leo/typed/option
   leo/typed/testing
   leo/compiler/expression
   leo/compiler/type
@@ -15,6 +16,12 @@
   leo/compiler/syntax-utils
   (for-syntax racket/base))
 
+(define (type-tmp-symbol ($type : Type)) : Symbol
+  (bind $type-symbol (type-symbol $type)
+    (or
+      (and (arrow? $type) (option-app type-symbol (top-option (arrow-from-structure $type))))
+      $type-symbol)))
+
 (define (symbol-temporary ($symbol : Symbol)) : Identifier
   (cond
     ((testing?)
@@ -23,7 +30,7 @@
     (else (car (generate-temporaries (list $symbol))))))
 
 (define (type-generate-temporary ($type : Type)) : Identifier
-  (symbol-temporary (type-symbol $type)))
+  (symbol-temporary (type-tmp-symbol $type)))
 
 (check-equal?
   (string-prefix?
@@ -34,6 +41,10 @@
 (check-equal?
   (syntax->datum (type-generate-temporary type-a))
   `tmp-a)
+
+(check-equal?
+  (syntax->datum (type-generate-temporary (recipe! type-a type-b (doing type-c type-d))))
+  `tmp-b)
 
 (define (tmp-syntax-a) (type-generate-temporary dynamic-type-a))
 (define (tmp-syntax-b) (type-generate-temporary dynamic-type-b))
