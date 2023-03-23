@@ -113,6 +113,48 @@
   (option-bind (module-path-tuple-option $module-path) $tuple
     (module-path-tuple-expressions $module-path $tuple)))
 
+; --------------------------------------------------------------------------
+
+(define (symbol-stack-plus-type-module-components
+  ($symbol-stack : (Stackof Symbol))
+  ($type : Type))
+: (Option (Stackof Symbol))
+  (and
+    (field? $type)
+    (symbol-stack-plus-structure-module-components
+      (push $symbol-stack (field-symbol $type))
+      (field-structure $type))))
+
+(define (symbol-stack-plus-structure-module-components
+  ($symbol-stack : (Stackof Symbol))
+  ($structure : Structure)) : (Option (Stackof Symbol))
+  (cond
+    ((null? $structure) $symbol-stack)
+    (else
+      (option-bind (top-option $structure) $type
+        (symbol-stack-plus-type-module-components $symbol-stack $type)))))
+
+(define (type-module-components ($type : Type)) : (Option (Stackof Symbol))
+  (symbol-stack-plus-type-module-components null $type))
+
+(check-equal?
+  (type-module-components (field! `foo))
+  (stack `foo))
+
+(check-equal?
+  (type-module-components (field! `foo (field! `bar)))
+  (stack `foo `bar))
+
+(check-equal?
+  (type-module-components (racket))
+  #f)
+
+(check-equal?
+  (type-module-components (field! `foo (racket)))
+  #f)
+
+; --------------------------------------------------------------------------
+
 (define (type-module-component-symbol-option ($type : Type)) : (Option Symbol)
   (and
     (field? $type)
@@ -132,12 +174,12 @@
     $symbol-stack
     `(lib
       ,(string-append
-        (string-join (map symbol->string (push-stack $symbol-stack (stack `library `leo))) "/")
+        (string-join (map symbol->string (push $symbol-stack `leo)) "/")
         ".leo"))))
 
 (check-equal?
   (structure-module-path-option (structure (field! `foo) (field! `bar)))
-  `(lib "leo/library/foo/bar.leo"))
+  `(lib "leo/foo/bar.leo"))
 
 (check-not
   (structure-module-path-option (structure)))
@@ -153,7 +195,7 @@
 (check-equal?
   (option-app expressions-sexp
     (structure-resolve-module
-      (structure (field! `testing) (field! `module))))
+      (structure (field! `library) (field! `testing) (field! `module))))
   (expressions-sexp
     (expressions
       #`(let () (local-require (submod (lib "leo/library/testing/module.leo") unsafe))

@@ -1,3 +1,6 @@
 #lang leo
 
-use base
+with library.base
+
+2
+plus 3

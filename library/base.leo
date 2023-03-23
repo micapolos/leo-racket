@@ -1,5 +1,5 @@
 #lang leo
 
-the boolean
-the number
-the text
+the library boolean
+the library number
+the library text
