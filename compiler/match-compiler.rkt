@@ -84,7 +84,7 @@
         (make-syntax `case)))
     `(match-compiler
       (tuple)
-      (switch (syntax-stack (values)) switched)
+      (switch (syntax-stack null) switched)
       (remaining (bar))))
 
   (check-equal?
@@ -100,5 +100,5 @@
         (make-syntax `switched)))
     `(match-compiler
       (tuple)
-      (switch (syntax-stack zero one (values)) switched)
+      (switch (syntax-stack zero one null) switched)
       (remaining (three)))))

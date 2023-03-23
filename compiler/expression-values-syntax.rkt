@@ -17,7 +17,7 @@
     (tuple-syntax-stack $tuple))
   (define $dynamic-length (length $dynamic-syntax-stack))
   (case $dynamic-length
-    ((0) (make-syntax `(void)))
+    ((0) null-syntax)
     ((1) (car $dynamic-syntax-stack))
     (else (make-syntax `(values ,@(reverse $dynamic-syntax-stack))))))
 

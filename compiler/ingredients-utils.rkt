@@ -135,10 +135,29 @@
       (expressions
         (make-syntax
           (bind $syntax-list (reverse (tuple-syntax-stack $tuple))
-            (cond
-              ((= (length $syntax-list) 1) (car $syntax-list))
+            (case (length $syntax-list)
+              ((0) null-syntax)
+              ((1) (car $syntax-list))
               (else `(values ,@$syntax-list)))))
         (tuple-structure $tuple)))))
+
+; empty-expression
+(check-equal?
+  (expressions-sexp
+    (ingredients-expressions
+      (ingredients
+        (expressions null-syntax null-structure))))
+  (expressions-sexp
+    (expressions null-syntax null-structure)))
+
+; static
+(check-equal?
+  (expressions-sexp
+    (ingredients-expressions
+      (ingredients
+        (expressions null-syntax (structure static-type-a)))))
+  (expressions-sexp
+    (expressions null-syntax (structure static-type-a))))
 
 ; single-expression
 (check-equal?
