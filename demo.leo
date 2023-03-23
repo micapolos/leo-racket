@@ -1,3 +1,3 @@
 #lang leo
 
-package text
+with package text

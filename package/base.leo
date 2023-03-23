@@ -1,5 +1,5 @@
 #lang leo
 
-the library boolean
-the library number
-the library text
+the package boolean
+the package number
+the package text
