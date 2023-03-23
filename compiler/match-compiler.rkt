@@ -18,7 +18,7 @@
   leo/compiler/generate-temporary
   leo/compiler/ingredients-utils
   leo/compiler/expressions-utils
-  leo/compiler/compile-ingredients)
+  leo/compiler/compile-recursively)
 
 (data cases
   (syntax-stack : (Stackof Syntax))
@@ -56,7 +56,7 @@
   (define $type (car $remaining-type-list))
   (define $new-expression (expression (or $identifier-option null-syntax) $type))
   (define $new-tuple (push $tuple $new-expression))
-  (define $ingredients (compile-ingredients $new-tuple (list $syntax)))
+  (define $ingredients (compile-ingredients-recursively $new-tuple (list $syntax)))
   (define $expressions (ingredients-expressions $ingredients))
   (define $expression (expressions-expression-option $expressions))
   (unless $expression (error "match expected expression"))

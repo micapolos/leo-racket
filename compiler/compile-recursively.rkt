@@ -22,13 +22,13 @@
           (make-syntax `(compiled ,@$syntax-list))
           (tuple-structure $tuple))))))
 
-(define (compile-ingredients
+(define (compile-ingredients-recursively
   ($tuple : Tuple) 
   ($syntax-list : (Listof Syntax))) : Ingredients
   ((compile-ingredients-parameter) $tuple $syntax-list))
 
-(define (compile-expressions
+(define (compile-expressions-recursively
   ($tuple : Tuple)
   ($syntax-list : (Listof Syntax))) : Expressions
   (ingredients-expressions
-    (compile-ingredients $tuple $syntax-list)))
+    (compile-ingredients-recursively $tuple $syntax-list)))

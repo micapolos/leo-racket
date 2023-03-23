@@ -17,7 +17,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/compiler
-  leo/compiler/compile-ingredients
+  leo/compiler/compile-recursively
   leo/compiler/compiler-plus-syntax)
 
 (data program-compiler
@@ -40,7 +40,7 @@
     (syntax-match-symbol-args $syntax $symbol $args
       (case $symbol
         ((use with)
-          (define $ingredients (compile-ingredients $tuple $args))
+          (define $ingredients (compile-ingredients-recursively $tuple $args))
           (define $binder-stack (usage-ingredients-binder-stack `indirect $ingredients))
           (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
           (define $binder-tuple (apply append (map binder-tuple $binder-stack)))

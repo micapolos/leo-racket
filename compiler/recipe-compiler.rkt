@@ -21,7 +21,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-match
-  leo/compiler/compile-ingredients)
+  leo/compiler/compile-recursively)
 
 (data recipe-compiler 
   (tuple : Tuple) 
@@ -69,7 +69,7 @@
                       (tuple-does-expressions
                         $lhs-tuple
                         (ingredients-expressions
-                          (compile-ingredients
+                          (compile-ingredients-recursively
                             (push-stack $tuple $lhs-tuple)
                             $syntax-list))))
                     (when

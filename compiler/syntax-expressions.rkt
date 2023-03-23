@@ -14,13 +14,13 @@
   leo/compiler/type-utils
   leo/compiler/ingredients
   leo/compiler/compiler-plus-syntax
-  leo/compiler/compile-ingredients-top-level)
+  leo/compiler/compile)
 
 (define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
-  (tuple-syntax-list-ingredients base-tuple $syntax-list))
+  (compile-ingredients base-tuple $syntax-list))
 
 (define (syntax-list-expressions ($syntax-list : (Listof Syntax))) : Expressions
-  (tuple-syntax-list-expressions base-tuple $syntax-list))
+  (compile-expressions base-tuple $syntax-list))
 
 (define (sexp-expressions ($sexp : Sexp)) : Expressions
   (define $datum (sexp-datum $sexp))

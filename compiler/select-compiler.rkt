@@ -10,7 +10,7 @@
   leo/compiler/syntax-type
   leo/compiler/expression
   leo/compiler/type
-  leo/compiler/compile-ingredients
+  leo/compiler/compile-recursively
   leo/compiler/expression-utils
   leo/compiler/expressions-utils
   leo/compiler/ingredients-utils
@@ -55,7 +55,7 @@
               (option-or
                 (expressions-expression-option
                   (ingredients-expressions
-                    (compile-ingredients $tuple $syntax-list)))
+                    (compile-ingredients-recursively $tuple $syntax-list)))
                 (error "the must have single expression")))))
         (else 
           (error "select-compiler, expected not or the"))))

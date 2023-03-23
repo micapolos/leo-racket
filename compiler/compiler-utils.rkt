@@ -12,7 +12,7 @@
   leo/compiler/ingredients-utils
   leo/compiler/expressions-utils
   leo/compiler/compiler-plus-expressions
-  leo/compiler/compile-ingredients
+  leo/compiler/compile-recursively
   leo/compiler/sexp-expression)
 
 (define (compiler-debug ($compiler : Compiler)) : Compiler 
@@ -29,7 +29,7 @@
     (compiler-with-ingredients $compiler
       (ingredients-plus
         (compiler-ingredients $compiler)
-        (compile-ingredients
+        (compile-ingredients-recursively
           (compiler-tuple $compiler)
           $syntax-list)))))
 
@@ -38,7 +38,7 @@
     (ingredients-apply-racket 
       (ingredients-plus 
         (compiler-ingredients $compiler)
-        (compile-ingredients
+        (compile-ingredients-recursively
           (compiler-tuple $compiler)
           $syntax-list)))))
 
@@ -47,7 +47,7 @@
     (ingredients-apply-type
       (ingredients-plus 
         (compiler-ingredients $compiler)
-        (compile-ingredients
+        (compile-ingredients-recursively
           (compiler-tuple $compiler)
           $syntax-list)))))
 
@@ -62,7 +62,7 @@
       (compiler-tuple $compiler)
       (ingredients-plus 
         (compiler-ingredients $compiler)
-        (compile-ingredients
+        (compile-ingredients-recursively
           (compiler-tuple $compiler)
           $syntax-list)))))
 

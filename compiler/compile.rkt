@@ -11,24 +11,24 @@
   leo/compiler/ingredients-utils
   leo/compiler/compiler
   leo/compiler/compiler-plus-syntax
-  leo/compiler/compile-ingredients)
+  leo/compiler/compile-recursively)
 
-(define (tuple-syntax-list-ingredients
+(define (compile-ingredients
   ($tuple : Tuple)
   ($syntax-list : (Listof Syntax)))
   : Ingredients
-  (parameterize ((compile-ingredients-parameter tuple-syntax-list-ingredients))
+  (parameterize ((compile-ingredients-parameter compile-ingredients))
     (compiler-ingredients
       (fold
         (compiler $tuple null-tuple)
         $syntax-list
         compiler-plus-syntax))))
 
-(define (tuple-syntax-list-expressions
+(define (compile-expressions
   ($tuple : Tuple)
   ($syntax-list : (Listof Syntax)))
   : Expressions
   (ingredients-expressions
-    (tuple-syntax-list-ingredients
+    (compile-ingredients
       $tuple $syntax-list)))
 

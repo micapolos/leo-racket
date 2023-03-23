@@ -23,7 +23,7 @@
   leo/compiler/syntax-type
   leo/compiler/syntax-utils
   leo/compiler/syntax-expression
-  leo/compiler/compile-ingredients
+  leo/compiler/compile-recursively
   leo/compiler/compiler-plus-expressions
   leo/compiler/expression-utils
   leo/compiler/compiler-utils
@@ -110,7 +110,7 @@
   ($symbol : Symbol)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (define $ingredients (compile-ingredients $tuple $syntax-list))
+  (define $ingredients (compile-ingredients-recursively $tuple $syntax-list))
   (define $structure (ingredients-structure $ingredients))
   (symbol-ingredients-expressions $symbol $ingredients))
 
@@ -124,7 +124,7 @@
       (ingredients-apply-fn (compiler-ingredients $compiler)
         (lambda (($tuple : Tuple))
           (ingredients-expressions
-            (compile-ingredients
+            (compile-ingredients-recursively
               (push-stack (compiler-tuple $compiler) $tuple)
               $syntax-list)))))))
 
@@ -135,7 +135,7 @@
   (compiler-with-ingredients $compiler
     (ingredients-plus
       (compiler-ingredients $compiler)
-      (compile-ingredients
+      (compile-ingredients-recursively
         (compiler-tuple $compiler)
         $syntax-list))))
 
@@ -189,7 +189,7 @@
         (ingredients-expressions 
           (ingredients-plus 
             (compiler-ingredients $compiler)
-            (compile-ingredients
+            (compile-ingredients-recursively
               (compiler-tuple $compiler)
               $syntax-list)))
         (expressions
@@ -206,7 +206,7 @@
           (ingredients-expressions
             (ingredients-plus
               (map expression-expressions $tuple)
-              (compile-ingredients
+              (compile-ingredients-recursively
                 (push-stack (compiler-tuple $compiler) $tuple)
                 $syntax-list))))))))
 
