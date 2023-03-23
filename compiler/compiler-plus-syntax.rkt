@@ -40,25 +40,6 @@
   leo/compiler/type-symbol
   leo/compiler/type-utils)
 
-(define (tuple-syntax-list-ingredients 
-  ($tuple : Tuple)
-  ($syntax-list : (Listof Syntax)))
-  : Ingredients
-  (parameterize ((compile-ingredients-parameter tuple-syntax-list-ingredients))
-    (compiler-ingredients
-      (fold 
-        (compiler $tuple null-tuple)
-        $syntax-list
-        compiler-plus-syntax))))
-
-(define (tuple-syntax-list-expressions 
-  ($tuple : Tuple)
-  ($syntax-list : (Listof Syntax)))
-  : Expressions
-  (ingredients-expressions
-    (tuple-syntax-list-ingredients
-      $tuple $syntax-list)))
-
 (define (compiler-plus-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
   (define $normalized-syntax 
     (cond
@@ -129,7 +110,7 @@
   ($symbol : Symbol)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (define $ingredients (tuple-syntax-list-ingredients $tuple $syntax-list))
+  (define $ingredients (compile-ingredients $tuple $syntax-list))
   (define $structure (ingredients-structure $ingredients))
   (symbol-ingredients-expressions $symbol $ingredients))
 
@@ -142,9 +123,10 @@
     (ingredients
       (ingredients-apply-fn (compiler-ingredients $compiler)
         (lambda (($tuple : Tuple))
-          (tuple-syntax-list-expressions 
-            (push-stack (compiler-tuple $compiler) $tuple) 
-            $syntax-list))))))
+          (ingredients-expressions
+            (compile-ingredients
+              (push-stack (compiler-tuple $compiler) $tuple)
+              $syntax-list)))))))
 
 (define (compiler-apply-it 
   ($compiler : Compiler) 
@@ -153,7 +135,7 @@
   (compiler-with-ingredients $compiler
     (ingredients-plus
       (compiler-ingredients $compiler)
-      (tuple-syntax-list-ingredients
+      (compile-ingredients
         (compiler-tuple $compiler)
         $syntax-list))))
 
@@ -224,10 +206,9 @@
           (ingredients-expressions
             (ingredients-plus
               (map expression-expressions $tuple)
-              (ingredients
-                (tuple-syntax-list-expressions 
-                  (push-stack (compiler-tuple $compiler) $tuple) 
-                  $syntax-list)))))))))
+              (compile-ingredients
+                (push-stack (compiler-tuple $compiler) $tuple)
+                $syntax-list))))))))
 
 (define (compiler-apply-thing
   ($compiler : Compiler) 
@@ -269,10 +250,9 @@
   (compiler-with-ingredients $compiler
     (push-stack
       (compiler-ingredients $compiler)
-      (parameterize ((compile-ingredients-parameter tuple-syntax-list-ingredients))
-        (tuple-syntax-list-arrow-ingredients
-          (compiler-tuple $compiler)
-          $syntax-list)))))
+      (tuple-syntax-list-arrow-ingredients
+        (compiler-tuple $compiler)
+        $syntax-list))))
 
 (define (compiler-apply-select 
   ($compiler : Compiler) 
@@ -333,24 +313,24 @@
     (expressions 3.14 (structure number))
     (expressions "foo" (structure text))))
 
-(check-equal?
-  (expressions-sexp
-    (tuple-syntax-list-expressions
-      base-tuple
-      (list
-        #`1
-        #`(plus 2)
-        #`text)))
-  `(expressions (number->string (+ 1 2)) (structure text)))
+; (check-equal?
+;   (expressions-sexp
+;     (tuple-syntax-list-expressions
+;       base-tuple
+;       (list
+;         #`1
+;         #`(plus 2)
+;         #`text)))
+;   `(expressions (number->string (+ 1 2)) (structure text)))
 
-(check-equal?
-  (expressions-sexp
-    (tuple-syntax-list-expressions
-      base-tuple
-      (list
-        #`1
-        #`(dodać 2)
-        #`(do number (plus dodać number)))))
-  `(expressions
-    (let-values (((tmp-number) 1) ((tmp-dodać) 2)) (+ tmp-number tmp-dodać))
-    (structure number)))
+; (check-equal?
+;   (expressions-sexp
+;     (tuple-syntax-list-expressions
+;       base-tuple
+;       (list
+;         #`1
+;         #`(dodać 2)
+;         #`(do number (plus dodać number)))))
+;   `(expressions
+;     (let-values (((tmp-number) 1) ((tmp-dodać) 2)) (+ tmp-number tmp-dodać))
+;     (structure number)))

@@ -13,7 +13,8 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/ingredients
-  leo/compiler/compiler-plus-syntax)
+  leo/compiler/compiler-plus-syntax
+  leo/compiler/compile-ingredients-top-level)
 
 (define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
   (tuple-syntax-list-ingredients base-tuple $syntax-list))

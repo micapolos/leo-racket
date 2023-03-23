@@ -8,6 +8,7 @@
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expression-utils
+  leo/compiler/ingredients-utils
   leo/compiler/sexp-expression
   leo/compiler/ingredients
   leo/compiler/syntax-utils
@@ -26,9 +27,8 @@
   ($syntax-list : (Listof Syntax))) : Ingredients
   ((compile-ingredients-parameter) $tuple $syntax-list))
 
-(define (recursive-compile-ingredients
-  ($recurse : (-> Tuple (Listof Syntax) Ingredients))
-  ($tuple : Tuple) 
-  ($syntax-list : (Listof Syntax))) : Ingredients
-  (parameterize ((compile-ingredients-parameter $recurse))
+(define (compile-expressions
+  ($tuple : Tuple)
+  ($syntax-list : (Listof Syntax))) : Expressions
+  (ingredients-expressions
     (compile-ingredients $tuple $syntax-list)))
