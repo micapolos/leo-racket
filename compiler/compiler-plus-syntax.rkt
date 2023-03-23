@@ -57,7 +57,7 @@
         ((quote) (compiler-apply-quote $compiler $syntax-list))
         ((racket) (compiler-apply-racket $compiler $syntax-list))
         ((recipe) (compiler-apply-recipe $compiler $syntax-list))
-        ((select) (compiler-apply-select $compiler $syntax-list))
+        ((choice) (compiler-apply-select $compiler $syntax-list))
         ((switch) (compiler-apply-switch $compiler $syntax-list))
         ((time) (compiler-apply-time $compiler $syntax-list))
         ((then) (compiler-apply-then $compiler $syntax-list))
