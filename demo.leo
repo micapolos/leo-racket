@@ -2,5 +2,4 @@
 
 with package base
 
-"Hello, "
-plus "world!"
+boolean true

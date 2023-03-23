@@ -2,12 +2,12 @@
 
 recipe
   boolean true
-  does boolean select
+  does boolean choice
     the true
     not false
 
 recipe
   boolean false
-  does boolean select
+  does boolean choice
     not true
     the false
