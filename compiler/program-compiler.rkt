@@ -68,7 +68,7 @@
         (tuple (expression syntax-a dynamic-type-a))
         (program
           (stack
-            (entry (stack #`tmp-a #`tmp-b) syntax-b))
+            (entry (stack #`tmp-b) syntax-b))
           (ingredients
             (expressions syntax-c (structure dynamic-type-c)))))
       #`"foo"))
@@ -77,7 +77,7 @@
       (tuple (expression syntax-a dynamic-type-a))
       (program
         (stack
-          (entry (stack #`tmp-a #`tmp-b) syntax-b))
+          (entry (stack #`tmp-b) syntax-b))
         (ingredients
           (expressions syntax-c (structure dynamic-type-c))
           (expressions #`"foo" (structure text-type)))))))
@@ -89,7 +89,7 @@
         (tuple (expression syntax-a dynamic-type-a))
         (program
           (stack
-            (entry (stack #`tmp-a #`tmp-b) syntax-b))
+            (entry (stack #`tmp-b) syntax-b))
           (ingredients
             (expressions syntax-c (structure dynamic-type-c)))))
       #`(use "foo" 128)))
@@ -100,7 +100,7 @@
         (expression #`tmp-a dynamic-type-a))
       (program
         (stack
-          (entry (stack #`tmp-a #`tmp-b) syntax-b)
+          (entry (stack #`tmp-b) syntax-b)
           (entry (stack #`tmp-a) #'(compiled "foo" 128)))
         (ingredients
           (expressions syntax-c (structure dynamic-type-c)))))))
