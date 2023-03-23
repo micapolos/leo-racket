@@ -15,7 +15,9 @@
   leo/compiler/compiler-plus-expressions
   leo/compiler/compile-recursively
   leo/compiler/syntax-type
-  leo/compiler/sexp-expression)
+  leo/compiler/sexp-expression
+  leo/compiler/syntax-utils
+  leo/compiler/module-resolver)
 
 (define (compiler-debug ($compiler : Compiler)) : Compiler 
   (compiler-with-ingredients $compiler
@@ -57,6 +59,13 @@
         (compile-ingredients-recursively
           (compiler-tuple $compiler)
           $syntax-list)))))
+
+(define (compiler-apply-package ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
+  (define $expressions
+    (option-or
+      (syntax-resolve-module (make-syntax `(package ,@$syntax-list)))
+      (error "can not resolve package")))
+  (compiler-plus-expressions $compiler $expressions))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-plus-quoted-tuple $compiler

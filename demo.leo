@@ -1,3 +1,6 @@
 #lang leo
 
-with package text
+with package base
+
+"Hello, "
+plus "world!"
