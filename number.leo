@@ -103,5 +103,6 @@ pi racket
 racket
   number->string
   of recipe
-    number.text
+    number
+    word text
     doing text

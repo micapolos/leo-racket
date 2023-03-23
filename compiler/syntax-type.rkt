@@ -5,7 +5,9 @@
 (require
   leo/typed/base
   leo/typed/stack
+  leo/typed/option
   leo/typed/testing
+  leo/typed/syntax-match
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -33,10 +35,26 @@
           (define $type (single $structure))
           (cond
             ((equal? $symbol `recipe) (car $structure))
+            ((equal? $symbol `word) (word-syntax-list-type $cdr))
             ; TODO: Parse universe / generic / recursive / recurse
             (else (field $symbol $structure))))
         (else (racket))))
     (else (racket))))
+
+(define (word-syntax-list-type ($syntax-list : (Listof Syntax))) : Type
+  (word-syntax-type
+    (option-or
+      (top-option $syntax-list)
+      (error "word requires single syntax"))))
+
+(define (word-syntax-type ($syntax : Syntax)) : Type
+  (option-or
+    (and
+      (symbol? (syntax-e $syntax))
+      (field (syntax-e $syntax) null))
+    (syntax-match-symbol-args $syntax $symbol $args
+      (field $symbol (syntax-list-structure $args)))
+    (error "word type expected")))
 
 (define (syntax-list-structure ($syntax-list : (Listof Syntax))) : Structure
   (foldl
@@ -73,6 +91,9 @@
 (check-equal? (syntax-type #`foo) (field! `foo))
 
 (check-equal? (syntax-type #`(foo)) (field! `foo))
+
+(check-equal? (syntax-type #`number) number-type)
+(check-equal? (syntax-type #`(word number)) (field! `number))
 
 (check-equal?
   (syntax-type #`(recipe foo bar (doing zoo)))
