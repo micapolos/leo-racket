@@ -100,10 +100,6 @@
       null-tuple
       (syntax-e #`(number (does text)))))
   `(ingredients
-   (expressions
-    (lambda (tmp-number) (values))
-    (structure
-     (recipe
-      number
-      (doing
-       (compiled (tuple (expression tmp-number number)) (script text))))))))
+    (expressions
+      (lambda (tmp-number) (compiled text))
+      (structure (recipe number (doing number))))))

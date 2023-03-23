@@ -82,27 +82,25 @@
           (expressions syntax-c (structure dynamic-type-c))
           (expressions #`"foo" (structure text-type)))))))
 
-; (check-equal?
-;   (program-compiler-sexp
-;     (program-compiler-plus-syntax
-;       (program-compiler
-;         (tuple (expression syntax-a dynamic-type-a))
-;         (program
-;           (stack
-;             (entry (stack #`tmp-a #`tmp-b) syntax-b))
-;           (ingredients
-;             (expressions syntax-c (structure dynamic-type-c)))))
-;       #`(use "foo" 128)))
-;   (program-compiler-sexp
-;     (program-compiler
-;       (tuple
-;         (expression syntax-a dynamic-type-a)
-;         (expression #`tmp-compiled
-;           (field! `compiled
-;             (field! `tuple`script text-type number-type)))
-;       (program
-;         (stack
-;           (entry (stack #`tmp-a #`tmp-b) syntax-b)
-;           (entry (stack #`tmp-compiled) #'(cons "foo" 128)))
-;         (ingredients
-;           (expressions syntax-c (structure dynamic-type-c)))))))
+(check-equal?
+  (program-compiler-sexp
+    (program-compiler-plus-syntax
+      (program-compiler
+        (tuple (expression syntax-a dynamic-type-a))
+        (program
+          (stack
+            (entry (stack #`tmp-a #`tmp-b) syntax-b))
+          (ingredients
+            (expressions syntax-c (structure dynamic-type-c)))))
+      #`(use "foo" 128)))
+  (program-compiler-sexp
+    (program-compiler
+      (tuple
+        (expression syntax-a dynamic-type-a)
+        (expression #`tmp-a dynamic-type-a))
+      (program
+        (stack
+          (entry (stack #`tmp-a #`tmp-b) syntax-b)
+          (entry (stack #`tmp-a) #'(compiled "foo" 128)))
+        (ingredients
+          (expressions syntax-c (structure dynamic-type-c)))))))

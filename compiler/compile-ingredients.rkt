@@ -10,18 +10,16 @@
   leo/compiler/expression-utils
   leo/compiler/sexp-expression
   leo/compiler/ingredients
+  leo/compiler/syntax-utils
   leo/compiler/type)
 
 (define compile-ingredients-parameter : (Parameterof (-> Tuple (Listof Syntax) Ingredients))
   (make-parameter
     (lambda (($tuple : Tuple) ($syntax-list : (Listof Syntax))) : Ingredients
       (ingredients
-        (expression-expressions
-          (sexp-expression
-            `(compiled
-              ,(tuple-sexp $tuple)
-              (script
-                ,@(map syntax->datum $syntax-list)))))))))
+        (expressions
+          (make-syntax `(compiled ,@$syntax-list))
+          (tuple-structure $tuple))))))
 
 (define (compile-ingredients
   ($tuple : Tuple) 
