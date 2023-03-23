@@ -165,6 +165,39 @@
 
 ; --------------------------------------------------------------------------
 
+(define (syntax-module-path-option
+  ($syntax : Syntax)) : (Option Module-Path)
+  (syntax-symbol-match-args $syntax `package $args
+    (option-bind
+      (syntax-list-module-components $args)
+      $symbol-stack
+      `(lib
+        ,(string-append
+          (string-join
+            (map symbol->string
+              (cons `leo
+                (cons `package
+                  (reverse $symbol-stack))))
+            "/")
+          ".leo")))))
+
+(check-equal?
+  (syntax-module-path-option
+    #`(package (foo bar)))
+  `(lib "leo/package/foo/bar.leo"))
+
+(check-equal?
+  (syntax-module-path-option
+    #`(package 123))
+  #f)
+
+(check-equal?
+  (syntax-module-path-option
+    #`(not-package (foo bar)))
+  #f)
+
+; --------------------------------------------------------------------------
+
 (define (symbol-stack-plus-type-module-components
   ($symbol-stack : (Stackof Symbol))
   ($type : Type))
@@ -256,6 +289,24 @@
   (option-app expressions-sexp
     (structure-resolve-module
       (structure (field! `package (field! `testing (field! `module))))))
+  (expressions-sexp
+    (expressions
+      #`(let () (local-require (submod (lib "leo/package/testing/module.leo") unsafe))
+        (values tmp-text tmp-number))
+      (structure
+        text-type
+        number-type
+        (field! `color (field! `red))))))
+
+; -------------------------------------------------------------------------------
+
+(define (syntax-resolve-module ($syntax : Syntax)) : (Option Expressions)
+  (option-app module-path-resolve (syntax-module-path-option $syntax)))
+
+(check-equal?
+  (option-app expressions-sexp
+    (syntax-resolve-module
+      #`(package (testing module))))
   (expressions-sexp
     (expressions
       #`(let () (local-require (submod (lib "leo/package/testing/module.leo") unsafe))
