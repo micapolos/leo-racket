@@ -165,7 +165,7 @@
 (check-equal?
   (syntax->datum
     (entry-stack-do-syntax null syntax-a))
-  `a)
+  (syntax->datum syntax-a))
 
 (check-equal?
   (bind $tmp-syntax-a (tmp-syntax-a)
@@ -173,21 +173,27 @@
       (entry-stack-do-syntax
         (stack (entry (stack $tmp-syntax-a) syntax-b))
         $tmp-syntax-a)))
-  `b)
+  (syntax->datum syntax-b))
 
 (check-equal?
   (syntax->datum
     (entry-stack-do-syntax
       (stack (entry (stack (tmp-syntax-a)) syntax-b))
-      (tmp-syntax-a)))
-  `(let-values (((tmp-a) b)) tmp-a))
+      syntax-c))
+  (syntax->datum
+    #`(let-values
+      (((#,(tmp-syntax-a)) #,syntax-b))
+      #,syntax-c)))
 
 (check-equal?
   (syntax->datum
     (entry-stack-do-syntax
       (stack (entry (stack (tmp-syntax-a) (tmp-syntax-b)) syntax-c))
-      (tmp-syntax-a)))
-  `(let-values (((tmp-a tmp-b) c)) tmp-a))
+      syntax-d))
+  (syntax->datum
+    #`(let-values
+      (((#,(tmp-syntax-a) #,(tmp-syntax-b)) #,syntax-c))
+      #,syntax-d)))
 
 (check-equal?
   (syntax->datum
@@ -195,5 +201,9 @@
       (stack
         (entry (stack (tmp-syntax-a)) syntax-b)
         (entry (stack (tmp-syntax-c)) syntax-d))
-      (tmp-syntax-a)))
-  `(let-values (((tmp-a) b) ((tmp-c) d)) tmp-a))
+      syntax-a))
+  (syntax->datum
+    #`(let-values
+      (((#,(tmp-syntax-a)) #,syntax-b)
+       ((#,(tmp-syntax-c)) #,syntax-d))
+      #,syntax-a)))
