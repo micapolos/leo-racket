@@ -1,5 +1,6 @@
 #lang leo
 
-"Hello, world!"
-128
-color red
+favourite
+  "Hello, world!"
+  128
+  color red

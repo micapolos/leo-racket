@@ -5,6 +5,7 @@
 (require
   leo/typed/option
   leo/typed/stack
+  leo/typed/syntax-match
   leo/compiler/compiler
   leo/compiler/expression
   leo/compiler/expressions
@@ -13,6 +14,7 @@
   leo/compiler/expressions-utils
   leo/compiler/compiler-plus-expressions
   leo/compiler/compile-recursively
+  leo/compiler/syntax-type
   leo/compiler/sexp-expression)
 
 (define (compiler-debug ($compiler : Compiler)) : Compiler 
@@ -34,13 +36,18 @@
           $syntax-list)))))
 
 (define (compiler-apply-racket ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler 
-  (compiler-with-ingredients $compiler
-    (ingredients-apply-racket 
-      (ingredients-plus 
-        (compiler-ingredients $compiler)
-        (compile-ingredients-recursively
-          (compiler-tuple $compiler)
-          $syntax-list)))))
+  (cond
+    ((null? $syntax-list)
+      (compiler-with-ingredients $compiler
+        (ingredients-apply-racket
+          (compiler-ingredients $compiler))))
+    (else
+      (compiler-with-ingredients $compiler
+        (ingredients-plus
+          (compiler-ingredients $compiler)
+          (ingredients
+            (expression-expressions
+              (syntax-list-racket-expression $syntax-list))))))))
 
 (define (compiler-apply-type ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler 
   (compiler-with-ingredients $compiler
@@ -92,3 +99,17 @@
   (compiler-apply-fn $compiler
     (lambda (($tuple : Tuple))
       (tuple-expressions $tuple))))
+
+(define (syntax-list-racket-expression ($syntax-list : (Listof Syntax))) : Expression
+  (unless (= (length $syntax-list) 2)
+    (error "native syntax error"))
+  (define $syntax-1 (car $syntax-list))
+  (define $syntax-2 (cadr $syntax-list))
+  (or
+    (syntax-symbol-match-args $syntax-2 `of $args
+      (unless (= (length $args) 1)
+        (error "native of single line error"))
+      (expression
+        $syntax-1
+        (syntax-type (car $args))))
+    (error "native of expected")))
