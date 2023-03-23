@@ -16,6 +16,7 @@
   leo/compiler/expression-utils
   leo/compiler/expressions
   leo/compiler/expressions-utils
+  leo/compiler/ingredients
   leo/compiler/sexp-utils)
 
 (define-type Usage (U 'direct 'indirect))
@@ -37,6 +38,12 @@
   `(binder
     ,(option-app entry-sexp (binder-entry-option $binder))
     ,(tuple-sexp (binder-tuple $binder))))
+
+(define (usage-ingredients-binder-stack
+  ($usage : Usage)
+  ($ingredients : Ingredients))
+: (Stackof Binder)
+  (map (curry usage-expressions-binder $usage) $ingredients))
 
 (define (usage-expressions-binder
   ($usage : Usage)

@@ -35,7 +35,7 @@
   ($usage : Usage)
   ($ingredients : Ingredients)
   ($fn : (-> Tuple (Option Expressions)))) : (Option Expressions)
-  (define $binder-stack (map (curry usage-expressions-binder $usage) $ingredients))
+  (define $binder-stack (usage-ingredients-binder-stack $usage $ingredients))
   (define $tuple-stack (map binder-tuple $binder-stack))
   (define $tuple (apply append $tuple-stack))
   (option-bind ($fn $tuple) $expressions
