@@ -132,12 +132,12 @@
     $symbol-stack
     `(lib
       ,(string-append
-        (string-join (map symbol->string (push $symbol-stack `leo)) "/")
+        (string-join (map symbol->string (push-stack $symbol-stack (stack `library `leo))) "/")
         ".leo"))))
 
 (check-equal?
   (structure-module-path-option (structure (field! `foo) (field! `bar)))
-  `(lib "leo/foo/bar.leo"))
+  `(lib "leo/library/foo/bar.leo"))
 
 (check-not
   (structure-module-path-option (structure)))
@@ -153,10 +153,10 @@
 (check-equal?
   (option-app expressions-sexp
     (structure-resolve-module
-      (structure (field! `compiler) (field! `tester))))
+      (structure (field! `testing) (field! `module))))
   (expressions-sexp
     (expressions
-      #`(let () (local-require (submod (lib "leo/compiler/tester.leo") unsafe))
+      #`(let () (local-require (submod (lib "leo/library/testing/module.leo") unsafe))
         (values tmp-text tmp-number))
       (structure
         text-type
