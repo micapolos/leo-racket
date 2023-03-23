@@ -169,7 +169,7 @@
   (option-bind (single $structure) $type
     (and
       (field? $type)
-      (equal? (field-symbol $type) `library)
+      (equal? (field-symbol $type) `package)
       (option-bind
         (structure-module-components (field-structure $type))
         $symbol-stack
@@ -178,7 +178,7 @@
             (string-join
               (map symbol->string
                 (cons `leo
-                  (cons `library
+                  (cons `package
                     (reverse $symbol-stack))))
               "/")
             ".leo"))))))
@@ -187,15 +187,15 @@
   (structure-module-path-option (structure)))
 
 (check-equal?
-  (structure-module-path-option (structure (field! `library)))
-  `(lib "leo/library.leo"))
+  (structure-module-path-option (structure (field! `package)))
+  `(lib "leo/package.leo"))
 
 (check-equal?
-  (structure-module-path-option (structure (field! `library (field! `foo (field! `bar)))))
-  `(lib "leo/library/foo/bar.leo"))
+  (structure-module-path-option (structure (field! `package (field! `foo (field! `bar)))))
+  `(lib "leo/package/foo/bar.leo"))
 
 (check-not
-  (structure-module-path-option (structure (field! `not-library))))
+  (structure-module-path-option (structure (field! `not-package))))
 
 ; -------------------------------------------------------------------------------
 
@@ -205,10 +205,10 @@
 (check-equal?
   (option-app expressions-sexp
     (structure-resolve-module
-      (structure (field! `library (field! `testing (field! `module))))))
+      (structure (field! `package (field! `testing (field! `module))))))
   (expressions-sexp
     (expressions
-      #`(let () (local-require (submod (lib "leo/library/testing/module.leo") unsafe))
+      #`(let () (local-require (submod (lib "leo/package/testing/module.leo") unsafe))
         (values tmp-text tmp-number))
       (structure
         text-type
