@@ -1,5 +1,5 @@
 #lang leo
 
-it boolean
-it number
-it text
+the boolean
+the number
+the text
