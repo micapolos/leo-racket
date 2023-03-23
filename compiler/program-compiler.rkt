@@ -7,7 +7,9 @@
   leo/typed/syntax-match
   leo/compiler/expression
   leo/compiler/program
+  leo/compiler/expressions-binder
   leo/compiler/compiler
+  leo/compiler/compile-ingredients
   leo/compiler/compiler-plus-syntax)
 
 (data program-compiler
@@ -23,7 +25,13 @@
   (or
     (syntax-match-symbol-args $syntax $symbol $args
       (case $syntax
-        ((use with) #f)
+        ((use with)
+          (define $binder-stack
+            (usage-ingredients-binder-stack `indirect
+              (compile-ingredients $tuple $args)))
+          (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
+          (define $binder-tuple (apply append (map binder-tuple $binder-stack)))
+          #f)
         (else #f)))
     (program-compiler
       $tuple
