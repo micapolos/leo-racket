@@ -9,6 +9,7 @@
   leo/typed/option
   leo/typed/stack
   leo/typed/testing
+  leo/compiler/literal
   leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/sexp-utils
@@ -91,6 +92,11 @@
 
 (define (text-expression ($string : String)) 
   (expression (make-syntax $string) text-type))
+
+(define (literal-expression ($literal : Literal))
+  (cond
+    ((string? $literal) (text-expression $literal))
+    ((number? $literal) (number-expression $literal))))
 
 (define (type-expression ($type : Type)) 
   (expression (type-syntax $type) (type-universe $type)))

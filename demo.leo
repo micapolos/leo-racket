@@ -2,5 +2,5 @@
 
 with package base
 
-boolean true
-or boolean false
+2
+plus 2
