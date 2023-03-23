@@ -8,6 +8,7 @@
   leo/typed/syntax-match
   leo/typed/testing
   leo/compiler/ingredients
+  leo/compiler/ingredients-utils
   leo/compiler/expressions
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -104,3 +105,12 @@
           (entry (stack #`tmp-a) #'(compiled "foo" 128)))
         (ingredients
           (expressions syntax-c (structure dynamic-type-c)))))))
+
+(define (program-compiler-ingredients ($program-compiler : Program-Compiler)) : Ingredients
+  (define $program (program-compiler-program $program-compiler))
+  (define $entry-stack (program-entry-stack $program))
+  (define $expressions (ingredients-expressions (program-ingredients $program)))
+  (ingredients
+    (expressions
+      (entry-stack-do-syntax $entry-stack (expressions-syntax $expressions))
+      (expressions-structure $expressions))))
