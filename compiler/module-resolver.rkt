@@ -115,6 +115,56 @@
 
 ; --------------------------------------------------------------------------
 
+(define (symbol-stack-plus-syntax-module-components
+  ($symbol-stack : (Stackof Symbol))
+  ($syntax : Syntax))
+: (Option (Stackof Symbol))
+  (define $e (syntax-e $syntax))
+  (cond
+    ((symbol? $e) (push $symbol-stack $e))
+    (else
+      (syntax-match-symbol-args $syntax $symbol $args
+        (symbol-stack-plus-syntax-list-module-components
+          (push $symbol-stack $symbol)
+          $args)))))
+
+(define (symbol-stack-plus-syntax-list-module-components
+  ($symbol-stack : (Stackof Symbol))
+  ($syntax-list : (Listof Syntax))) : (Option (Stackof Symbol))
+  (cond
+    ((null? $syntax-list) $symbol-stack)
+    (else
+      (option-bind (single $syntax-list) $syntax
+        (symbol-stack-plus-syntax-module-components $symbol-stack $syntax)))))
+
+(define (syntax-module-components ($syntax : Syntax)) : (Option (Stackof Symbol))
+  (symbol-stack-plus-syntax-module-components null $syntax))
+
+(define (syntax-list-module-components ($syntax-list : (Listof Syntax))) : (Option (Stackof Symbol))
+  (symbol-stack-plus-syntax-list-module-components null $syntax-list))
+
+(check-equal?
+  (syntax-module-components #`foo)
+  (stack `foo))
+
+(check-equal?
+  (syntax-module-components #`(foo))
+  (stack `foo))
+
+(check-equal?
+  (syntax-module-components #`(foo bar))
+  (stack `foo `bar))
+
+(check-equal?
+  (syntax-module-components #`123)
+  #f)
+
+(check-equal?
+  (syntax-module-components #`(foo 123))
+  #f)
+
+; --------------------------------------------------------------------------
+
 (define (symbol-stack-plus-type-module-components
   ($symbol-stack : (Stackof Symbol))
   ($type : Type))
