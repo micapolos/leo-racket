@@ -38,9 +38,7 @@
   (syntax-case $syntax ()
     ((_ expr name body ...) 
       #`(let ((name expr))
-        (cond 
-          ((equal? name #f) #f)
-          (else body ...))))))
+        (and name (let () body ...))))))
 
 (check-equal? (option-bind #f value value) #f)
 (check-equal? (option-bind (+ 1 2) value (+ value value)) 6)
