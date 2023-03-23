@@ -31,9 +31,3 @@
     (ingredients-top-level-syntax-stack
       (syntax-list-ingredients
         (map syntax-normalize (map any-syntax $any-list))))))
-
-(check-equal?
-  (leo-compile `("Hello, " (plus "world!")))
-  (pair 
-    `(string-append "Hello, " "world!")
-    (structure text-type)))

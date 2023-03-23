@@ -19,6 +19,7 @@
         ((int) int-type)
         ((float) float-type)
         ((text) text-type)
+        ((boolean) boolean-type)
         (else (field! $syntax-e))))
     ((list? $syntax-e)
       (define $list $syntax-e)
@@ -31,6 +32,7 @@
           (define $structure (syntax-list-structure $cdr))
           (define $type (single $structure))
           (cond
+            ((equal? $symbol `recipe) (car $structure))
             ; TODO: Parse universe / generic / recursive / recurse
             (else (field $symbol $structure))))
         (else (racket))))
@@ -61,7 +63,7 @@
           (define $symbol $car-syntax-e)
           (define $rhs-structure (syntax-list-structure $cdr))
           (cond
-            ((equal? $symbol `giving)
+            ((or (equal? $symbol `giving) (equal? $symbol `doing))
               (list (arrow $structure $rhs-structure)))
             (else (push $structure (syntax-type $syntax)))))
         (else (push $structure (syntax-type $syntax)))))
@@ -71,6 +73,10 @@
 (check-equal? (syntax-type #`foo) (field! `foo))
 
 (check-equal? (syntax-type #`(foo)) (field! `foo))
+
+(check-equal?
+  (syntax-type #`(recipe foo bar (doing zoo)))
+  (arrow (stack (field! `foo) (field! `bar)) (stack (field! `zoo))))
 
 (check-equal? 
   (syntax-type #`(foo number text))

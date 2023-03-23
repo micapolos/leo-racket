@@ -1,7 +1,6 @@
 #lang leo
 
-racket
-  (let ()
-    (local-require racket/math)
-    pi)
-  of number
+use boolean
+use number
+use text
+

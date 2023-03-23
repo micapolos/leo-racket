@@ -1,4 +1,5 @@
 #lang leo
 
-"Hello, "
-plus "world!"
+"Hello, world!"
+128
+color red

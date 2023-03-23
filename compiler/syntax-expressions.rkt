@@ -5,6 +5,7 @@
 (require 
   leo/typed/base
   leo/typed/testing
+  leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/base-tuple
   leo/compiler/syntax-utils
@@ -17,10 +18,10 @@
   leo/compiler/compile)
 
 (define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
-  (compile-ingredients base-tuple $syntax-list))
+  (compile-ingredients null-tuple $syntax-list))
 
 (define (syntax-list-expressions ($syntax-list : (Listof Syntax))) : Expressions
-  (compile-expressions base-tuple $syntax-list))
+  (compile-expressions null-tuple $syntax-list))
 
 (define (sexp-expressions ($sexp : Sexp)) : Expressions
   (define $datum (sexp-datum $sexp))
@@ -28,8 +29,3 @@
     (cond
       ((list? $datum) (map make-syntax $datum))
       (else (list (make-syntax $datum))))))
-
-(check-equal?
-  (expressions-sexp
-    (sexp-expressions `(1 (plus 2) text)))
-  `(expressions (number->string (+ 1 2)) (structure text)))

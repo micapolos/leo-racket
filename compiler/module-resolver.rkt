@@ -156,5 +156,9 @@
       (structure (field! `compiler) (field! `tester))))
   (expressions-sexp
     (expressions
-      #`(let () (local-require (submod (lib "leo/compiler/tester.leo") unsafe)) tmp-text)
-      (structure text-type))))
+      #`(let () (local-require (submod (lib "leo/compiler/tester.leo") unsafe))
+        (values tmp-text tmp-number))
+      (structure
+        text-type
+        number-type
+        (field! `color (field! `red))))))
