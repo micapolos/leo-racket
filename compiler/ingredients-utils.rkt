@@ -41,19 +41,9 @@
   (option-bind ($fn $tuple) $expressions
     (define $syntax (expressions-syntax $expressions))
     (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
-    (define $entry (single $entry-stack))
-    (cond
-      ((and $entry (equal? $syntax (single (entry-identifier-stack $entry))))
-        (expressions (entry-syntax $entry) (expressions-structure $expressions)))
-      ((null? $entry-stack) $expressions)
-      (else 
-        (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
-        (expressions
-          (make-syntax
-            `(let-values 
-              ,(reverse $entry-let-syntax-stack)
-              ,(expressions-syntax $expressions)))
-          (expressions-structure $expressions))))))
+    (expressions
+      (entry-stack-do-syntax $entry-stack $syntax)
+      (expressions-structure $expressions))))
 
 (define (ingredients-resolve-fn
   ($ingredients : Ingredients)

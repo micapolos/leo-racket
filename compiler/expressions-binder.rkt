@@ -141,3 +141,59 @@
   (map expression-syntax
     (apply append
       (map binder-tuple $binder-stack))))
+
+; ---------------------------------------------------------------------
+
+(define (entry-stack-do-syntax
+  ($entry-stack : (Stackof Entry))
+  ($syntax : Syntax))
+: Syntax
+  (define $single-entry (single $entry-stack))
+  (cond
+    ((null? $entry-stack) $syntax)
+    ((and
+      $single-entry
+      (equal? $syntax (single (entry-identifier-stack $single-entry))))
+      (entry-syntax $single-entry))
+    (else
+      (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
+        (make-syntax
+          `(let-values
+            ,(reverse $entry-let-syntax-stack)
+            ,$syntax)))))
+
+(check-equal?
+  (syntax->datum
+    (entry-stack-do-syntax null syntax-a))
+  `a)
+
+(check-equal?
+  (bind $tmp-syntax-a (tmp-syntax-a)
+    (syntax->datum
+      (entry-stack-do-syntax
+        (stack (entry (stack $tmp-syntax-a) syntax-b))
+        $tmp-syntax-a)))
+  `b)
+
+(check-equal?
+  (syntax->datum
+    (entry-stack-do-syntax
+      (stack (entry (stack (tmp-syntax-a)) syntax-b))
+      (tmp-syntax-a)))
+  `(let-values (((tmp-a) b)) tmp-a))
+
+(check-equal?
+  (syntax->datum
+    (entry-stack-do-syntax
+      (stack (entry (stack (tmp-syntax-a) (tmp-syntax-b)) syntax-c))
+      (tmp-syntax-a)))
+  `(let-values (((tmp-a tmp-b) c)) tmp-a))
+
+(check-equal?
+  (syntax->datum
+    (entry-stack-do-syntax
+      (stack
+        (entry (stack (tmp-syntax-a)) syntax-b)
+        (entry (stack (tmp-syntax-c)) syntax-d))
+      (tmp-syntax-a)))
+  `(let-values (((tmp-a) b) ((tmp-c) d)) tmp-a))
