@@ -32,6 +32,9 @@
 (define (type-generate-temporary ($type : Type)) : Identifier
   (symbol-temporary (type-tmp-symbol $type)))
 
+(define (type-generate-temporary-symbol ($type : Type)) : Symbol
+  (syntax-e (type-generate-temporary $type)))
+
 (check-equal?
   (string-prefix?
     (symbol->string (syntax-e (parameterize ((testing? #f)) (type-generate-temporary type-a))))

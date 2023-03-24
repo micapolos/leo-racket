@@ -6,6 +6,8 @@
   leo/typed/maybe
   leo/typed/base
   leo/typed/testing
+  leo/typed/stack
+  leo/typed/syntax-match
   (only-in racket/unsafe/ops unsafe-fx+))
 
 (data environment 
@@ -46,6 +48,25 @@
   (environment-with-updated-current-namespace
     $environment
     (lambda () (namespace-set-variable-value! $symbol $value))))
+
+(define (environment-eval-define
+  ($environment : Environment)
+  ($define : Sexp))
+  : Environment
+  (environment-with-updated-namespace
+    $environment
+    (lambda (($namespace : Namespace))
+      (eval $define $namespace)
+      (void))))
+
+(define (environment-eval-define-stack
+  ($environment : Environment)
+  ($define-stack : (Stackof Sexp)))
+  : Environment
+  (fold
+    $environment
+    (reverse $define-stack)
+    environment-eval-define))
 
 ; -----------------------------------------------------------------------------
 
@@ -126,3 +147,13 @@
     (environment-require base-environment `racket/unsafe/ops)
     `(unsafe-fx+ 1 2))
   3)
+
+; -----------------------------------------------------------------------------
+
+(check-equal?
+  (environment-ref
+    (environment-eval-define
+      base-environment
+      `(define foo (+ 2 3)))
+    `foo)
+  (just 5))
