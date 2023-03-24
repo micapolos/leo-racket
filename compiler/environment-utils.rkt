@@ -18,21 +18,9 @@
   leo/compiler/ingredients-utils
   leo/compiler/expressions-utils
   leo/compiler/module-syntax
+  leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-utils)
-
-(define
-  (environment-plus-ingredients
-    ($environment : Environment)
-    ($ingredients : Ingredients))
-  : Environment
-  (fold
-    $environment
-    (reverse
-      (filter-false
-        (map binder-entry-option
-          (usage-ingredients-binder-stack 'indirect $ingredients))))
-    environment-plus-entry))
 
 (define
   (environment-plus-entry
@@ -46,26 +34,16 @@
 
 (check-equal?
   (bind $enviroment
-    (environment-plus-ingredients
+    (environment-plus-entry
       base-environment
-      (ingredients
-        (expressions #`#f (structure (field! `bool boolean-type)))
-        (expressions #`128 (structure (field! `num number-type)))
-        (expressions
-          #`(values (+ 1 2) (string-append "foo" "bar"))
-          (structure number-type text-type))))
+      (entry
+        (stack #`a #`b #`c)
+        (make-syntax `(values #f (+ 1 2) (string-append "foo" "bar")))))
     (map
       (curry environment-ref $enviroment)
-      (map type-generate-temporary-symbol
-        (stack
-          (field! `bool boolean-type)
-          (field! `num number-type)
-          number-type
-          text-type
-          (field! `absent)))))
+      (stack `a `b `c `foo)))
   (stack
     (just #f)
-    (just 128)
     (just 3)
     (just "foobar")
     #f))
