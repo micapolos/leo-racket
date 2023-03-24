@@ -41,12 +41,8 @@
   leo/compiler/type-utils)
 
 (define (compiler-plus-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
-  (define $normalized-syntax 
-    (cond
-      ((symbol? (syntax-e $syntax)) (make-syntax `(,$syntax)))
-      (else $syntax)))
   (or
-    (syntax-match-symbol-args $normalized-syntax $symbol $syntax-list
+    (syntax-match-symbol-args (field-syntax $syntax) $symbol $syntax-list
       (case $symbol
         ((a) (compiler-apply-a $compiler $syntax-list))
         ((everything) (compiler-apply-everything $compiler $syntax-list))

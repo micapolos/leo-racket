@@ -49,6 +49,11 @@
   (syntax->datum (syntax-normalize #`((1) ((2)) ((3) (3)))))
   `(1 2 (3 3)))
 
+(define (field-syntax ($syntax : Syntax)) : Syntax
+  (cond
+    ((symbol? (syntax-e $syntax)) (make-syntax `(,$syntax)))
+    (else $syntax)))
+
 ; ------------------------------------------------------------------------
 
 (define (syntax-switch-syntax-stack

@@ -280,27 +280,3 @@
     (lambda (($syntaxes : (Listof Syntax)))
       (map syntax->datum $syntaxes)))
   #f)
-
-(define 
-  #:forall (T)
-  (syntax-match-symbol-rhs
-    ($syntax : Syntax)
-    ($symbol : Symbol)
-    ($fn : (-> (Listof Syntax) (Option T)))) : (Option T)
-  (let (($syntax-e (syntax-e $syntax)))
-    (cond
-      ((null? $syntax-e) #f)
-      ((list? $syntax-e)
-        (let* (($syntaxes (cast-syntaxes $syntax-e))
-               ($car (car $syntaxes))
-               ($cdr (cdr $syntaxes)))
-          (and 
-            (equal? (syntax-e $car) $symbol)
-            ($fn $cdr))))
-      (else #f))))
-
-(check-equal?
-  (syntax-match-symbol-rhs #`(point 1 2) `point
-    (lambda ((rhs : (Listof Syntax))) 
-      (map syntax->datum rhs)))
-  `(1 2))
