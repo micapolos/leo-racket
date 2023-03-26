@@ -9,13 +9,9 @@
   leo/typed/testing
   leo/typed/syntax-match
   leo/compiler/compiler
-  leo/compiler/base-tuple
   leo/compiler/switch
-  leo/compiler/sexp-expression
   leo/compiler/generate-temporary
   leo/compiler/expressions
-  leo/compiler/expressions-sexp
-  leo/compiler/sexp-utils
   leo/compiler/expression
   leo/compiler/syntax-utils
   leo/compiler/expression-resolve
@@ -34,10 +30,7 @@
   leo/compiler/select-compiler
   leo/compiler/select-ingredients
   leo/compiler/recipe-compiler
-  leo/compiler/recipe-part
   leo/compiler/type
-  leo/compiler/type-sexp
-  leo/compiler/type-symbol
   leo/compiler/type-utils)
 
 (define (compiler-plus-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
