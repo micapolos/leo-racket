@@ -9,7 +9,6 @@
   leo/compiler/expression
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/typed
   leo/compiler/syntax-utils
   leo/compiler/expression
   leo/compiler/generate-temporary)

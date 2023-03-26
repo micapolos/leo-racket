@@ -11,8 +11,7 @@
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/type-utils
-  leo/compiler/type
-  leo/compiler/typed)
+  leo/compiler/type)
 
 (define (syntax-expression-option ($syntax : Syntax)) : (Option Expression)
   (define $syntax-e (syntax-e $syntax))

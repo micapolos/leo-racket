@@ -6,7 +6,6 @@
   leo/typed/base
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/typed
   leo/compiler/syntax-utils)
 
 (data expressions 

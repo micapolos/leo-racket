@@ -12,7 +12,6 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-symbol
-  leo/compiler/typed
   leo/compiler/syntax-utils
   (for-syntax racket/base))
 

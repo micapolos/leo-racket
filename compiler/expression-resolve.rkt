@@ -20,7 +20,6 @@
   leo/typed/srcloc
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/typed
   leo/compiler/type-match)
 
 (define (tuple-resolve-first-fn ($tuple : Tuple) ($fn : (-> Expression (Option Expressions)))) : (Option Expressions)

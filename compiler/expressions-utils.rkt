@@ -18,7 +18,6 @@
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-match
-  leo/compiler/typed
   leo/compiler/type-utils)
 
 (define static-expressions-a (expressions null-syntax static-structure-a))
