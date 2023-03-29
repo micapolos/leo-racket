@@ -18,6 +18,12 @@
       #`(processor
         (lambda ((var : type)) body ...)))))
 
+(define-syntax (stack-processor! $syntax)
+  (syntax-case $syntax ()
+    ((_ type)
+      (let (($tmp (car (generate-temporaries `(tmp)))))
+        #`(processor! (#,$tmp : type) (stack #,$tmp))))))
+
 (define #:forall (I O)
   (process
     ($processor : (Processor I O))
@@ -50,6 +56,17 @@
     (reverse $input-stack)
     (lambda (($output-stack : (Stackof O)) ($input : I))
       (push-processed $processor $output-stack $input))))
+
+(define #:forall (O)
+  (process-string
+    ($processor : (Processor Char O))
+    ($string : String))
+  : (Stackof O)
+  (process-stack $processor (reverse (string->list $string))))
+
+(check-equal?
+  (process-string (stack-processor! Char) "foo")
+  (stack #\f #\o #\o))
 
 (define #:forall (I M O)
   (processor-compose
