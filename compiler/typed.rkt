@@ -1,7 +1,3 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
-
-(require leo/typed/base)
+#lang leo/typed
 
 (data (Value Type) typed (value : Value) (type : Type))

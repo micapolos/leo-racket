@@ -1,10 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/type)
 
 (define (type-symbol ($type : Type)) : Symbol

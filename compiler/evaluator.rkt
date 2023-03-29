@@ -1,10 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  leo/typed/base
-  leo/typed/stack
   leo/compiler/type)
 
 (data evaluator

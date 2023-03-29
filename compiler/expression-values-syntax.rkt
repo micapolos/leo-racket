@@ -1,10 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/expression
   leo/compiler/type-utils
   leo/compiler/expression-utils
@@ -23,14 +19,14 @@
 
 (check-equal?
   (syntax->datum (tuple-values-syntax null))
-  `(void))
+  `null)
 
 (check-equal?
   (syntax->datum 
     (tuple-values-syntax
       (stack 
         (expression syntax-a static-type-a))))
-  `(void))
+  `null)
 
 (check-equal?
   (syntax->datum 

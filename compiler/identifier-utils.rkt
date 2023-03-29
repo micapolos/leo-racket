@@ -1,9 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  leo/typed/srcloc
   racket/syntax-srcloc)
 
 (define (make-identifier ($srcloc : srcloc) ($symbol : Symbol)) : Identifier

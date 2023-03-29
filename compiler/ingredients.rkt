@@ -1,10 +1,6 @@
-#lang typed/racket/base
+#lang leo/typed
 
-(provide (all-defined-out))
-
-(require 
-  leo/typed/base
-  leo/typed/stack
+(require
   leo/compiler/expressions)
 
 (define-type Ingredients (Stackof Expressions))

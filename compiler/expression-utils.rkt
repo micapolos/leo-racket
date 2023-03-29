@@ -1,14 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require
-  racket/function
-  racket/list
-  leo/typed/base
-  leo/typed/option
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/literal
   leo/compiler/expressions
   leo/compiler/expression
@@ -18,8 +10,7 @@
   leo/compiler/type-match
   leo/compiler/type-sexp
   leo/compiler/type-utils
-  leo/compiler/type-syntax
-  (for-syntax racket/base))
+  leo/compiler/type-syntax)
 
 (define dynamic-expression-a (expression syntax-a dynamic-type-a))
 (define dynamic-expression-b (expression syntax-b dynamic-type-b))

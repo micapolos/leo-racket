@@ -1,8 +1,4 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
-
-(require leo/typed/stack)
+#lang leo/typed
 
 (define-type Body (Stackof Syntax))
 

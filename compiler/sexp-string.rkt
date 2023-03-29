@@ -1,12 +1,7 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  racket/string
   racket/pretty
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/syntax-utils)
 
 (define (sexp-list-string ($sexp-list : (Listof Sexp))) : String

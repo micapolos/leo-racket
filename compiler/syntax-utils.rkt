@@ -1,14 +1,7 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  racket/list
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/testing
-  leo/compiler/sexp-utils
-  leo/typed/srcloc)
+  leo/compiler/sexp-utils)
 
 (define (make-syntax ($datum : (Sexpof Syntax)) ($srcloc : (Option srcloc) #f)) : Syntax
   (datum->syntax #f $datum 

@@ -1,14 +1,8 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/script
-  leo/compiler/syntax-utils
-  leo/typed/srcloc)
+  leo/compiler/syntax-utils)
 
 (define (syntax-line ($syntax : Syntax)) : (Lineof srcloc)
   (define $syntax-e (syntax-e $syntax))

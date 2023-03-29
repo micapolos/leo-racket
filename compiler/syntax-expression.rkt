@@ -1,11 +1,6 @@
-#lang typed/racket/base
+#lang leo/typed
 
-(provide (all-defined-out))
-
-(require 
-  leo/typed/base
-  leo/typed/option
-  leo/typed/testing
+(require
   leo/compiler/sexp-utils
   leo/compiler/syntax-utils
   leo/compiler/expression

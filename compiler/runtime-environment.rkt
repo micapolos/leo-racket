@@ -1,10 +1,4 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
-
-(require
-  leo/typed/base
-  leo/typed/environment)
+#lang leo/typed
 
 (define runtime-environment
   (environment-require

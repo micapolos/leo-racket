@@ -1,11 +1,4 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
-
-(require 
-  leo/typed/base
-  leo/typed/stack
-  (for-syntax racket/base))
+#lang leo/typed
 
 (define-type Type 
   (U 

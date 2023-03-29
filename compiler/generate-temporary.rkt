@@ -1,19 +1,11 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require
-  racket/string
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/option
-  leo/typed/testing
   leo/compiler/expression
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-symbol
-  leo/compiler/syntax-utils
-  (for-syntax racket/base))
+  leo/compiler/syntax-utils)
 
 (define (type-tmp-symbol ($type : Type)) : Symbol
   (bind $type-symbol (type-symbol $type)

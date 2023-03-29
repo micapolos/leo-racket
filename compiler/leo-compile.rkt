@@ -1,19 +1,13 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/testing
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expressions
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils
   leo/compiler/ingredients
-  leo/compiler/module-syntax
-  leo/typed/syntax-match)
+  leo/compiler/module-syntax)
 
 (define (leo-compile ($sexp-list : (Listof Sexp))) : (Pairof Sexp Structure)
   (expressions-sexp-structure

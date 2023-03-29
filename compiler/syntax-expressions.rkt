@@ -1,10 +1,6 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  leo/typed/base
-  leo/typed/testing
   leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/base-tuple

@@ -1,5 +1,3 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (define null-sexp `null)

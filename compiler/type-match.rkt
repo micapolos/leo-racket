@@ -1,14 +1,6 @@
-#lang typed/racket/base
+#lang leo/typed
 
-(provide (all-defined-out))
-
-(require 
-  racket/function
-  racket/list
-  leo/typed/option
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/testing
+(require
   leo/compiler/type)
 
 (define-type Match (Stackof (Option Type)))

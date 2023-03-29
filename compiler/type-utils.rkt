@@ -1,15 +1,8 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
+#lang leo/typed
 
 (require 
-  racket/function
-  leo/typed/option
   leo/compiler/type
-  leo/compiler/type-match
-  leo/typed/base
-  leo/typed/stack
-  leo/typed/testing)
+  leo/compiler/type-match)
 
 (define dynamic-type-a (racket-field `a))
 (define dynamic-type-b (racket-field `b))

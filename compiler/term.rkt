@@ -1,10 +1,4 @@
-#lang typed/racket/base
-
-(provide (all-defined-out))
-
-(require
-  leo/typed/base
-  leo/typed/stack)
+#lang leo/typed
 
 (define-type (Term V)
   (U
