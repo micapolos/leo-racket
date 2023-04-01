@@ -193,9 +193,10 @@
 
 (: parser-map (All (I O1 O2) (-> (Parser I O1) (-> O1 O2) (Parser I O2))))
 (define (parser-map $parser $fn)
-  (parser-then $parser
-    (lambda (($value : O1))
-      (value-parser ($fn $value)))))
+  (parser
+    (option-app $fn (parser-value-option $parser))
+    (lambda (($item : I))
+      (parser-map (parser-plus $parser $item) $fn))))
 
 (define #:forall (I O) (parser-filter ($parser : (Parser I O)) ($fn : (-> O Boolean))) : (Parser I O)
   (parser-map $parser

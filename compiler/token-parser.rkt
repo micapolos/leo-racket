@@ -25,20 +25,26 @@
 
 ; --------------------------------------------------------------
 
-(define word-parser
+(define symbol-fn-parser
   (parser-then
     letter-parser
     (lambda (($letter : Letter))
-      (push-parser (stack $letter) letter-parser))))
+      (parser-map
+        (push-parser (stack $letter) letter-parser)
+        (lambda (($letter-stack : (Stackof Letter)))
+          (lambda ()
+            (string->symbol
+              (list->string
+                (reverse $letter-stack)))))))))
 
 (check-equal?
-  (parser-string-option word-parser)
+  (parser-value-option symbol-fn-parser)
   #f)
 
 (check-equal?
-  (parser-string-option (parser-plus-string word-parser "foo"))
-  "foo")
+  (option-app #%app (parser-value-option (parser-plus-string symbol-fn-parser "foo")))
+  `foo)
 
 (check-fail
-  (parser-plus-string word-parser "fo2")
+  (parser-plus-string symbol-fn-parser "fo2")
   "invalid value: #\\2")
