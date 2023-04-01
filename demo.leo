@@ -1,6 +1,6 @@
 #lang leo
 
-with package base
+use package base
 
 2
 plus 2

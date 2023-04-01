@@ -1,4 +1,15 @@
-#lang leo/typed
+#lang typed/racket/base
+
+(provide (all-defined-out))
+
+(require
+  racket/function
+  leo/typed/base
+  leo/typed/failure
+  leo/typed/option
+  leo/typed/stack
+  leo/typed/testing
+  (for-syntax racket/base))
 
 (data (I O) parser
   (value-option : (Option O))

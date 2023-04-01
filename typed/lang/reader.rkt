@@ -27,6 +27,7 @@
         leo/typed/failure
         leo/typed/maybe
         leo/typed/option
+        leo/typed/parser
         leo/typed/srcloc
         leo/typed/stack
         leo/typed/testing
