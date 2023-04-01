@@ -204,19 +204,19 @@
         (($fn $value) $value)
         (else (error (format "invalid value: ~s" $value)))))))
 
-(: push-parser (All (I O) (-> (Parser I O) (Stackof O) (Parser I (Stackof O)))))
-(define (push-parser $item-parser $value-stack)
+(: push-parser (All (I O) (-> (Stackof O) (Parser I O) (Parser I (Stackof O)))))
+(define (push-parser $value-stack $item-parser)
   (parser-or
     (ann (value-parser $value-stack) (Parser I (Stackof O)))
     (parser-then
       $item-parser
       (lambda (($item : O))
         (push-parser
-          $item-parser
-          (push $value-stack $item))))))
+          (push $value-stack $item)
+          $item-parser)))))
 
 (define #:forall (I O) (stack-parser ($item-parser : (Parser I O))) : (Parser I (Stackof O))
-  (push-parser $item-parser null))
+  (push-parser null $item-parser))
 
 (check-equal?
   (parser-string-option (stack-parser char-parser))
