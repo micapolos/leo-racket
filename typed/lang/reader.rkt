@@ -24,6 +24,7 @@
         racket/string
         leo/typed/base
         leo/typed/environment
+        leo/typed/failure
         leo/typed/maybe
         leo/typed/option
         leo/typed/srcloc
