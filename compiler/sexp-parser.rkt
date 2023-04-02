@@ -102,10 +102,11 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(define digit-parser
-  (parser-map numeric-char-parser
+(define digit-parser : (Parser Exact-Nonnegative-Integer)
+  (parser-map char-parser
     (lambda (($char : Char))
-      (- (char->integer $char) (char->integer #\0)))))
+      (bind $number (- (char->integer $char) (char->integer #\0))
+        (and (>= $number 0) (<= $number 9) $number)))))
 
 (check-equal? (parse digit-parser "") #f)
 (check-equal? (parse digit-parser "0") 0)
@@ -113,6 +114,56 @@
 (check-equal? (parse digit-parser "a") #f)
 (check-equal? (parse digit-parser "0a") #f)
 (check-equal? (parse digit-parser "a0") #f)
+
+(define lazy-exact-nonnegative-integer-parser : (Parser (-> Exact-Nonnegative-Integer))
+  (parser-bind digit-parser
+    (lambda (($digit : Exact-Nonnegative-Integer))
+      (parser-map (push-parser (stack $digit) digit-parser)
+        (lambda (($digit-stack : (Stackof Exact-Nonnegative-Integer)))
+          (lambda ()
+            (fold
+              0
+              (reverse $digit-stack)
+              (lambda (($lhs : Exact-Nonnegative-Integer) ($rhs : Exact-Nonnegative-Integer))
+                (+ (* 10 $lhs) $rhs)))))))))
+
+(bind $parser lazy-exact-nonnegative-integer-parser
+  (check-equal? (option-app #%app (parse $parser "")) #f)
+  (check-equal? (option-app #%app (parse $parser "0")) 0)
+  (check-equal? (option-app #%app (parse $parser "9")) 9)
+  (check-equal? (option-app #%app (parse $parser "123")) 123)
+  (check-equal? (option-app #%app (parse $parser "3.14")) #f)
+  (check-equal?
+    (option-app #%app (parse $parser "123456789012345678901234567890123456789012345678901234567890"))
+    123456789012345678901234567890123456789012345678901234567890))
+
+(define sign-multiplier-parser : (Parser Integer)
+  (parser-or
+    (parser 1)
+    (parser-or
+      (parser-map (exact-char-parser #\+) (lambda ((_ : True)) 1))
+      (parser-map (exact-char-parser #\-) (lambda ((_ : True)) -1)))))
+
+(bind $parser sign-multiplier-parser
+  (check-equal? (parse $parser "") 1)
+  (check-equal? (parse $parser "+") 1)
+  (check-equal? (parse $parser "-") -1)
+  (check-equal? (parse $parser "*") #f))
+
+(define lazy-integer-parser : (Parser (-> Integer))
+  (parser-bind sign-multiplier-parser
+    (lambda (($sign : Integer))
+      (parser-map lazy-exact-nonnegative-integer-parser
+        (lambda (($lazy-exact-nonnegative-integer : (-> Exact-Nonnegative-Integer)))
+          (lambda ()
+            (* $sign ($lazy-exact-nonnegative-integer))))))))
+
+(bind $parser lazy-integer-parser
+  (check-equal? (option-app #%app (parse $parser "")) #f)
+  (check-equal? (option-app #%app (parse $parser "123")) 123)
+  (check-equal? (option-app #%app (parse $parser "+123")) 123)
+  (check-equal? (option-app #%app (parse $parser "-123")) -123)
+  (check-equal? (option-app #%app (parse $parser "*123")) #f))
 
 ; -----------------------------------------------------------------------------------------
 
