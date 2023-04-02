@@ -81,24 +81,73 @@
 
 ; -----------------------------------------------------------------------------------------
 
+(define text-literal-parser
+  (parser-bind (exact-char-parser #\")
+    (lambda ((_ : True))
+      (parser-bind
+        (stack-parser
+          (parser-filter char-parser
+            (lambda (($char : Char)) (not (eqv? $char #\")))))
+        (lambda (($char-stack : (Stackof Char)))
+          (parser-bind (exact-char-parser #\")
+            (lambda ((_ : True))
+              (parser (list->string (reverse $char-stack))))))))))
+
+(check-equal? (parse text-literal-parser "") #f)
+(check-equal? (parse text-literal-parser "\"") #f)
+(check-equal? (parse text-literal-parser "\"\"") "")
+(check-equal? (parse text-literal-parser "\"\"") "")
+(check-equal? (parse text-literal-parser "\"abcABC123\n\"") "abcABC123\n")
+(check-equal? (parse text-literal-parser "\"\"a") #f)
+
+; -----------------------------------------------------------------------------------------
+
+(define digit-parser
+  (parser-map numeric-char-parser
+    (lambda (($char : Char))
+      (- (char->integer $char) (char->integer #\0)))))
+
+(check-equal? (parse digit-parser "") #f)
+(check-equal? (parse digit-parser "0") 0)
+(check-equal? (parse digit-parser "9") 9)
+(check-equal? (parse digit-parser "a") #f)
+(check-equal? (parse digit-parser "0a") #f)
+(check-equal? (parse digit-parser "a0") #f)
+
+; -----------------------------------------------------------------------------------------
+
+(define literal-parser
+  (parser-or
+    text-literal-parser
+    digit-parser))
+
+; -----------------------------------------------------------------------------------------
+
+(define atom-parser
+  (parser-or symbol-parser text-literal-parser))
+
+; -----------------------------------------------------------------------------------------
+
 (define sexp-parser : (Parser Sexp)
-  (parser-bind symbol-parser
-    (lambda (($symbol : Symbol))
-      (parser-or
-        (parser $symbol)
+  (parser-or
+    atom-parser
+    (parser-bind symbol-parser
+      (lambda (($symbol : Symbol))
         (parser-or
-          (parser-bind (exact-char-parser #\space)
-            (lambda ((_ : True))
-              (parser-map sexp-parser
-                (lambda (($sexp : Sexp))
-                  `(,$symbol ,$sexp)))))
-          (parser-bind (exact-char-parser #\newline)
-            (lambda ((_ : True))
-              (parser-map (indented-parser sexp-stack-parser)
-                (lambda (($sexp-stack : (Stackof Sexp)))
-                  (cond
-                    ((null? $sexp-stack) $symbol)
-                    (else `(,$symbol ,@(reverse $sexp-stack)))))))))))))
+          (parser $symbol)
+          (parser-or
+            (parser-bind (exact-char-parser #\space)
+              (lambda ((_ : True))
+                (parser-map sexp-parser
+                  (lambda (($sexp : Sexp))
+                    `(,$symbol ,$sexp)))))
+            (parser-bind (exact-char-parser #\newline)
+              (lambda ((_ : True))
+                (parser-map (indented-parser sexp-stack-parser)
+                  (lambda (($sexp-stack : (Stackof Sexp)))
+                    (cond
+                      ((null? $sexp-stack) $symbol)
+                      (else `(,$symbol ,@(reverse $sexp-stack))))))))))))))
 
 (define sexp-stack-parser : (Parser (Stackof Sexp))
   (stack-parser sexp-parser))
@@ -108,6 +157,8 @@
 
 (define (parse-sexp-list ($string : String)) : (Option (Listof Sexp))
   (option-app reverse (parse sexp-stack-parser $string)))
+
+(check-equal? (parse-sexp "\"one\"") "one")
 
 (check-equal? (parse-sexp "one") `one)
 (check-equal? (parse-sexp "one two") `(one two))
