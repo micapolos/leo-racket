@@ -5,234 +5,311 @@
 (require
   racket/function
   leo/typed/base
-  leo/typed/failure
-  leo/typed/option
   leo/typed/stack
-  leo/typed/testing
-  (for-syntax racket/base))
+  leo/typed/option
+  leo/typed/failure
+  leo/typed/testing)
 
-(data (I O) parser
-  (value-option : (Option O))
-  (plus-fn : (-> I (Parser I O))))
+(define-type (Parser V) (Option (Progress V)))
 
-(define #:forall (I O) (parser-value ($parser : (Parser I O))) : O
-  (or
-    (parser-value-option $parser)
-    (error "parser no value")))
-
-(define #:forall (I) (parser-string-option ($parser : (Parser I (Stackof Char)))) : (Option String)
-  (option-bind (parser-value-option $parser) $char-stack
-    (list->string (reverse $char-stack))))
-
-; ----------------------------------------------------------------------------------------
-
-(define #:forall (I O) (value-parser ($value : O)) : (Parser I O)
-  (parser $value
-    (lambda (($item : I))
-      (error "already parsed"))))
-
-(check-equal?
-  (parser-value (value-parser "foo"))
-  "foo")
-
-(check-fail
-  (parser-value (value-parser #f))
-  "parser no value")
+(data (V) progress
+  (value : (Option V))
+  (plus-fn : (-> Char (Parser V))))
 
 ; -----------------------------------------------------------------------------------------
 
-(define #:forall (I O) (parser-plus ($parser : (Parser I O)) ($item : I)) : (Parser I O)
-  ((parser-plus-fn $parser) $item))
+(define #:forall (V) (parser ($value : (Option V))) : (Parser V)
+  (progress $value (lambda (($char : Char)) #f)))
 
-(check-fail
-  (parser-plus (value-parser "foo") #\a)
-  "already parsed")
+(define #:forall (V) (parser-plus-char ($parser : (Parser V)) ($char : Char)) : (Parser V)
+  (and $parser ((progress-plus-fn $parser) $char)))
 
-; ------------------------------------------------------------------------------------------
-
-(define #:forall (I O) (parser-plus-list ($parser : (Parser I O)) ($item-list : (Listof I))) : (Parser I O)
+(define #:forall (V) (parser-plus-string ($parser : (Parser V)) ($string : String)) : (Parser V)
   (fold
     $parser
-    $item-list
-    (lambda (($parser : (Parser I O)) ($item : I))
-      (parser-plus $parser $item))))
+    (string->list $string)
+    (lambda (($parser : (Parser V)) ($char : Char))
+      (and $parser (parser-plus-char $parser $char)))))
 
-(define #:forall (O) (parser-plus-string ($parser : (Parser Char O)) ($string : String)) : (Parser Char O)
-  (parser-plus-list $parser (string->list $string)))
+(define #:forall (V) (parse ($parser : (Parser V)) ($string : String)) : (Option V)
+  (bind $parser (parser-plus-string $parser $string)
+    (and $parser (progress-value $parser))))
+
+(define (parse-string ($char-stack-parser : (Parser (Stackof Char))) ($string : String)) : (Option String)
+  (option-bind (parser-plus-string $char-stack-parser $string) $progress
+    (option-bind (progress-value $progress) $char-stack
+      (list->string (reverse $char-stack)))))
 
 ; -----------------------------------------------------------------------------------------
 
-(define #:forall (I) (item-parser) : (Parser I I)
-  (parser #f (lambda (($item : I)) (value-parser $item))))
+(define char-parser : (Parser Char)
+  (progress #f
+    (lambda (($char : Char))
+      (parser $char))))
 
 (check-equal?
-  (parser-value-option (parser-plus (item-parser) "foo"))
-  "foo")
-
-(check-fail
-  (parser-plus (parser-plus (item-parser) "foo") "bar")
-  "already parsed")
-
-(define char-parser (ann (item-parser) (Parser Char Char)))
-
-; ------------------------------------------------------------------------------------
-
-(: parser-or (All (I O1 O2) (-> (Parser I O1) (Parser I O2) (Parser I (U O1 O2)))))
-(define (parser-or $lhs-parser $rhs-parser)
-  (parser
-    (or
-      (parser-value-option $lhs-parser)
-      (parser-value-option $rhs-parser))
-    (lambda (($item : I))
-      (bind $lhs-result (or-failure (parser-plus $lhs-parser $item))
-        (cond
-          ((failure? $lhs-result) (parser-plus $rhs-parser $item))
-          (else (parser-or $lhs-result (parser-plus $rhs-parser $item))))))))
-
-(check-equal?
-  (parser-value-option
-    (parser-or
-      (value-parser "foo")
-      (value-parser 128)))
-  "foo")
-
-(check-equal?
-  (parser-value-option
-    (parser-or
-      (value-parser #f)
-      (value-parser 128)))
-  128)
-
-(check-equal?
-  (parser-value-option
-    (parser-or
-      (value-parser "foo")
-      (value-parser #f)))
-  "foo")
-
-(check-equal?
-  (parser-value-option
-    (parser-or
-      (value-parser #f)
-      (value-parser #f)))
-  #f)
-
-; -------------------------------------------------------------------------------------
-
-(: parser-then (All (I O1 O2) (-> (Parser I O1) (-> O1 (Parser I O2)) (Parser I O2))))
-(define (parser-then $parser $fn)
-  (bind $value-option (parser-value-option $parser)
-    (cond
-      ($value-option
-        (bind $then-parser ($fn $value-option)
-          (parser
-            (parser-value-option $then-parser)
-            (lambda (($item : I))
-              (with-handlers
-                ((exn:fail?
-                  (lambda (($exn : exn:fail))
-                    (parser-plus $then-parser $item))))
-                (parser-then (parser-plus $parser $item) $fn))))))
-      (else
-        (parser #f
-          (lambda (($item : I)) : (Parser I O2)
-            (parser-then (parser-plus $parser $item) $fn)))))))
-
-(check-equal?
-  (parser-value-option
-    (parser-then
-      (value-parser "foo")
-      (lambda (($string : String))
-        (value-parser (string-append $string "bar")))))
-  "foobar")
-
-(check-equal?
-  (parser-value-option
-    (parser-then
-      char-parser
-      (lambda (($char : Char)) (value-parser $char))))
+  (parse char-parser "")
   #f)
 
 (check-equal?
-  (parser-value-option
-    (parser-plus-string
-      (parser-then
-        char-parser
-        (lambda (($char : Char))
-          (value-parser $char)))
-      "a"))
+  (parse char-parser "a")
   #\a)
 
 (check-equal?
-  (parser-value-option
-    (parser-plus
-      (parser-then
-        (ann (item-parser) (Parser String String))
-        (lambda (($string-1 : String))
-          (parser-then
-            (ann (item-parser) (Parser String String))
-            (lambda (($string-2 : String))
-              (value-parser (string-append $string-1 $string-2))))))
-      "foo"))
+  (parse char-parser "ab")
+  #f)
+
+; -----------------------------------------------------------------------------------------
+
+(define (char-filter-parser ($fn : (-> Char Boolean))) : (Parser Char)
+  (progress #f
+    (lambda (($char : Char))
+      (and ($fn $char) (parser $char)))))
+
+(bind $parser (char-filter-parser char-numeric?)
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "1") #\1)
+  (check-equal? (parse $parser "a") #f)
+  (check-equal? (parse $parser "12") #f))
+
+; -----------------------------------------------------------------------------------------
+
+(define numeric-char-parser (char-filter-parser char-numeric?))
+(define alphabetic-char-parser (char-filter-parser char-alphabetic?))
+
+; -----------------------------------------------------------------------------------------
+
+(define (exact-char-parser ($char : Char)) : (Parser True)
+  (progress #f
+    (lambda (($next-char : Char))
+      (parser (equal? $char $next-char)))))
+
+(bind $parser (exact-char-parser #\a)
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "a") #t)
+  (check-equal? (parse $parser "b") #f)
+  (check-equal? (parse $parser "ab") #f))
+
+(define dot-char-parser
+  (progress #f
+    (lambda (($first-char : Char))
+      (and (equal? $first-char #\.)
+        (progress #f
+          (lambda (($second-char : Char))
+            (parser $second-char)))))))
+
+(define (dot-last-char-parser ($last-char : (Option Char))) : (Parser Char)
+  (progress $last-char
+    (lambda (($first-char : Char))
+      (and (equal? $first-char #\.)
+        (progress #f
+          (lambda (($second-char : Char))
+            (dot-last-char-parser $second-char)))))))
+
+(bind $parser (dot-last-char-parser #f)
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser ".") #f)
+  (check-equal? (parse $parser ".a") #\a)
+  (check-equal? (parse $parser ".a.") #f)
+  (check-equal? (parse $parser ".a.b") #\b)
+  (check-equal? (parse $parser ".a:") #f)
+  (check-equal? (parse $parser ".a:b") #f)
+  (check-equal? (parse $parser ":a") #f)
+  (check-equal? (parse $parser ":a.") #f)
+  (check-equal? (parse $parser ":a.b") #f))
+
+; -----------------------------------------------------------------------------------------
+
+(define (exact-char-list-parser ($char-list : (Listof Char))) : (Parser True)
+  (cond
+    ((null? $char-list)
+      (parser #t))
+    (else
+      (progress #f
+        (lambda (($char : Char))
+          (and
+            (eqv? $char (car $char-list))
+            (exact-char-list-parser (cdr $char-list))))))))
+
+(define (exact-string-parser ($string : String)) : (Parser True)
+  (exact-char-list-parser (string->list $string)))
+
+(bind $parser (exact-string-parser "")
+  (check-equal? (parse $parser "") #t)
+  (check-equal? (parse $parser "f") #f))
+
+(bind $parser (exact-string-parser "fo")
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "f") #f)
+  (check-equal? (parse $parser "fo") #t)
+  (check-equal? (parse $parser "fof") #f))
+
+; -----------------------------------------------------------------------------------------
+
+(: parser-or-bind : (All (I O) (-> (Parser I) (Parser O) (-> I (Parser O)) (Parser O))))
+(define (parser-or-bind $left-parser $right-parser $fn)
+  (cond
+    ($left-parser
+      (bind $left-value (progress-value $left-parser)
+        (cond
+          ($left-value
+            (bind $new-right-parser ($fn $left-value)
+              (cond
+                ($new-right-parser
+                  (progress
+                    (progress-value $new-right-parser)
+                    (lambda (($char : Char))
+                      (parser-or-bind
+                        (parser-plus-char $left-parser $char)
+                        (parser-plus-char $new-right-parser $char)
+                        $fn))))
+                (else
+                  (progress #f
+                    (lambda (($char : Char))
+                      (parser-or-bind
+                        (parser-plus-char $left-parser $char)
+                        (parser-plus-char $right-parser $char)
+                        $fn)))))))
+          (else
+            (cond
+              ($right-parser
+                (progress
+                  (progress-value $right-parser)
+                  (lambda (($char : Char))
+                      (parser-or-bind
+                        (parser-plus-char $left-parser $char)
+                        (parser-plus-char $right-parser $char)
+                        $fn))))
+              (else
+                (progress #f
+                  (lambda (($char : Char))
+                    (parser-or-bind
+                      (parser-plus-char $left-parser $char)
+                      (parser-plus-char $right-parser $char)
+                      $fn)))))))))
+    (else $right-parser)))
+
+(: parser-bind : (All (I O) (-> (Parser I) (-> I (Parser O)) (Parser O))))
+(define (parser-bind $parser $fn)
+  (parser-or-bind $parser #f $fn))
+
+(bind $parser
+  (parser-bind (dot-last-char-parser #f)
+    (lambda (($char : Char))
+      (parser-bind (exact-char-parser #\.)
+        (lambda ((_ : True))
+          (parser (string $char #\.))))))
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser ".") #f)
+  (check-equal? (parse $parser ".a") #f)
+  (check-equal? (parse $parser ".a.") "a.")
+  (check-equal? (parse $parser ".a.b") #f)
+  (check-equal? (parse $parser ".a.b.") "b."))
+
+(let
+  (($parser (parser-bind #f (lambda (($char : Char)) #f))))
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "a") #f))
+
+(let
+  (($parser (parser-bind char-parser (lambda (($char : Char)) (parser (string $char))))))
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "a") "a")
+  (check-equal? (parse $parser "ab") #f))
+
+(let
+  (($parser
+    (parser-bind char-parser
+      (lambda (($left-char : Char))
+        (parser-bind char-parser
+          (lambda (($right-char : Char))
+            (parser (string $left-char $right-char))))))))
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "a") #f)
+  (check-equal? (parse $parser "ab") "ab")
+  (check-equal? (parse $parser "abc") #f))
+
+; ---------------------------------------------------------------------------------------
+
+(: parser-map : (All (I O) (-> (Parser I) (-> I O) (Parser O))))
+(define (parser-map $parser $fn)
+  (parser-bind $parser
+    (lambda (($value : I))
+      (parser ($fn $value)))))
+
+(: parser-filter : (All (V) (-> (Parser V) (-> V Boolean) (Parser V))))
+(define (parser-filter $parser $fn)
+  (parser-bind $parser
+    (lambda (($value : V))
+      (and ($fn $value) (parser $value)))))
+
+(check-equal?
+  (parse (parser-filter char-parser char-alphabetic?) "")
   #f)
 
 (check-equal?
-  (parser-value-option
-    (parser-plus-list
-      (parser-then
-        (ann (item-parser) (Parser String String))
-        (lambda (($string-1 : String))
-          (parser-then
-            (ann (item-parser) (Parser String String))
-            (lambda (($string-2 : String))
-              (value-parser (string-append $string-1 $string-2))))))
-      (list "foo" "bar")))
-  "foobar")
+  (parse (parser-filter char-parser char-alphabetic?) "a")
+  #\a)
 
-; -----------------------------------------------------------------------------------
+(check-equal?
+  (parse (parser-filter char-parser char-alphabetic?) "1")
+  #f)
 
-(: parser-map (All (I O1 O2) (-> (Parser I O1) (-> O1 O2) (Parser I O2))))
-(define (parser-map $parser $fn)
-  (parser
-    (option-app $fn (parser-value-option $parser))
-    (lambda (($item : I))
-      (parser-map (parser-plus $parser $item) $fn))))
+(check-equal?
+  (parse (parser-filter char-parser char-alphabetic?) "ab")
+  #f)
 
-(define #:forall (I O) (parser-filter ($parser : (Parser I O)) ($fn : (-> O Boolean))) : (Parser I O)
-  (parser-map $parser
-    (lambda (($value : O))
+; ---------------------------------------------------------------------------------
+
+(: parser-or : (All (V) (-> (Parser V) (Parser V) (Parser V))))
+(define (parser-or $parser1 $parser2)
+  (cond
+    ($parser1
       (cond
-        (($fn $value) $value)
-        (else (error (format "invalid value: ~s" $value)))))))
+        ($parser2
+          (progress
+            (or
+              (progress-value $parser1)
+              (progress-value $parser2))
+            (lambda (($char : Char))
+              (parser-or
+                (parser-plus-char $parser1 $char)
+                (parser-plus-char $parser2 $char)))))
+        (else $parser1)))
+    (else $parser2)))
 
-(: push-parser (All (I O) (-> (Stackof O) (Parser I O) (Parser I (Stackof O)))))
-(define (push-parser $value-stack $item-parser)
+(bind $parser (parser-or (parser "default") (exact-char-parser #\a))
+  (check-equal? (parse $parser "") "default")
+  (check-equal? (parse $parser "a") #t)
+  (check-equal? (parse $parser "b") #f))
+
+(bind $parser (parser-or (parser-filter char-parser char-alphabetic?) (parser-filter char-parser char-numeric?))
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser "a") #\a)
+  (check-equal? (parse $parser "1") #\1)
+  (check-equal? (parse $parser " ") #f))
+
+; -------------------------------------------------------------------------------
+
+(: push-parser : (All (V) (-> (Stackof V) (Parser V) (Parser (Stackof V)))))
+(define (push-parser $stack $parser)
   (parser-or
-    (ann (value-parser $value-stack) (Parser I (Stackof O)))
-    (parser-then
-      $item-parser
-      (lambda (($item : O))
-        (push-parser
-          (push $value-stack $item)
-          $item-parser)))))
+    (parser $stack)
+    (parser-bind $parser
+      (lambda (($item : V))
+        (push-parser (push $stack $item) $parser)))))
 
-(define #:forall (I O) (stack-parser ($item-parser : (Parser I O))) : (Parser I (Stackof O))
-  (push-parser null $item-parser))
+(: stack-parser : (All (V) (-> (Parser V) (Parser (Stackof V)))))
+(define (stack-parser $parser)
+  (push-parser null $parser))
 
-(check-equal?
-  (parser-string-option (stack-parser char-parser))
-  "")
+(bind $parser (stack-parser dot-char-parser)
+  (check-equal? (parse $parser "") (stack))
 
-(check-equal?
-  (parser-string-option
-    (parser-plus-string
-      (stack-parser char-parser)
-      "a"))
-  "a")
+  (check-equal? (parse $parser ".") #f)
+  (check-equal? (parse $parser ".a") (stack #\a))
+  (check-equal? (parse $parser ":a") #f)
 
-(check-equal?
-  (parser-string-option
-    (parser-plus-string
-      (stack-parser char-parser)
-      "ab"))
-  "ab")
+  (check-equal? (parse $parser ".a.") #f)
+  (check-equal? (parse $parser ".a.b") (stack #\a #\b))
+  (check-equal? (parse $parser ".a:b") #f))
