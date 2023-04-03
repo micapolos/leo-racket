@@ -261,6 +261,31 @@
 
 ; ---------------------------------------------------------------------------------
 
+(define #:forall (V) (prefix-parser ($prefix : (Parser True)) ($parser : (Parser V))) : (Parser V)
+  (parser-bind $prefix
+    (lambda ((_ : True))
+      (parser-bind $parser
+        (lambda (($value : V))
+          (parser $value))))))
+
+(define #:forall (V) (parser-suffix ($parser : (Parser V)) ($suffix : (Parser True))) : (Parser V)
+  (parser-bind $parser
+    (lambda (($value : V))
+      (parser-bind $suffix
+        (lambda ((_ : True))
+          (parser $value))))))
+
+(define #:forall (V) (prefix-parser-suffix ($prefix : (Parser True)) ($parser : (Parser V)) ($suffix : (Parser True))) : (Parser V)
+  (parser-bind $prefix
+    (lambda ((_ : True))
+      (parser-bind $parser
+        (lambda (($value : V))
+          (parser-bind $suffix
+            (lambda ((_ : True))
+              (parser $value))))))))
+
+; ---------------------------------------------------------------------------------
+
 (: parser-or : (All (V) (-> (Parser V) (Parser V) (Parser V))))
 (define (parser-or $parser1 $parser2)
   (cond
@@ -313,3 +338,42 @@
   (check-equal? (parse $parser ".a.") #f)
   (check-equal? (parse $parser ".a.b") (stack #\a #\b))
   (check-equal? (parse $parser ".a:b") #f))
+
+; -----------------------------------------------------------------------------
+
+(: non-empty-stack-parser : (All (V) (-> (Parser V) (Parser (Non-Empty-Stackof V)))))
+(define (non-empty-stack-parser $item-parser)
+  (parser-bind $item-parser
+    (lambda (($item : V))
+      (parser-map
+        (push-parser (stack $item) $item-parser)
+        (lambda (($item-stack : (Stackof V)))
+          (ann
+            (pair (top $item-stack) (pop $item-stack))
+            (Non-Empty-Stackof V)))))))
+
+(bind $parser (non-empty-stack-parser dot-char-parser)
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser ".a") (non-empty-stack #\a))
+  (check-equal? (parse $parser ".a.b") (non-empty-stack #\a #\b))
+  (check-equal? (parse $parser ".a.b.c") (non-empty-stack #\a #\b #\c)))
+
+; -----------------------------------------------------------------------------
+
+(: separated-non-empty-stack-parser : (All (V) (-> (Parser True) (Parser V) (Parser (Non-Empty-Stackof V)))))
+(define (separated-non-empty-stack-parser $separator-parser $item-parser)
+  (parser-bind $item-parser
+    (lambda (($item : V))
+      (parser-map
+        (push-parser (stack $item)
+          (prefix-parser $separator-parser $item-parser))
+        (lambda (($item-stack : (Stackof V)))
+          (ann
+            (pair (top $item-stack) (pop $item-stack))
+            (Non-Empty-Stackof V)))))))
+
+(bind $parser (separated-non-empty-stack-parser (exact-string-parser ", ") dot-char-parser)
+  (check-equal? (parse $parser "") #f)
+  (check-equal? (parse $parser ".a") (non-empty-stack #\a))
+  (check-equal? (parse $parser ".a, .b") (non-empty-stack #\a #\b))
+  (check-equal? (parse $parser ".a, .b, .c") (non-empty-stack #\a #\b #\c)))

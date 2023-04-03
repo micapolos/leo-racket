@@ -130,3 +130,13 @@
       (syntax-srcloc $lhs) 
       (syntax-srcloc $rhs))))
 
+; ----------------------------------------------------------------------------
+
+(define-type (Non-Empty-List V) (Pairof V (Listof V)))
+
+(define #:forall (V) (non-empty-reverse ($list : (Non-Empty-List V))) : (Non-Empty-List V)
+  (bind $reverse (reverse $list)
+    (pair (car $reverse) (cdr $reverse))))
+
+(check-equal? (non-empty-reverse (list 1)) (list 1))
+(check-equal? (non-empty-reverse (list 1 2 3 4)) (list 4 3 2 1))

@@ -45,7 +45,7 @@
 (define (done-remaining-indented-parser $done $remaining $parser)
   (and $parser
     (progress
-      (and (= $done 0) (progress-value $parser))
+      (and (= $remaining 0) (progress-value $parser))
       (lambda (($char : Char))
         (cond
           ((= $remaining 0)
@@ -68,16 +68,16 @@
   (done-remaining-indented-parser 0 2 $parser))
 
 (bind $parser (indented-parser (stack-parser char-parser))
-  (check-equal? (parse-string $parser "") "")
+  (check-equal? (parse-string $parser "") #f)
   (check-equal? (parse-string $parser "\n") #f)
   (check-equal? (parse-string $parser " ") #f)
   (check-equal? (parse-string $parser " \n") #f)
-  (check-equal? (parse-string $parser "  ") #f)
-  (check-equal? (parse-string $parser "  \n") "\n")
-  (check-equal? (parse-string $parser "  a") #f)
-  (check-equal? (parse-string $parser "  ab") #f)
-  (check-equal? (parse-string $parser "  ab\n") "ab\n")
-  (check-equal? (parse-string $parser "  ab\n  cd\n") "ab\ncd\n"))
+  (check-equal? (parse-string $parser "  ") "")
+  (check-equal? (parse-string $parser "  \n") #f)
+  (check-equal? (parse-string $parser "  a") "a")
+  (check-equal? (parse-string $parser "  ab") "ab")
+  (check-equal? (parse-string $parser "  ab\n") #f)
+  (check-equal? (parse-string $parser "  ab\n  cd") "ab\ncd"))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -194,14 +194,22 @@
                     `(,$symbol ,$sexp)))))
             (parser-bind (exact-char-parser #\newline)
               (lambda ((_ : True))
-                (parser-map (indented-parser sexp-stack-parser)
-                  (lambda (($sexp-stack : (Stackof Sexp)))
-                    (cond
-                      ((null? $sexp-stack) $symbol)
-                      (else `(,$symbol ,@(reverse $sexp-stack))))))))))))))
+                (parser-map
+                  (indented-parser
+                    (separated-non-empty-stack-parser
+                      (exact-char-parser #\newline)
+                      sexp-parser))
+                  (lambda (($non-empty-sexp-stack : (Non-Empty-Stackof Sexp)))
+                    `(,$symbol ,@(reverse $non-empty-sexp-stack))))))))))))
+
+(define sexp-line-parser : (Parser Sexp)
+  (parser-bind sexp-parser
+    (lambda (($sexp : Sexp))
+      (parser-map (exact-char-parser #\newline)
+        (lambda ((_ : True)) $sexp)))))
 
 (define sexp-stack-parser : (Parser (Stackof Sexp))
-  (stack-parser sexp-parser))
+  (stack-parser sexp-line-parser))
 
 (define (parse-sexp ($string : String)) : (Option Sexp)
   (parse sexp-parser $string))
@@ -215,15 +223,14 @@
 (check-equal? (parse-sexp "one two") `(one two))
 (check-equal? (parse-sexp "one two three") `(one (two three)))
 
-(check-equal? (parse-sexp "one\n") `one)
-(check-equal? (parse-sexp "one\n  two\n") `(one two))
-(check-equal? (parse-sexp "one\n  two\n    three\n") `(one (two three)))
+(check-equal? (parse-sexp "one\n  two") `(one two))
+(check-equal? (parse-sexp "one\n  two\n    three") `(one (two three)))
 
-(check-equal? (parse-sexp "one\n  two three\n") `(one (two three)))
-(check-equal? (parse-sexp "one two\n  three\n") `(one (two three)))
+(check-equal? (parse-sexp "one\n  two three") `(one (two three)))
+(check-equal? (parse-sexp "one two\n  three") `(one (two three)))
 
-(check-equal? (parse-sexp "one\n  two\n  three\n") `(one two three))
-(check-equal? (parse-sexp "one\n  two too\n  three free\n") `(one (two too) (three free)))
+(check-equal? (parse-sexp "one\n  two\n  three") `(one two three))
+(check-equal? (parse-sexp "one\n  two too\n  three free") `(one (two too) (three free)))
 
 (check-equal? (parse-sexp "") #f)
 (check-equal? (parse-sexp "One") #f)
@@ -231,7 +238,5 @@
 (check-equal? (parse-sexp "123") #f)
 
 (check-equal? (parse-sexp-list "") `())
-(check-equal? (parse-sexp-list "one") `(one))
 (check-equal? (parse-sexp-list "one\n") `(one))
-(check-equal? (parse-sexp-list "one\ntwo") `(one two))
 (check-equal? (parse-sexp-list "one\ntwo\n") `(one two))
