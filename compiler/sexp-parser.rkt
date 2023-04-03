@@ -1,9 +1,7 @@
 #lang leo/typed
 
 (define (char-letter? ($char : Char))
-  (and
-    (char-alphabetic? $char)
-    (char-lower-case? $char)))
+  (and (char>=? $char #\a) (char<=? $char #\z)))
 
 ; -------------------------------------------------------------------
 
@@ -12,31 +10,29 @@
 
 (check-equal? (parse letter-parser "") #f)
 (check-equal? (parse letter-parser "a") #\a)
+(check-equal? (parse letter-parser "ą") #f)
 (check-equal? (parse letter-parser "A") #f)
 (check-equal? (parse letter-parser "1") #f)
 (check-equal? (parse letter-parser "ab") #f)
 
 ; -------------------------------------------------------------------
 
-(define lazy-symbol-parser : (Parser (Lazy Symbol))
-  (parser-bind letter-parser
-    (lambda (($letter : Char))
-      (parser-map
-        (push-parser (stack $letter) letter-parser)
-        (lambda (($char-stack : (Stackof Char)))
-          (lazy
-            (string->symbol (list->string (reverse $char-stack)))))))))
+(data word (non-empty-char-stack : (Non-Empty-Stackof Char)))
 
-(define symbol-parser
-  (parser-map lazy-symbol-parser
-    (lambda (($lazy-symbol : (Lazy Symbol)))
-      (force $lazy-symbol))))
+(define (word-symbol ($word : Word)) : Symbol
+  (string->symbol (list->string (reverse (word-non-empty-char-stack $word)))))
 
-(check-equal? (parse symbol-parser "") #f)
-(check-equal? (parse symbol-parser "a") `a)
-(check-equal? (parse symbol-parser "ab") `ab)
-(check-equal? (parse symbol-parser "ab1") #f)
-(check-equal? (parse symbol-parser "abA") #f)
+(define word-parser : (Parser Word)
+  (parser-map
+    (non-empty-stack-parser letter-parser)
+    word))
+
+(bind parse-symbol (lambda (($string : String)) (option-app word-symbol (parse word-parser $string)))
+  (check-equal? (parse-symbol "") #f)
+  (check-equal? (parse-symbol "a") `a)
+  (check-equal? (parse-symbol "ab") `ab)
+  (check-equal? (parse-symbol "ab1") #f)
+  (check-equal? (parse-symbol "abA") #f))
 
 ; -----------------------------------------------------------------
 
@@ -101,11 +97,13 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(define digit-parser : (Parser Exact-Nonnegative-Integer)
+(define-type Digit (U 0 1 2 3 4 5 6 7 8 9))
+
+(define digit-parser : (Parser Digit)
   (parser-map char-parser
     (lambda (($char : Char))
       (bind $number (- (char->integer $char) (char->integer #\0))
-        (and (>= $number 0) (<= $number 9) $number)))))
+        (and (>= $number 0) (<= $number 9) (cast $number Digit))))))
 
 (check-equal? (parse digit-parser "") #f)
 (check-equal? (parse digit-parser "0") 0)
@@ -114,111 +112,143 @@
 (check-equal? (parse digit-parser "0a") #f)
 (check-equal? (parse digit-parser "a0") #f)
 
-(define lazy-exact-nonnegative-integer-parser : (Parser (Lazy Exact-Nonnegative-Integer))
-  (parser-bind digit-parser
-    (lambda (($digit : Exact-Nonnegative-Integer))
-      (parser-map (push-parser (stack $digit) digit-parser)
-        (lambda (($digit-stack : (Stackof Exact-Nonnegative-Integer)))
-          (lazy
-            (fold
-              0
-              (reverse $digit-stack)
-              (lambda (($lhs : Exact-Nonnegative-Integer) ($rhs : Exact-Nonnegative-Integer))
-                (+ (* 10 $lhs) $rhs)))))))))
+; -----------------------------------------------------------------------------------------
 
-(bind $parser lazy-exact-nonnegative-integer-parser
-  (check-equal? (option-app #%app (parse $parser "")) #f)
-  (check-equal? (option-app #%app (parse $parser "0")) 0)
-  (check-equal? (option-app #%app (parse $parser "9")) 9)
-  (check-equal? (option-app #%app (parse $parser "123")) 123)
-  (check-equal? (option-app #%app (parse $parser "3.14")) #f)
-  (check-equal?
-    (option-app #%app (parse $parser "123456789012345678901234567890123456789012345678901234567890"))
+(define-type Nonnegative-Integer-Literal (Non-Empty-Stackof Digit))
+
+(define
+  (nonnegative-integer-literal-integer
+    ($nonnegative-integer-literal : Nonnegative-Integer-Literal))
+  : Exact-Nonnegative-Integer
+  (fold
+    0
+    (reverse $nonnegative-integer-literal)
+    (lambda (($lhs : Exact-Nonnegative-Integer) ($rhs : Digit))
+      (+ (* 10 $lhs) $rhs))))
+
+(define nonnegative-integer-literal-parser : (Parser Nonnegative-Integer-Literal)
+  (non-empty-stack-parser digit-parser))
+
+(bind parse-integer
+  (lambda (($string : String))
+    (option-app nonnegative-integer-literal-integer
+      (parse nonnegative-integer-literal-parser $string)))
+  (check-equal? (parse-integer "") #f)
+  (check-equal? (parse-integer "0") 0)
+  (check-equal? (parse-integer "9") 9)
+  (check-equal? (parse-integer "123") 123)
+  (check-equal? (parse-integer "3.14") #f)
+  (check-equal? (parse-integer "123456789012345678901234567890123456789012345678901234567890")
     123456789012345678901234567890123456789012345678901234567890))
 
-(define sign-multiplier-parser : (Parser Integer)
-  (parser-or
-    (parser 1)
-    (parser-or
-      (parser-map (exact-char-parser #\+) (lambda ((_ : True)) 1))
-      (parser-map (exact-char-parser #\-) (lambda ((_ : True)) -1)))))
+; ------------------------------------------------------------------------------------
 
-(bind $parser sign-multiplier-parser
-  (check-equal? (parse $parser "") 1)
-  (check-equal? (parse $parser "+") 1)
-  (check-equal? (parse $parser "-") -1)
+(define-type Sign (U 'minus 'plus))
+
+(define (sign-multiplier ($sign : Sign))
+  (case $sign
+    ((minus) -1)
+    ((plus) 1)))
+
+(define sign-parser : (Parser Sign)
+  (parser-or
+    (parser-map (exact-char-parser #\+) (lambda ((_ : True)) `plus))
+    (parser-map (exact-char-parser #\-) (lambda ((_ : True)) `minus))))
+
+(bind $parser sign-parser
+  (check-equal? (parse $parser "+") `plus)
+  (check-equal? (parse $parser "-") `minus)
   (check-equal? (parse $parser "*") #f))
 
-(define lazy-integer-parser : (Parser (Lazy Integer))
-  (parser-bind sign-multiplier-parser
-    (lambda (($sign : Integer))
-      (parser-map lazy-exact-nonnegative-integer-parser
-        (lambda (($lazy-exact-nonnegative-integer : (Lazy Exact-Nonnegative-Integer)))
-          (lazy
-            (* $sign ($lazy-exact-nonnegative-integer))))))))
+; --------------------------------------------------------------------------------------
 
-(bind $parser lazy-integer-parser
-  (check-equal? (option-app #%app (parse $parser "")) #f)
-  (check-equal? (option-app #%app (parse $parser "123")) 123)
-  (check-equal? (option-app #%app (parse $parser "+123")) 123)
-  (check-equal? (option-app #%app (parse $parser "-123")) -123)
-  (check-equal? (option-app #%app (parse $parser "*123")) #f))
+(data integer-literal
+  (sign : Sign)
+  (nonnegative-integer-literal : Nonnegative-Integer-Literal))
+
+(define (integer-literal-integer ($integer-literal : Integer-Literal)) : Integer
+  (*
+    (sign-multiplier (integer-literal-sign $integer-literal))
+    (nonnegative-integer-literal-integer
+      (integer-literal-nonnegative-integer-literal $integer-literal))))
+
+(define integer-literal-parser : (Parser Integer-Literal)
+  (parser-bind (parser-or (parser `plus) sign-parser)
+    (lambda (($sign : Sign))
+      (parser-map nonnegative-integer-literal-parser
+        (lambda (($nonnegative-integer-literal : Nonnegative-Integer-Literal))
+          (integer-literal $sign $nonnegative-integer-literal))))))
+
+(bind parse-integer (lambda (($string : String))
+    (option-app integer-literal-integer
+      (parse integer-literal-parser $string)))
+  (check-equal? (parse-integer "") #f)
+  (check-equal? (parse-integer "123") 123)
+  (check-equal? (parse-integer "+123") 123)
+  (check-equal? (parse-integer "-123") -123)
+  (check-equal? (parse-integer "*123") #f))
 
 ; -----------------------------------------------------------------------------------------
 
-(define lazy-literal-parser : (Parser (Lazy Sexp))
+(define-type Literal (U String Integer-Literal))
+
+(define literal-parser : (Parser Literal)
   (parser-or
-    (parser-map text-literal-parser (lambda (($text : String)) (lazy $text)))
-    lazy-integer-parser))
+    text-literal-parser
+    integer-literal-parser))
 
 ; -----------------------------------------------------------------------------------------
 
-(define lazy-sexp-parser : (Parser (Lazy Sexp))
+(data sentence
+  (word : Word)
+  (line-stack : (Stackof Line)))
+
+(define (sentence-sexp ($sentence : Sentence)) : Sexp
+  `(
+    ,(word-symbol (sentence-word $sentence))
+    ,@(reverse (map line-sexp (sentence-line-stack $sentence)))))
+
+(define-type Line (U Word Literal Sentence))
+
+(define (line-sexp ($line : Line)) : Sexp
+  (cond
+    ((word? $line) (word-symbol $line))
+    ((integer-literal? $line) (integer-literal-integer $line))
+    ((string? $line) $line)
+    ((sentence? $line) (sentence-sexp $line))))
+
+(define line-parser : (Parser Line)
   (parser-or
-    lazy-literal-parser
-    (parser-bind lazy-symbol-parser
-      (lambda (($lazy-symbol : (Lazy Symbol)))
+    literal-parser
+    (parser-bind word-parser
+      (lambda (($word : Word))
         (parser-or
-          (parser $lazy-symbol)
+          (parser $word)
           (parser-or
             (parser-bind space-parser
               (lambda ((_ : True))
-                (parser-map lazy-sexp-parser
-                  (lambda (($lazy-sexp : (Lazy Sexp)))
-                    (lazy
-                      `(
-                        ,(force $lazy-symbol)
-                        ,(force $lazy-sexp)))))))
+                (parser-map line-parser
+                  (lambda (($line : Line))
+                    (sentence $word (stack $line))))))
             (parser-bind newlines-parser
               (lambda ((_ : True))
                 (parser-map
                   (indented-parser
                     (separated-non-empty-stack-parser
                       newlines-parser
-                      lazy-sexp-parser))
-                  (lambda (($non-empty-lazy-sexp-stack : (Non-Empty-Stackof (Lazy Sexp))))
-                    (lazy
-                      `(
-                        ,(force $lazy-symbol)
-                        ,@(reverse
-                          (map
-                            (lambda (($lazy-sexp : (Lazy Sexp))) (force $lazy-sexp))
-                            $non-empty-lazy-sexp-stack))))))))))))))
+                      line-parser))
+                  (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
+                    (sentence $word $non-empty-line-stack)))))))))))
 
-(define sexp-line-parser : (Parser Sexp)
-  (parser-bind lazy-sexp-parser
-    (lambda (($lazy-sexp : (Lazy Sexp)))
-      (parser-map newlines-parser
-        (lambda ((_ : True)) (force $lazy-sexp))))))
-
-(define sexp-stack-parser : (Parser (Stackof Sexp))
-  (stack-parser sexp-line-parser))
+(define line-stack-parser : (Parser (Stackof Line))
+  (stack-parser (parser-suffix line-parser newlines-parser)))
 
 (define (parse-sexp ($string : String)) : (Option Sexp)
-  (option-app #%app (parse lazy-sexp-parser $string)))
+  (option-app line-sexp (parse line-parser $string)))
 
 (define (parse-sexp-list ($string : String)) : (Option (Listof Sexp))
-  (option-app reverse (parse (prefix-parser maybe-newlines-parser sexp-stack-parser) $string)))
+  (option-bind (parse (prefix-parser maybe-newlines-parser line-stack-parser) $string) $line-stack
+    (reverse (map line-sexp $line-stack))))
 
 (check-equal? (parse-sexp "\"one\"") "one")
 
@@ -238,6 +268,7 @@
 
 (check-equal? (parse-sexp "") #f)
 (check-equal? (parse-sexp "One") #f)
+(check-equal? (parse-sexp "bąk") #f)
 (check-equal? (parse-sexp "one-two") #f)
 (check-equal? (parse-sexp "123") 123)
 
