@@ -76,24 +76,31 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(define text-literal-parser
-  (parser-bind (exact-char-parser #\")
-    (lambda ((_ : True))
-      (parser-bind
-        (stack-parser
-          (parser-filter char-parser
-            (lambda (($char : Char)) (not (eqv? $char #\")))))
-        (lambda (($char-stack : (Stackof Char)))
-          (parser-bind (exact-char-parser #\")
-            (lambda ((_ : True))
-              (parser (list->string (reverse $char-stack))))))))))
+(data text-literal
+  (char-stack : (Stackof Char)))
 
-(check-equal? (parse text-literal-parser "") #f)
-(check-equal? (parse text-literal-parser "\"") #f)
-(check-equal? (parse text-literal-parser "\"\"") "")
-(check-equal? (parse text-literal-parser "\"\"") "")
-(check-equal? (parse text-literal-parser "\"abcABC123\n\"") "abcABC123\n")
-(check-equal? (parse text-literal-parser "\"\"a") #f)
+(define (text-literal-string ($text-literal : Text-Literal)) : String
+  (list->string (reverse (text-literal-char-stack $text-literal))))
+
+(define text-literal-parser : (Parser Text-Literal)
+  (prefix-parser-suffix
+   (exact-char-parser #\")
+   (parser-map
+     (stack-parser
+       (parser-filter char-parser
+         (lambda (($char : Char)) (not (eqv? $char #\")))))
+     text-literal)
+   (exact-char-parser #\")))
+
+(define (parse-literal-string ($string : String)) : (Option String)
+  (option-app text-literal-string (parse text-literal-parser $string)))
+
+(check-equal? (parse-literal-string "") #f)
+(check-equal? (parse-literal-string "\"") #f)
+(check-equal? (parse-literal-string "\"\"") "")
+(check-equal? (parse-literal-string "\"\"") "")
+(check-equal? (parse-literal-string "\"abcABC123\n\"") "abcABC123\n")
+(check-equal? (parse-literal-string "\"\"a") #f)
 
 ; -----------------------------------------------------------------------------------------
 
@@ -190,7 +197,7 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(define-type Literal (U String Integer-Literal))
+(define-type Literal (U Text-Literal Integer-Literal))
 
 (define literal-parser : (Parser Literal)
   (parser-or
@@ -214,7 +221,7 @@
   (cond
     ((word? $line) (word-symbol $line))
     ((integer-literal? $line) (integer-literal-integer $line))
-    ((string? $line) $line)
+    ((text-literal? $line) (text-literal-string $line))
     ((sentence? $line) (sentence-sexp $line))))
 
 (define line-parser : (Parser Line)
