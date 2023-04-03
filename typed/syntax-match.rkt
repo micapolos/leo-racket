@@ -5,7 +5,9 @@
 (require 
   leo/typed/testing
   leo/typed/option
-  (for-syntax racket/base))
+  (for-syntax
+    racket/base
+    (only-in leo/typed/base fold)))
 
 (define (any-syntax (any : Any)) : Syntax
   (if (syntax? any)
@@ -280,3 +282,18 @@
     (lambda (($syntaxes : (Listof Syntax)))
       (map syntax->datum $syntaxes)))
   #f)
+
+; ----------------------------------------------------------------------------
+
+(define-syntax (syntax-fold $syntax)
+  (syntax-case $syntax ()
+    ((_ op first remaining ...)
+      (fold
+        #`first
+        (syntax-e #`(remaining ...))
+        (lambda ($folded $syntax)
+          #`(op #,$folded #,$syntax))))))
+
+(check-equal?
+  (syntax-fold + 1 2 3)
+  6)
