@@ -211,9 +211,11 @@
   (line-stack : (Stackof Line)))
 
 (define (sentence-sexp ($sentence : Sentence)) : Sexp
-  `(
-    ,(word-symbol (sentence-word $sentence))
-    ,@(reverse (map line-sexp (sentence-line-stack $sentence)))))
+  (define $symbol (word-symbol (sentence-word $sentence)))
+  (define $sexp-list (reverse (map line-sexp (sentence-line-stack $sentence))))
+    (cond
+      ((null? $sexp-list) $symbol)
+      (else `(,$symbol ,@$sexp-list))))
 
 (define-type Line (U Word Literal Sentence))
 
@@ -224,28 +226,30 @@
     ((text-literal? $line) (text-literal-string $line))
     ((sentence? $line) (sentence-sexp $line))))
 
+(define sentence-parser : (Parser Sentence)
+  (parser-bind word-parser
+    (lambda (($word : Word))
+      (parser-or
+        (parser (sentence $word null))
+        (parser-bind space-parser
+          (lambda ((_ : True))
+            (parser-map line-parser
+              (lambda (($line : Line))
+                (sentence $word (stack $line))))))
+        (parser-bind newlines-parser
+          (lambda ((_ : True))
+            (parser-map
+              (indented-parser
+                (separated-non-empty-stack-parser
+                  newlines-parser
+                  line-parser))
+              (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
+                (sentence $word $non-empty-line-stack)))))))))
+
 (define line-parser : (Parser Line)
   (parser-or
     literal-parser
-    (parser-bind word-parser
-      (lambda (($word : Word))
-        (parser-or
-          (parser $word)
-          (parser-or
-            (parser-bind space-parser
-              (lambda ((_ : True))
-                (parser-map line-parser
-                  (lambda (($line : Line))
-                    (sentence $word (stack $line))))))
-            (parser-bind newlines-parser
-              (lambda ((_ : True))
-                (parser-map
-                  (indented-parser
-                    (separated-non-empty-stack-parser
-                      newlines-parser
-                      line-parser))
-                  (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
-                    (sentence $word $non-empty-line-stack)))))))))))
+    sentence-parser))
 
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))

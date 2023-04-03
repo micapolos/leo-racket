@@ -8,7 +8,10 @@
   leo/typed/stack
   leo/typed/option
   leo/typed/failure
-  leo/typed/testing)
+  leo/typed/testing
+  (for-syntax
+    racket/base
+    (only-in leo/typed/base fold)))
 
 (define-type (Parser V) (Option (Progress V)))
 
@@ -291,8 +294,8 @@
 
 ; ---------------------------------------------------------------------------------
 
-(: parser-or : (All (V) (-> (Parser V) (Parser V) (Parser V))))
-(define (parser-or $parser1 $parser2)
+(: parser-or2 : (All (V) (-> (Parser V) (Parser V) (Parser V))))
+(define (parser-or2 $parser1 $parser2)
   (cond
     ($parser1
       (cond
@@ -307,6 +310,15 @@
                 (parser-plus-char $parser2 $char)))))
         (else $parser1)))
     (else $parser2)))
+
+(define-syntax (parser-or $syntax)
+  (syntax-case $syntax ()
+    ((_ first rest ...)
+      (fold
+        #`first
+        (syntax-e #`(rest ...))
+        (lambda ($lhs $rhs)
+          #`(parser-or2 #,$lhs #,$rhs))))))
 
 (bind $parser (parser-or (parser "default") (exact-char-parser #\a))
   (check-equal? (parse $parser "") "default")
