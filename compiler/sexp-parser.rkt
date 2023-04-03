@@ -231,20 +231,32 @@
     (lambda (($word : Word))
       (parser-or
         (parser (sentence $word null))
-        (parser-bind space-parser
-          (lambda ((_ : True))
-            (parser-map line-parser
-              (lambda (($line : Line))
-                (sentence $word (stack $line))))))
-        (parser-bind newlines-parser
-          (lambda ((_ : True))
-            (parser-map
-              (indented-parser
-                (separated-non-empty-stack-parser
-                  newlines-parser
-                  line-parser))
-              (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
-                (sentence $word $non-empty-line-stack)))))))))
+        (parser-map rhs-line-stack-parser
+          (lambda (($rhs-line-stack : (Stackof Line)))
+            (sentence $word $rhs-line-stack)))))))
+
+(define space-line-stack-parser : (Parser (Stackof Line))
+  (parser-bind space-parser
+    (lambda ((_ : True))
+      (parser-map line-parser
+        (lambda (($line : Line))
+          (stack $line))))))
+
+(define newlines-line-stack-parser : (Parser (Stackof Line))
+  (parser-bind newlines-parser
+    (lambda ((_ : True))
+      (parser-map
+        (indented-parser
+          (separated-non-empty-stack-parser
+            newlines-parser
+            line-parser))
+        (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
+          $non-empty-line-stack)))))
+
+(define rhs-line-stack-parser : (Parser (Stackof Line))
+  (parser-or
+    space-line-stack-parser
+    newlines-line-stack-parser))
 
 (define line-parser : (Parser Line)
   (parser-or
