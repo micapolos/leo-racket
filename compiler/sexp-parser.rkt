@@ -60,9 +60,10 @@
 
 (: done-remaining-indented-parser : (All (V) (-> Exact-Nonnegative-Integer Exact-Nonnegative-Integer (Parser V) (Parser V))))
 (define (done-remaining-indented-parser $done $remaining $parser)
-  (and $parser
+  (define $progress-option (parser-progress-option $parser))
+  (and $progress-option
     (progress
-      (and (= $remaining 0) (progress-value $parser))
+      (and (= $remaining 0) (progress-value $progress-option))
       (lambda (($char : Char))
         (cond
           ((= $remaining 0)
@@ -248,6 +249,12 @@
     ((text-literal? $line) (text-literal-string $line))
     ((sentence? $line) (sentence-sexp $line))))
 
+(define line-parser : (Parser Line)
+  (recursive-parser
+    (parser-or
+      literal-parser
+      sentence-parser)))
+
 (define sentence-parser : (Parser Sentence)
   (parser-bind word-parser
     (lambda (($word : Word))
@@ -259,33 +266,23 @@
   (parser null))
 
 (define space-rhs-line-stack-parser : (Parser (Stackof Line))
-  (parser-bind space-parser
-    (lambda ((_ : True))
-      (parser-map line-parser
-        (lambda (($line : Line))
-          (stack $line))))))
+  (prefix-parser
+    space-parser
+    (singleton-stack-parser line-parser)))
 
 (define newline-rhs-line-stack-parser : (Parser (Stackof Line))
-  (parser-bind newlines-parser
-    (lambda ((_ : True))
-      (parser-map
-        (indented-parser
-          (separated-non-empty-stack-parser
-            newlines-parser
-            line-parser))
-        (lambda (($non-empty-line-stack : (Non-Empty-Stackof Line)))
-          $non-empty-line-stack)))))
+  (prefix-parser
+    newlines-parser
+    (indented-parser
+      (separated-non-empty-stack-parser
+        newlines-parser
+        line-parser))))
 
 (define rhs-line-stack-parser : (Parser (Stackof Line))
   (parser-or
     empty-rhs-line-stack-parser
     space-rhs-line-stack-parser
     newline-rhs-line-stack-parser))
-
-(define line-parser : (Parser Line)
-  (parser-or
-    literal-parser
-    sentence-parser))
 
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))

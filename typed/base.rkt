@@ -145,3 +145,16 @@
 
 (check-equal? (non-empty-reverse (list 1)) (list 1))
 (check-equal? (non-empty-reverse (list 1 2 3 4)) (list 4 3 2 1))
+
+; ----------------------------------------------------------------------------
+
+(data (V) recursive (fn : (-> V)))
+
+(define-syntax (recursive! $syntax)
+  (syntax-case $syntax ()
+    ((_ $body ...)
+      #`(recursive
+        (lambda () $body ...)))))
+
+(define #:forall (V) (recurse ($recursive : (Recursive V))) : V
+  (#%app (recursive-fn $recursive)))

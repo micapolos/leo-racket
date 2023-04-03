@@ -13,7 +13,10 @@
     racket/base
     (only-in leo/typed/base fold)))
 
-(define-type (Parser V) (Option (Progress V)))
+(define-type (Parser V)
+  (U
+    (Option (Progress V))
+    (Recursive (Option (Progress V)))))
 
 (data (V) progress
   (value : (Option V))
@@ -21,11 +24,27 @@
 
 ; -----------------------------------------------------------------------------------------
 
+(define #:forall (V) (parser-progress-option ($parser : (Parser V))) : (Option (Progress V))
+  (cond
+    ((recursive? $parser) (recurse $parser))
+    (else $parser)))
+
 (define #:forall (V) (parser ($value : (Option V))) : (Parser V)
   (progress $value (lambda (($char : Char)) #f)))
 
+(define-syntax (recursive-parser $syntax)
+  (syntax-case $syntax ()
+    ((_ $expr)
+      (let (($parser (car (generate-temporaries `(parser)))))
+        #`(recursive!
+          (bind #,$parser $expr
+            (cond
+              ((recursive? #,$parser) (recurse #,$parser))
+              (else #,$parser))))))))
+
 (define #:forall (V) (parser-plus-char ($parser : (Parser V)) ($char : Char)) : (Parser V)
-  (and $parser ((progress-plus-fn $parser) $char)))
+  (option-bind (parser-progress-option $parser) $progress
+    (#%app (progress-plus-fn $progress) $char)))
 
 (define #:forall (V) (parser-plus-string ($parser : (Parser V)) ($string : String)) : (Parser V)
   (fold
@@ -35,11 +54,12 @@
       (and $parser (parser-plus-char $parser $char)))))
 
 (define #:forall (V) (parse ($parser : (Parser V)) ($string : String)) : (Option V)
-  (bind $parser (parser-plus-string $parser $string)
-    (and $parser (progress-value $parser))))
+  (option-app
+    progress-value
+    (parser-progress-option (parser-plus-string $parser $string))))
 
 (define (parse-string ($char-stack-parser : (Parser (Stackof Char))) ($string : String)) : (Option String)
-  (option-bind (parser-plus-string $char-stack-parser $string) $progress
+  (option-bind (parser-progress-option (parser-plus-string $char-stack-parser $string)) $progress
     (option-bind (progress-value $progress) $char-stack
       (list->string (reverse $char-stack)))))
 
@@ -156,20 +176,21 @@
 
 (: parser-or-bind : (All (I O) (-> (Parser I) (Parser O) (-> I (Parser O)) (Parser O))))
 (define (parser-or-bind $left-parser $right-parser $fn)
+  (define $left-progress-option (parser-progress-option $left-parser))
   (cond
-    ($left-parser
-      (bind $left-value (progress-value $left-parser)
+    ($left-progress-option
+      (bind $left-value (progress-value $left-progress-option)
         (cond
           ($left-value
-            (bind $new-right-parser ($fn $left-value)
+            (bind $right-progress-option (parser-progress-option ($fn $left-value))
               (cond
-                ($new-right-parser
+                ($right-progress-option
                   (progress
-                    (progress-value $new-right-parser)
+                    (progress-value $right-progress-option)
                     (lambda (($char : Char))
                       (parser-or-bind
                         (parser-plus-char $left-parser $char)
-                        (parser-plus-char $new-right-parser $char)
+                        (parser-plus-char $right-progress-option $char)
                         $fn))))
                 (else
                   (progress #f
@@ -179,10 +200,11 @@
                         (parser-plus-char $right-parser $char)
                         $fn)))))))
           (else
+            (define $right-progress-option (parser-progress-option $right-parser))
             (cond
-              ($right-parser
+              ($right-progress-option
                 (progress
-                  (progress-value $right-parser)
+                  (progress-value $right-progress-option)
                   (lambda (($char : Char))
                       (parser-or-bind
                         (parser-plus-char $left-parser $char)
@@ -295,21 +317,23 @@
 ; ---------------------------------------------------------------------------------
 
 (: parser-or2 : (All (V) (-> (Parser V) (Parser V) (Parser V))))
-(define (parser-or2 $parser1 $parser2)
+(define (parser-or2 $left-parser $right-parser)
+  (define $left-progress-option (parser-progress-option $left-parser))
   (cond
-    ($parser1
+    ($left-progress-option
+      (define $right-progress-option (parser-progress-option $right-parser))
       (cond
-        ($parser2
+        ($right-progress-option
           (progress
             (or
-              (progress-value $parser1)
-              (progress-value $parser2))
+              (progress-value $left-progress-option)
+              (progress-value $right-progress-option))
             (lambda (($char : Char))
               (parser-or
-                (parser-plus-char $parser1 $char)
-                (parser-plus-char $parser2 $char)))))
-        (else $parser1)))
-    (else $parser2)))
+                (parser-plus-char $left-progress-option $char)
+                (parser-plus-char $right-progress-option $char)))))
+        (else $left-parser)))
+    (else $right-parser)))
 
 (define-syntax (parser-or $syntax)
   (syntax-case $syntax ()
@@ -344,6 +368,11 @@
 (: stack-parser : (All (V) (-> (Parser V) (Parser (Stackof V)))))
 (define (stack-parser $parser)
   (push-parser null $parser))
+
+(define #:forall (V) (singleton-stack-parser ($parser : (Parser V))) : (Parser (Stackof V))
+  (parser-map $parser
+    (lambda (($value : V))
+      (stack $value))))
 
 (bind $parser (stack-parser dot-char-parser)
   (check-equal? (parse $parser "") (stack))
