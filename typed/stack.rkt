@@ -7,6 +7,7 @@
   leo/typed/testing)
 
 (define-type (Stackof A) (Listof A))
+(define-type (Non-Empty-Stackof V) (Pairof V (Listof V)))
 
 ; ----------------------------------------------------------------------
 
@@ -15,6 +16,21 @@
 
 (check-equal?
   (stack 1 2 3)
+  (list 3 2 1))
+
+; ----------------------------------------------------------------------
+
+(define #:forall (A) (non-empty-stack ($value : A) . ($list : A *)) : (Non-Empty-Stackof A)
+  (bind $reverse-list (reverse $list)
+    (cond
+      ((null? $reverse-list) (pair $value null))
+      (else
+        (pair
+          (car $reverse-list)
+          (reverse (pair $value (cdr $reverse-list))))))))
+
+(check-equal?
+  (non-empty-stack 1 2 3)
   (list 3 2 1))
 
 ; ----------------------------------------------------------------------
