@@ -30,10 +30,15 @@
         #:type-name
         #,(datum->syntax syntax (symbol-type-name (syntax->datum #`name)))))))
 
+(define-type (Lazy V) (-> V))
+
 (define-syntax (lazy $syntax)
   (syntax-case $syntax ()
     ((_ body ...)
       #`(lambda () body ...))))
+
+(define #:forall (V) (force ($lazy : (Lazy V))) : V
+  ($lazy))
 
 (define-syntax (bind $syntax)
   (syntax-case $syntax ()

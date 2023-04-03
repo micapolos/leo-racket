@@ -19,19 +19,19 @@
 
 ; -------------------------------------------------------------------
 
-(define symbol-fn-parser
+(define lazy-symbol-parser : (Parser (Lazy Symbol))
   (parser-bind letter-parser
     (lambda (($letter : Char))
       (parser-map
         (push-parser (stack $letter) letter-parser)
         (lambda (($char-stack : (Stackof Char)))
-          (lambda ()
+          (lazy
             (string->symbol (list->string (reverse $char-stack)))))))))
 
 (define symbol-parser
-  (parser-map symbol-fn-parser
-    (lambda (($symbol-fn : (-> Symbol)))
-      ($symbol-fn))))
+  (parser-map lazy-symbol-parser
+    (lambda (($lazy-symbol : (Lazy Symbol)))
+      (force $lazy-symbol))))
 
 (check-equal? (parse symbol-parser "") #f)
 (check-equal? (parse symbol-parser "a") `a)
@@ -167,52 +167,56 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(define literal-parser
+(define lazy-literal-parser : (Parser (Lazy Sexp))
   (parser-or
-    text-literal-parser
-    digit-parser))
+    (parser-map text-literal-parser (lambda (($text : String)) (lambda () $text)))
+    lazy-integer-parser))
 
 ; -----------------------------------------------------------------------------------------
 
-(define atom-parser
-  (parser-or symbol-parser text-literal-parser))
-
-; -----------------------------------------------------------------------------------------
-
-(define sexp-parser : (Parser Sexp)
+(define lazy-sexp-parser : (Parser (Lazy Sexp))
   (parser-or
-    atom-parser
-    (parser-bind symbol-parser
-      (lambda (($symbol : Symbol))
+    lazy-literal-parser
+    (parser-bind lazy-symbol-parser
+      (lambda (($lazy-symbol : (Lazy Symbol)))
         (parser-or
-          (parser $symbol)
+          (parser $lazy-symbol)
           (parser-or
             (parser-bind (exact-char-parser #\space)
               (lambda ((_ : True))
-                (parser-map sexp-parser
-                  (lambda (($sexp : Sexp))
-                    `(,$symbol ,$sexp)))))
+                (parser-map lazy-sexp-parser
+                  (lambda (($lazy-sexp : (-> Sexp)))
+                    (lazy
+                      `(
+                        ,(force $lazy-symbol)
+                        ,(force $lazy-sexp)))))))
             (parser-bind (exact-char-parser #\newline)
               (lambda ((_ : True))
                 (parser-map
                   (indented-parser
                     (separated-non-empty-stack-parser
                       (exact-char-parser #\newline)
-                      sexp-parser))
-                  (lambda (($non-empty-sexp-stack : (Non-Empty-Stackof Sexp)))
-                    `(,$symbol ,@(reverse $non-empty-sexp-stack))))))))))))
+                      lazy-sexp-parser))
+                  (lambda (($non-empty-lazy-sexp-stack : (Non-Empty-Stackof (Lazy Sexp))))
+                    (lazy
+                      `(
+                        ,(force $lazy-symbol)
+                        ,@(reverse
+                          (map
+                            (lambda (($lazy-sexp : (Lazy Sexp))) (force $lazy-sexp))
+                            $non-empty-lazy-sexp-stack))))))))))))))
 
 (define sexp-line-parser : (Parser Sexp)
-  (parser-bind sexp-parser
-    (lambda (($sexp : Sexp))
+  (parser-bind lazy-sexp-parser
+    (lambda (($lazy-sexp : (Lazy Sexp)))
       (parser-map (exact-char-parser #\newline)
-        (lambda ((_ : True)) $sexp)))))
+        (lambda ((_ : True)) (force $lazy-sexp))))))
 
 (define sexp-stack-parser : (Parser (Stackof Sexp))
   (stack-parser sexp-line-parser))
 
 (define (parse-sexp ($string : String)) : (Option Sexp)
-  (parse sexp-parser $string))
+  (option-app #%app (parse lazy-sexp-parser $string)))
 
 (define (parse-sexp-list ($string : String)) : (Option (Listof Sexp))
   (option-app reverse (parse sexp-stack-parser $string)))
@@ -235,7 +239,7 @@
 (check-equal? (parse-sexp "") #f)
 (check-equal? (parse-sexp "One") #f)
 (check-equal? (parse-sexp "one-two") #f)
-(check-equal? (parse-sexp "123") #f)
+(check-equal? (parse-sexp "123") 123)
 
 (check-equal? (parse-sexp-list "") `())
 (check-equal? (parse-sexp-list "one\n") `(one))
