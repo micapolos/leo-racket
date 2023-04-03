@@ -181,7 +181,7 @@
         (parser-or
           (parser $lazy-symbol)
           (parser-or
-            (parser-bind (exact-char-parser #\space)
+            (parser-bind space-parser
               (lambda ((_ : True))
                 (parser-map lazy-sexp-parser
                   (lambda (($lazy-sexp : (Lazy Sexp)))
@@ -189,12 +189,12 @@
                       `(
                         ,(force $lazy-symbol)
                         ,(force $lazy-sexp)))))))
-            (parser-bind (exact-char-parser #\newline)
+            (parser-bind newlines-parser
               (lambda ((_ : True))
                 (parser-map
                   (indented-parser
                     (separated-non-empty-stack-parser
-                      (exact-char-parser #\newline)
+                      newlines-parser
                       lazy-sexp-parser))
                   (lambda (($non-empty-lazy-sexp-stack : (Non-Empty-Stackof (Lazy Sexp))))
                     (lazy
@@ -208,7 +208,7 @@
 (define sexp-line-parser : (Parser Sexp)
   (parser-bind lazy-sexp-parser
     (lambda (($lazy-sexp : (Lazy Sexp)))
-      (parser-map (exact-char-parser #\newline)
+      (parser-map newlines-parser
         (lambda ((_ : True)) (force $lazy-sexp))))))
 
 (define sexp-stack-parser : (Parser (Stackof Sexp))
@@ -228,6 +228,7 @@
 
 (check-equal? (parse-sexp "one\n  two") `(one two))
 (check-equal? (parse-sexp "one\n  two\n    three") `(one (two three)))
+(check-equal? (parse-sexp "one\n\n  two") `(one two))
 
 (check-equal? (parse-sexp "one\n  two three") `(one (two three)))
 (check-equal? (parse-sexp "one two\n  three") `(one (two three)))
@@ -243,3 +244,5 @@
 (check-equal? (parse-sexp-list "") `())
 (check-equal? (parse-sexp-list "one\n") `(one))
 (check-equal? (parse-sexp-list "one\ntwo\n") `(one two))
+
+(check-equal? (parse-sexp-list "one\n\ntwo\n\n") `(one two))

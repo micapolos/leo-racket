@@ -120,6 +120,11 @@
 
 ; -----------------------------------------------------------------------------------------
 
+(define space-parser (exact-char-parser #\space))
+(define newline-parser (exact-char-parser #\newline))
+
+; -----------------------------------------------------------------------------------------
+
 (define (exact-char-list-parser ($char-list : (Listof Char))) : (Parser True)
   (cond
     ((null? $char-list)
@@ -377,3 +382,11 @@
   (check-equal? (parse $parser ".a") (non-empty-stack #\a))
   (check-equal? (parse $parser ".a, .b") (non-empty-stack #\a #\b))
   (check-equal? (parse $parser ".a, .b, .c") (non-empty-stack #\a #\b #\c)))
+
+; ------------------------------------------------------------------------------
+
+(define (one-or-more-parser ($parser : (Parser True)))
+  (parser-map (non-empty-stack-parser $parser)
+    (lambda ((_ : (Non-Empty-Stackof True))) #t)))
+
+(define newlines-parser (one-or-more-parser newline-parser))
