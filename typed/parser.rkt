@@ -385,8 +385,13 @@
 
 ; ------------------------------------------------------------------------------
 
+(define (zero-or-more-parser ($parser : (Parser True)))
+  (parser-map (stack-parser $parser)
+    (lambda ((_ : (Stackof True))) #t)))
+
 (define (one-or-more-parser ($parser : (Parser True)))
   (parser-map (non-empty-stack-parser $parser)
     (lambda ((_ : (Non-Empty-Stackof True))) #t)))
 
 (define newlines-parser (one-or-more-parser newline-parser))
+(define maybe-newlines-parser (zero-or-more-parser newline-parser))

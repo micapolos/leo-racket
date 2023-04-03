@@ -26,3 +26,8 @@
         (leo-compile-any-list
           (parameterize ((read-leo-compiler? #t))
             (read-leo-stxs port src)))))))
+
+; (define (leo-read-syntax src port)
+;   (strip-context
+;     #`(module leo racket/base
+;       #,@(leo-compile-port port))))

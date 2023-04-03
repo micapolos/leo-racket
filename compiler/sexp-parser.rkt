@@ -218,7 +218,7 @@
   (option-app #%app (parse lazy-sexp-parser $string)))
 
 (define (parse-sexp-list ($string : String)) : (Option (Listof Sexp))
-  (option-app reverse (parse sexp-stack-parser $string)))
+  (option-app reverse (parse (prefix-parser maybe-newlines-parser sexp-stack-parser) $string)))
 
 (check-equal? (parse-sexp "\"one\"") "one")
 
@@ -246,3 +246,5 @@
 (check-equal? (parse-sexp-list "one\ntwo\n") `(one two))
 
 (check-equal? (parse-sexp-list "one\n\ntwo\n\n") `(one two))
+
+(check-equal? (parse-sexp-list "\n\none\n\ntwo\n\n") `(one two))

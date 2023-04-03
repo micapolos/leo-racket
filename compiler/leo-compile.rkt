@@ -1,13 +1,15 @@
 #lang leo/typed
 
 (require 
+  racket/port
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expressions
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils
   leo/compiler/ingredients
-  leo/compiler/module-syntax)
+  leo/compiler/module-syntax
+  leo/compiler/sexp-parser)
 
 (define (leo-compile ($sexp-list : (Listof Sexp))) : (Pairof Sexp Structure)
   (expressions-sexp-structure
@@ -25,3 +27,15 @@
     (ingredients-top-level-syntax-stack
       (syntax-list-ingredients
         (map syntax-normalize (map any-syntax $any-list))))))
+
+(define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)
+  (define $string (port->string $port))
+  (define $sexp-list
+    (option-or
+      (parse-sexp-list $string)
+      (error (format "parse error: ~s" $string))))
+  (define $syntax-list
+    (map
+      (lambda (($sexp : Sexp)) (datum->syntax #f $sexp))
+      $sexp-list))
+  (leo-compile-any-list $syntax-list))
