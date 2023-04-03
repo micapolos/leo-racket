@@ -31,7 +31,7 @@
 (check-equal? (parse letter-parser "ą") parse-incomplete-failure) ; TODO invalid-char
 (check-equal? (parse letter-parser "A") parse-incomplete-failure) ; TODO invalid-char
 (check-equal? (parse letter-parser "1") parse-incomplete-failure) ; TODO invalid-char
-(check-equal? (parse letter-parser "ab") parse-complete-failure)
+(check-equal? (parse letter-parser "ab") (failure-at parse-complete (position 1 2)))
 
 ; -------------------------------------------------------------------
 
@@ -95,9 +95,9 @@
 
 (bind $parser (indented-parser (stack-parser char-parser))
   (check-equal? (parse-string $parser "") parse-incomplete-failure)
-  (check-equal? (parse-string $parser "\n") (invalid-expected-char-failure #\newline #\space))
+  (check-equal? (parse-string $parser "\n") (failure-at (invalid-expected-char #\newline #\space) (position 1 1)))
   (check-equal? (parse-string $parser " ") parse-incomplete-failure)
-  (check-equal? (parse-string $parser " \n") (invalid-expected-char-failure #\newline #\space))
+  (check-equal? (parse-string $parser " \n") (failure-at (invalid-expected-char #\newline #\space) (position 1 2)))
   (check-equal? (parse-string $parser "  ") "")
   (check-equal? (parse-string $parser "  \n") parse-incomplete-failure)
   (check-equal? (parse-string $parser "  a") "a")
@@ -134,7 +134,7 @@
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"abcABC123\n\"") "abcABC123\n")
-(check-equal? (parse-literal-string "\"\"a") parse-complete-failure)
+(check-equal? (parse-literal-string "\"\"a") (failure-at parse-complete (position 1 3)))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -150,8 +150,8 @@
 (check-equal? (parse digit-parser "0") 0)
 (check-equal? (parse digit-parser "9") 9)
 (check-equal? (parse digit-parser "a") parse-incomplete-failure)
-(check-equal? (parse digit-parser "0a") parse-complete-failure)
-(check-equal? (parse digit-parser "a0") parse-complete-failure)
+(check-equal? (parse digit-parser "0a") (failure-at parse-complete (position 1 2)))
+(check-equal? (parse digit-parser "a0") (failure-at parse-complete (position 1 2)))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -180,7 +180,7 @@
   (check-equal? (parse-integer "0") 0)
   (check-equal? (parse-integer "9") 9)
   (check-equal? (parse-integer "123") 123)
-  (check-equal? (parse-integer "3.14") parse-complete-failure)
+  (check-equal? (parse-integer "3.14") (failure-at parse-complete (position 1 3)))
   (check-equal? (parse-integer "123456789012345678901234567890123456789012345678901234567890")
     123456789012345678901234567890123456789012345678901234567890))
 
@@ -201,7 +201,7 @@
 (bind $parser sign-parser
   (check-equal? (parse $parser "+") `plus)
   (check-equal? (parse $parser "-") `minus)
-  (check-equal? (parse $parser "*") parse-complete-failure))
+  (check-equal? (parse $parser "*") (failure-at parse-complete (position 1 1))))
 
 ; --------------------------------------------------------------------------------------
 
@@ -232,7 +232,7 @@
   (check-equal? (parse-integer "123") 123)
   (check-equal? (parse-integer "+123") 123)
   (check-equal? (parse-integer "-123") -123)
-  (check-equal? (parse-integer "*123") parse-complete-failure))
+  (check-equal? (parse-integer "*123") (failure-at parse-complete (position 1 2))))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -332,9 +332,9 @@
 (check-equal? (parse-sexp "one\n  two too\n  three free") `(one (two too) (three free)))
 
 (check-equal? (parse-sexp "") parse-incomplete-failure)
-(check-equal? (parse-sexp "One") parse-complete-failure)
-(check-equal? (parse-sexp "bąk") parse-complete-failure)
-(check-equal? (parse-sexp "one-two") parse-complete-failure)
+(check-equal? (parse-sexp "One") (failure-at parse-complete (position 1 2)))
+(check-equal? (parse-sexp "bąk") (failure-at parse-complete (position 1 3)))
+(check-equal? (parse-sexp "one-two") (failure-at parse-complete (position 1 5)))
 (check-equal? (parse-sexp "123") 123)
 
 (check-equal? (parse-sexp-list "") `())
