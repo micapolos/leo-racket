@@ -276,8 +276,8 @@
 
 ; -----------------------------------------------------------------------------------------
 
-(: parser-or-bind : (All (I O) (-> (Parser I) (Parser O) (-> I (Parser O)) (Parser O))))
-(define (parser-or-bind $left-parser $right-parser $fn)
+(: parser-or-bind : (All (I O) (-> (Parser I) (Option (Parser O)) (-> I (Parser O)) (Parser O))))
+(define (parser-or-bind $left-parser $right-parser-option $fn)
   (cond
     ((progress? $left-parser)
       (bind $left-value (progress-value $left-parser)
@@ -298,26 +298,35 @@
                     (lambda (($char : Char))
                       (parser-or-bind
                         (parser-plus-char $left-parser $char)
-                        (parser-plus-char $right-parser $char)
+                        #f
                         $fn)))))))
           (else
-            (cond
-              ((progress? $right-parser)
-                (progress
-                  (progress-value $right-parser)
-                  (lambda (($char : Char))
-                      (parser-or-bind
-                        (parser-plus-char $left-parser $char)
-                        (parser-plus-char $right-parser $char)
-                        $fn))))
-              ((failure? $right-parser)
-                (progress #f
-                  (lambda (($char : Char))
-                    (parser-or-bind
-                      (parser-plus-char $left-parser $char)
-                      (parser-plus-char $right-parser $char)
-                      $fn)))))))))
-    ((failure? $left-parser) $right-parser)))
+            (or
+              (option-bind $right-parser-option $right-parser
+                (cond
+                  ((progress? $right-parser)
+                    (progress
+                      (progress-value $right-parser)
+                      (lambda (($char : Char))
+                          (parser-or-bind
+                            (parser-plus-char $left-parser $char)
+                            (parser-plus-char $right-parser $char)
+                            $fn))))
+                  ((failure? $right-parser)
+                    (progress #f
+                      (lambda (($char : Char))
+                        (parser-or-bind
+                          (parser-plus-char $left-parser $char)
+                          #f
+                          $fn))))))
+              (progress #f
+                (lambda (($char : Char))
+                  (parser-or-bind
+                    (parser-plus-char $left-parser $char)
+                    #f
+                    $fn))))))))
+    ((failure? $left-parser)
+      (or $right-parser-option $left-parser))))
 
 (: parser-bind : (All (I O) (-> (Parser I) (-> I (Parser O)) (Parser O))))
 (define (parser-bind $parser $fn)
@@ -481,11 +490,11 @@
 
   (check-equal? (parse $parser ".") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse $parser ".a") (stack #\a))
-  (check-equal? (parse $parser ":a") (failure-at parse-complete (position 1 1))) ; TODO: Should be invalid-char-failure.
+  (check-equal? (parse $parser ":a") (failure-at (invalid-expected-char #\: #\.) (position 1 1)))
 
   (check-equal? (parse $parser ".a.") (failure-at parse-incomplete (position 1 4)))
   (check-equal? (parse $parser ".a.b") (stack #\a #\b))
-  (check-equal? (parse $parser ".a:b") (failure-at parse-complete (position 1 3)))) ; TODO: Should be invalid-char-failure.
+  (check-equal? (parse $parser ".a:b") (failure-at (invalid-expected-char #\: #\.) (position 1 3))))
 
 ; -----------------------------------------------------------------------------
 

@@ -201,7 +201,7 @@
 (bind $parser sign-parser
   (check-equal? (parse $parser "+") `plus)
   (check-equal? (parse $parser "-") `minus)
-  (check-equal? (parse $parser "*") (failure-at parse-complete (position 1 1))))
+  (check-equal? (parse $parser "*") (failure-at (invalid-expected-char #\* #\-) (position 1 1)))) ; TODO: wrong failure
 
 ; --------------------------------------------------------------------------------------
 
