@@ -229,20 +229,21 @@
 (define sentence-parser : (Parser Sentence)
   (parser-bind word-parser
     (lambda (($word : Word))
-      (parser-or
-        (parser (sentence $word null))
-        (parser-map rhs-line-stack-parser
-          (lambda (($rhs-line-stack : (Stackof Line)))
-            (sentence $word $rhs-line-stack)))))))
+      (parser-map rhs-line-stack-parser
+        (lambda (($rhs-line-stack : (Stackof Line)))
+          (sentence $word $rhs-line-stack))))))
 
-(define space-line-stack-parser : (Parser (Stackof Line))
+(define empty-rhs-line-stack-parser : (Parser (Stackof Line))
+  (parser null))
+
+(define space-rhs-line-stack-parser : (Parser (Stackof Line))
   (parser-bind space-parser
     (lambda ((_ : True))
       (parser-map line-parser
         (lambda (($line : Line))
           (stack $line))))))
 
-(define newlines-line-stack-parser : (Parser (Stackof Line))
+(define newline-rhs-line-stack-parser : (Parser (Stackof Line))
   (parser-bind newlines-parser
     (lambda ((_ : True))
       (parser-map
@@ -255,8 +256,9 @@
 
 (define rhs-line-stack-parser : (Parser (Stackof Line))
   (parser-or
-    space-line-stack-parser
-    newlines-line-stack-parser))
+    empty-rhs-line-stack-parser
+    space-rhs-line-stack-parser
+    newline-rhs-line-stack-parser))
 
 (define line-parser : (Parser Line)
   (parser-or
