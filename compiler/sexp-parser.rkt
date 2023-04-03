@@ -115,12 +115,12 @@
 (check-equal? (parse digit-parser "0a") #f)
 (check-equal? (parse digit-parser "a0") #f)
 
-(define lazy-exact-nonnegative-integer-parser : (Parser (-> Exact-Nonnegative-Integer))
+(define lazy-exact-nonnegative-integer-parser : (Parser (Lazy Exact-Nonnegative-Integer))
   (parser-bind digit-parser
     (lambda (($digit : Exact-Nonnegative-Integer))
       (parser-map (push-parser (stack $digit) digit-parser)
         (lambda (($digit-stack : (Stackof Exact-Nonnegative-Integer)))
-          (lambda ()
+          (lazy
             (fold
               0
               (reverse $digit-stack)
@@ -150,12 +150,12 @@
   (check-equal? (parse $parser "-") -1)
   (check-equal? (parse $parser "*") #f))
 
-(define lazy-integer-parser : (Parser (-> Integer))
+(define lazy-integer-parser : (Parser (Lazy Integer))
   (parser-bind sign-multiplier-parser
     (lambda (($sign : Integer))
       (parser-map lazy-exact-nonnegative-integer-parser
-        (lambda (($lazy-exact-nonnegative-integer : (-> Exact-Nonnegative-Integer)))
-          (lambda ()
+        (lambda (($lazy-exact-nonnegative-integer : (Lazy Exact-Nonnegative-Integer)))
+          (lazy
             (* $sign ($lazy-exact-nonnegative-integer))))))))
 
 (bind $parser lazy-integer-parser
@@ -169,7 +169,7 @@
 
 (define lazy-literal-parser : (Parser (Lazy Sexp))
   (parser-or
-    (parser-map text-literal-parser (lambda (($text : String)) (lambda () $text)))
+    (parser-map text-literal-parser (lambda (($text : String)) (lazy $text)))
     lazy-integer-parser))
 
 ; -----------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@
             (parser-bind (exact-char-parser #\space)
               (lambda ((_ : True))
                 (parser-map lazy-sexp-parser
-                  (lambda (($lazy-sexp : (-> Sexp)))
+                  (lambda (($lazy-sexp : (Lazy Sexp)))
                     (lazy
                       `(
                         ,(force $lazy-symbol)
