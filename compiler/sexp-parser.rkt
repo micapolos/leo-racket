@@ -16,7 +16,6 @@
 (check-equal? (parse letter-parser "1") #f)
 (check-equal? (parse letter-parser "ab") #f)
 
-
 ; -------------------------------------------------------------------
 
 (define lazy-symbol-parser : (Parser (Lazy Symbol))
