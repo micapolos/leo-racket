@@ -1,12 +1,27 @@
 #lang leo/typed
 
-(define (char-letter? ($char : Char))
-  (and (char>=? $char #\a) (char<=? $char #\z)))
+(define (char-letter? ($char : Char)) : Boolean
+  (and
+    (char>=? $char #\a)
+    (char<=? $char #\z)))
 
-; -------------------------------------------------------------------
+(define (opaque-letter? ($any : Any)) : Boolean
+  (and (char? $any) (char-letter? $any)))
 
-(define letter-parser
-  (parser-filter char-parser char-letter?))
+(define-type Letter (Opaque opaque-letter?))
+
+(define-predicate letter? Letter)
+
+(define (letter-char ($letter : Letter)) : Char
+  (cast $letter Char))
+
+(define (char-letter-option ($char : Char)) : (Option Letter)
+  (and (letter? $char) $char))
+
+(define letter-parser : (Parser Letter)
+  (parser-bind char-parser
+    (lambda (($char : Char))
+      (option-app parser (char-letter-option $char)))))
 
 (check-equal? (parse letter-parser "") #f)
 (check-equal? (parse letter-parser "a") #\a)
@@ -17,22 +32,29 @@
 
 ; -------------------------------------------------------------------
 
-(data word (non-empty-char-stack : (Non-Empty-Stackof Char)))
+(data word
+  (non-empty-letter-stack : (Non-Empty-Stackof Letter)))
 
 (define (word-symbol ($word : Word)) : Symbol
-  (string->symbol (list->string (reverse (word-non-empty-char-stack $word)))))
+  (string->symbol
+    (list->string
+      (reverse
+        (map letter-char
+          (word-non-empty-letter-stack $word))))))
 
 (define word-parser : (Parser Word)
   (parser-map
     (non-empty-stack-parser letter-parser)
     word))
 
-(bind parse-symbol (lambda (($string : String)) (option-app word-symbol (parse word-parser $string)))
-  (check-equal? (parse-symbol "") #f)
-  (check-equal? (parse-symbol "a") `a)
-  (check-equal? (parse-symbol "ab") `ab)
-  (check-equal? (parse-symbol "ab1") #f)
-  (check-equal? (parse-symbol "abA") #f))
+(define (parse-word-symbol ($string : String)) : (Option Symbol)
+  (option-app word-symbol (parse word-parser $string)))
+
+(check-equal? (parse-word-symbol "") #f)
+(check-equal? (parse-word-symbol "a") `a)
+(check-equal? (parse-word-symbol "ab") `ab)
+(check-equal? (parse-word-symbol "ab1") #f)
+(check-equal? (parse-word-symbol "abA") #f)
 
 ; -----------------------------------------------------------------
 
