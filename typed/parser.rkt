@@ -100,35 +100,42 @@
     ((progress? $parser) (#%app (progress-plus-fn $parser) $char))
     ((failure? $parser) $parser)))
 
-(define #:forall (V) (parser-plus-string ($parser : (Parser V)) ($string : String)) : (Parser V)
-  (positioned-value
-    (fold
-      (positioned $parser start-position)
-      (string->list $string)
-      (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
-        (define $parser (positioned-value $positioned-parser))
-        (define $position (positioned-position $positioned-parser))
-        (cond
-          ((progress? $parser)
-            (positioned
-              (bind $plus-parser (parser-plus-char $parser $char)
-                (cond
-                  ((progress? $plus-parser) $plus-parser)
-                  ((failure? $plus-parser)
-                    (failure-at
-                      (failure-value $plus-parser)
-                      $position))))
-              (position-plus-char $position $char)))
-          ((failure? $parser)
-            $positioned-parser))))))
+(define #:forall (V)
+  (positioned-parser-plus-string
+    ($initial-positioned-parser : (Positioned (Parser V)))
+    ($string : String))
+  : (Positioned (Parser V))
+  (fold
+    $initial-positioned-parser
+    (string->list $string)
+    (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
+      (define $parser (positioned-value $positioned-parser))
+      (define $position (positioned-position $positioned-parser))
+      (cond
+        ((progress? $parser)
+          (positioned
+            (bind $plus-parser (parser-plus-char $parser $char)
+              (cond
+                ((progress? $plus-parser) $plus-parser)
+                ((failure? $plus-parser)
+                  (failure-at
+                    (failure-value $plus-parser)
+                    $position))))
+            (position-plus-char $position $char)))
+        ((failure? $parser)
+          $positioned-parser)))))
 
-(define #:forall (V) (parse ($parser : (Parser V)) ($string : String)) : (U V (Failure Any))
-  (bind $plus-parser (parser-plus-string $parser $string)
+(define #:forall (V) (parse ($start-parser : (Parser V)) ($string : String)) : (U V (Failure Any))
+  (bind $positioned-parser (positioned-parser-plus-string (positioned $start-parser start-position) $string)
+    (define $parser (positioned-value $positioned-parser))
+    (define $position (positioned-position $positioned-parser))
     (cond
-      ((progress? $plus-parser)
-        (progress-value-or-failure $plus-parser))
-      ((failure? $plus-parser)
-        $plus-parser))))
+      ((progress? $parser)
+        (option-or
+          (progress-value $parser)
+          (failure-at parse-incomplete $position)))
+      ((failure? $parser)
+        $parser))))
 
 (define #:forall (V R) (parse-map ($parser : (Parser V)) ($string : String) ($fn : (-> V R))) : (U R (Failure Any))
   (bind $result (parse $parser $string)
@@ -137,14 +144,9 @@
       (else ($fn $result)))))
 
 (define (parse-string ($char-stack-parser : (Parser (Stackof Char))) ($string : String)) : (U String (Failure Any))
-  (bind $plus-parser (parser-plus-string $char-stack-parser $string)
-    (cond
-      ((progress? $plus-parser)
-        (option-or
-          (option-bind (progress-value $plus-parser) $char-stack
-            (list->string (reverse $char-stack)))
-          parse-incomplete-failure))
-      ((failure? $plus-parser) $plus-parser))))
+  (parse-map $char-stack-parser $string
+    (lambda (($char-stack : (Stackof Char)))
+      (list->string (reverse $char-stack)))))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -155,7 +157,7 @@
 
 (check-equal?
   (parse char-parser "")
-  parse-incomplete-failure)
+  (failure-at parse-incomplete (position 1 1)))
 
 (check-equal?
   (parse char-parser "a")
@@ -175,7 +177,7 @@
         (else (invalid-char-failure $char))))))
 
 (bind $parser (char-filter-parser char-numeric?)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "1") #\1)
   (check-equal? (parse $parser "a") (failure-at (invalid-char #\a) (position 1 1)))
   (check-equal? (parse $parser "12") (failure-at parse-complete (position 1 2))))
@@ -195,7 +197,7 @@
         (else (invalid-expected-char-failure $next-char $char))))))
 
 (bind $parser (exact-char-parser #\a)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") #t)
   (check-equal? (parse $parser "b") (failure-at (invalid-expected-char #\b #\a) (position 1 1)))
   (check-equal? (parse $parser "ab") (failure-at parse-complete (position 1 2))))
@@ -223,10 +225,10 @@
           (invalid-char-failure $first-char))))))
 
 (bind $parser (dot-last-char-parser #f)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
-  (check-equal? (parse $parser ".") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser ".") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse $parser ".a") #\a)
-  (check-equal? (parse $parser ".a.") parse-incomplete-failure)
+  (check-equal? (parse $parser ".a.") (failure-at parse-incomplete (position 1 4)))
   (check-equal? (parse $parser ".a.b") #\b)
   (check-equal? (parse $parser ".a:") (failure-at (invalid-char #\:) (position 1 3)))
   (check-equal? (parse $parser ".a:b") (failure-at (invalid-char #\:) (position 1 3)))
@@ -264,8 +266,8 @@
   (check-equal? (parse $parser "f") (failure-at parse-complete (position 1 1))))
 
 (bind $parser (exact-string-parser "fo")
-  (check-equal? (parse $parser "") parse-incomplete-failure)
-  (check-equal? (parse $parser "f") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser "f") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse $parser "fo") #t)
   (check-equal? (parse $parser "fof") (failure-at parse-complete (position 1 3))))
 
@@ -324,11 +326,11 @@
       (parser-bind (exact-char-parser #\.)
         (lambda ((_ : True))
           (parser (string $char #\.))))))
-  (check-equal? (parse $parser "") parse-incomplete-failure)
-  (check-equal? (parse $parser ".") parse-incomplete-failure)
-  (check-equal? (parse $parser ".a") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser ".") (failure-at parse-incomplete (position 1 2)))
+  (check-equal? (parse $parser ".a") (failure-at parse-incomplete (position 1 3)))
   (check-equal? (parse $parser ".a.") "a.")
-  (check-equal? (parse $parser ".a.b") parse-incomplete-failure)
+  (check-equal? (parse $parser ".a.b") (failure-at parse-incomplete (position 1 5)))
   (check-equal? (parse $parser ".a.b.") "b."))
 
 (let
@@ -338,7 +340,7 @@
 
 (let
   (($parser (parser-bind char-parser (lambda (($char : Char)) (parser (string $char))))))
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") "a")
   (check-equal? (parse $parser "ab") (failure-at parse-complete (position 1 2))))
 
@@ -349,8 +351,8 @@
         (parser-bind char-parser
           (lambda (($right-char : Char))
             (parser (string $left-char $right-char))))))))
-  (check-equal? (parse $parser "") parse-incomplete-failure)
-  (check-equal? (parse $parser "a") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser "a") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse $parser "ab") "ab")
   (check-equal? (parse $parser "abc") (failure-at parse-complete (position 1 3))))
 
@@ -371,9 +373,9 @@
         (else (invalid-value-failure $value))))))
 
 (bind $parser (parser-filter char-parser char-alphabetic?)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") #\a)
-  (check-equal? (parse $parser "1") parse-incomplete-failure) ; TODO: This should be invalid-value-failure!!!
+  (check-equal? (parse $parser "1") (failure-at parse-incomplete (position 1 2))) ; TODO: This should be invalid-value-failure!!!
   (check-equal? (parse $parser "ab") (failure-at parse-complete (position 1 2))))
 
 ; ---------------------------------------------------------------------------------
@@ -435,10 +437,10 @@
   (check-equal? (parse $parser "b") (failure-at (invalid-expected-char #\b #\a) (position 1 1))))
 
 (bind $parser (parser-or (parser-filter char-parser char-alphabetic?) (parser-filter char-parser char-numeric?))
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") #\a)
   (check-equal? (parse $parser "1") #\1)
-  (check-equal? (parse $parser " ") parse-incomplete-failure)) ; TODO: Should be invaid-value-failure!!!
+  (check-equal? (parse $parser " ") (failure-at parse-incomplete (position 1 2)))) ; TODO: Should be invaid-value-failure!!!
 
 ; -------------------------------------------------------------------------------
 
@@ -462,11 +464,11 @@
 (bind $parser (stack-parser dot-char-parser)
   (check-equal? (parse $parser "") (stack))
 
-  (check-equal? (parse $parser ".") parse-incomplete-failure)
+  (check-equal? (parse $parser ".") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse $parser ".a") (stack #\a))
   (check-equal? (parse $parser ":a") (failure-at parse-complete (position 1 1))) ; TODO: Should be invalid-char-failure.
 
-  (check-equal? (parse $parser ".a.") parse-incomplete-failure)
+  (check-equal? (parse $parser ".a.") (failure-at parse-incomplete (position 1 4)))
   (check-equal? (parse $parser ".a.b") (stack #\a #\b))
   (check-equal? (parse $parser ".a:b") (failure-at parse-complete (position 1 3)))) ; TODO: Should be invalid-char-failure.
 
@@ -484,7 +486,7 @@
             (Non-Empty-Stackof V)))))))
 
 (bind $parser (non-empty-stack-parser dot-char-parser)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser ".a") (non-empty-stack #\a))
   (check-equal? (parse $parser ".a.b") (non-empty-stack #\a #\b))
   (check-equal? (parse $parser ".a.b.c") (non-empty-stack #\a #\b #\c)))
@@ -504,7 +506,7 @@
             (Non-Empty-Stackof V)))))))
 
 (bind $parser (separated-non-empty-stack-parser (exact-string-parser ", ") dot-char-parser)
-  (check-equal? (parse $parser "") parse-incomplete-failure)
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser ".a") (non-empty-stack #\a))
   (check-equal? (parse $parser ".a, .b") (non-empty-stack #\a #\b))
   (check-equal? (parse $parser ".a, .b, .c") (non-empty-stack #\a #\b #\c)))

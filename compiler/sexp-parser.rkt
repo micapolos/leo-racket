@@ -26,11 +26,11 @@
           ($letter-option (parser $letter-option))
           (else (invalid-char-failure $char)))))))
 
-(check-equal? (parse letter-parser "") parse-incomplete-failure)
+(check-equal? (parse letter-parser "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse letter-parser "a") #\a)
-(check-equal? (parse letter-parser "ą") parse-incomplete-failure) ; TODO invalid-char
-(check-equal? (parse letter-parser "A") parse-incomplete-failure) ; TODO invalid-char
-(check-equal? (parse letter-parser "1") parse-incomplete-failure) ; TODO invalid-char
+(check-equal? (parse letter-parser "ą") (failure-at parse-incomplete (position 1 2))) ; TODO invalid-char
+(check-equal? (parse letter-parser "A") (failure-at parse-incomplete (position 1 2))) ; TODO invalid-char
+(check-equal? (parse letter-parser "1") (failure-at parse-incomplete (position 1 2))) ; TODO invalid-char
 (check-equal? (parse letter-parser "ab") (failure-at parse-complete (position 1 2)))
 
 ; -------------------------------------------------------------------
@@ -56,11 +56,11 @@
       ((word? $result) (word-symbol $result))
       ((failure? $result) $result))))
 
-(check-equal? (parse-word-symbol "") parse-incomplete-failure)
+(check-equal? (parse-word-symbol "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse-word-symbol "a") `a)
 (check-equal? (parse-word-symbol "ab") `ab)
-(check-equal? (parse-word-symbol "ab1") parse-incomplete-failure) ; TODO: invalid-char
-(check-equal? (parse-word-symbol "abA") parse-incomplete-failure) ; TODO: invalid-char
+(check-equal? (parse-word-symbol "ab1") (failure-at parse-incomplete (position 1 4))) ; TODO: invalid-char
+(check-equal? (parse-word-symbol "abA") (failure-at parse-incomplete (position 1 4))) ; TODO: invalid-char
 
 ; -----------------------------------------------------------------
 
@@ -94,15 +94,15 @@
   (done-remaining-indented-parser 0 2 $parser))
 
 (bind $parser (indented-parser (stack-parser char-parser))
-  (check-equal? (parse-string $parser "") parse-incomplete-failure)
+  (check-equal? (parse-string $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse-string $parser "\n") (failure-at (invalid-expected-char #\newline #\space) (position 1 1)))
-  (check-equal? (parse-string $parser " ") parse-incomplete-failure)
+  (check-equal? (parse-string $parser " ") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse-string $parser " \n") (failure-at (invalid-expected-char #\newline #\space) (position 1 2)))
   (check-equal? (parse-string $parser "  ") "")
-  (check-equal? (parse-string $parser "  \n") parse-incomplete-failure)
+  (check-equal? (parse-string $parser "  \n") (failure-at parse-incomplete (position 2 1)))
   (check-equal? (parse-string $parser "  a") "a")
   (check-equal? (parse-string $parser "  ab") "ab")
-  (check-equal? (parse-string $parser "  ab\n") parse-incomplete-failure)
+  (check-equal? (parse-string $parser "  ab\n") (failure-at parse-incomplete (position 2 1)))
   (check-equal? (parse-string $parser "  ab\n  cd") "ab\ncd"))
 
 ; -----------------------------------------------------------------------------------------
@@ -129,8 +129,8 @@
       ((text-literal? $result) (text-literal-string $result))
       ((failure? $result) $result))))
 
-(check-equal? (parse-literal-string "") parse-incomplete-failure)
-(check-equal? (parse-literal-string "\"") parse-incomplete-failure)
+(check-equal? (parse-literal-string "") (failure-at parse-incomplete (position 1 1)))
+(check-equal? (parse-literal-string "\"") (failure-at parse-incomplete (position 1 2)))
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"abcABC123\n\"") "abcABC123\n")
@@ -146,10 +146,10 @@
       (bind $number (- (char->integer $char) (char->integer #\0))
         (and (>= $number 0) (<= $number 9) (cast $number Digit))))))
 
-(check-equal? (parse digit-parser "") parse-incomplete-failure)
+(check-equal? (parse digit-parser "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse digit-parser "0") 0)
 (check-equal? (parse digit-parser "9") 9)
-(check-equal? (parse digit-parser "a") parse-incomplete-failure)
+(check-equal? (parse digit-parser "a") (failure-at parse-incomplete (position 1 2)))
 (check-equal? (parse digit-parser "0a") (failure-at parse-complete (position 1 2)))
 (check-equal? (parse digit-parser "a0") (failure-at parse-complete (position 1 2)))
 
@@ -176,7 +176,7 @@
       (cond
         ((stack? $result) (nonnegative-integer-literal-integer $result))
         ((failure? $result) $result))))
-  (check-equal? (parse-integer "") parse-incomplete-failure)
+  (check-equal? (parse-integer "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse-integer "0") 0)
   (check-equal? (parse-integer "9") 9)
   (check-equal? (parse-integer "123") 123)
@@ -228,7 +228,7 @@
       (cond
         ((integer-literal? $result) (integer-literal-integer $result))
         ((failure? $result) $result))))
-  (check-equal? (parse-integer "") parse-incomplete-failure)
+  (check-equal? (parse-integer "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse-integer "123") 123)
   (check-equal? (parse-integer "+123") 123)
   (check-equal? (parse-integer "-123") -123)
@@ -331,7 +331,7 @@
 (check-equal? (parse-sexp "one\n  two\n  three") `(one two three))
 (check-equal? (parse-sexp "one\n  two too\n  three free") `(one (two too) (three free)))
 
-(check-equal? (parse-sexp "") parse-incomplete-failure)
+(check-equal? (parse-sexp "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse-sexp "One") (failure-at parse-complete (position 1 2)))
 (check-equal? (parse-sexp "bąk") (failure-at parse-complete (position 1 3)))
 (check-equal? (parse-sexp "one-two") (failure-at parse-complete (position 1 5)))
