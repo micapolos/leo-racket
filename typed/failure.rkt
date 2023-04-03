@@ -7,8 +7,8 @@
   leo/typed/testing
   (for-syntax racket/base))
 
-(data failure
-  (message : String))
+(data (V) failure
+  (value : V))
 
 (define-syntax (or-failure $syntax)
   (syntax-case $syntax ()
@@ -29,10 +29,10 @@
 
 (define-syntax (check-fail $syntax)
   (syntax-case $syntax ()
-    ((_ $expr $message)
+    ((_ $expr $value)
       (syntax/loc $syntax
         (check-equal?
           (or-failure $expr)
-          (failure $message))))))
+          (failure $value))))))
 
 (check-fail (error "dupa") "dupa")

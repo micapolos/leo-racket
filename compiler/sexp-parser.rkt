@@ -21,14 +21,17 @@
 (define letter-parser : (Parser Letter)
   (parser-bind char-parser
     (lambda (($char : Char))
-      (option-app parser (char-letter-option $char)))))
+      (bind $letter-option (char-letter-option $char)
+        (cond
+          ($letter-option (parser $letter-option))
+          (else (invalid-char-failure $char)))))))
 
-(check-equal? (parse letter-parser "") #f)
+(check-equal? (parse letter-parser "") parse-incomplete-failure)
 (check-equal? (parse letter-parser "a") #\a)
-(check-equal? (parse letter-parser "ą") #f)
-(check-equal? (parse letter-parser "A") #f)
-(check-equal? (parse letter-parser "1") #f)
-(check-equal? (parse letter-parser "ab") #f)
+(check-equal? (parse letter-parser "ą") parse-incomplete-failure) ; TODO invalid-char
+(check-equal? (parse letter-parser "A") parse-incomplete-failure) ; TODO invalid-char
+(check-equal? (parse letter-parser "1") parse-incomplete-failure) ; TODO invalid-char
+(check-equal? (parse letter-parser "ab") parse-complete-failure)
 
 ; -------------------------------------------------------------------
 
@@ -47,53 +50,59 @@
     (non-empty-stack-parser letter-parser)
     word))
 
-(define (parse-word-symbol ($string : String)) : (Option Symbol)
-  (option-app word-symbol (parse word-parser $string)))
+(define (parse-word-symbol ($string : String)) : (U Symbol (Failure Any))
+  (bind $result (parse word-parser $string)
+    (cond
+      ((word? $result) (word-symbol $result))
+      ((failure? $result) $result))))
 
-(check-equal? (parse-word-symbol "") #f)
+(check-equal? (parse-word-symbol "") parse-incomplete-failure)
 (check-equal? (parse-word-symbol "a") `a)
 (check-equal? (parse-word-symbol "ab") `ab)
-(check-equal? (parse-word-symbol "ab1") #f)
-(check-equal? (parse-word-symbol "abA") #f)
+(check-equal? (parse-word-symbol "ab1") parse-incomplete-failure) ; TODO: invalid-char
+(check-equal? (parse-word-symbol "abA") parse-incomplete-failure) ; TODO: invalid-char
 
 ; -----------------------------------------------------------------
 
 (: done-remaining-indented-parser : (All (V) (-> Exact-Nonnegative-Integer Exact-Nonnegative-Integer (Parser V) (Parser V))))
 (define (done-remaining-indented-parser $done $remaining $parser)
-  (and $parser
-    (progress
-      (and (= $remaining 0) (progress-value $parser))
-      (lambda (($char : Char))
-        (cond
-          ((= $remaining 0)
-            (bind $plus-parser (parser-plus-char $parser $char)
-              (case $char
-                ((#\newline)
-                  (done-remaining-indented-parser 0 $done $plus-parser))
-                (else
-                  (done-remaining-indented-parser $done $remaining $plus-parser)))))
-          (else
-            (and
-              (eqv? $char #\space)
-              (done-remaining-indented-parser
-                (add1 $done)
-                (sub1 $remaining)
-                $parser))))))))
+  (cond
+    ((progress? $parser)
+      (progress
+        (and (= $remaining 0) (progress-value $parser))
+        (lambda (($char : Char))
+          (cond
+            ((= $remaining 0)
+              (bind $plus-parser (parser-plus-char $parser $char)
+                (case $char
+                  ((#\newline)
+                    (done-remaining-indented-parser 0 $done $plus-parser))
+                  (else
+                    (done-remaining-indented-parser $done $remaining $plus-parser)))))
+            (else
+              (cond
+                ((eqv? $char #\space)
+                  (done-remaining-indented-parser
+                    (add1 $done)
+                    (sub1 $remaining)
+                    $parser))
+                (else (invalid-expected-char-failure $char #\space))))))))
+    ((failure? $parser) $parser)))
 
 (: indented-parser : (All (V) (-> (Parser V) (Parser V))))
 (define (indented-parser $parser)
   (done-remaining-indented-parser 0 2 $parser))
 
 (bind $parser (indented-parser (stack-parser char-parser))
-  (check-equal? (parse-string $parser "") #f)
-  (check-equal? (parse-string $parser "\n") #f)
-  (check-equal? (parse-string $parser " ") #f)
-  (check-equal? (parse-string $parser " \n") #f)
+  (check-equal? (parse-string $parser "") parse-incomplete-failure)
+  (check-equal? (parse-string $parser "\n") (invalid-expected-char-failure #\newline #\space))
+  (check-equal? (parse-string $parser " ") parse-incomplete-failure)
+  (check-equal? (parse-string $parser " \n") (invalid-expected-char-failure #\newline #\space))
   (check-equal? (parse-string $parser "  ") "")
-  (check-equal? (parse-string $parser "  \n") #f)
+  (check-equal? (parse-string $parser "  \n") parse-incomplete-failure)
   (check-equal? (parse-string $parser "  a") "a")
   (check-equal? (parse-string $parser "  ab") "ab")
-  (check-equal? (parse-string $parser "  ab\n") #f)
+  (check-equal? (parse-string $parser "  ab\n") parse-incomplete-failure)
   (check-equal? (parse-string $parser "  ab\n  cd") "ab\ncd"))
 
 ; -----------------------------------------------------------------------------------------
@@ -114,15 +123,18 @@
      text-literal)
    (exact-char-parser #\")))
 
-(define (parse-literal-string ($string : String)) : (Option String)
-  (option-app text-literal-string (parse text-literal-parser $string)))
+(define (parse-literal-string ($string : String)) : (U String (Failure Any))
+  (bind $result (parse text-literal-parser $string)
+    (cond
+      ((text-literal? $result) (text-literal-string $result))
+      ((failure? $result) $result))))
 
-(check-equal? (parse-literal-string "") #f)
-(check-equal? (parse-literal-string "\"") #f)
+(check-equal? (parse-literal-string "") parse-incomplete-failure)
+(check-equal? (parse-literal-string "\"") parse-incomplete-failure)
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"\"") "")
 (check-equal? (parse-literal-string "\"abcABC123\n\"") "abcABC123\n")
-(check-equal? (parse-literal-string "\"\"a") #f)
+(check-equal? (parse-literal-string "\"\"a") parse-complete-failure)
 
 ; -----------------------------------------------------------------------------------------
 
@@ -134,12 +146,12 @@
       (bind $number (- (char->integer $char) (char->integer #\0))
         (and (>= $number 0) (<= $number 9) (cast $number Digit))))))
 
-(check-equal? (parse digit-parser "") #f)
+(check-equal? (parse digit-parser "") parse-incomplete-failure)
 (check-equal? (parse digit-parser "0") 0)
 (check-equal? (parse digit-parser "9") 9)
-(check-equal? (parse digit-parser "a") #f)
-(check-equal? (parse digit-parser "0a") #f)
-(check-equal? (parse digit-parser "a0") #f)
+(check-equal? (parse digit-parser "a") parse-incomplete-failure)
+(check-equal? (parse digit-parser "0a") parse-complete-failure)
+(check-equal? (parse digit-parser "a0") parse-complete-failure)
 
 ; -----------------------------------------------------------------------------------------
 
@@ -160,13 +172,15 @@
 
 (bind parse-integer
   (lambda (($string : String))
-    (option-app nonnegative-integer-literal-integer
-      (parse nonnegative-integer-literal-parser $string)))
-  (check-equal? (parse-integer "") #f)
+    (bind $result (parse nonnegative-integer-literal-parser $string)
+      (cond
+        ((stack? $result) (nonnegative-integer-literal-integer $result))
+        ((failure? $result) $result))))
+  (check-equal? (parse-integer "") parse-incomplete-failure)
   (check-equal? (parse-integer "0") 0)
   (check-equal? (parse-integer "9") 9)
   (check-equal? (parse-integer "123") 123)
-  (check-equal? (parse-integer "3.14") #f)
+  (check-equal? (parse-integer "3.14") parse-complete-failure)
   (check-equal? (parse-integer "123456789012345678901234567890123456789012345678901234567890")
     123456789012345678901234567890123456789012345678901234567890))
 
@@ -187,7 +201,7 @@
 (bind $parser sign-parser
   (check-equal? (parse $parser "+") `plus)
   (check-equal? (parse $parser "-") `minus)
-  (check-equal? (parse $parser "*") #f))
+  (check-equal? (parse $parser "*") parse-complete-failure))
 
 ; --------------------------------------------------------------------------------------
 
@@ -208,14 +222,17 @@
         (lambda (($nonnegative-integer-literal : Nonnegative-Integer-Literal))
           (integer-literal $sign $nonnegative-integer-literal))))))
 
-(bind parse-integer (lambda (($string : String))
-    (option-app integer-literal-integer
-      (parse integer-literal-parser $string)))
-  (check-equal? (parse-integer "") #f)
+(bind parse-integer
+  (lambda (($string : String))
+    (bind $result (parse integer-literal-parser $string)
+      (cond
+        ((integer-literal? $result) (integer-literal-integer $result))
+        ((failure? $result) $result))))
+  (check-equal? (parse-integer "") parse-incomplete-failure)
   (check-equal? (parse-integer "123") 123)
   (check-equal? (parse-integer "+123") 123)
   (check-equal? (parse-integer "-123") -123)
-  (check-equal? (parse-integer "*123") #f))
+  (check-equal? (parse-integer "*123") parse-complete-failure))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -288,12 +305,15 @@
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))
 
-(define (parse-sexp ($string : String)) : (Option Sexp)
-  (option-app line-sexp (parse line-parser $string)))
+(define (parse-sexp ($string : String)) : (U Sexp (Failure Any))
+  (parse-map line-parser $string line-sexp))
 
-(define (parse-sexp-list ($string : String)) : (Option (Listof Sexp))
-  (option-bind (parse (prefix-parser maybe-newlines-parser line-stack-parser) $string) $line-stack
-    (reverse (map line-sexp $line-stack))))
+(define (parse-sexp-list ($string : String)) : (U (Listof Sexp) (Failure Any))
+  (parse-map
+    (prefix-parser maybe-newlines-parser line-stack-parser)
+    $string
+    (lambda (($line-stack : (Stackof Line)))
+      (reverse (map line-sexp $line-stack)))))
 
 (check-equal? (parse-sexp "\"one\"") "one")
 
@@ -311,10 +331,10 @@
 (check-equal? (parse-sexp "one\n  two\n  three") `(one two three))
 (check-equal? (parse-sexp "one\n  two too\n  three free") `(one (two too) (three free)))
 
-(check-equal? (parse-sexp "") #f)
-(check-equal? (parse-sexp "One") #f)
-(check-equal? (parse-sexp "bąk") #f)
-(check-equal? (parse-sexp "one-two") #f)
+(check-equal? (parse-sexp "") parse-incomplete-failure)
+(check-equal? (parse-sexp "One") parse-complete-failure)
+(check-equal? (parse-sexp "bąk") parse-complete-failure)
+(check-equal? (parse-sexp "one-two") parse-complete-failure)
 (check-equal? (parse-sexp "123") 123)
 
 (check-equal? (parse-sexp-list "") `())

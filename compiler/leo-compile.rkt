@@ -31,9 +31,10 @@
 (define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)
   (define $string (port->string $port))
   (define $sexp-list
-    (option-or
-      (parse-sexp-list $string)
-      (error (format "parse error: ~s" $string))))
+    (bind $result (parse-sexp-list $string)
+      (cond
+        ((failure? $result) (error (format "parse error: ~s" $result)))
+        (else $result))))
   (define $syntax-list
     (map
       (lambda (($sexp : Sexp)) (datum->syntax #f $sexp))
