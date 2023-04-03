@@ -33,6 +33,9 @@
 (define (invalid-char ($char : Char))
   `(invalid ,$char))
 
+(define (invalid-value ($value : Any))
+  `(invalid ,$value))
+
 (define (invalid-expected-char ($invalid : Char) ($expected : Char))
   `(error (invalid ,$invalid) (expected ,$expected)))
 
@@ -49,7 +52,7 @@
   (failure (invalid-expected-char $invalid $expected)))
 
 (define #:forall (V) (invalid-value-failure ($value : V)) : (Failure Any)
-  (failure `(invalid ,$value)))
+  (failure (invalid-value $value)))
 
 (define (failure-at ($value : Any) ($position : Position)) : (Failure Any)
   (failure `(error ,$value (at ,$position))))
@@ -206,7 +209,7 @@
   (progress #f
     (lambda (($first-char : Char))
       (cond
-        ((equal? $first-char #\.)
+        ((char=? $first-char #\.)
           (progress #f
             (lambda (($second-char : Char))
               (parser $second-char))))
@@ -366,16 +369,28 @@
 
 (: parser-filter : (All (V) (-> (Parser V) (-> V Boolean) (Parser V))))
 (define (parser-filter $parser $fn)
-  (parser-bind $parser
-    (lambda (($value : V))
-      (cond
-        (($fn $value) (parser $value))
-        (else (invalid-value-failure $value))))))
+  (cond
+    ((progress? $parser)
+      (bind $value (progress-value $parser)
+        (cond
+          ($value
+            (cond
+              (($fn $value)
+                (progress $value
+                  (lambda (($char : Char))
+                    (parser-filter (#%app (progress-plus-fn $parser) $char) $fn))))
+              (else
+                (invalid-value-failure $value))))
+          (else
+            (progress $value
+              (lambda (($char : Char))
+                (parser-filter (#%app (progress-plus-fn $parser) $char) $fn)))))))
+    ((failure? $parser) $parser)))
 
 (bind $parser (parser-filter char-parser char-alphabetic?)
   (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") #\a)
-  (check-equal? (parse $parser "1") (failure-at parse-incomplete (position 1 2))) ; TODO: This should be invalid-value-failure!!!
+  (check-equal? (parse $parser "1") (failure-at (invalid-value #\1) (position 1 1)))
   (check-equal? (parse $parser "ab") (failure-at parse-complete (position 1 2))))
 
 ; ---------------------------------------------------------------------------------
@@ -440,7 +455,7 @@
   (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
   (check-equal? (parse $parser "a") #\a)
   (check-equal? (parse $parser "1") #\1)
-  (check-equal? (parse $parser " ") (failure-at parse-incomplete (position 1 2)))) ; TODO: Should be invaid-value-failure!!!
+  (check-equal? (parse $parser " ") (failure-at (invalid-value #\space) (position 1 1))))
 
 ; -------------------------------------------------------------------------------
 
