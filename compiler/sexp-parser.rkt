@@ -60,10 +60,9 @@
 
 (: done-remaining-indented-parser : (All (V) (-> Exact-Nonnegative-Integer Exact-Nonnegative-Integer (Parser V) (Parser V))))
 (define (done-remaining-indented-parser $done $remaining $parser)
-  (define $progress-option (parser-progress-option $parser))
-  (and $progress-option
+  (and $parser
     (progress
-      (and (= $remaining 0) (progress-value $progress-option))
+      (and (= $remaining 0) (progress-value $parser))
       (lambda (($char : Char))
         (cond
           ((= $remaining 0)
@@ -249,11 +248,10 @@
     ((text-literal? $line) (text-literal-string $line))
     ((sentence? $line) (sentence-sexp $line))))
 
-(define line-parser : (Parser Line)
-  (recursive-parser
-    (parser-or
-      literal-parser
-      sentence-parser)))
+(define (recursive-line-parser) : (Parser Line)
+  (parser-or
+    literal-parser
+    sentence-parser))
 
 (define sentence-parser : (Parser Sentence)
   (parser-bind word-parser
@@ -268,7 +266,7 @@
 (define space-rhs-line-stack-parser : (Parser (Stackof Line))
   (prefix-parser
     space-parser
-    (singleton-stack-parser line-parser)))
+    (singleton-stack-parser (recursive-line-parser))))
 
 (define newline-rhs-line-stack-parser : (Parser (Stackof Line))
   (prefix-parser
@@ -276,13 +274,16 @@
     (indented-parser
       (separated-non-empty-stack-parser
         newlines-parser
-        line-parser))))
+        (recursive-line-parser)))))
 
 (define rhs-line-stack-parser : (Parser (Stackof Line))
   (parser-or
     empty-rhs-line-stack-parser
     space-rhs-line-stack-parser
     newline-rhs-line-stack-parser))
+
+(define line-parser : (Parser Line)
+  (recursive-line-parser))
 
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))
