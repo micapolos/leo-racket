@@ -24,7 +24,7 @@
       (bind $letter-option (char-letter-option $char)
         (cond
           ($letter-option (parser $letter-option))
-          (else (failure (invalid-char $char))))))))
+          (else (failure! (invalid-char $char))))))))
 
 (check-equal? (parse letter-parser "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse letter-parser "a") #\a)
@@ -86,7 +86,7 @@
                     (add1 $done)
                     (sub1 $remaining)
                     $parser))
-                (else (failure (invalid-expected-char $char #\space)))))))))))
+                (else (failure! (invalid-expected-char $char #\space)))))))))))
 
 (: indented-parser : (All (V) (-> (Parser V) (Parser V))))
 (define (indented-parser $parser)
