@@ -66,14 +66,14 @@
 
 (: done-remaining-indented-parser : (All (V) (-> Exact-Nonnegative-Integer Exact-Nonnegative-Integer (Parser V) (Parser V))))
 (define (done-remaining-indented-parser $done $remaining $parser)
-  (cond
-    ((progress? $parser)
+  (parser-bind-progress $parser
+    (lambda (($progress : (Progress V)))
       (progress
-        (and (= $remaining 0) (progress-value $parser))
+        (and (= $remaining 0) (progress-value $progress))
         (lambda (($char : Char))
           (cond
             ((= $remaining 0)
-              (bind $plus-parser (parser-plus-char $parser $char)
+              (bind $plus-parser (progress-plus-char $progress $char)
                 (case $char
                   ((#\newline)
                     (done-remaining-indented-parser 0 $done $plus-parser))
@@ -86,8 +86,7 @@
                     (add1 $done)
                     (sub1 $remaining)
                     $parser))
-                (else (failure (invalid-expected-char $char #\space)))))))))
-    ((failure? $parser) $parser)))
+                (else (failure (invalid-expected-char $char #\space)))))))))))
 
 (: indented-parser : (All (V) (-> (Parser V) (Parser V))))
 (define (indented-parser $parser)

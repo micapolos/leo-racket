@@ -110,15 +110,23 @@
     (progress-value $progress)
     (failure parse-incomplete)))
 
+(define #:forall (V) (progress-plus-char ($progress : (Progress V)) ($char : Char)) : (Parser V)
+  (#%app (progress-plus-fn $progress) $char))
+
 (define #:forall (V) (parser ($value : (Option V))) : (Parser V)
   (progress $value
     (lambda (($char : Char))
       (failure parse-complete))))
 
-(define #:forall (V) (parser-plus-char ($parser : (Parser V)) ($char : Char)) : (Parser V)
+(define #:forall (I O) (parser-bind-progress ($parser : (Parser I)) ($fn : (-> (Progress I) (Parser O)))) : (Parser O)
   (cond
-    ((progress? $parser) (#%app (progress-plus-fn $parser) $char))
+    ((progress? $parser) ($fn $parser))
     ((failure? $parser) $parser)))
+
+(define #:forall (V) (parser-plus-char ($parser : (Parser V)) ($char : Char)) : (Parser V)
+  (parser-bind-progress $parser
+    (lambda (($progress : (Progress V)))
+      (progress-plus-char $progress $char))))
 
 (define #:forall (V)
   (positioned-parser-plus-string
@@ -131,16 +139,15 @@
     (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
       (positioned-map $positioned-parser $char
         (lambda (($parser : (Parser V)) ($position : Position))
-          (cond
-            ((progress? $parser)
-              (bind $plus-parser (parser-plus-char $parser $char)
+          (parser-bind-progress $parser
+            (lambda (($progress : (Progress V)))
+              (bind $plus-parser (progress-plus-char $progress $char)
                 (cond
                   ((progress? $plus-parser) $plus-parser)
                   ((failure? $plus-parser)
                     (failure-at
                       (failure-value $plus-parser)
-                      $position)))))
-            ((failure? $parser) $parser)))))))
+                      $position)))))))))))
 
 (define #:forall (V) (parse ($start-parser : (Parser V)) ($string : String)) : (U V (Failure Any))
   (bind $positioned-parser (positioned-parser-plus-string (start-positioned $start-parser) $string)
@@ -151,8 +158,7 @@
         (option-or
           (progress-value $parser)
           (failure-at parse-incomplete $position)))
-      ((failure? $parser)
-        $parser))))
+      ((failure? $parser) $parser))))
 
 (define #:forall (V R) (parse-map ($parser : (Parser V)) ($string : String) ($fn : (-> V R))) : (U R (Failure Any))
   (bind $result (parse $parser $string)
@@ -390,23 +396,22 @@
 
 (: parser-filter : (All (V) (-> (Parser V) (-> V Boolean) (Parser V))))
 (define (parser-filter $parser $fn)
-  (cond
-    ((progress? $parser)
-      (bind $value (progress-value $parser)
+  (parser-bind-progress $parser
+    (lambda (($progress : (Progress V)))
+      (bind $value (progress-value $progress)
         (cond
           ($value
             (cond
               (($fn $value)
                 (progress $value
                   (lambda (($char : Char))
-                    (parser-filter (#%app (progress-plus-fn $parser) $char) $fn))))
+                    (parser-filter (progress-plus-char $progress $char) $fn))))
               (else
                 (failure (invalid-value $value)))))
           (else
             (progress $value
               (lambda (($char : Char))
-                (parser-filter (#%app (progress-plus-fn $parser) $char) $fn)))))))
-    ((failure? $parser) $parser)))
+                (parser-filter (progress-plus-char $progress $char) $fn)))))))))
 
 (bind $parser (parser-filter char-parser char-alphabetic?)
   (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
