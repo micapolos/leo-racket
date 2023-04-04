@@ -7,6 +7,8 @@
   leo/typed/base
   leo/typed/stack
   leo/typed/option
+  leo/typed/position
+  leo/typed/positioned
   leo/typed/failure
   leo/typed/testing
   (for-syntax
@@ -41,64 +43,6 @@
 
 (define (failure-at ($value : Any) ($position : Position)) : (Failure Any)
   (failure! $value (at $position)))
-
-; -----------------------------------------------------------------------------------------
-
-(data position
-  (line-number : Exact-Positive-Integer)
-  (char-number : Exact-Positive-Integer))
-
-(define start-position (position 1 1))
-
-(define (position-newline ($position : Position)) : Position
-  (position
-    (add1 (position-line-number $position))
-    1))
-
-(define (position-next-char ($position : Position)) : Position
-  (position
-    (position-line-number $position)
-    (add1 (position-char-number $position))))
-
-(define (position-plus-char ($position : Position) ($char : Char)) : Position
-  (case $char
-    ((#\newline) (position-newline $position))
-    (else (position-next-char $position))))
-
-(check-equal? (position-newline (position 3 8)) (position 4 1))
-(check-equal? (position-next-char (position 3 8)) (position 3 9))
-(check-equal? (position-plus-char (position 3 8) #\newline) (position-newline (position 3 8)))
-(check-equal? (position-plus-char (position 3 8) #\a) (position-next-char (position 3 8)))
-
-; -----------------------------------------------------------------------------------------
-
-(data (V) positioned
-  (value : V)
-  (position : Position))
-
-(define #:forall (V) (start-positioned ($value : V))
-  (positioned $value start-position))
-
-(define #:forall (I O)
-  (positioned-map
-    ($positioned : (Positioned I))
-    ($char : Char)
-    ($value-fn : (-> I Position O)))
-  : (Positioned O)
-  (bind $position (positioned-position $positioned)
-    (positioned
-      ($value-fn (positioned-value $positioned) $position)
-      (position-plus-char $position $char))))
-
-(check-equal?
-  (positioned-map
-    (positioned "foo" (position 3 8))
-    #\space
-    (lambda (($string : String) ($position : Position))
-      (pair $string $position)))
-  (positioned
-    (pair "foo" (position 3 8))
-    (position 3 9)))
 
 ; -----------------------------------------------------------------------------------------
 

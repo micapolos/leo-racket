@@ -28,6 +28,8 @@
         leo/typed/maybe
         leo/typed/option
         leo/typed/parser
+        leo/typed/position
+        leo/typed/positioned
         leo/typed/srcloc
         leo/typed/stack
         leo/typed/testing
