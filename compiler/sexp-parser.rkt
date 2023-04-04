@@ -244,6 +244,60 @@
 
 ; -----------------------------------------------------------------------------------------
 
+; (data (V I) env
+;   (literal-parser-fn : (-> V (Parser I)))
+;   (begin-parser-fn : (-> V Symbol (Parser I)))
+;   (combine-parser-fn : (-> V I (Parser V))))
+
+; (: env-value-parser : (All (V I) (-> (Env V I) V (Parser V))))
+; (define (env-value-parser $env $value)
+;   (parser-bind (env-item-parser $env $value)
+;     (lambda (($item : I))
+;       (#%app (env-combine-parser-fn $env) $value $item))))
+
+; (: env-item-parser : (All (V I) (-> (Env V I) V (Parser I))))
+; (define (env-item-parser $env $value)
+;   (parser-or
+;     (env-literal-parser $env $value)
+;     (env-sentence-parser $env $value)))
+
+; (: env-literal-parser : (All (V I) (-> (Env V I) V (Parser I))))
+; (define (env-literal-parser $env $value)
+;   (#%app (env-literal-parser-fn $env) $value))
+
+; (: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser I))))
+; (define (env-sentence-parser $env $value)
+;   (parser-bind word-parser
+;     (lambda (($word : Word))
+;       (parser-map (env-rhs-parser $env (word-symbol $word))))))
+
+; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+; (define (env-begin-parser $env $value $symbol)
+;   (#%app (env-begin-parser-fn $env) $value $symbol))
+
+; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+; (define (env-rhs-parser $env $value $symbol)
+;   (parser-or
+;     (env-space-rhs-parser $env $value $symbol)
+;     (env-newline-rhs-parser $env $value $symbol)))
+
+; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+; (define (env-space-rhs-parser $env $value $symbol)
+;   (prefix-parser
+;     space-parser
+;     (env-begin-parser $env $value $symbol)))
+
+; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+; (define (env-newline-rhs-parser $env $value $symbol)
+;   (prefix-parser
+;     newlines-parser
+;     (indented-parser
+;       (prefix-parser
+;         newlines-parser
+;         (env-begin-parser $env $value $symbol)))))
+
+; -----------------------------------------------------------------------------------------
+
 (data sentence
   (word : Word)
   (line-stack : (Stackof Line)))

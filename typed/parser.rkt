@@ -423,25 +423,23 @@
 
 ; -------------------------------------------------------------------------------
 
-(: fold-parser : (All (V I) (-> (Parser V) (Parser I) (-> V I (Parser V)) (Parser V))))
-(define (fold-parser $value-parser $item-parser $fn)
-  (parser-bind $value-parser
-    (lambda (($value : V))
-      (parser-or
-        (parser $value)
-        (parser-bind $item-parser
-          (lambda (($item : I))
-            (fold-parser ($fn $value $item) $item-parser $fn)))))))
+(: fold-parser : (All (V I) (-> V (Parser I) (-> V I V) (Parser V))))
+(define (fold-parser $value $item-parser $fn)
+  (parser-or
+    (parser $value)
+    (parser-bind $item-parser
+      (lambda (($item : I))
+        (fold-parser ($fn $value $item) $item-parser $fn)))))
 
 ; -------------------------------------------------------------------------------
 
 (: push-parser : (All (V) (-> (Stackof V) (Parser V) (Parser (Stackof V)))))
-(define (push-parser $stack $parser)
+(define (push-parser $stack $item-parser)
   (fold-parser
-    (parser $stack)
-    $parser
+    $stack
+    $item-parser
     (lambda (($stack : (Stackof V)) ($item : V))
-      (parser (push $stack $item)))))
+      (push $stack $item))))
 
 (: stack-parser : (All (V) (-> (Parser V) (Parser (Stackof V)))))
 (define (stack-parser $parser)
