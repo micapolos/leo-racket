@@ -82,16 +82,26 @@
 (define #:forall (V) (start-positioned ($value : V))
   (positioned $value start-position))
 
-(define #:forall (V)
-  (positioned-update
-    ($positioned : (Positioned V))
+(define #:forall (I O)
+  (positioned-plus-char-map
+    ($positioned : (Positioned I))
     ($char : Char)
-    ($value-fn : (-> V Position V)))
-  : (Positioned V)
+    ($value-fn : (-> I Position O)))
+  : (Positioned O)
   (bind $position (positioned-position $positioned)
     (positioned
       ($value-fn (positioned-value $positioned) $position)
       (position-plus-char $position $char))))
+
+(check-equal?
+  (positioned-plus-char-map
+    (positioned "foo" (position 3 8))
+    #\space
+    (lambda (($string : String) ($position : Position))
+      (pair $string $position)))
+  (positioned
+    (pair "foo" (position 3 8))
+    (position 3 9)))
 
 ; -----------------------------------------------------------------------------------------
 
@@ -119,7 +129,7 @@
     $initial-positioned-parser
     (string->list $string)
     (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
-      (positioned-update $positioned-parser $char
+      (positioned-plus-char-map $positioned-parser $char
         (lambda (($parser : (Parser V)) ($position : Position))
           (cond
             ((progress? $parser)
