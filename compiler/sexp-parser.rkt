@@ -244,66 +244,81 @@
 
 ; -----------------------------------------------------------------------------------------
 
-; (data (V I) env
-;   (literal-parser-fn : (-> V (Parser I)))
-;   (begin-parser-fn : (-> V Symbol (Parser I)))
-;   (combine-parser-fn : (-> V I (Parser V))))
+(data (V I) env
+  (literal-parser-fn : (-> V (Parser I)))
+  (begin-parser-fn : (-> V Symbol (Parser I)))
+  (combine-fn : (-> V I V)))
 
-; (: env-value-parser : (All (V I) (-> (Env V I) V (Parser V))))
-; (define (env-value-parser $env $value)
-;   (parser-bind (env-item-parser $env $value)
-;     (lambda (($item : I))
-;       (#%app (env-combine-parser-fn $env) $value $item))))
+(: env-value-parser : (All (V I) (-> (Env V I) V (Parser V))))
+(define (env-value-parser $env $value)
+  (parser-or
+    (parser $value)
+    (parser-map (env-item-parser $env $value)
+      (lambda (($item : I))
+        (#%app (env-combine-fn $env) $value $item)))))
 
-; (: env-item-parser : (All (V I) (-> (Env V I) V (Parser I))))
-; (define (env-item-parser $env $value)
-;   (parser-or
-;     (env-literal-parser $env $value)
-;     (env-sentence-parser $env $value)))
+(: env-item-parser : (All (V I) (-> (Env V I) V (Parser I))))
+(define (env-item-parser $env $value)
+  (parser-or
+    (env-literal-parser $env $value)
+    (env-sentence-parser $env $value)))
 
-; (: env-literal-parser : (All (V I) (-> (Env V I) V (Parser I))))
-; (define (env-literal-parser $env $value)
-;   (#%app (env-literal-parser-fn $env) $value))
+(: env-literal-parser : (All (V I) (-> (Env V I) V (Parser I))))
+(define (env-literal-parser $env $value)
+  (#%app (env-literal-parser-fn $env) $value))
 
-; (: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser I))))
-; (define (env-sentence-parser $env $value)
-;   (parser-bind word-parser
-;     (lambda (($word : Word))
-;       (parser-map (env-rhs-parser $env (word-symbol $word))))))
+(: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser I))))
+(define (env-sentence-parser $env $value)
+  (parser-bind word-parser
+    (lambda (($word : Word))
+      (env-rhs-parser $env $value (word-symbol $word)))))
 
-; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-; (define (env-begin-parser $env $value $symbol)
-;   (#%app (env-begin-parser-fn $env) $value $symbol))
+(: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+(define (env-begin-parser $env $value $symbol)
+  (#%app (env-begin-parser-fn $env) $value $symbol))
 
-; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-; (define (env-rhs-parser $env $value $symbol)
-;   (parser-or
-;     (env-space-rhs-parser $env $value $symbol)
-;     (env-newline-rhs-parser $env $value $symbol)))
+(: env-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+(define (env-rhs-parser $env $value $symbol)
+  (parser-or
+    (env-space-rhs-parser $env $value $symbol)
+    (env-newline-rhs-parser $env $value $symbol)))
 
-; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-; (define (env-space-rhs-parser $env $value $symbol)
-;   (prefix-parser
-;     space-parser
-;     (env-begin-parser $env $value $symbol)))
+(: env-space-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+(define (env-space-rhs-parser $env $value $symbol)
+  (prefix-parser
+    space-parser
+    (env-begin-parser $env $value $symbol)))
 
-; (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-; (define (env-newline-rhs-parser $env $value $symbol)
-;   (prefix-parser
-;     newlines-parser
-;     (indented-parser
-;       (prefix-parser
-;         newlines-parser
-;         (env-begin-parser $env $value $symbol)))))
+(: env-newline-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+(define (env-newline-rhs-parser $env $value $symbol)
+  (prefix-parser
+    newlines-parser
+    (indented-parser
+      (prefix-parser
+        newlines-parser
+        (env-begin-parser $env $value $symbol)))))
+
+; -----------------------------------------------------------------------------------------
+
+(define line-stack-env : (Env (Stackof Line) Line)
+  (env
+    (lambda ((_ : (Stackof Line)))
+      literal-parser)
+    (lambda (($line-stack : (Stackof Line)) ($symbol : Symbol))
+      (parser-map (env-value-parser line-stack-env $line-stack)
+        (lambda (($rhs-line-stack : (Stackof Line)))
+          (sentence $symbol $rhs-line-stack))))
+    (lambda (($line-stack : (Stackof Line)) ($line : Line))
+      (push $line-stack $line))))
 
 ; -----------------------------------------------------------------------------------------
 
 (data sentence
-  (word : Word)
+  (symbol : Symbol)
   (line-stack : (Stackof Line)))
 
 (define (sentence-sexp ($sentence : Sentence)) : Sexp
-  (define $symbol (word-symbol (sentence-word $sentence)))
+  (define $symbol (sentence-symbol $sentence))
   (define $sexp-list (reverse (map line-sexp (sentence-line-stack $sentence))))
     (cond
       ((null? $sexp-list) $symbol)
@@ -328,7 +343,7 @@
     (lambda (($word : Word))
       (parser-map rhs-line-stack-parser
         (lambda (($rhs-line-stack : (Stackof Line)))
-          (sentence $word $rhs-line-stack))))))
+          (sentence (word-symbol $word) $rhs-line-stack))))))
 
 (define empty-rhs-line-stack-parser : (Parser (Stackof Line))
   (parser null))
