@@ -270,13 +270,11 @@
 
 (: env-value-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-value-parser $env $value)
-  (prefix-parser
-    maybe-newlines-parser
-    (repeat-parser $value
-      (lambda (($repeated-value : V))
-        (parser-suffix
-          (env-line-parser $env $repeated-value)
-          newlines-parser)))))
+  (repeat-parser $value
+    (lambda (($repeated-value : V))
+      (parser-suffix
+        (env-line-parser $env $repeated-value)
+        newline-parser))))
 
 (: env-line-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-line-parser $env $value)
@@ -307,8 +305,7 @@
 (define (env-indented-rhs-parser $env $value $symbol)
   (prefix-parser newline-parser
     (indented-parser
-      (prefix-parser maybe-newlines-parser
-        (env-symbol-indented-parser $env $value $symbol)))))
+      (env-symbol-indented-parser $env $value $symbol))))
 
 (let ()
   (define test-env : (Env (Stackof String))
