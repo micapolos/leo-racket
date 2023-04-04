@@ -79,6 +79,20 @@
   (value : V)
   (position : Position))
 
+(define #:forall (V) (start-positioned ($value : V))
+  (positioned $value start-position))
+
+(define #:forall (V)
+  (positioned-update
+    ($positioned : (Positioned V))
+    ($char : Char)
+    ($value-fn : (-> V Position V)))
+  : (Positioned V)
+  (bind $position (positioned-position $positioned)
+    (positioned
+      ($value-fn (positioned-value $positioned) $position)
+      (position-plus-char $position $char))))
+
 ; -----------------------------------------------------------------------------------------
 
 (define #:forall (V) (progress-value-or-failure ($progress : (Progress V))) : (U V (Failure Any))
@@ -105,24 +119,21 @@
     $initial-positioned-parser
     (string->list $string)
     (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
-      (define $parser (positioned-value $positioned-parser))
-      (define $position (positioned-position $positioned-parser))
-      (cond
-        ((progress? $parser)
-          (positioned
-            (bind $plus-parser (parser-plus-char $parser $char)
-              (cond
-                ((progress? $plus-parser) $plus-parser)
-                ((failure? $plus-parser)
-                  (failure-at
-                    (failure-value $plus-parser)
-                    $position))))
-            (position-plus-char $position $char)))
-        ((failure? $parser)
-          $positioned-parser)))))
+      (positioned-update $positioned-parser $char
+        (lambda (($parser : (Parser V)) ($position : Position))
+          (cond
+            ((progress? $parser)
+              (bind $plus-parser (parser-plus-char $parser $char)
+                (cond
+                  ((progress? $plus-parser) $plus-parser)
+                  ((failure? $plus-parser)
+                    (failure-at
+                      (failure-value $plus-parser)
+                      $position)))))
+            ((failure? $parser) $parser)))))))
 
 (define #:forall (V) (parse ($start-parser : (Parser V)) ($string : String)) : (U V (Failure Any))
-  (bind $positioned-parser (positioned-parser-plus-string (positioned $start-parser start-position) $string)
+  (bind $positioned-parser (positioned-parser-plus-string (start-positioned $start-parser) $string)
     (define $parser (positioned-value $positioned-parser))
     (define $position (positioned-position $positioned-parser))
     (cond
