@@ -39,8 +39,11 @@
 (define (invalid-expected-char ($invalid : Char) ($expected : Char))
   `(error (invalid ,$invalid) (expected ,$expected)))
 
+(define (at ($position : Position))
+  `(at ,$position))
+
 (define (failure-at ($value : Any) ($position : Position)) : (Failure Any)
-  (failure `(error ,$value (at ,$position))))
+  (failure! $value (at $position)))
 
 ; -----------------------------------------------------------------------------------------
 
