@@ -24,7 +24,7 @@
       (bind $letter-option (char-letter-option $char)
         (cond
           ($letter-option (parser $letter-option))
-          (else (failure! (invalid-char $char))))))))
+          (else (failure! (invalid $char))))))))
 
 (check-equal? (parse letter-parser "") (failure-at parse-incomplete (position 1 1)))
 (check-equal? (parse letter-parser "a") #\a)
@@ -86,7 +86,7 @@
                     (add1 $done)
                     (sub1 $remaining)
                     $parser))
-                (else (failure! (invalid-expected-char $char #\space)))))))))))
+                (else (failure! (invalid $char) (expected #\space)))))))))))
 
 (: indented-parser : (All (V) (-> (Parser V) (Parser V))))
 (define (indented-parser $parser)
@@ -94,9 +94,9 @@
 
 (bind $parser (indented-parser (stack-parser char-parser))
   (check-equal? (parse-string $parser "") (failure-at parse-incomplete (position 1 1)))
-  (check-equal? (parse-string $parser "\n") (failure-at (invalid-expected-char #\newline #\space) (position 1 1)))
+  (check-equal? (parse-string $parser "\n") (failure! (invalid #\newline) (expected #\space) (at (position 1 1))))
   (check-equal? (parse-string $parser " ") (failure-at parse-incomplete (position 1 2)))
-  (check-equal? (parse-string $parser " \n") (failure-at (invalid-expected-char #\newline #\space) (position 1 2)))
+  (check-equal? (parse-string $parser " \n") (failure! (invalid #\newline) (expected #\space) (at (position 1 2))))
   (check-equal? (parse-string $parser "  ") "")
   (check-equal? (parse-string $parser "  \n") (failure-at parse-incomplete (position 2 1)))
   (check-equal? (parse-string $parser "  a") "a")
@@ -200,7 +200,7 @@
 (bind $parser sign-parser
   (check-equal? (parse $parser "+") `plus)
   (check-equal? (parse $parser "-") `minus)
-  (check-equal? (parse $parser "*") (failure-at (invalid-expected-char #\* #\-) (position 1 1)))) ; TODO: wrong failure
+  (check-equal? (parse $parser "*") (failure! (invalid #\*) (expected #\-) (at (position 1 1))))) ; TODO: wrong failure
 
 ; --------------------------------------------------------------------------------------
 
