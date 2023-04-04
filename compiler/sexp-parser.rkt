@@ -428,9 +428,6 @@
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))
 
-;(define line-stack-parser : (Parser (Stackof Line))
-;  (env-value-parser line-stack-env null))
-
 (define (parse-sexp ($string : String)) : (U Sexp (Failure Any))
   (parse-map line-parser $string line-sexp))
 
