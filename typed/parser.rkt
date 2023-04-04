@@ -68,6 +68,11 @@
     ((#\newline) (position-newline $position))
     (else (position-next-column $position))))
 
+(check-equal? (position-newline (position 3 8)) (position 4 1))
+(check-equal? (position-next-column (position 3 8)) (position 3 9))
+(check-equal? (position-plus-char (position 3 8) #\newline) (position-newline (position 3 8)))
+(check-equal? (position-plus-char (position 3 8) #\a) (position-next-column (position 3 8)))
+
 ; -----------------------------------------------------------------------------------------
 
 (data (V) positioned
