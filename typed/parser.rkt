@@ -431,6 +431,14 @@
       (lambda (($item : I))
         (fold-parser ($fn $value $item) $item-parser $fn)))))
 
+(: repeat-parser : (All (V I) (-> V (-> V (Parser V)) (Parser V))))
+(define (repeat-parser $value $fn)
+  (parser-or
+    (parser $value)
+    (parser-bind ($fn $value)
+      (lambda (($new-value : V))
+        (repeat-parser $new-value $fn)))))
+
 ; -------------------------------------------------------------------------------
 
 (: push-parser : (All (V) (-> (Stackof V) (Parser V) (Parser (Stackof V)))))

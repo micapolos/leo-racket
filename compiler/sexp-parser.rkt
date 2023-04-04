@@ -242,74 +242,132 @@
     text-literal-parser
     integer-literal-parser))
 
-; -----------------------------------------------------------------------------------------
+; --------------------------------------------------------------------------------------
 
-(data (V I) env
-  (literal-parser-fn : (-> V (Parser I)))
-  (begin-parser-fn : (-> V Symbol (Parser I)))
-  (combine-fn : (-> V I V)))
+(data (V) env
+  (literal-parser-fn : (-> V (Parser V)))
+  (symbol-parser-fn : (-> V Symbol (Parser V)))
+  (symbol-spaced-parser-fn : (-> V Symbol (Parser V)))
+  (symbol-indented-parser-fn : (-> V Symbol (Parser V))))
 
-(: env-value-parser : (All (V I) (-> (Env V I) V (Parser V))))
+(: env-literal-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-literal-parser $env $value)
+  (#%app (env-literal-parser-fn $env) $value))
+
+(: env-symbol-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-symbol-parser $env $value $symbol)
+  (#%app (env-symbol-parser-fn $env) $value $symbol))
+
+(: env-symbol-spaced-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-symbol-spaced-parser $env $value $symbol)
+  (#%app (env-symbol-spaced-parser-fn $env) $value $symbol))
+
+(: env-symbol-indented-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-symbol-indented-parser $env $value $symbol)
+  (#%app (env-symbol-indented-parser-fn $env) $value $symbol))
+
+; --------------------------------------------------------------------------------------
+
+(: env-value-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-value-parser $env $value)
-  (parser-or
-    (parser $value)
-    (parser-map (env-item-parser $env $value)
-      (lambda (($item : I))
-        (#%app (env-combine-fn $env) $value $item)))))
+  (prefix-parser
+    maybe-newlines-parser
+    (repeat-parser $value
+      (lambda (($repeated-value : V))
+        (parser-suffix
+          (env-line-parser $env $repeated-value)
+          newlines-parser)))))
 
-(: env-item-parser : (All (V I) (-> (Env V I) V (Parser I))))
-(define (env-item-parser $env $value)
+(: env-line-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-line-parser $env $value)
   (parser-or
     (env-literal-parser $env $value)
     (env-sentence-parser $env $value)))
 
-(: env-literal-parser : (All (V I) (-> (Env V I) V (Parser I))))
-(define (env-literal-parser $env $value)
-  (#%app (env-literal-parser-fn $env) $value))
-
-(: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser I))))
+(: env-sentence-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-sentence-parser $env $value)
   (parser-bind word-parser
     (lambda (($word : Word))
-      (env-rhs-parser $env $value (word-symbol $word)))))
+      (env-rhs-parser $env $value
+        (word-symbol $word)))))
 
-(: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-(define (env-begin-parser $env $value $symbol)
-  (#%app (env-begin-parser-fn $env) $value $symbol))
-
-(: env-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
+(: env-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-rhs-parser $env $value $symbol)
   (parser-or
-    (env-space-rhs-parser $env $value $symbol)
-    (env-newline-rhs-parser $env $value $symbol)))
+    (env-symbol-parser $env $value $symbol)
+    (env-spaced-rhs-parser $env $value $symbol)
+    (env-indented-rhs-parser $env $value $symbol)))
 
-(: env-space-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-(define (env-space-rhs-parser $env $value $symbol)
-  (prefix-parser
-    space-parser
-    (env-begin-parser $env $value $symbol)))
+(: env-spaced-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-spaced-rhs-parser $env $value $symbol)
+  (prefix-parser space-parser
+    (env-symbol-spaced-parser $env $value $symbol)))
 
-(: env-newline-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser I))))
-(define (env-newline-rhs-parser $env $value $symbol)
-  (prefix-parser
-    newlines-parser
+(: env-indented-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-indented-rhs-parser $env $value $symbol)
+  (prefix-parser newline-parser
     (indented-parser
-      (prefix-parser
-        newlines-parser
-        (env-begin-parser $env $value $symbol)))))
+      (prefix-parser maybe-newlines-parser
+        (env-symbol-indented-parser $env $value $symbol)))))
 
-; -----------------------------------------------------------------------------------------
+(let ()
+  (define test-env : (Env (Stackof String))
+    (env
+      ; literal-parser: "#[char]" -> "[length]-literal-[char]"
+      (lambda (($string-stack : (Stackof String))) : (Parser (Stackof String))
+        (prefix-parser
+          (exact-string-parser "#")
+          (parser-map char-parser
+            (lambda (($char : Char))
+              (push $string-stack
+                (string-append
+                  (number->string (length $string-stack))
+                  "-literal-"
+                  (string $char)))))))
+      ; symbol-parser: -> "[length]-[symbol]"
+      (lambda (($string-stack : (Stackof String)) ($symbol : Symbol)) : (Parser (Stackof String))
+        (parser
+          (push
+            $string-stack
+            (string-append
+              (number->string (length $string-stack))
+              "-"
+              (symbol->string $symbol)))))
+      ; symbol-spaced-parser: number -> "[length]-[symbol]-spaced-[number]"
+      (lambda (($string-stack : (Stackof String)) ($symbol : Symbol)) : (Parser (Stackof String))
+        (parser-map (stack-parser numeric-char-parser)
+          (lambda (($char-stack : (Stackof Char)))
+            (push
+              $string-stack
+              (string-append
+                (number->string (length $string-stack))
+                "-"
+                (symbol->string $symbol)
+                "-spaced-"
+                (list->string (reverse $char-stack)))))))
+      ; symbol-indented-parser: string -> "[length]-[symbol]-indented-[string]"
+      (lambda (($string-stack : (Stackof String)) ($symbol : Symbol)) : (Parser (Stackof String))
+        (parser-map (stack-parser char-parser)
+          (lambda (($char-stack : (Stackof Char)))
+            (push
+              $string-stack
+              (string-append
+                (number->string (length $string-stack))
+                "-"
+                (symbol->string $symbol)
+                "-indented-"
+                (list->string (reverse $char-stack)))))))))
 
-(define line-stack-env : (Env (Stackof Line) Line)
-  (env
-    (lambda ((_ : (Stackof Line)))
-      literal-parser)
-    (lambda (($line-stack : (Stackof Line)) ($symbol : Symbol))
-      (parser-map (env-value-parser line-stack-env $line-stack)
-        (lambda (($rhs-line-stack : (Stackof Line)))
-          (sentence $symbol $rhs-line-stack))))
-    (lambda (($line-stack : (Stackof Line)) ($line : Line))
-      (push $line-stack $line))))
+  (define $parser : (Parser (Stackof String))
+    (env-value-parser test-env null))
+
+  (check-equal? (parse $parser "") null)
+  (check-equal? (parse $parser "#a\n") (stack "0-literal-a"))
+  (check-equal? (parse $parser "foo\n") (stack "0-foo"))
+  (check-equal? (parse $parser "foo 123\n") (stack "0-foo-spaced-123"))
+  (check-equal? (parse $parser "foo\n  this is\n  any string!\n") (stack "0-foo-indented-this is\nany string!"))
+  (check-equal? (parse $parser "#a\n#b\n") (stack "0-literal-a" "1-literal-b"))
+  )
 
 ; -----------------------------------------------------------------------------------------
 
@@ -372,6 +430,9 @@
 
 (define line-stack-parser : (Parser (Stackof Line))
   (stack-parser (parser-suffix line-parser newlines-parser)))
+
+;(define line-stack-parser : (Parser (Stackof Line))
+;  (env-value-parser line-stack-env null))
 
 (define (parse-sexp ($string : String)) : (U Sexp (Failure Any))
   (parse-map line-parser $string line-sexp))
