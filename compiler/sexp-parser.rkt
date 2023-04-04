@@ -270,11 +270,12 @@
 
 (: env-value-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-value-parser $env $value)
-  (repeat-parser $value
-    (lambda (($repeated-value : V))
-      (parser-suffix
-        (env-line-parser $env $repeated-value)
-        newline-parser))))
+  (remove-empty-lines-parser
+    (repeat-parser $value
+      (lambda (($repeated-value : V))
+        (parser-suffix
+          (env-line-parser $env $repeated-value)
+          newline-parser)))))
 
 (: env-line-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-line-parser $env $value)
@@ -364,6 +365,7 @@
   (check-equal? (parse $parser "foo 123\n") (stack "0-foo-spaced-123"))
   (check-equal? (parse $parser "foo\n  this is\n  any string!\n") (stack "0-foo-indented-this is\nany string!"))
   (check-equal? (parse $parser "#a\n#b\n") (stack "0-literal-a" "1-literal-b"))
+  (check-equal? (parse $parser "\n#a\n\n#b\n\n") (stack "0-literal-a" "1-literal-b"))
   )
 
 ; -----------------------------------------------------------------------------------------
