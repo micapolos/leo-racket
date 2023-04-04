@@ -83,7 +83,7 @@
   (positioned $value start-position))
 
 (define #:forall (I O)
-  (positioned-plus-char-map
+  (positioned-map
     ($positioned : (Positioned I))
     ($char : Char)
     ($value-fn : (-> I Position O)))
@@ -94,7 +94,7 @@
       (position-plus-char $position $char))))
 
 (check-equal?
-  (positioned-plus-char-map
+  (positioned-map
     (positioned "foo" (position 3 8))
     #\space
     (lambda (($string : String) ($position : Position))
@@ -129,7 +129,7 @@
     $initial-positioned-parser
     (string->list $string)
     (lambda (($positioned-parser : (Positioned (Parser V))) ($char : Char))
-      (positioned-plus-char-map $positioned-parser $char
+      (positioned-map $positioned-parser $char
         (lambda (($parser : (Parser V)) ($position : Position))
           (cond
             ((progress? $parser)
