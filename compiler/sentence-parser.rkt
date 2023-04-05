@@ -124,6 +124,9 @@
     (parse script-parser "foo\nbar\ngoo 123\nzar\n  123\n  456\n")
     (stack "0-foo" "1-bar" "2-goo+123" "3-zar+123+456"))
 
+  (check-equal? (parse script-parser "Foo\n")  (failure! parse-complete (at (position 1 2))))
+  (check-equal? (parse script-parser "fo1\n")  (failure! parse-complete (at (position 1 4))))
+
   (check-equal? (parse script-parser "foo")  (failure! parse-incomplete (at (position 1 4))))
   (check-equal? (parse script-parser "foo, ") (failure! parse-incomplete (at (position 1 6))))
 )
