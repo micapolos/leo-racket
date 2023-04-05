@@ -431,7 +431,7 @@
       (lambda (($item : I))
         (fold-parser ($fn $value $item) $item-parser $fn)))))
 
-(: repeat-parser : (All (V I) (-> V (-> V (Parser V)) (Parser V))))
+(: repeat-parser : (All (V) (-> V (-> V (Parser V)) (Parser V))))
 (define (repeat-parser $value $fn)
   (parser-or
     (parser $value)
@@ -439,11 +439,17 @@
       (lambda (($new-value : V))
         (repeat-parser $new-value $fn)))))
 
-(: then-repeat-parser : (All (V I) (-> (Parser V) (-> V (Parser V)) (Parser V))))
+(: then-repeat-parser : (All (V) (-> (Parser V) (-> V (Parser V)) (Parser V))))
 (define (then-repeat-parser $parser $fn)
   (parser-bind $parser
     (lambda (($first : V))
       (repeat-parser $first $fn))))
+
+(: then-repeat-separated-parser : (All (V) (-> (Parser V) (Parser True) (-> V (Parser V)) (Parser V))))
+(define (then-repeat-separated-parser $parser $separator $fn)
+  (then-repeat-parser $parser
+    (lambda (($value : V))
+      (prefix-parser $separator ($fn $value)))))
 
 ; -------------------------------------------------------------------------------
 

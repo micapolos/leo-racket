@@ -27,11 +27,11 @@
   (parser-or
     (parser $value)
     (parser-suffix
-      (then-repeat-parser
+      (then-repeat-separated-parser
         (env-line-parser $env $value)
+        line-separator-parser
         (lambda (($repeated-value : V))
-          (prefix-parser line-separator-parser
-            (env-line-parser $env $repeated-value))))
+          (env-line-parser $env $repeated-value)))
       newline-parser)))
 
 (: env-line-parser : (All (V I) (-> (Env V I) V (Parser V))))
@@ -77,13 +77,9 @@
       (env-begin-parser $env $value $symbol
         (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($combine-fn : (-> V I V))) : (Parser V)
           (parser-map
-            (parser-bind
-              (#%app $item-parser-fn $item)
-              (lambda (($first-item : I))
-                (repeat-parser $first-item
-                  (lambda (($following-item : I))
-                    (prefix-parser newline-parser
-                      (#%app $item-parser-fn $following-item))))))
+            (then-repeat-separated-parser (#%app $item-parser-fn $item) newline-parser
+              (lambda (($following-item : I))
+                (#%app $item-parser-fn $following-item)))
             (lambda (($parsed-item : I))
               (#%app $combine-fn $value $parsed-item))))))))
 
