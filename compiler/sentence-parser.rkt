@@ -4,7 +4,16 @@
   leo/compiler/sexp-parser)
 
 (data (V I) env
-  (begin-parser-fn : (-> V Symbol (-> I (-> I (Parser I)) (-> I V) (Parser V)) (Parser V))))
+  (begin-parser-fn :
+    (->
+      V ; currently parsed value
+      Symbol ; begin symbol
+      (->
+        I ; starting inner value
+        (-> I (Parser I)) ; inner item parser
+        (-> I V) ; end function, accumulating inner value into outer value
+        (Parser V))
+      (Parser V))))
 
 (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (-> I (-> I (Parser I)) (-> I V) (Parser V)) (Parser V))))
 (define (env-begin-parser $env $value $symbol $item-parser-fn)
