@@ -1,7 +1,7 @@
 #lang leo/typed
 
 (require
-  leo/compiler/sexp-parser)
+  leo/compiler/literal-parser)
 
 (data (V I) env
   (begin-parser-fn :
@@ -30,14 +30,16 @@
 (define comma-or-newline-separator-parser
   (parser-or comma-separator-parser newline-separator-parser))
 
-(: env-script-parser : (All (V I) (-> (Env V I) V (Parser V))))
-(define (env-script-parser $env $value)
+(: env-script-parser : (All (V I) (-> (Env V I) V (-> V (Parser V)) (Parser V))))
+(define (env-script-parser $env $value $custom-parser-fn)
   (parser-or
     (parser $value)
     (parser-suffix
       (repeat-separated-parser $value comma-or-newline-separator-parser
         (lambda (($repeated-value : V))
-          (env-sentence-parser $env $repeated-value)))
+          (parser-or
+            ($custom-parser-fn $repeated-value)
+            (env-sentence-parser $env $repeated-value))))
       newline-parser)))
 
 (: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser V))))
@@ -151,7 +153,9 @@
     (env-sentence-parser test-env (stack "foo" "bar")))
 
   (define script-parser : (Parser (Stackof String))
-    (env-script-parser test-env null))
+    (env-script-parser test-env null
+      (lambda ((_ : (Stackof String)))
+        (failure! `custom))))
 
   (check-equal? (parse sentence-parser "foo") (stack "foo" "bar" "2-foo"))
   (check-equal? (parse sentence-parser "foo 123") (stack "foo" "bar" "2-foo+123"))
