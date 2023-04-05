@@ -4,9 +4,9 @@
   leo/compiler/sexp-parser)
 
 (data (V I) env
-  (begin-parser-fn : (-> V Symbol (-> I (-> I (Parser I)) (-> V I V) (Parser V)) (Parser V))))
+  (begin-parser-fn : (-> V Symbol (-> I (-> I (Parser I)) (-> I V) (Parser V)) (Parser V))))
 
-(: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (-> I (-> I (Parser I)) (-> V I V) (Parser V)) (Parser V))))
+(: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (-> I (-> I (Parser I)) (-> I V) (Parser V)) (Parser V))))
 (define (env-begin-parser $env $value $symbol $item-parser-fn)
   (#%app (env-begin-parser-fn $env) $value $symbol $item-parser-fn))
 
@@ -46,31 +46,31 @@
 (: env-symbol-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-symbol-parser $env $value $symbol)
   (env-begin-parser $env $value $symbol
-    (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($combine-fn : (-> V I V))) : (Parser V)
-      (parser (#%app $combine-fn $value $item)))))
+    (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
+      (parser (#%app $end-fn $item)))))
 
 (: env-spaced-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-spaced-rhs-parser $env $value $symbol)
   (prefix-parser space-parser
     (env-begin-parser $env $value $symbol
-      (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($combine-fn : (-> V I V))) : (Parser V)
+      (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
         (parser-map
           (#%app $item-parser-fn $item)
           (lambda (($parsed-item : I))
-            (#%app $combine-fn $value $parsed-item)))))))
+            (#%app $end-fn $parsed-item)))))))
 
 (: env-indented-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-indented-rhs-parser $env $value $symbol)
   (prefix-parser newline-parser
     (indented-parser
       (env-begin-parser $env $value $symbol
-        (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($combine-fn : (-> V I V))) : (Parser V)
+        (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
           (parser-map
             (then-repeat-separated-parser (#%app $item-parser-fn $item) newline-parser
               (lambda (($following-item : I))
                 (#%app $item-parser-fn $following-item)))
             (lambda (($parsed-item : I))
-              (#%app $combine-fn $value $parsed-item))))))))
+              (#%app $end-fn $parsed-item))))))))
 
 (let ()
   (define test-env : (Env (Stackof String) String)
@@ -82,7 +82,7 @@
           ($fn : (->
             String
             (-> String (Parser String))
-            (-> (Stackof String) String (Stackof String))
+            (-> String (Stackof String))
             (Parser (Stackof String)))))
         : (Parser (Stackof String))
         (#%app $fn
@@ -95,7 +95,7 @@
               (lambda (($char-stack : (Stackof Char)))
                 (string-append $string "+"
                   (list->string (reverse $char-stack))))))
-          (lambda (($string-stack : (Stackof String)) ($string : String)) : (Stackof String)
+          (lambda (($string : String)) : (Stackof String)
             (push $string-stack $string))))))
 
   (define sentence-parser : (Parser (Stackof String))
