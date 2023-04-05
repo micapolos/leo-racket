@@ -151,6 +151,12 @@
   (check-equal? (parse sentence-parser "goo.gar: 123, 456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
   (check-equal? (parse sentence-parser "goo.gar\n  123\n  456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
 
+  (check-equal? (parse sentence-parser "Foo")  (failure! parse-complete (at (position 1 2))))
+  (check-equal? (parse sentence-parser "fOo")  (failure! parse-complete (at (position 1 3))))
+  (check-equal? (parse sentence-parser "foO")  (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse sentence-parser "1")  (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse sentence-parser "fo1")  (failure! parse-incomplete (at (position 1 4))))
+
   (check-equal? (parse script-parser "") null)
 
   (check-equal? (parse script-parser "foo\n") (stack "0-foo"))
@@ -165,11 +171,10 @@
     (parse script-parser "foo\nbar\ngoo 123\nzar\n  123\n  456\n")
     (stack "0-foo" "1-bar" "2-goo+123" "3-zar+123+456"))
 
-  (check-equal? (parse script-parser "Foo\n")  (failure! parse-complete (at (position 1 2))))
-  (check-equal? (parse script-parser "fo1\n")  (failure! parse-complete (at (position 1 4))))
-
   (check-equal? (parse script-parser "foo")  (failure! parse-incomplete (at (position 1 4))))
   (check-equal? (parse script-parser "foo:")  (failure! parse-incomplete (at (position 1 5))))
   (check-equal? (parse script-parser "foo: ")  (failure! parse-incomplete (at (position 1 6))))
+  (check-equal? (parse script-parser "foo.")  (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse script-parser "foo,") (failure! parse-incomplete (at (position 1 5))))
   (check-equal? (parse script-parser "foo, ") (failure! parse-incomplete (at (position 1 6))))
 )
