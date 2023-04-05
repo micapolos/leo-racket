@@ -1,7 +1,7 @@
 #lang leo/typed
 
 (require
-  leo/compiler/literal-parser)
+  leo/parser/literal-parser)
 
 (data (V I) env
   (begin-parser-fn :

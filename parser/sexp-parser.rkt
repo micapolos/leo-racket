@@ -1,8 +1,8 @@
 #lang leo/typed
 
 (require
-  leo/compiler/literal-parser
-  leo/compiler/sentence-parser)
+  leo/parser/literal-parser
+  leo/parser/sentence-parser)
 
 (define sexp-env : (Env (Stackof Sexp) (Stackof Sexp))
   (env
