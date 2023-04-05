@@ -431,6 +431,18 @@
       (lambda (($item : I))
         (fold-parser ($fn $value $item) $item-parser $fn)))))
 
+(bind $parser
+  (fold-parser (stack #\a #\b) dot-char-parser
+    (lambda (($char-stack : (Stackof Char)) ($char : Char))
+      (push $char-stack $char)))
+  (check-equal? (parse-string $parser "") "ab")
+  (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse-string $parser ".c") "abc")
+  (check-equal? (parse-string $parser ".c.") (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse-string $parser ".c.d") "abcd"))
+
+; ------------------------------------------------------------------------------
+
 (: repeat-parser : (All (V) (-> V (-> V (Parser V)) (Parser V))))
 (define (repeat-parser $value $fn)
   (parser-or
@@ -439,17 +451,44 @@
       (lambda (($new-value : V))
         (repeat-parser $new-value $fn)))))
 
-(: then-repeat-parser : (All (V) (-> (Parser V) (-> V (Parser V)) (Parser V))))
-(define (then-repeat-parser $parser $fn)
-  (parser-bind $parser
-    (lambda (($first : V))
-      (repeat-parser $first $fn))))
+(bind $parser
+  (repeat-parser
+    (stack #\a #\b)
+    (lambda (($char-stack : (Stackof Char)))
+      (parser-map dot-char-parser
+        (lambda (($char : Char))
+          (push $char-stack $char)))))
+  (check-equal? (parse-string $parser "") "ab")
+  (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse-string $parser ".c") "abc")
+  (check-equal? (parse-string $parser ".c.") (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse-string $parser ".c.d") "abcd"))
 
-(: then-repeat-separated-parser : (All (V) (-> (Parser V) (Parser True) (-> V (Parser V)) (Parser V))))
-(define (then-repeat-separated-parser $parser $separator $fn)
-  (then-repeat-parser $parser
-    (lambda (($value : V))
-      (prefix-parser $separator ($fn $value)))))
+; ------------------------------------------------------------------------------
+
+(: repeat-separated-parser : (All (V) (-> V (Parser True) (-> V (Parser V)) (Parser V))))
+(define (repeat-separated-parser $start-value $separator-parser $fn)
+  (parser-bind ($fn $start-value)
+    (lambda (($next-value : V))
+      (repeat-parser $next-value
+        (lambda (($repeated-value : V))
+          (prefix-parser $separator-parser ($fn $repeated-value)))))))
+
+(bind $parser
+  (repeat-separated-parser
+    (stack #\a #\b)
+    (exact-string-parser ", ")
+    (lambda (($char-stack : (Stackof Char)))
+      (parser-map dot-char-parser
+        (lambda (($char : Char))
+          (push $char-stack $char)))))
+  (check-equal? (parse-string $parser "") (failure! parse-incomplete (at (position 1 1))))
+  (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse-string $parser ".c") "abc")
+  (check-equal? (parse-string $parser ".c,") (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse-string $parser ".c, ") (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse-string $parser ".c, .") (failure! parse-incomplete (at (position 1 6))))
+  (check-equal? (parse-string $parser ".c, .d") "abcd"))
 
 ; -------------------------------------------------------------------------------
 
