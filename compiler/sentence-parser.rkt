@@ -21,17 +21,21 @@
 
 ; --------------------------------------------------------------------------------------
 
-(define sentence-separator-parser : (Parser True)
-  (parser-or
-    (exact-string-parser ", ")
-    newline-parser))
+(define comma-separator-parser
+  (exact-string-parser ", "))
+
+(define newline-separator-parser
+  newline-parser)
+
+(define comma-or-newline-separator-parser
+  (parser-or comma-separator-parser newline-separator-parser))
 
 (: env-script-parser : (All (V I) (-> (Env V I) V (Parser V))))
 (define (env-script-parser $env $value)
   (parser-or
     (parser $value)
     (parser-suffix
-      (repeat-separated-parser $value sentence-separator-parser
+      (repeat-separated-parser $value comma-or-newline-separator-parser
         (lambda (($repeated-value : V))
           (env-sentence-parser $env $repeated-value)))
       newline-parser)))
@@ -47,8 +51,9 @@
 (define (env-rhs-parser $env $value $symbol)
   (parser-or
     (env-symbol-parser $env $value $symbol)
-    (env-spaced-rhs-parser $env $value $symbol)
-    (env-indented-rhs-parser $env $value $symbol)))
+    (env-space-rhs-parser $env $value $symbol)
+    (env-colon-rhs-parser $env $value $symbol)
+    (env-newline-rhs-parser $env $value $symbol)))
 
 (: env-symbol-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-symbol-parser $env $value $symbol)
@@ -56,8 +61,8 @@
     (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
       (parser (#%app $end-fn $item)))))
 
-(: env-spaced-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
-(define (env-spaced-rhs-parser $env $value $symbol)
+(: env-space-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
+(define (env-space-rhs-parser $env $value $symbol)
   (prefix-parser space-parser
     (env-begin-parser $env $value $symbol
       (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
@@ -66,14 +71,26 @@
           (lambda (($parsed-item : I))
             (#%app $end-fn $parsed-item)))))))
 
-(: env-indented-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
-(define (env-indented-rhs-parser $env $value $symbol)
+(: env-colon-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
+(define (env-colon-rhs-parser $env $value $symbol)
+  (prefix-parser (exact-string-parser ": ")
+    (env-begin-parser $env $value $symbol
+      (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
+        (parser-map
+          (repeat-separated-parser $item comma-separator-parser
+            (lambda (($following-item : I))
+              (#%app $item-parser-fn $following-item)))
+          (lambda (($parsed-item : I))
+            (#%app $end-fn $parsed-item)))))))
+
+(: env-newline-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
+(define (env-newline-rhs-parser $env $value $symbol)
   (prefix-parser newline-parser
     (indented-parser
       (env-begin-parser $env $value $symbol
         (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
           (parser-map
-            (repeat-separated-parser $item sentence-separator-parser
+            (repeat-separated-parser $item comma-or-newline-separator-parser
               (lambda (($following-item : I))
                 (#%app $item-parser-fn $following-item)))
             (lambda (($parsed-item : I))
@@ -117,6 +134,9 @@
   (check-equal? (parse sentence-parser "foo\n  123") (stack "foo" "bar" "2-foo+123"))
   (check-equal? (parse sentence-parser "foo\n  123\n  456") (stack "foo" "bar" "2-foo+123+456"))
 
+  (check-equal? (parse sentence-parser "foo: 123") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse sentence-parser "foo: 123, 456") (stack "foo" "bar" "2-foo+123+456"))
+
   (check-equal? (parse script-parser "") null)
 
   (check-equal? (parse script-parser "foo\n") (stack "0-foo"))
@@ -135,5 +155,7 @@
   (check-equal? (parse script-parser "fo1\n")  (failure! parse-complete (at (position 1 4))))
 
   (check-equal? (parse script-parser "foo")  (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse script-parser "foo:")  (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse script-parser "foo: ")  (failure! parse-incomplete (at (position 1 6))))
   (check-equal? (parse script-parser "foo, ") (failure! parse-incomplete (at (position 1 6))))
 )
