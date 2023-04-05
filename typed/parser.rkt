@@ -421,26 +421,6 @@
   (check-equal? (parse $parser "1") #\1)
   (check-equal? (parse $parser " ") (failure-at (invalid #\space) (position 1 1))))
 
-; -------------------------------------------------------------------------------
-
-(: fold-parser : (All (V I) (-> V (Parser I) (-> V I V) (Parser V))))
-(define (fold-parser $value $item-parser $fn)
-  (parser-or
-    (parser $value)
-    (parser-bind $item-parser
-      (lambda (($item : I))
-        (fold-parser ($fn $value $item) $item-parser $fn)))))
-
-(bind $parser
-  (fold-parser (stack #\a #\b) dot-char-parser
-    (lambda (($char-stack : (Stackof Char)) ($char : Char))
-      (push $char-stack $char)))
-  (check-equal? (parse-string $parser "") "ab")
-  (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
-  (check-equal? (parse-string $parser ".c") "abc")
-  (check-equal? (parse-string $parser ".c.") (failure! parse-incomplete (at (position 1 4))))
-  (check-equal? (parse-string $parser ".c.d") "abcd"))
-
 ; ------------------------------------------------------------------------------
 
 (: repeat-parser : (All (V) (-> V (-> V (Parser V)) (Parser V))))
@@ -458,6 +438,26 @@
       (parser-map dot-char-parser
         (lambda (($char : Char))
           (push $char-stack $char)))))
+  (check-equal? (parse-string $parser "") "ab")
+  (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse-string $parser ".c") "abc")
+  (check-equal? (parse-string $parser ".c.") (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse-string $parser ".c.d") "abcd"))
+
+; -------------------------------------------------------------------------------
+
+(: fold-parser : (All (V I) (-> V (Parser I) (-> V I V) (Parser V))))
+(define (fold-parser $value $item-parser $combine)
+  (repeat-parser $value
+    (lambda (($folded-value : V))
+      (parser-map $item-parser
+        (lambda (($item : I))
+          ($combine $folded-value $item))))))
+
+(bind $parser
+  (fold-parser (stack #\a #\b) dot-char-parser
+    (lambda (($char-stack : (Stackof Char)) ($char : Char))
+      (push $char-stack $char)))
   (check-equal? (parse-string $parser "") "ab")
   (check-equal? (parse-string $parser ".") (failure! parse-incomplete (at (position 1 2))))
   (check-equal? (parse-string $parser ".c") "abc")
