@@ -242,6 +242,11 @@
     text-literal-parser
     integer-literal-parser))
 
+(define (literal-sexp ($literal : Literal)) : Sexp
+  (cond
+    ((integer-literal? $literal) (integer-literal-integer $literal))
+    ((text-literal? $literal) (text-literal-string $literal))))
+
 ; -----------------------------------------------------------------------------------------
 
 (data sentence
