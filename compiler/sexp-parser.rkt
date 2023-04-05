@@ -16,13 +16,9 @@
           (-> (Stackof Sexp) (Stackof Sexp))
           (Parser (Stackof Sexp)))))
       : (Parser (Stackof Sexp))
-      (#%app $fn
-        ; initial
-        null
-        ; item-parser-fn
+      (#%app $fn null
         (lambda (($inner-sexp-stack : (Stackof Sexp))) : (Parser (Stackof Sexp))
           (plus-sexp-line-parser $inner-sexp-stack))
-        ; end-fn
         (lambda (($inner-sexp-stack : (Stackof Sexp))) : (Stackof Sexp)
           (push $sexp-stack
             (sexp-stack-sexp $symbol $inner-sexp-stack)))))))
