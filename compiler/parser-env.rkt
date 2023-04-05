@@ -17,8 +17,16 @@
 
 ; --------------------------------------------------------------------------------------
 
-(: env-parser : (All (V I) (-> (Env V I) V (Parser V))))
-(define (env-parser $env $value)
+(: env-script-parser : (All (V I) (-> (Env V I) V (Parser V))))
+(define (env-script-parser $env $value)
+  (repeat-parser $value
+    (lambda (($repeated-value : V))
+      (parser-suffix
+        (env-line-parser $env $repeated-value)
+        newline-parser))))
+
+(: env-line-parser : (All (V I) (-> (Env V I) V (Parser V))))
+(define (env-line-parser $env $value)
   (parser-or
     (env-literal-parser $env $value)
     (env-sentence-parser $env $value)))
@@ -108,12 +116,19 @@
           (lambda (($string-stack : (Stackof String)) ($string : String)) : (Stackof String)
             (push $string-stack $string))))))
 
-  (define $parser : (Parser (Stackof String))
-    (env-parser test-env (stack "foo" "bar")))
+  (define line-parser : (Parser (Stackof String))
+    (env-line-parser test-env (stack "foo" "bar")))
 
-  (check-equal? (parse $parser "#a") (stack "foo" "bar" "2-literal-a"))
-  (check-equal? (parse $parser "foo") (stack "foo" "bar" "2-foo"))
-  (check-equal? (parse $parser "foo 123") (stack "foo" "bar" "2-foo+123"))
-  (check-equal? (parse $parser "foo\n  123") (stack "foo" "bar" "2-foo+123"))
-  (check-equal? (parse $parser "foo\n  123\n  456") (stack "foo" "bar" "2-foo+123+456"))
+  (define script-parser : (Parser (Stackof String))
+    (env-script-parser test-env null))
+
+  (check-equal? (parse line-parser "#a") (stack "foo" "bar" "2-literal-a"))
+  (check-equal? (parse line-parser "foo") (stack "foo" "bar" "2-foo"))
+  (check-equal? (parse line-parser "foo 123") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse line-parser "foo\n  123") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse line-parser "foo\n  123\n  456") (stack "foo" "bar" "2-foo+123+456"))
+
+  (check-equal? (parse script-parser "") null)
+  (check-equal? (parse script-parser "#a\n") (stack "0-literal-a"))
+  (check-equal? (parse script-parser "#a\nfoo\nfoo 123\n") (stack "0-literal-a" "1-foo" "2-foo+123"))
 )
