@@ -4,12 +4,7 @@
   leo/compiler/sexp-parser)
 
 (data (V I) env
-  (literal-parser-fn : (-> V (Parser V)))
   (begin-parser-fn : (-> V Symbol (-> I (-> I (Parser I)) (-> V I V) (Parser V)) (Parser V))))
-
-(: env-literal-parser : (All (V I) (-> (Env V I) V (Parser V))))
-(define (env-literal-parser $env $value)
-  (#%app (env-literal-parser-fn $env) $value))
 
 (: env-begin-parser : (All (V I) (-> (Env V I) V Symbol (-> I (-> I (Parser I)) (-> V I V) (Parser V)) (Parser V))))
 (define (env-begin-parser $env $value $symbol $item-parser-fn)
@@ -17,7 +12,7 @@
 
 ; --------------------------------------------------------------------------------------
 
-(define line-separator-parser : (Parser True)
+(define sentence-separator-parser : (Parser True)
   (parser-or
     (exact-string-parser ", ")
     newline-parser))
@@ -28,17 +23,11 @@
     (parser $value)
     (parser-suffix
       (then-repeat-separated-parser
-        (env-line-parser $env $value)
-        line-separator-parser
+        (env-sentence-parser $env $value)
+        sentence-separator-parser
         (lambda (($repeated-value : V))
-          (env-line-parser $env $repeated-value)))
+          (env-sentence-parser $env $repeated-value)))
       newline-parser)))
-
-(: env-line-parser : (All (V I) (-> (Env V I) V (Parser V))))
-(define (env-line-parser $env $value)
-  (parser-or
-    (env-literal-parser $env $value)
-    (env-sentence-parser $env $value)))
 
 (: env-sentence-parser : (All (V I) (-> (Env V I) V (Parser V))))
 (define (env-sentence-parser $env $value)
@@ -86,18 +75,6 @@
 (let ()
   (define test-env : (Env (Stackof String) String)
     (env
-      ; literal-parser: "#[char]" -> "[length]-literal-[char]"
-      (lambda (($string-stack : (Stackof String))) : (Parser (Stackof String))
-        (prefix-parser
-          (exact-string-parser "#")
-          (parser-map char-parser
-            (lambda (($char : Char))
-              (push $string-stack
-                (string-append
-                  (number->string (length $string-stack))
-                  "-literal-"
-                  (string $char)))))))
-      ; begin-parser: -> "[length]-[symbol]"
       (lambda
         (
           ($string-stack : (Stackof String))
@@ -121,33 +98,32 @@
           (lambda (($string-stack : (Stackof String)) ($string : String)) : (Stackof String)
             (push $string-stack $string))))))
 
-  (define line-parser : (Parser (Stackof String))
-    (env-line-parser test-env (stack "foo" "bar")))
+  (define sentence-parser : (Parser (Stackof String))
+    (env-sentence-parser test-env (stack "foo" "bar")))
 
   (define script-parser : (Parser (Stackof String))
     (env-script-parser test-env null))
 
-  (check-equal? (parse line-parser "#a") (stack "foo" "bar" "2-literal-a"))
-  (check-equal? (parse line-parser "foo") (stack "foo" "bar" "2-foo"))
-  (check-equal? (parse line-parser "foo 123") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse sentence-parser "foo") (stack "foo" "bar" "2-foo"))
+  (check-equal? (parse sentence-parser "foo 123") (stack "foo" "bar" "2-foo+123"))
 
-  (check-equal? (parse line-parser "foo\n  123") (stack "foo" "bar" "2-foo+123"))
-  (check-equal? (parse line-parser "foo\n  123\n  456") (stack "foo" "bar" "2-foo+123+456"))
+  (check-equal? (parse sentence-parser "foo\n  123") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse sentence-parser "foo\n  123\n  456") (stack "foo" "bar" "2-foo+123+456"))
 
   (check-equal? (parse script-parser "") null)
 
-  (check-equal? (parse script-parser "#a\n") (stack "0-literal-a"))
+  (check-equal? (parse script-parser "foo\n") (stack "0-foo"))
 
-  (check-equal? (parse script-parser "#a\n#b\n") (stack "0-literal-a" "1-literal-b"))
-  (check-equal? (parse script-parser "#a, #b\n") (stack "0-literal-a" "1-literal-b"))
+  (check-equal? (parse script-parser "foo\nbar\n") (stack "0-foo" "1-bar"))
+  (check-equal? (parse script-parser "foo, bar\n") (stack "0-foo" "1-bar"))
 
-  (check-equal? (parse script-parser "#a\n#b, #c\n") (stack "0-literal-a" "1-literal-b" "2-literal-c"))
-  (check-equal? (parse script-parser "#a, #b\n#c\n") (stack "0-literal-a" "1-literal-b" "2-literal-c"))
+  (check-equal? (parse script-parser "foo\nbar, goo\n") (stack "0-foo" "1-bar" "2-goo"))
+  (check-equal? (parse script-parser "foo, bar\ngoo\n") (stack "0-foo" "1-bar" "2-goo"))
 
   (check-equal?
-    (parse script-parser "#a\nfoo\nfoo 123\nbar\n  123\n  456\n")
-    (stack "0-literal-a" "1-foo" "2-foo+123" "3-bar+123+456"))
+    (parse script-parser "foo\nbar\ngoo 123\nzar\n  123\n  456\n")
+    (stack "0-foo" "1-bar" "2-goo+123" "3-zar+123+456"))
 
-  (check-equal? (parse script-parser "#a")  (failure! parse-incomplete (at (position 1 3))))
-  (check-equal? (parse script-parser "#a, ") (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse script-parser "foo")  (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse script-parser "foo, ") (failure! parse-incomplete (at (position 1 6))))
 )
