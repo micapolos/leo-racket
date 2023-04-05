@@ -27,13 +27,11 @@
   (parser-or
     (parser $value)
     (parser-suffix
-      (parser-bind
+      (then-repeat-parser
         (env-line-parser $env $value)
-        (lambda (($first-value : V))
-          (repeat-parser $first-value
-            (lambda (($repeated-value : V))
-              (prefix-parser line-separator-parser
-                (env-line-parser $env $repeated-value))))))
+        (lambda (($repeated-value : V))
+          (prefix-parser line-separator-parser
+            (env-line-parser $env $repeated-value))))
       newline-parser)))
 
 (: env-line-parser : (All (V I) (-> (Env V I) V (Parser V))))

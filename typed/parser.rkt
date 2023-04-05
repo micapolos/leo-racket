@@ -439,6 +439,12 @@
       (lambda (($new-value : V))
         (repeat-parser $new-value $fn)))))
 
+(: then-repeat-parser : (All (V I) (-> (Parser V) (-> V (Parser V)) (Parser V))))
+(define (then-repeat-parser $parser $fn)
+  (parser-bind $parser
+    (lambda (($first : V))
+      (repeat-parser $first $fn))))
+
 ; -------------------------------------------------------------------------------
 
 (: push-parser : (All (V) (-> (Stackof V) (Parser V) (Parser (Stackof V)))))
