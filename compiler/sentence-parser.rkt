@@ -54,6 +54,7 @@
     (env-dot-rhs-parser $env $value $symbol)
     (env-space-rhs-parser $env $value $symbol)
     (env-colon-rhs-parser $env $value $symbol)
+    (env-parens-rhs-parser $env $value $symbol)
     (env-newline-rhs-parser $env $value $symbol)))
 
 (: env-symbol-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
@@ -91,6 +92,22 @@
           (lambda (($parsed-item : I))
             (#%app $end-fn $parsed-item)))))))
 
+(: env-parens-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
+(define (env-parens-rhs-parser $env $value $symbol)
+  (prefix-parser-suffix
+    (exact-string-parser "(")
+    (env-begin-parser $env $value $symbol
+      (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
+        (parser-or
+          (parser (#%app $end-fn $item))
+          (parser-map
+            (repeat-separated-parser $item comma-separator-parser
+              (lambda (($following-item : I))
+                (#%app $item-parser-fn $following-item)))
+            (lambda (($parsed-item : I))
+              (#%app $end-fn $parsed-item))))))
+    (exact-string-parser ")")))
+
 (: env-newline-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-newline-rhs-parser $env $value $symbol)
   (prefix-parser newline-parser
@@ -123,7 +140,7 @@
             "-"
             (symbol->string $symbol))
           (lambda (($string : String)) : (Parser String)
-            (parser-map (stack-parser numeric-char-parser)
+            (parser-map (non-empty-stack-parser numeric-char-parser)
               (lambda (($char-stack : (Stackof Char)))
                 (string-append $string "+"
                   (list->string (reverse $char-stack))))))
@@ -145,17 +162,28 @@
   (check-equal? (parse sentence-parser "foo: 123") (stack "foo" "bar" "2-foo+123"))
   (check-equal? (parse sentence-parser "foo: 123, 456") (stack "foo" "bar" "2-foo+123+456"))
 
+  (check-equal? (parse sentence-parser "foo()") (stack "foo" "bar" "2-foo"))
+  (check-equal? (parse sentence-parser "foo(123)") (stack "foo" "bar" "2-foo+123"))
+  (check-equal? (parse sentence-parser "foo(123, 456)") (stack "foo" "bar" "2-foo+123+456"))
+
   (check-equal? (parse sentence-parser "goo.gar") (stack "foo" "bar" "2-goo" "3-gar"))
   (check-equal? (parse sentence-parser "goo.gar 123") (stack "foo" "bar" "2-goo" "3-gar+123"))
   (check-equal? (parse sentence-parser "goo.gar: 123") (stack "foo" "bar" "2-goo" "3-gar+123"))
   (check-equal? (parse sentence-parser "goo.gar: 123, 456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
   (check-equal? (parse sentence-parser "goo.gar\n  123\n  456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
 
-  (check-equal? (parse sentence-parser "Foo")  (failure! parse-complete (at (position 1 2))))
-  (check-equal? (parse sentence-parser "fOo")  (failure! parse-complete (at (position 1 3))))
-  (check-equal? (parse sentence-parser "foO")  (failure! parse-incomplete (at (position 1 4))))
-  (check-equal? (parse sentence-parser "1")  (failure! parse-incomplete (at (position 1 2))))
-  (check-equal? (parse sentence-parser "fo1")  (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse sentence-parser "foo:")  (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse sentence-parser "foo: ")  (failure! parse-incomplete (at (position 1 6))))
+  (check-equal? (parse sentence-parser "foo(")  (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse sentence-parser "foo.")  (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse sentence-parser "foo,") (failure! parse-incomplete (at (position 1 5))))
+  (check-equal? (parse sentence-parser "foo, ") (failure! parse-complete (at (position 1 5))))
+
+  (check-equal? (parse sentence-parser "Foo") (failure! parse-complete (at (position 1 2))))
+  (check-equal? (parse sentence-parser "fOo") (failure! parse-complete (at (position 1 3))))
+  (check-equal? (parse sentence-parser "foO") (failure! parse-incomplete (at (position 1 4))))
+  (check-equal? (parse sentence-parser "1") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse sentence-parser "fo1") (failure! parse-incomplete (at (position 1 4))))
 
   (check-equal? (parse script-parser "") null)
 
@@ -172,9 +200,4 @@
     (stack "0-foo" "1-bar" "2-goo+123" "3-zar+123+456"))
 
   (check-equal? (parse script-parser "foo")  (failure! parse-incomplete (at (position 1 4))))
-  (check-equal? (parse script-parser "foo:")  (failure! parse-incomplete (at (position 1 5))))
-  (check-equal? (parse script-parser "foo: ")  (failure! parse-incomplete (at (position 1 6))))
-  (check-equal? (parse script-parser "foo.")  (failure! parse-incomplete (at (position 1 5))))
-  (check-equal? (parse script-parser "foo,") (failure! parse-incomplete (at (position 1 5))))
-  (check-equal? (parse script-parser "foo, ") (failure! parse-incomplete (at (position 1 6))))
 )
