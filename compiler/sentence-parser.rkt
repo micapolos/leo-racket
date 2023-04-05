@@ -51,6 +51,7 @@
 (define (env-rhs-parser $env $value $symbol)
   (parser-or
     (env-symbol-parser $env $value $symbol)
+    (env-dot-rhs-parser $env $value $symbol)
     (env-space-rhs-parser $env $value $symbol)
     (env-colon-rhs-parser $env $value $symbol)
     (env-newline-rhs-parser $env $value $symbol)))
@@ -60,6 +61,13 @@
   (env-begin-parser $env $value $symbol
     (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
       (parser (#%app $end-fn $item)))))
+
+(: env-dot-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
+(define (env-dot-rhs-parser $env $value $symbol)
+  (prefix-parser (exact-char-parser #\.)
+    (env-begin-parser $env $value $symbol
+      (lambda (($item : I) ($item-parser-fn : (-> I (Parser I))) ($end-fn : (-> I V))) : (Parser V)
+        (env-sentence-parser $env (#%app $end-fn $item))))))
 
 (: env-space-rhs-parser : (All (V I) (-> (Env V I) V Symbol (Parser V))))
 (define (env-space-rhs-parser $env $value $symbol)
@@ -136,6 +144,12 @@
 
   (check-equal? (parse sentence-parser "foo: 123") (stack "foo" "bar" "2-foo+123"))
   (check-equal? (parse sentence-parser "foo: 123, 456") (stack "foo" "bar" "2-foo+123+456"))
+
+  (check-equal? (parse sentence-parser "goo.gar") (stack "foo" "bar" "2-goo" "3-gar"))
+  (check-equal? (parse sentence-parser "goo.gar 123") (stack "foo" "bar" "2-goo" "3-gar+123"))
+  (check-equal? (parse sentence-parser "goo.gar: 123") (stack "foo" "bar" "2-goo" "3-gar+123"))
+  (check-equal? (parse sentence-parser "goo.gar: 123, 456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
+  (check-equal? (parse sentence-parser "goo.gar\n  123\n  456") (stack "foo" "bar" "2-goo" "3-gar+123+456"))
 
   (check-equal? (parse script-parser "") null)
 
