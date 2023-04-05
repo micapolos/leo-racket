@@ -24,11 +24,17 @@
 
 (: env-script-parser : (All (V I) (-> (Env V I) V (Parser V))))
 (define (env-script-parser $env $value)
-  (repeat-parser $value
-    (lambda (($repeated-value : V))
-      (parser-suffix
-        (env-line-parser $env $repeated-value)
-        line-separator-parser))))
+  (parser-or
+    (parser $value)
+    (parser-suffix
+      (parser-bind
+        (env-line-parser $env $value)
+        (lambda (($first-value : V))
+          (repeat-parser $first-value
+            (lambda (($repeated-value : V))
+              (prefix-parser line-separator-parser
+                (env-line-parser $env $repeated-value))))))
+      newline-parser)))
 
 (: env-line-parser : (All (V I) (-> (Env V I) V (Parser V))))
 (define (env-line-parser $env $value)
@@ -147,4 +153,7 @@
   (check-equal?
     (parse script-parser "#a\nfoo\nfoo 123\nbar\n  123\n  456\n")
     (stack "0-literal-a" "1-foo" "2-foo+123" "3-bar+123+456"))
+
+  (check-equal? (parse script-parser "#a")  (failure! parse-incomplete (at (position 1 3))))
+  (check-equal? (parse script-parser "#a, ") (failure! parse-incomplete (at (position 1 5))))
 )
