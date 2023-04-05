@@ -130,5 +130,8 @@
 
   (check-equal? (parse script-parser "") null)
   (check-equal? (parse script-parser "#a\n") (stack "0-literal-a"))
-  (check-equal? (parse script-parser "#a\nfoo\nfoo 123\n") (stack "0-literal-a" "1-foo" "2-foo+123"))
+
+  (check-equal?
+    (parse script-parser "#a\nfoo\nfoo 123\nbar\n  123\n  456\n")
+    (stack "0-literal-a" "1-foo" "2-foo+123" "3-bar+123+456"))
 )
