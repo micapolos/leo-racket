@@ -235,6 +235,75 @@
 
 ; -----------------------------------------------------------------------------------------
 
+(: parser-bind1 : (All (I O) (-> (Parser I) (-> I (Parser O)) (Parser O))))
+(define (parser-bind1 $left-parser $fn)
+  (parser-bind-progress $left-parser
+    (lambda (($left-progress : (Progress I)))
+      (bind $left-value (progress-value $left-progress)
+        (cond
+          ($left-value
+            (bind $right-parser ($fn $left-value)
+              (cond
+                ((progress? $right-parser)
+                  (progress
+                    (progress-value $right-parser)
+                    (lambda (($char : Char))
+                      (bind $left-parser-plus (parser-plus-char $left-parser $char)
+                        (cond
+                          ((progress? $left-parser-plus)
+                            (parser-bind1 $left-parser-plus $fn))
+                          ((failure? $left-parser-plus)
+                            (parser-plus-char $right-parser $char)))))))
+                ((failure? $right-parser)
+                  (progress #f
+                    (lambda (($char : Char))
+                      (parser-bind1
+                        (parser-plus-char $left-parser $char)
+                        $fn)))))))
+          (else
+            (progress #f
+              (lambda (($char : Char))
+                (parser-bind1
+                  (parser-plus-char $left-parser $char)
+                  $fn)))))))))
+
+(bind $parser
+  (parser-bind1 (dot-last-char-parser #f)
+    (lambda (($char : Char))
+      (parser-bind1 (exact-char-parser #\,)
+        (lambda ((_ : True))
+          (parser (string $char #\.))))))
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser ".") (failure-at parse-incomplete (position 1 2)))
+  (check-equal? (parse $parser ",") (failure-at (invalid #\,) (position 1 1)))
+  (check-equal? (parse $parser ".a") (failure-at parse-incomplete (position 1 3)))
+  (check-equal? (parse $parser ".a,") "a.")
+  (check-equal? (parse $parser ".a.") (failure-at parse-incomplete (position 1 4)))
+  (check-equal? (parse $parser ".a.b") (failure-at parse-incomplete (position 1 5)))
+  (check-equal? (parse $parser ".a.b,") "b."))
+
+(bind $parser (parser-bind1 (failure parse-complete) (lambda (($char : Char)) (failure parse-complete)))
+  (check-equal? (parse $parser "") (failure parse-complete))
+  (check-equal? (parse $parser "a") (failure parse-complete)))
+
+(bind $parser (parser-bind1 char-parser (lambda (($char : Char)) (parser (string $char))))
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser "a") "a")
+  (check-equal? (parse $parser "ab") (failure-at parse-complete (position 1 2))))
+
+(bind $parser
+  (parser-bind1 char-parser
+    (lambda (($left-char : Char))
+      (parser-bind1 char-parser
+        (lambda (($right-char : Char))
+          (parser (string $left-char $right-char))))))
+  (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
+  (check-equal? (parse $parser "a") (failure-at parse-incomplete (position 1 2)))
+  (check-equal? (parse $parser "ab") "ab")
+  (check-equal? (parse $parser "abc") (failure-at parse-complete (position 1 3))))
+
+; -----------------------------------------------------------------------------------------
+
 (: parser-or-bind : (All (I O) (-> (Parser I) (Option (Parser O)) (-> I (Parser O)) (Parser O))))
 (define (parser-or-bind $left-parser $right-parser-option $fn)
   (cond
