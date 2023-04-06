@@ -28,7 +28,7 @@
 (define (parse-sexp-list ($string : String)) : (U (Stackof Sexp) (Failure Any))
   (parse
     (parser-map
-      (env-script-parser sexp-env null)
+      (env-plus-script-parser sexp-env null)
       (lambda (($sexp-stack : (Stackof Sexp)))
         (reverse $sexp-stack)))
     $string))

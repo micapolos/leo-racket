@@ -33,18 +33,18 @@
     comma-separator-parser
     newlines-separator-parser))
 
-(: env-script-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-script-parser $env $value)
+(: env-plus-script-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-plus-script-parser $env $value)
   (prefix-parser maybe-newlines-parser
     (value-or-parser $value
       (parser-suffix
         (repeat-separated-parser $value comma-or-newlines-separator-parser
           (lambda (($value : V))
-            (env-line-parser $env $value)))
+            (env-plus-line-parser $env $value)))
         newlines-parser))))
 
-(: env-line-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-line-parser $env $value)
+(: env-plus-line-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-plus-line-parser $env $value)
   (parser-or
     (env-atom-line-parser $env $value)
     (env-sentence-parser $env $value)))
@@ -89,7 +89,7 @@
       (env-begin-parser $env $value $symbol)
       (lambda (($rhs : V))
         (parser-bind
-          (env-line-parser $env $rhs)
+          (env-plus-line-parser $env $rhs)
           (lambda (($rhs : V))
             (env-end-parser $env $value $rhs)))))))
 
@@ -102,7 +102,7 @@
         (parser-bind
           (repeat-separated-parser $rhs comma-separator-parser
             (lambda (($rhs : V))
-              (env-line-parser $env $rhs)))
+              (env-plus-line-parser $env $rhs)))
           (lambda (($rhs : V))
             (env-end-parser $env $value $rhs)))))))
 
@@ -116,7 +116,7 @@
           (parser-bind
             (repeat-separated-parser $rhs comma-separator-parser
               (lambda (($rhs : V))
-                (env-line-parser $env $rhs)))
+                (env-plus-line-parser $env $rhs)))
             (lambda (($rhs : V))
               (env-end-parser $env $value $rhs))))))
     (exact-string-parser ")")))
@@ -131,7 +131,7 @@
           (parser-bind
             (repeat-separated-parser $rhs comma-or-newlines-separator-parser
               (lambda (($rhs : V))
-                (env-line-parser $env $rhs)))
+                (env-plus-line-parser $env $rhs)))
             (lambda (($rhs : V))
               (env-end-parser $env $value $rhs))))))))
 
@@ -144,4 +144,4 @@
         (lambda (($rhs : V))
           (env-end-parser $env $value $rhs)))
       (lambda (($dotted : V))
-        (env-line-parser $env $dotted)))))
+        (env-plus-line-parser $env $dotted)))))
