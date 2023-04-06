@@ -145,3 +145,28 @@
 
 (check-equal? (non-empty-reverse (list 1)) (list 1))
 (check-equal? (non-empty-reverse (list 1 2 3 4)) (list 4 3 2 1))
+
+; ----------------------------------------------------------------------------
+
+(define #:forall (V) (car-option ($list : (Listof V))) : (Option V)
+  (cond
+    ((null? $list) #f)
+    (else (car $list))))
+
+(check-equal? (car-option null) #f)
+(check-equal? (car-option (list 1 2 3)) 1)
+
+; ----------------------------------------------------------------------------
+
+(define #:forall (I O) (filter-map-fn ($list : (Listof I)) ($fn : (-> I (Option O)))) : (Listof O)
+  (filter-false (map $fn $list)))
+
+(check-equal?
+  (filter-map-fn
+    (list 1 2 3 4 5 6)
+    (lambda (($integer : Integer)) : (Option String)
+      (and
+        (even? $integer)
+        (number->string $integer))))
+  (list "2" "4" "6"))
+

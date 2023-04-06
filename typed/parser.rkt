@@ -36,7 +36,7 @@
   `(invalid ,$any))
 
 (define (expected ($any : Any))
-  `(invalid ,$any))
+  `(expected ,$any))
 
 (define (at ($position : Position))
   `(at ,$position))
@@ -381,6 +381,71 @@
           (parser-bind $suffix
             (lambda ((_ : True))
               (parser $value))))))))
+
+; ---------------------------------------------------------------------------------
+
+(: car-parser : (All (V) (-> (Listof (Parser V)) (Parser V))))
+(define (car-parser $parser-list)
+  (bind $progress-list
+    (filter-map-fn $parser-list
+      (lambda (($parser : (Parser V)))
+        (cond
+          ((progress? $parser) $parser)
+          ((failure? $parser) #f))))
+    (cond
+      ((null? $progress-list) (failure! `null))
+      (else
+        (progress
+          (car-option
+            (filter-map-fn
+              $progress-list
+              (ann progress-value (-> (Progress V) (Option V)))))
+          (lambda (($char : Char))
+            (bind $new-progress-list
+              (filter-map-fn $progress-list
+                (lambda (($progress : (Progress V)))
+                  (bind $parser (progress-plus-char $progress $char)
+                    (cond
+                      ((progress? $parser) $parser)
+                      ((failure? $parser) #f)))))
+              (cond
+                ((null? $new-progress-list) (failure! (invalid $char)))
+                (else (car $new-progress-list))))))))))
+
+(bind $parser
+  (car-parser (list (failure! `a) (failure! `b)))
+  (check-equal? (parse $parser "") (failure! `null))
+)
+
+(bind $parser
+  (car-parser
+    (list
+      (parser-suffix alphabetic-char-parser (exact-char-parser #\.))
+      (parser-suffix numeric-char-parser (exact-char-parser #\.))))
+  (check-equal? (parse $parser "") (failure! parse-incomplete (at (position 1 1))))
+  (check-equal? (parse $parser "!") (failure! (invalid #\!) (at (position 1 1))))
+  (check-equal? (parse $parser "a") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse $parser "1") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse $parser "a.") #\a)
+  (check-equal? (parse $parser "1.") #\1)
+  (check-equal? (parse $parser "a!") (failure! (invalid #\!) (expected #\.) (at (position 1 2))))
+  (check-equal? (parse $parser "1!") (failure! (invalid #\!) (expected #\.) (at (position 1 2))))
+  (check-equal? (parse $parser "a..") (failure! parse-complete (at (position 1 3))))
+  (check-equal? (parse $parser "1..") (failure! parse-complete (at (position 1 3))))
+)
+
+(bind $parser
+  (car-parser
+    (list
+      (prefix-parser (exact-char-parser #\.) alphabetic-char-parser)
+      (prefix-parser (exact-char-parser #\.) numeric-char-parser)))
+  (check-equal? (parse $parser "") (failure! parse-incomplete (at (position 1 1))))
+  (check-equal? (parse $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse $parser "!") (failure! (invalid #\!) (at (position 1 1))))
+  (check-equal? (parse $parser ".a") #\a)
+  (check-equal? (parse $parser ".1") (failure! (invalid #\1) (at (position 1 2))))
+  (check-equal? (parse $parser ".a.") (failure! parse-complete (at (position 1 3))))
+)
 
 ; ---------------------------------------------------------------------------------
 
