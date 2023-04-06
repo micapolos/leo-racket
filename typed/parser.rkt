@@ -236,36 +236,42 @@
 ; -----------------------------------------------------------------------------------------
 
 (: parser-bind1 : (All (I O) (-> (Parser I) (-> I (Parser O)) (Parser O))))
-(define (parser-bind1 $left-parser $fn)
-  (parser-bind-progress $left-parser
-    (lambda (($left-progress : (Progress I)))
-      (bind $left-value (progress-value $left-progress)
+(define (parser-bind1 $parser $fn)
+  (parser-bind-progress $parser
+    (lambda (($progress : (Progress I)))
+      (bind $value (progress-value $progress)
         (cond
-          ($left-value
-            (bind $right-parser ($fn $left-value)
-              (cond
-                ((progress? $right-parser)
-                  (progress
-                    (progress-value $right-parser)
-                    (lambda (($char : Char))
-                      (bind $left-parser-plus (parser-plus-char $left-parser $char)
-                        (cond
-                          ((progress? $left-parser-plus)
-                            (parser-bind1 $left-parser-plus $fn))
-                          ((failure? $left-parser-plus)
-                            (parser-plus-char $right-parser $char)))))))
-                ((failure? $right-parser)
-                  (progress #f
-                    (lambda (($char : Char))
-                      (parser-bind1
-                        (parser-plus-char $left-parser $char)
-                        $fn)))))))
+          ($value
+            (parser-bind-progress ($fn $value)
+              (lambda (($right-progress : (Progress O)))
+                (progress
+                  (progress-value $right-progress)
+                  (lambda (($char : Char))
+                    (bind $parser-plus (parser-plus-char $parser $char)
+                      (cond
+                        ((progress? $parser-plus)
+                          (parser-bind1 $parser-plus $fn))
+                        ((failure? $parser-plus)
+                          (progress-plus-char $right-progress $char)))))))))
           (else
             (progress #f
               (lambda (($char : Char))
                 (parser-bind1
-                  (parser-plus-char $left-parser $char)
+                  (parser-plus-char $parser $char)
                   $fn)))))))))
+
+(bind $parser
+  (parser-bind1 (failure! `foo)
+    (lambda (($char : Char))
+      (failure `bar)))
+  (check-equal? (parse $parser "") (failure! `foo))
+  (check-equal? (parse $parser "a") (failure! `foo)))
+
+(bind $parser
+  (parser-bind1 (parser #\a)
+    (lambda (($char : Char))
+      (failure! `bar)))
+  (check-equal? (parse $parser "") (failure! `bar)))
 
 (bind $parser
   (parser-bind1 (dot-last-char-parser #f)
@@ -281,10 +287,6 @@
   (check-equal? (parse $parser ".a.") (failure-at parse-incomplete (position 1 4)))
   (check-equal? (parse $parser ".a.b") (failure-at parse-incomplete (position 1 5)))
   (check-equal? (parse $parser ".a.b,") "b."))
-
-(bind $parser (parser-bind1 (failure parse-complete) (lambda (($char : Char)) (failure parse-complete)))
-  (check-equal? (parse $parser "") (failure parse-complete))
-  (check-equal? (parse $parser "a") (failure parse-complete)))
 
 (bind $parser (parser-bind1 char-parser (lambda (($char : Char)) (parser (string $char))))
   (check-equal? (parse $parser "") (failure-at parse-incomplete (position 1 1)))
