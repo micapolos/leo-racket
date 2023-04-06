@@ -384,6 +384,29 @@
 
 ; ---------------------------------------------------------------------------------
 
+(: value-or-parser : (All (V) (-> V (Parser V) (Parser V))))
+(define (value-or-parser $value $parser)
+  (progress $value
+    (lambda (($char : Char))
+      (parser-plus-char $parser $char))))
+
+(bind $parser (value-or-parser #\! (parser #\?))
+  (check-equal? (parse $parser "") #\!)
+  (check-equal? (parse $parser "!") (failure! parse-complete (at (position 1 1))))
+  (check-equal? (parse $parser "?") (failure! parse-complete (at (position 1 1))))
+)
+
+(bind $parser (value-or-parser #\! (prefix-parser (exact-char-parser #\.) alphabetic-char-parser))
+  (check-equal? (parse $parser "") #\!)
+  (check-equal? (parse $parser ".") (failure! parse-incomplete (at (position 1 2))))
+  (check-equal? (parse $parser "!") (failure! (invalid #\!) (expected #\.) (at (position 1 1))))
+  (check-equal? (parse $parser ".a") #\a)
+  (check-equal? (parse $parser ".1") (failure! (invalid #\1) (at (position 1 2))))
+  (check-equal? (parse $parser ".a.") (failure! parse-complete (at (position 1 3))))
+)
+
+; ---------------------------------------------------------------------------------
+
 (: car-parser : (All (V) (-> (Listof (Parser V)) (Parser V))))
 (define (car-parser $parser-list)
   (bind $progress-list
@@ -490,8 +513,7 @@
 
 (: repeat-parser : (All (V) (-> V (-> V (Parser V)) (Parser V))))
 (define (repeat-parser $value $fn)
-  (parser-or
-    (parser $value)
+  (value-or-parser $value
     (parser-bind ($fn $value)
       (lambda (($new-value : V))
         (repeat-parser $new-value $fn)))))

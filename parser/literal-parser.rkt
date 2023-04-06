@@ -215,7 +215,7 @@
       (integer-literal-nonnegative-integer-literal $integer-literal))))
 
 (define integer-literal-parser : (Parser Integer-Literal)
-  (parser-bind (parser-or (parser `plus) sign-parser)
+  (parser-bind (value-or-parser `plus sign-parser)
     (lambda (($sign : Sign))
       (parser-map nonnegative-integer-literal-parser
         (lambda (($nonnegative-integer-literal : Nonnegative-Integer-Literal))

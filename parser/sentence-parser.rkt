@@ -31,8 +31,7 @@
 (: env-script-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-script-parser $env $value)
   (prefix-parser maybe-newlines-parser
-    (parser-or
-      (parser $value)
+    (value-or-parser $value
       (parser-suffix
         (repeat-separated-parser $value comma-or-newlines-separator-parser
           (lambda (($repeated-value : V))
@@ -50,8 +49,7 @@
   (parser-bind
     (env-atom-parser $env $value)
     (lambda (($atom : V))
-      (parser-or
-        (parser $atom)
+      (value-or-parser $atom
         (prefix-parser (exact-char-parser #\.)
           (env-sentence-parser $env $atom))))))
 
@@ -106,8 +104,7 @@
     (exact-string-parser "(")
     (env-begin-parser $env $value $symbol
       (lambda (($rhs : V) ($end-fn : (-> V V))) : (Parser V)
-        (parser-or
-          (parser (#%app $end-fn $rhs))
+        (value-or-parser (#%app $end-fn $rhs)
           (parser-map
             (repeat-separated-parser $rhs comma-separator-parser
               (lambda (($repeated-rhs : V))
