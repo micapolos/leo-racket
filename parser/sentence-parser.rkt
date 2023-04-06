@@ -24,7 +24,9 @@
   newlines-parser)
 
 (define comma-or-newlines-separator-parser
-  (parser-or comma-separator-parser newlines-separator-parser))
+  (parser-or
+    comma-separator-parser
+    newlines-separator-parser))
 
 (: env-script-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-script-parser $env $value)
