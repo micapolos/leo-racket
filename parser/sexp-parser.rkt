@@ -52,6 +52,16 @@
 (check-equal? (parse-sexp-list "foo(123)\n") `((foo 123)))
 (check-equal? (parse-sexp-list "foo(123, 456)\n") `((foo 123 456)))
 
+(check-equal? (parse-sexp-list "foo.bar\n") `(foo bar))
+(check-equal? (parse-sexp-list "foo.bar.goo\n") `(foo bar goo))
+(check-equal? (parse-sexp-list "foo.bar\ngoo\n") `(foo bar goo))
+(check-equal? (parse-sexp-list "foo\nbar.goo\n") `(foo bar goo))
+(check-equal? (parse-sexp-list "foo.bar\n  goo\n") `(foo (bar goo)))
+(check-equal? (parse-sexp-list "foo\n  bar.goo\n") `((foo bar goo)))
+
+(check-equal? (parse-sexp-list "123.foo\n") `(123 foo))
+(check-equal? (parse-sexp-list "123.foo.bar\n") `(123 foo bar))
+
 (check-equal? (parse-sexp-list "foo")  (failure! parse-incomplete (at (position 1 4))))
 (check-equal? (parse-sexp-list "foo:")  (failure! parse-incomplete (at (position 1 5))))
 (check-equal? (parse-sexp-list "foo: ")  (failure! parse-incomplete (at (position 1 6))))

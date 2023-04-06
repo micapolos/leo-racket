@@ -4,12 +4,12 @@
   leo/parser/literal-parser)
 
 (data (V) env
-  (custom-parser-fn : (-> V (Parser V)))
+  (atom-parser-fn : (-> V (Parser V)))
   (begin-parser-fn : (-> V Symbol (-> V (-> V V) (Parser V)) (Parser V))))
 
-(: env-custom-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-custom-parser $env $value)
-  (#%app (env-custom-parser-fn $env) $value))
+(: env-atom-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-atom-parser $env $value)
+  (#%app (env-atom-parser-fn $env) $value))
 
 (: env-begin-parser : (All (V) (-> (Env V) V Symbol (-> V (-> V V) (Parser V)) (Parser V))))
 (define (env-begin-parser $env $value $symbol $inner-parser-fn)
@@ -40,8 +40,18 @@
 (: env-line-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-line-parser $env $value)
   (parser-or
-    (env-custom-parser $env $value)
+    (env-atom-line-parser $env $value)
     (env-sentence-parser $env $value)))
+
+(: env-atom-line-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-atom-line-parser $env $value)
+  (parser-bind
+    (env-atom-parser $env $value)
+    (lambda (($atom : V))
+      (parser-or
+        (parser $atom)
+        (prefix-parser (exact-char-parser #\.)
+          (env-sentence-parser $env $atom))))))
 
 (: env-sentence-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-sentence-parser $env $value)
@@ -57,7 +67,8 @@
     (env-space-rhs-parser $env $value $symbol)
     (env-colon-rhs-parser $env $value $symbol)
     (env-parens-rhs-parser $env $value $symbol)
-    (env-newline-rhs-parser $env $value $symbol)))
+    (env-newline-rhs-parser $env $value $symbol)
+    (env-dot-rhs-parser $env $value $symbol)))
 
 (: env-symbol-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-symbol-parser $env $value $symbol)
@@ -115,3 +126,13 @@
                 (env-line-parser $env $repeated-rhs)))
             (lambda (($parsed-rhs : V))
               (#%app $end-fn $parsed-rhs))))))))
+
+(: env-dot-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-dot-rhs-parser $env $value $symbol)
+  (prefix-parser (exact-char-parser #\.)
+    (parser-bind
+      (env-begin-parser $env $value $symbol
+        (lambda (($rhs : V) ($end-fn : (-> V V))) : (Parser V)
+          (parser (#%app $end-fn $rhs))))
+      (lambda (($dotted : V))
+        (env-sentence-parser $env $dotted)))))
