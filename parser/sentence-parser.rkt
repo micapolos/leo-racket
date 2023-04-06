@@ -56,31 +56,39 @@
     (lambda (($atom : V))
       (value-or-parser $atom
         (prefix-parser (exact-char-parser #\.)
-          (env-sentence-parser $env $atom))))))
+          (env-plus-line-parser $env $atom))))))
 
 (: env-sentence-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-sentence-parser $env $value)
   (parser-bind word-parser
     (lambda (($word : Word))
-      (env-rhs-parser $env $value
-        (word-symbol $word)))))
+      (parser-or
+        (parser-bind (exact-char-parser #\.)
+          (lambda ((_ : True))
+            (parser-bind
+              (env-begin-parser $env $value (word-symbol $word))
+              (lambda (($rhs : V))
+                (parser-bind
+                  (env-end-parser $env $value $rhs)
+                  (lambda (($dotted : V))
+                    (env-plus-line-parser $env $dotted)))))))
+        (parser-bind
+          (env-rhs-parser $env $value (word-symbol $word))
+          (lambda (($rhs : V))
+            (env-end-parser $env $value $rhs)))))))
 
 (: env-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-rhs-parser $env $value $symbol)
   (parser-or
-    (env-symbol-parser $env $value $symbol)
+    (env-empty-rhs-parser $env $value $symbol)
     (env-space-rhs-parser $env $value $symbol)
     (env-colon-rhs-parser $env $value $symbol)
     (env-parens-rhs-parser $env $value $symbol)
-    (env-newline-rhs-parser $env $value $symbol)
-    (env-dot-rhs-parser $env $value $symbol)))
+    (env-newline-rhs-parser $env $value $symbol)))
 
-(: env-symbol-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-symbol-parser $env $value $symbol)
-  (parser-bind
-    (env-begin-parser $env $value $symbol)
-    (lambda (($rhs : V))
-      (env-end-parser $env $value $rhs))))
+(: env-empty-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-empty-rhs-parser $env $value $symbol)
+  (env-begin-parser $env $value $symbol))
 
 (: env-space-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-space-rhs-parser $env $value $symbol)
@@ -88,10 +96,7 @@
     (parser-bind
       (env-begin-parser $env $value $symbol)
       (lambda (($rhs : V))
-        (parser-bind
-          (env-plus-line-parser $env $rhs)
-          (lambda (($rhs : V))
-            (env-end-parser $env $value $rhs)))))))
+        (env-plus-line-parser $env $rhs)))))
 
 (: env-colon-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-colon-rhs-parser $env $value $symbol)
@@ -99,12 +104,9 @@
     (parser-bind
       (env-begin-parser $env $value $symbol)
       (lambda (($rhs : V))
-        (parser-bind
-          (repeat-separated-parser $rhs comma-separator-parser
-            (lambda (($rhs : V))
-              (env-plus-line-parser $env $rhs)))
+        (repeat-separated-parser $rhs comma-separator-parser
           (lambda (($rhs : V))
-            (env-end-parser $env $value $rhs)))))))
+            (env-plus-line-parser $env $rhs)))))))
 
 (: env-parens-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-parens-rhs-parser $env $value $symbol)
@@ -113,12 +115,9 @@
     (parser-bind (env-begin-parser $env $value $symbol)
       (lambda (($rhs : V))
         (value-or-parser $rhs
-          (parser-bind
-            (repeat-separated-parser $rhs comma-separator-parser
-              (lambda (($rhs : V))
-                (env-plus-line-parser $env $rhs)))
+          (repeat-separated-parser $rhs comma-separator-parser
             (lambda (($rhs : V))
-              (env-end-parser $env $value $rhs))))))
+              (env-plus-line-parser $env $rhs))))))
     (exact-string-parser ")")))
 
 (: env-newline-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
@@ -128,20 +127,6 @@
       (parser-bind
         (env-begin-parser $env $value $symbol)
         (lambda (($rhs : V))
-          (parser-bind
-            (repeat-separated-parser $rhs comma-or-newlines-separator-parser
-              (lambda (($rhs : V))
-                (env-plus-line-parser $env $rhs)))
+          (repeat-separated-parser $rhs comma-or-newlines-separator-parser
             (lambda (($rhs : V))
-              (env-end-parser $env $value $rhs))))))))
-
-(: env-dot-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-dot-rhs-parser $env $value $symbol)
-  (prefix-parser (exact-char-parser #\.)
-    (parser-bind
-      (parser-bind
-        (env-begin-parser $env $value $symbol)
-        (lambda (($rhs : V))
-          (env-end-parser $env $value $rhs)))
-      (lambda (($dotted : V))
-        (env-plus-line-parser $env $dotted)))))
+              (env-plus-line-parser $env $rhs))))))))

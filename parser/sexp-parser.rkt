@@ -60,6 +60,8 @@
 
 (check-equal? (parse-sexp-list "123.foo\n") `(123 foo))
 (check-equal? (parse-sexp-list "123.foo.bar\n") `(123 foo bar))
+(check-equal? (parse-sexp-list "foo.123\n") `(foo 123))
+(check-equal? (parse-sexp-list "123.456\n") `(123 456)) ; until we implement float literal
 
 (check-equal? (parse-sexp-list "foo")  (failure! parse-incomplete (at (position 1 4))))
 (check-equal? (parse-sexp-list "foo:")  (failure! parse-incomplete (at (position 1 5))))
