@@ -10,21 +10,20 @@
       (parser-map literal-parser
         (lambda (($literal : Literal))
           (push $sexp-stack (literal-sexp $literal)))))
-    (lambda
-      (
-        ($sexp-stack : (Stackof Sexp))
-        ($symbol : Symbol)
-        ($fn : (->
-          (Stackof Sexp)
-          (-> (Stackof Sexp) (Stackof Sexp))
-          (Parser (Stackof Sexp)))))
-      : (Parser (Stackof Sexp))
-      (#%app $fn null
-        (lambda (($rhs : (Stackof Sexp))) : (Stackof Sexp)
+    (lambda (($sexp-stack : (Stackof Sexp)) ($symbol : Symbol)) : (Parser (Stackof Sexp))
+      (parser `(,$symbol)))
+    (lambda (($sexp-stack : (Stackof Sexp)) ($rhs : (Stackof Sexp))) : (Parser (Stackof Sexp))
+      (let (($rhs-list (reverse $rhs)))
+        (parser
           (push $sexp-stack
             (cond
-              ((null? $rhs) $symbol)
-              (else `(,$symbol ,@(reverse $rhs))))))))))
+              ((null? $rhs-list) null)
+              (else
+                (let (($rhs-car (car $rhs-list))
+                      ($rhs-cdr (cdr $rhs-list)))
+                  (cond
+                    ((null? $rhs-cdr) $rhs-car)
+                    (else $rhs-list)))))))))))
 
 (define (parse-sexp-list ($string : String)) : (U (Stackof Sexp) (Failure Any))
   (parse
