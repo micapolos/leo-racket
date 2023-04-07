@@ -4,13 +4,13 @@
   leo/parser/literal-parser)
 
 (data (V) env
-  (atom-parser-fn : (-> V (Parser V)))
+  (plus-atom-parser-fn : (-> V (Parser V)))
   (begin-parser-fn : (-> V Symbol (Parser V)))
   (end-parser-fn : (-> V V (Parser V))))
 
-(: env-atom-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-atom-parser $env $value)
-  (#%app (env-atom-parser-fn $env) $value))
+(: env-plus-atom-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-plus-atom-parser $env $value)
+  (#%app (env-plus-atom-parser-fn $env) $value))
 
 (: env-begin-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-begin-parser $env $value $symbol)
@@ -46,20 +46,20 @@
 (: env-plus-line-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-plus-line-parser $env $value)
   (parser-or
-    (env-atom-line-parser $env $value)
-    (env-sentence-parser $env $value)))
+    (env-plus-atom-line-parser $env $value)
+    (env-plus-sentence-parser $env $value)))
 
-(: env-atom-line-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-atom-line-parser $env $value)
+(: env-plus-atom-line-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-plus-atom-line-parser $env $value)
   (parser-bind
-    (env-atom-parser $env $value)
+    (env-plus-atom-parser $env $value)
     (lambda (($atom : V))
       (value-or-parser $atom
         (prefix-parser (exact-char-parser #\.)
           (env-plus-line-parser $env $atom))))))
 
-(: env-sentence-parser : (All (V) (-> (Env V) V (Parser V))))
-(define (env-sentence-parser $env $value)
+(: env-plus-sentence-parser : (All (V) (-> (Env V) V (Parser V))))
+(define (env-plus-sentence-parser $env $value)
   (parser-bind word-parser
     (lambda (($word : Word))
       (parser-or
@@ -73,33 +73,33 @@
                   (lambda (($dotted : V))
                     (env-plus-line-parser $env $dotted)))))))
         (parser-bind
-          (env-rhs-parser $env $value (word-symbol $word))
+          (env-plus-rhs-parser $env $value (word-symbol $word))
           (lambda (($rhs : V))
             (env-end-parser $env $value $rhs)))))))
 
-(: env-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-rhs-parser $env $value $symbol)
+(: env-plus-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-rhs-parser $env $value $symbol)
   (parser-or
-    (env-empty-rhs-parser $env $value $symbol)
-    (env-space-rhs-parser $env $value $symbol)
-    (env-colon-rhs-parser $env $value $symbol)
-    (env-parens-rhs-parser $env $value $symbol)
-    (env-newline-rhs-parser $env $value $symbol)))
+    (env-plus-empty-rhs-parser $env $value $symbol)
+    (env-plus-space-rhs-parser $env $value $symbol)
+    (env-plus-colon-rhs-parser $env $value $symbol)
+    (env-plus-parens-rhs-parser $env $value $symbol)
+    (env-plus-newline-rhs-parser $env $value $symbol)))
 
-(: env-empty-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-empty-rhs-parser $env $value $symbol)
+(: env-plus-empty-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-empty-rhs-parser $env $value $symbol)
   (env-begin-parser $env $value $symbol))
 
-(: env-space-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-space-rhs-parser $env $value $symbol)
+(: env-plus-space-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-space-rhs-parser $env $value $symbol)
   (prefix-parser space-parser
     (parser-bind
       (env-begin-parser $env $value $symbol)
       (lambda (($rhs : V))
         (env-plus-line-parser $env $rhs)))))
 
-(: env-colon-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-colon-rhs-parser $env $value $symbol)
+(: env-plus-colon-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-colon-rhs-parser $env $value $symbol)
   (prefix-parser (exact-string-parser ": ")
     (parser-bind
       (env-begin-parser $env $value $symbol)
@@ -108,8 +108,8 @@
           (lambda (($rhs : V))
             (env-plus-line-parser $env $rhs)))))))
 
-(: env-parens-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-parens-rhs-parser $env $value $symbol)
+(: env-plus-parens-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-parens-rhs-parser $env $value $symbol)
   (prefix-parser-suffix
     (exact-string-parser "(")
     (parser-bind (env-begin-parser $env $value $symbol)
@@ -120,8 +120,8 @@
               (env-plus-line-parser $env $rhs))))))
     (exact-string-parser ")")))
 
-(: env-newline-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
-(define (env-newline-rhs-parser $env $value $symbol)
+(: env-plus-newline-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
+(define (env-plus-newline-rhs-parser $env $value $symbol)
   (prefix-parser newlines-parser
     (indented-parser
       (parser-bind
