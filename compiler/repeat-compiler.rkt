@@ -5,17 +5,19 @@
   leo/compiler/type
   leo/compiler/type-match
   leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/expressions
   leo/compiler/syntax-type
+  leo/compiler/syntax-utils
   leo/compiler/ingredients
   leo/compiler/generate-temporary
   leo/compiler/ingredients-utils)
 
 (data repeat-compiler
   (tuple : Tuple)
-  (repeated-structure : Structure)
+  (repeated-tuple : Tuple)
   (structure : Structure)
-  (doing-ingredients-option : (Option Ingredients)))
+  (expressions-option : (Option Expressions)))
 
 (define
   (repeat-compiler-plus-type
@@ -29,22 +31,25 @@
         $type))))
 
 (define
-  (repeat-compiler-set-doing-ingredients
+  (repeat-compiler-set-expressions
     ($repeat-compiler : Repeat-Compiler)
-    ($doing-ingredients : Ingredients))
+    ($expressions : Expressions))
   : Repeat-Compiler
   (struct-copy repeat-compiler $repeat-compiler
-    (doing-ingredients-option $doing-ingredients)))
+    (expressions-option $expressions)))
 
 (define
   (repeat-compiler-apply-doing
     ($repeat-compiler : Repeat-Compiler)
     ($syntax-list : (Listof Syntax)))
   : Repeat-Compiler
-  (define $tuple (repeat-compiler-tuple $repeat-compiler))
+  (define $tuple
+    (repeat-compiler-tuple $repeat-compiler))
+  (define $repeated-tuple
+    (repeat-compiler-repeated-tuple $repeat-compiler))
   (define $arrow
     (arrow
-      (repeat-compiler-repeated-structure $repeat-compiler)
+      (tuple-structure $repeated-tuple)
       (repeat-compiler-structure $repeat-compiler)))
   (define $tmp-option
     (type-generate-temporary-option $arrow))
@@ -55,18 +60,43 @@
           (repeat-compiler-tuple $repeat-compiler)
           (expression $tmp-option $arrow)))
       (else $tuple)))
-  (repeat-compiler-set-doing-ingredients
-    $repeat-compiler
-    (compile-ingredients-recursively
+  (define $doing-expressions
+    (compile-expressions-recursively
       $doing-tuple
-      $syntax-list)))
+      $syntax-list))
+  (define $doing-syntax
+    (expressions-syntax $doing-expressions))
+  (define $doing-structure
+    (expressions-structure $doing-expressions))
+  (unless
+    (structure-matches?
+      $doing-structure
+      (repeat-compiler-structure $repeat-compiler))
+    (error "repeat type mismatch"))
+  (define $syntax
+    (cond
+      ($tmp-option
+        (make-syntax
+          `(letrec
+            ((
+              ,$tmp-option
+              (lambda
+                ,(reverse (tuple-syntax-stack $repeated-tuple))
+                ,$doing-syntax)))
+            (,$tmp-option ,@(tuple-syntax-stack $repeated-tuple)))))
+      (else $doing-syntax)))
+  (define $expressions
+    (expressions $syntax $doing-structure))
+  (repeat-compiler-set-expressions
+    $repeat-compiler
+    $expressions))
 
 (define
   (repeat-compiler-plus-syntax
     ($repeat-compiler : Repeat-Compiler)
     ($syntax : Syntax))
   : Repeat-Compiler
-  (when (repeat-compiler-doing-ingredients-option $repeat-compiler)
+  (when (repeat-compiler-expressions-option $repeat-compiler)
     (error "already has doing"))
   (or
     (syntax-match-symbol-args $syntax $symbol $args
@@ -88,14 +118,6 @@
   (repeat-compiler-expressions
     ($repeat-compiler : Repeat-Compiler))
   : Expressions
-  (define $doing-ingredients-option
-    (repeat-compiler-doing-ingredients-option $repeat-compiler))
-  (unless $doing-ingredients-option
-    (error "no doing"))
-  (define $doing-ingredients $doing-ingredients-option)
-  (unless
-    (structure-matches?
-      (ingredients-structure $doing-ingredients)
-      (repeat-compiler-structure $repeat-compiler))
-    (error "repeat type mismatch"))
-  (ingredients-expressions $doing-ingredients))
+  (option-or
+    (repeat-compiler-expressions-option $repeat-compiler)
+    (error "no doing")))

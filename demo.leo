@@ -3,9 +3,15 @@
 use package base
 
 10
-fibonacci
+countdown
 repeat
-  number
+  text
   doing
     number
-    plus number
+    equals 0
+    switch
+      "OK"
+      the
+        number
+        minus 1
+        countdown
