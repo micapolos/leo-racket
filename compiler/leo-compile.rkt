@@ -8,7 +8,8 @@
   leo/compiler/syntax-expressions
   leo/compiler/syntax-utils
   leo/compiler/ingredients
-  leo/compiler/module-syntax)
+  leo/compiler/module-syntax
+  leo/parser/sexp-parser)
 
 (define (leo-compile ($sexp-list : (Listof Sexp))) : (Pairof Sexp Structure)
   (expressions-sexp-structure
@@ -27,15 +28,15 @@
       (syntax-list-ingredients
         (map syntax-normalize (map any-syntax $any-list))))))
 
-; (define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)
-;   (define $string (port->string $port))
-;   (define $sexp-list
-;     (bind $result (parse-sexp-list $string)
-;       (cond
-;         ((failure? $result) (error (format "parse error: ~s" $result)))
-;         (else $result))))
-;   (define $syntax-list
-;     (map
-;       (lambda (($sexp : Sexp)) (datum->syntax #f $sexp))
-;       $sexp-list))
-;   (leo-compile-any-list $syntax-list))
+(define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)
+  (define $string (port->string $port))
+  (define $sexp-list
+    (bind $result (parse-sexp-list $string)
+      (cond
+        ((failure? $result) (error (format "parse error: ~s ~s" $port $result)))
+        (else $result))))
+  (define $syntax-list
+    (map
+      (lambda (($sexp : Sexp)) (datum->syntax #f $sexp))
+      $sexp-list))
+  (leo-compile-any-list $syntax-list))

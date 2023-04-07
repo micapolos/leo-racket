@@ -80,8 +80,12 @@
                   (else
                     (done-remaining-indented-parser $done $remaining $plus-parser)))))
             (else
-              (cond
-                ((eqv? $char #\space)
+              (case $char
+                ((#\newline)
+                  (if (= $done 0)
+                    (done-remaining-indented-parser $done $remaining (progress-plus-char $progress $char))
+                    (failure! (invalid $char) (expected #\space))))
+                ((#\space)
                   (done-remaining-indented-parser
                     (add1 $done)
                     (sub1 $remaining)
@@ -94,7 +98,7 @@
 
 (bind $parser (indented-parser (stack-parser char-parser))
   (check-equal? (parse-string $parser "") (failure-at parse-incomplete (position 1 1)))
-  (check-equal? (parse-string $parser "\n") (failure! (invalid #\newline) (expected #\space) (at (position 1 1))))
+  (check-equal? (parse-string $parser "\n") (failure! parse-incomplete (at (position 2 1))))
   (check-equal? (parse-string $parser " ") (failure-at parse-incomplete (position 1 2)))
   (check-equal? (parse-string $parser " \n") (failure! (invalid #\newline) (expected #\space) (at (position 1 2))))
   (check-equal? (parse-string $parser "  ") "")
@@ -102,7 +106,9 @@
   (check-equal? (parse-string $parser "  a") "a")
   (check-equal? (parse-string $parser "  ab") "ab")
   (check-equal? (parse-string $parser "  ab\n") (failure-at parse-incomplete (position 2 1)))
-  (check-equal? (parse-string $parser "  ab\n  cd") "ab\ncd"))
+  (check-equal? (parse-string $parser "  ab\n  cd") "ab\ncd")
+  (check-equal? (parse-string $parser "  ab\n\n  cd") "ab\n\ncd")
+)
 
 ; -----------------------------------------------------------------------------------------
 
