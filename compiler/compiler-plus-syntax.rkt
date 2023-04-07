@@ -23,6 +23,7 @@
   leo/compiler/select-compiler
   leo/compiler/select-ingredients
   leo/compiler/recipe-compiler
+  leo/compiler/repeat-compiler
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -40,6 +41,7 @@
         ((quote) (compiler-apply-quote $compiler $syntax-list))
         ((racket) (compiler-apply-racket $compiler $syntax-list))
         ((recipe) (compiler-apply-recipe $compiler $syntax-list))
+        ((repeat) (compiler-apply-repeat $compiler $syntax-list))
         ((choice) (compiler-apply-select $compiler $syntax-list))
         ((switch) (compiler-apply-switch $compiler $syntax-list))
         ((time) (compiler-apply-time $compiler $syntax-list))
@@ -110,6 +112,20 @@
             (compile-ingredients-recursively
               (push-stack (compiler-tuple $compiler) $tuple)
               $syntax-list)))))))
+
+(define (compiler-apply-repeat
+  ($compiler : Compiler)
+  ($syntax-list : (Listof Syntax))) : Compiler
+  (compiler-with-ingredients $compiler
+    (ingredients
+      (ingredients-apply-fn (compiler-ingredients $compiler)
+        (lambda (($tuple : Tuple))
+          ; Apply recursion
+          (repeat-compiler-expressions
+            (fold
+              (repeat-compiler $tuple null #f)
+              $syntax-list
+              repeat-compiler-plus-syntax)))))))
 
 (define (compiler-apply-it 
   ($compiler : Compiler) 

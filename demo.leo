@@ -2,5 +2,10 @@
 
 use package base
 
-2
-plus 2
+10
+fibonacci
+repeat
+  number
+  doing
+    number
+    plus number
