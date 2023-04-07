@@ -120,10 +120,12 @@
     (ingredients
       (ingredients-apply-fn (compiler-ingredients $compiler)
         (lambda (($tuple : Tuple))
-          ; Apply recursion
           (repeat-compiler-expressions
             (fold
-              (repeat-compiler $tuple null #f)
+              (repeat-compiler
+                (push-stack (compiler-tuple $compiler) $tuple)
+                null
+                #f)
               $syntax-list
               repeat-compiler-plus-syntax)))))))
 
