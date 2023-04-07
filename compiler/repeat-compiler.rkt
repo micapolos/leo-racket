@@ -12,6 +12,7 @@
 
 (data repeat-compiler
   (tuple : Tuple)
+  (repeated-tuple : Tuple)
   (structure : Structure)
   (doing-ingredients-option : (Option Ingredients)))
 

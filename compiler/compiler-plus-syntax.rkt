@@ -124,6 +124,7 @@
             (fold
               (repeat-compiler
                 (push-stack (compiler-tuple $compiler) $tuple)
+                $tuple
                 null
                 #f)
               $syntax-list
