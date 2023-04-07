@@ -28,7 +28,8 @@
         (push $symbol-stack `variable)
         (recursive-type $type)))
     ((universe? $type) `universe)
-    ((value? $type) `value)))
+    ((value? $type) `value)
+    ((reified? $type) `reified)))
 
 (check-equal? (type-symbol (field! `foo)) `foo)
 (check-equal? (type-symbol (choice null)) `choice)
@@ -41,3 +42,4 @@
 (check-equal? (type-symbol (recursive (field! `foo))) `foo)
 (check-equal? (type-symbol (recursive (variable 0))) `variable)
 (check-equal? (type-symbol (universe 0)) `universe)
+(check-equal? (type-symbol (reified! (field! `foo))) `reified)

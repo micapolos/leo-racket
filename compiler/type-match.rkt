@@ -32,8 +32,7 @@
         (structure-match
           $match
           (field-structure $actual) 
-          (field-structure $expected))
-        $match))
+          (field-structure $expected))))
     ((choice? $expected)
       (and
         (choice? $actual)
@@ -96,6 +95,13 @@
         (universe? $actual)
         (= (universe-index $actual) (universe-index $expected))
         $match))
+    ((reified? $expected)
+      (and
+        (reified? $actual)
+        (structure-match
+          $match
+          (reified-structure $expected)
+          (reified-structure $actual))))
     (else #f)))
 
 (define (type-matches-symbol? ($type : Type) ($symbol : Symbol)) : Boolean

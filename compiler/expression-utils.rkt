@@ -91,6 +91,9 @@
 (define (type-expression ($type : Type)) 
   (expression (type-syntax $type) (type-universe $type)))
 
+(define (reified-expression ($structure : Structure))
+  (expression null-syntax (reified $structure)))
+
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 

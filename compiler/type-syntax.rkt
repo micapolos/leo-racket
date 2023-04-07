@@ -36,7 +36,10 @@
       ((value? $type)
         `(value
           ,(sexp-datum (any-sexp (value-any $type)))
-          ,(type-syntax (value-type $type)))))))
+          ,(type-syntax (value-type $type))))
+      ((reified? $type)
+        `(reified
+          ,(structure-syntax (reified-structure $type)))))))
 
 (define (structure-syntax ($structure : Structure)) : Syntax
   (make-syntax

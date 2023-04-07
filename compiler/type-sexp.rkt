@@ -39,7 +39,8 @@
     ((variable? $type) 
       `(variable ,(variable-index $type)))
     ((universe? $type) `(universe ,(universe-index $type)))
-    ((value? $type) `(value ,(value-sexp $type)))))
+    ((value? $type) `(value ,(value-sexp $type)))
+    ((reified? $type) `(reified ,@(structure-sexp-list (reified-structure $type))))))
 
 (define (structure-sexp-list ($structure : Structure)) : (Listof Sexp)
   (reverse (map type-sexp $structure)))
@@ -81,6 +82,8 @@
   (type-sexp (recipe! number-type text-type (doing text-type int-type))))
 
 (check-equal? (type-sexp (universe 128)) `(universe 128))
+
+(check-equal? (type-sexp (reified! (field! `foo))) `(reified foo))
 
 ; ----------------------------------------------------------------------------
 
@@ -135,7 +138,9 @@
         (type-sexp (cast $any Type))
         (value-sexp (value $any (universe (sub1 (universe-index $type)))))))
     ((value? $type) 
-      `(value ,(type-stack-value-sexp $type-stack $type)))))
+      `(value ,(type-stack-value-sexp $type-stack $type)))
+    ((reified? $type)
+      `(a ,@(structure-sexp-list (reified-structure $type))))))
 
 (define (type-stack-any-choice-sexp
   ($type-stack : (Stackof Type))
@@ -356,3 +361,10 @@
       (universe 0)
       (universe 1)))
   `(universe 0))
+
+(check-equal?
+  (value-sexp
+    (value
+      #f
+      (reified! (field! `foo) (field! `bar))))
+  `(a foo bar))

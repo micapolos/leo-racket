@@ -55,7 +55,8 @@
     ((recursive? $type) #t)
     ((variable? $type) (error "impossible"))
     ((universe? $type) #t)
-    ((value? $type) #t)))
+    ((value? $type) #t)
+    ((reified? $type) #f)))
 
 (define (structure-dynamic? ($structure : Structure)) : Boolean
   (ormap type-dynamic? $structure))

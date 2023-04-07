@@ -11,7 +11,8 @@
     Specific
     Recursive 
     Variable
-    Universe))
+    Universe
+    Reified))
 
 (define-type Structure (Stackof Type))
 
@@ -48,6 +49,8 @@
 
 (data universe (index : Exact-Nonnegative-Integer))
 
+(data reified (structure : Structure))
+
 ; --------------------------------------------------------------------------
 
 (define-syntax (field! $syntax)
@@ -67,6 +70,11 @@
         (arrow 
           (structure $from ...) 
           (structure $to ...))))))
+
+(define-syntax (reified! $syntax)
+  (syntax-case $syntax ()
+    ((_ $type ...)
+      (syntax (reified (structure $type ...))))))
 
 ; --------------------------------------------------------------------------
 

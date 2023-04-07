@@ -220,10 +220,10 @@
   ($syntax-list : (Listof Syntax))) 
   : Compiler
   (compiler-with-ingredients $compiler
-    (push-stack
+    (push
       (compiler-ingredients $compiler)
-      (map expression-expressions 
-        (map type-expression 
+      (expression-expressions
+        (reified-expression
           (syntax-list-structure $syntax-list))))))
 
 (define (compiler-apply-recipe 
