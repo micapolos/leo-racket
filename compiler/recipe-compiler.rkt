@@ -15,6 +15,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-match
+  leo/compiler/repeat-compiler
   leo/compiler/compile-recursively)
 
 (data recipe-compiler 
@@ -75,6 +76,19 @@
                       (error "recipe giving doing type mismatch"))
                     $expressions)))
               (recipe-part null-recipe-part))))
+        (else #f)))
+    (syntax-match-symbol-args $syntax $symbol $syntax-list
+      (case $symbol
+        ((repeats)
+          (struct-copy recipe-compiler $recipe-compiler
+            (ingredients
+              (push $ingredients
+                (expression-expressions
+                  (compile-repeat-expression
+                    $tuple
+                    $lhs-structure
+                    $syntax-list))))
+            (recipe-part null-recipe-part)))
         (else #f)))
     (let ()
       (when $rhs-structure-option (error "recipe expected does / gives"))

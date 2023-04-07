@@ -2,21 +2,25 @@
 
 use package base
 
-42
-fibonacci
-repeat
+recipe
   number
-  doing
+  fibonacci
+  repeats
     number
-    less than 2
-    switch
+    doing
       number
-      the
+      less than 2
+      switch
         number
-        minus 2
-        fibonacci
-        plus
+        the
           number
-          minus 1
+          minus 2
           fibonacci
-time
+          plus
+            number
+            minus 1
+            fibonacci
+do
+  41
+  fibonacci
+  time

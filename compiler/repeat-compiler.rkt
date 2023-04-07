@@ -15,19 +15,19 @@
 
 (data repeat-compiler
   (tuple : Tuple)
-  (repeated-tuple : Tuple)
-  (structure : Structure)
-  (expressions-option : (Option Expressions)))
+  (lhs-structure : Structure)
+  (rhs-structure : Structure)
+  (expression-option : (Option Expression)))
 
 (define
-  (compile-repeat-expressions
+  (compile-repeat-expression
     ($tuple : Tuple)
-    ($repeated-tuple : Tuple)
+    ($lhs-structure : Structure)
     ($syntax-list : (Listof Syntax)))
-  : Expressions
-  (repeat-compiler-expressions
+  : Expression
+  (repeat-compiler-expression
     (fold
-      (repeat-compiler $tuple $repeated-tuple null #f)
+      (repeat-compiler $tuple $lhs-structure null-structure #f)
       $syntax-list
       repeat-compiler-plus-syntax)))
 
@@ -37,18 +37,18 @@
     ($type : Type))
   : Repeat-Compiler
   (struct-copy repeat-compiler $repeat-compiler
-    (structure
+    (rhs-structure
       (push
-        (repeat-compiler-structure $repeat-compiler)
+        (repeat-compiler-rhs-structure $repeat-compiler)
         $type))))
 
 (define
-  (repeat-compiler-set-expressions
+  (repeat-compiler-set-expression
     ($repeat-compiler : Repeat-Compiler)
-    ($expressions : Expressions))
+    ($expression : Expression))
   : Repeat-Compiler
   (struct-copy repeat-compiler $repeat-compiler
-    (expressions-option $expressions)))
+    (expression-option $expression)))
 
 (define
   (repeat-compiler-apply-doing
@@ -57,23 +57,18 @@
   : Repeat-Compiler
   (define $tuple
     (repeat-compiler-tuple $repeat-compiler))
-  (define $repeated-tuple
-    (repeat-compiler-repeated-tuple $repeat-compiler))
-  (define $tuple-with-repeated
-    (push-stack $tuple $repeated-tuple))
+  (define $lhs-structure
+    (repeat-compiler-lhs-structure $repeat-compiler))
+  (define $rhs-structure
+    (repeat-compiler-rhs-structure $repeat-compiler))
   (define $arrow
-    (arrow
-      (tuple-structure $repeated-tuple)
-      (repeat-compiler-structure $repeat-compiler)))
-  (define $tmp-option
-    (type-generate-temporary-option $arrow))
+    (arrow $lhs-structure $rhs-structure))
+  (define $lhs-tuple
+    (structure-generate-tuple $lhs-structure))
+  (define $repeat-expression
+    (type-generate-expression $arrow))
   (define $doing-tuple
-    (cond
-      ($tmp-option
-        (push
-          $tuple-with-repeated
-          (expression $tmp-option $arrow)))
-      (else $tuple-with-repeated)))
+    (push (push-stack $tuple $lhs-tuple) $repeat-expression))
   (define $doing-expressions
     (compile-expressions-recursively
       $doing-tuple
@@ -83,34 +78,29 @@
   (define $doing-structure
     (expressions-structure $doing-expressions))
   (unless
-    (structure-matches?
-      $doing-structure
-      (repeat-compiler-structure $repeat-compiler))
+    (structure-matches? $doing-structure $rhs-structure)
     (error "repeat type mismatch"))
   (define $syntax
-    (cond
-      ($tmp-option
-        (make-syntax
-          `(letrec
-            ((
-              ,$tmp-option
-              (lambda
-                ,(reverse (tuple-syntax-stack $repeated-tuple))
-                ,$doing-syntax)))
-            (,$tmp-option ,@(tuple-syntax-stack $repeated-tuple)))))
-      (else $doing-syntax)))
-  (define $expressions
-    (expressions $syntax $doing-structure))
-  (repeat-compiler-set-expressions
+    (make-syntax
+      `(letrec
+        ((
+          ,(expression-syntax $repeat-expression)
+          (lambda
+            ,(reverse (tuple-syntax-stack $lhs-tuple))
+            ,$doing-syntax)))
+        ,(expression-syntax $repeat-expression))))
+  (define $expression
+    (expression $syntax $arrow))
+  (repeat-compiler-set-expression
     $repeat-compiler
-    $expressions))
+    $expression))
 
 (define
   (repeat-compiler-plus-syntax
     ($repeat-compiler : Repeat-Compiler)
     ($syntax : Syntax))
   : Repeat-Compiler
-  (when (repeat-compiler-expressions-option $repeat-compiler)
+  (when (repeat-compiler-expression-option $repeat-compiler)
     (error "already has doing"))
   (or
     (syntax-match-symbol-args $syntax $symbol $args
@@ -129,9 +119,9 @@
     (syntax-type $syntax)))
 
 (define
-  (repeat-compiler-expressions
+  (repeat-compiler-expression
     ($repeat-compiler : Repeat-Compiler))
-  : Expressions
+  : Expression
   (option-or
-    (repeat-compiler-expressions-option $repeat-compiler)
+    (repeat-compiler-expression-option $repeat-compiler)
     (error "no doing")))

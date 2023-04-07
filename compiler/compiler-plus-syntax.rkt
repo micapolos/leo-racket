@@ -116,14 +116,17 @@
 (define (compiler-apply-repeat
   ($compiler : Compiler)
   ($syntax-list : (Listof Syntax))) : Compiler
+  (define $ingredients (compiler-ingredients $compiler))
   (compiler-with-ingredients $compiler
     (ingredients
-      (ingredients-apply-fn (compiler-ingredients $compiler)
-        (lambda (($tuple : Tuple))
-          (compile-repeat-expressions
+      (or
+        (expression-apply-expressions
+          (compile-repeat-expression
             (compiler-tuple $compiler)
-            $tuple
-            $syntax-list))))))
+            (ingredients-structure $ingredients)
+            $syntax-list)
+          (ingredients-expressions $ingredients))
+        (error "apply error")))))
 
 (define (compiler-apply-it 
   ($compiler : Compiler) 

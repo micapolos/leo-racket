@@ -9,7 +9,10 @@
   leo/compiler/program
   leo/compiler/program-compiler
   leo/compiler/compiler-plus-syntax
-  leo/compiler/compile-recursively)
+  leo/compiler/compile-recursively
+  leo/compiler/repeat-compiler
+  leo/compiler/type
+  leo/compiler/syntax-utils)
 
 (define (compile-ingredients
   ($tuple : Tuple)
@@ -30,3 +33,16 @@
     (compile-ingredients
       $tuple $syntax-list)))
 
+; ------------------------------------------------------------------------------
+
+(check-equal?
+  (syntax->datum
+    (expression-syntax
+      (parameterize ((compile-ingredients-parameter compile-ingredients))
+        (compile-repeat-expression
+          null-tuple
+          null-structure
+          (list
+            (make-syntax `text)
+            (make-syntax `(doing "foo")))))))
+  `(letrec ((tmp-recipe (lambda () "foo"))) tmp-recipe))

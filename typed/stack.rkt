@@ -40,7 +40,9 @@
 (define stack-ref list-ref)
 
 (define #:forall (V) (top-option ($stack : (Stackof V))) : (Option V)
-  (or (top $stack) #f))
+  (cond
+    ((null? $stack) #f)
+    (else (top $stack))))
 
 (define #:forall (V) (stack-ref-default 
   ($stack : (Stackof V)) 
