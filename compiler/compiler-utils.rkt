@@ -113,7 +113,13 @@
     (syntax-symbol-match-args $syntax-2 `of $args
       (unless (= (length $args) 1)
         (error "native of single line error"))
+      (define $car-e (syntax-e $syntax-1))
+      (define $car-syntax
+        (cond
+          ((symbol? $car-e) $syntax-1)
+          ((string? $car-e) (any-syntax (read-syntax #f (open-input-string $car-e))))
+          (else (error (format "racket syntax error: ~s" $car-e)))))
       (expression
-        $syntax-1
+        $car-syntax
         (syntax-type (car $args))))
     (error "native of expected")))
