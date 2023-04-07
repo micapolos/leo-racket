@@ -8,13 +8,58 @@
   leo/compiler/expressions
   leo/compiler/syntax-type
   leo/compiler/ingredients
+  leo/compiler/generate-temporary
   leo/compiler/ingredients-utils)
 
 (data repeat-compiler
   (tuple : Tuple)
-  (repeated-tuple : Tuple)
+  (repeated-structure : Structure)
   (structure : Structure)
   (doing-ingredients-option : (Option Ingredients)))
+
+(define
+  (repeat-compiler-plus-type
+    ($repeat-compiler : Repeat-Compiler)
+    ($type : Type))
+  : Repeat-Compiler
+  (struct-copy repeat-compiler $repeat-compiler
+    (structure
+      (push
+        (repeat-compiler-structure $repeat-compiler)
+        $type))))
+
+(define
+  (repeat-compiler-set-doing-ingredients
+    ($repeat-compiler : Repeat-Compiler)
+    ($doing-ingredients : Ingredients))
+  : Repeat-Compiler
+  (struct-copy repeat-compiler $repeat-compiler
+    (doing-ingredients-option $doing-ingredients)))
+
+(define
+  (repeat-compiler-apply-doing
+    ($repeat-compiler : Repeat-Compiler)
+    ($syntax-list : (Listof Syntax)))
+  : Repeat-Compiler
+  (define $tuple (repeat-compiler-tuple $repeat-compiler))
+  (define $arrow
+    (arrow
+      (repeat-compiler-repeated-structure $repeat-compiler)
+      (repeat-compiler-structure $repeat-compiler)))
+  (define $tmp-option
+    (type-generate-temporary-option $arrow))
+  (define $doing-tuple
+    (cond
+      ($tmp-option
+        (push
+          (repeat-compiler-tuple $repeat-compiler)
+          (expression $tmp-option $arrow)))
+      (else $tuple)))
+  (repeat-compiler-set-doing-ingredients
+    $repeat-compiler
+    (compile-ingredients-recursively
+      $doing-tuple
+      $syntax-list)))
 
 (define
   (repeat-compiler-plus-syntax
@@ -31,27 +76,13 @@
     (repeat-compiler-apply-syntax $repeat-compiler $syntax)))
 
 (define
-  (repeat-compiler-apply-doing
-    ($repeat-compiler : Repeat-Compiler)
-    ($syntax-list : (Listof Syntax)))
-  : Repeat-Compiler
-  ; TODO: Bind repeat structure
-  (struct-copy repeat-compiler $repeat-compiler
-    (doing-ingredients-option
-      (compile-ingredients-recursively
-        (repeat-compiler-tuple $repeat-compiler)
-        $syntax-list))))
-
-(define
   (repeat-compiler-apply-syntax
     ($repeat-compiler : Repeat-Compiler)
     ($syntax : Syntax))
   : Repeat-Compiler
-  (struct-copy repeat-compiler $repeat-compiler
-    (structure
-      (push
-        (repeat-compiler-structure $repeat-compiler)
-        (syntax-type $syntax)))))
+  (repeat-compiler-plus-type
+    $repeat-compiler
+    (syntax-type $syntax)))
 
 (define
   (repeat-compiler-expressions
