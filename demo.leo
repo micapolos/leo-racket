@@ -2,16 +2,21 @@
 
 use package base
 
-10
-countdown
+42
+fibonacci
 repeat
-  text
+  number
   doing
     number
-    equals 0
+    less than 2
     switch
-      "OK"
+      number
       the
         number
-        minus 1
-        countdown
+        minus 2
+        fibonacci
+        plus
+          number
+          minus 1
+          fibonacci
+time
