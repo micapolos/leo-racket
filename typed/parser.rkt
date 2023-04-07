@@ -664,25 +664,3 @@
 
 (define newlines-parser (one-or-more-parser newline-parser))
 (define maybe-newlines-parser (zero-or-more-parser newline-parser))
-
-; ------------------------------------------------------------------------------
-
-(: remove-empty-lines-parser-rec : (All (V) (-> (Parser V) Boolean (Parser V))))
-(define (remove-empty-lines-parser-rec $parser $remove-newline?)
-  (parser-bind-progress $parser
-    (lambda (($progress : (Progress V)))
-      (progress
-        (progress-value $progress)
-        (lambda (($char : Char))
-          (bind $newline? (char=? $char #\newline)
-            (remove-empty-lines-parser-rec
-              (if (and $newline? $remove-newline?) $parser (progress-plus-char $progress $char))
-              $newline?)))))))
-
-(: remove-empty-lines-parser : (All (V) (-> (Parser V) (Parser V))))
-(define (remove-empty-lines-parser $parser)
-  (remove-empty-lines-parser-rec $parser #t))
-
-(bind $parser (remove-empty-lines-parser (stack-parser char-parser))
-  (check-equal? (parse-string $parser "") "")
-  (check-equal? (parse-string $parser "\na\n\nb\n\nc") "a\nb\nc"))
