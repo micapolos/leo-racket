@@ -20,6 +20,18 @@
   (expressions-option : (Option Expressions)))
 
 (define
+  (compile-repeat-expressions
+    ($tuple : Tuple)
+    ($repeated-tuple : Tuple)
+    ($syntax-list : (Listof Syntax)))
+  : Expressions
+  (repeat-compiler-expressions
+    (fold
+      (repeat-compiler $tuple $repeated-tuple null #f)
+      $syntax-list
+      repeat-compiler-plus-syntax)))
+
+(define
   (repeat-compiler-plus-type
     ($repeat-compiler : Repeat-Compiler)
     ($type : Type))
@@ -47,6 +59,8 @@
     (repeat-compiler-tuple $repeat-compiler))
   (define $repeated-tuple
     (repeat-compiler-repeated-tuple $repeat-compiler))
+  (define $tuple-with-repeated
+    (push-stack $tuple $repeated-tuple))
   (define $arrow
     (arrow
       (tuple-structure $repeated-tuple)
@@ -57,9 +71,9 @@
     (cond
       ($tmp-option
         (push
-          (repeat-compiler-tuple $repeat-compiler)
+          $tuple-with-repeated
           (expression $tmp-option $arrow)))
-      (else $tuple)))
+      (else $tuple-with-repeated)))
   (define $doing-expressions
     (compile-expressions-recursively
       $doing-tuple

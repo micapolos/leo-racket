@@ -120,15 +120,10 @@
     (ingredients
       (ingredients-apply-fn (compiler-ingredients $compiler)
         (lambda (($tuple : Tuple))
-          (repeat-compiler-expressions
-            (fold
-              (repeat-compiler
-                (push-stack (compiler-tuple $compiler) $tuple)
-                $tuple
-                null
-                #f)
-              $syntax-list
-              repeat-compiler-plus-syntax)))))))
+          (compile-repeat-expressions
+            (compiler-tuple $compiler)
+            $tuple
+            $syntax-list))))))
 
 (define (compiler-apply-it 
   ($compiler : Compiler) 

@@ -2,6 +2,8 @@
 
 (provide (all-defined-out))
 
+(require leo/leo-dep)
+
 (define (fibonacci number)
   (if (< number 2) 
     number 
