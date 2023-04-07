@@ -593,3 +593,44 @@
 
 (define newlines-parser (one-or-more-parser newline-parser))
 (define maybe-newlines-parser (zero-or-more-parser newline-parser))
+
+; ------------------------------------------------------------------------------
+
+(define-for-syntax (syntax-parser $syntax)
+  (syntax-case $syntax (:)
+    (($function ($item : $type) ...)
+      (let* (($car #`$function)
+             ($item-list (map syntax-parser (syntax-e #`($item ...))))
+             ($type-list (syntax-e #`($type ...)))
+             ($tmp-list (generate-temporaries $item-list)))
+        (foldr
+          (lambda ($parser $tmp $tp $folded)
+            #`(parser-bind #,$parser
+              (lambda ((#,$tmp : #,$tp))
+                #,$folded)))
+          #`(parser ($function #,@$tmp-list))
+          $item-list
+          $tmp-list
+          $type-list)))
+    ($literal
+      (let (($e (syntax-e #`$literal)))
+        (cond
+          ((char? $e) #`(exact-char-parser $literal))
+          ((string? $e) #`(exact-string-parser $literal))
+          ((symbol? $e) #`$literal)
+          (else (error "syntax error")))))))
+
+(define-syntax (parser! $syntax)
+  (syntax-case $syntax ()
+    ((_ $body)
+      (syntax-parser #`$body))
+    ((_ ($body ...))
+      (syntax-parser #`($body ...)))))
+
+(check-equal? (parse (parser! #\a) "a") #t)
+(check-equal? (parse (parser! #\a) "b") (failure! (invalid #\b) (expected #\a) (at (position 1 1))))
+
+(check-equal? (parse (parser! "foo") "foo") #t)
+(check-equal? (parse (parser! "foo") "fuj") (failure! (invalid #\u) (expected #\o) (at (position 1 2))))
+
+(check-equal? (parse (parser! (string (char-parser : Char) (char-parser : Char))) "ab") "ab")
