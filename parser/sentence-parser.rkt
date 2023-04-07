@@ -29,7 +29,7 @@
   newlines-parser)
 
 (define comma-or-newlines-separator-parser
-  (parser-or
+  (first-parser
     comma-separator-parser
     newlines-separator-parser))
 
@@ -45,7 +45,7 @@
 
 (: env-plus-line-parser : (All (V) (-> (Env V) V (Parser V))))
 (define (env-plus-line-parser $env $value)
-  (parser-or
+  (first-parser
     (env-plus-atom-line-parser $env $value)
     (env-plus-sentence-parser $env $value)))
 
@@ -62,7 +62,7 @@
 (define (env-plus-sentence-parser $env $value)
   (parser-bind word-parser
     (lambda (($word : Word))
-      (parser-or
+      (first-parser
         (parser-bind (exact-char-parser #\.)
           (lambda ((_ : True))
             (parser-bind
@@ -79,7 +79,7 @@
 
 (: env-plus-rhs-parser : (All (V) (-> (Env V) V Symbol (Parser V))))
 (define (env-plus-rhs-parser $env $value $symbol)
-  (parser-or
+  (first-parser
     (env-plus-empty-rhs-parser $env $value $symbol)
     (env-plus-space-rhs-parser $env $value $symbol)
     (env-plus-colon-rhs-parser $env $value $symbol)

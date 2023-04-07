@@ -193,7 +193,7 @@
     ((plus) 1)))
 
 (define sign-parser : (Parser Sign)
-  (parser-or
+  (first-parser
     (parser-map (exact-char-parser #\+) (lambda ((_ : True)) `plus))
     (parser-map (exact-char-parser #\-) (lambda ((_ : True)) `minus))))
 
@@ -238,7 +238,7 @@
 (define-type Literal (U Text-Literal Integer-Literal))
 
 (define literal-parser : (Parser Literal)
-  (parser-or
+  (first-parser
     text-literal-parser
     integer-literal-parser))
 
