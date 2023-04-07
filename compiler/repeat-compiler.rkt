@@ -88,12 +88,14 @@
   (repeat-compiler-expressions
     ($repeat-compiler : Repeat-Compiler))
   : Expressions
-  (option-or
-    (option-bind (repeat-compiler-doing-ingredients-option $repeat-compiler) $ingredients
-      (unless
-        (structure-matches?
-          (ingredients-structure $ingredients)
-          (repeat-compiler-structure $repeat-compiler))
-        (error "repeat type mismatch"))
-      (ingredients-expressions $ingredients))
-    (error "no doing")))
+  (define $doing-ingredients-option
+    (repeat-compiler-doing-ingredients-option $repeat-compiler))
+  (unless $doing-ingredients-option
+    (error "no doing"))
+  (define $doing-ingredients $doing-ingredients-option)
+  (unless
+    (structure-matches?
+      (ingredients-structure $doing-ingredients)
+      (repeat-compiler-structure $repeat-compiler))
+    (error "repeat type mismatch"))
+  (ingredients-expressions $doing-ingredients))
