@@ -18,7 +18,7 @@
   (syntax->datum
     (leo-read-syntax #f in)))
 
-(define new-parser? #f)
+(define new-parser? #t)
  
 (define (leo-read-syntax src port)
   (strip-context

@@ -1,21 +1,21 @@
 #lang leo
 
 racket
-  equal?
+  "equal?"
   of recipe
     text
     equals text
     doing boolean
 
 racket
-  string-append
+  "string-append"
   of recipe
     text
     plus text
     doing text
 
 racket
-  string-length
+  "string-length"
   of recipe
     text.length
     doing length number
