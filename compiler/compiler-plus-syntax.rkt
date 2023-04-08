@@ -109,14 +109,8 @@
 (define (compiler-apply-do 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) : Compiler
-  (compiler-with-ingredients $compiler
-    (ingredients
-      (ingredients-do (compiler-ingredients $compiler)
-        (lambda (($scope : Scope))
-          (ingredients-expressions
-            (compile-ingredients-recursively
-              (push-stack (compiler-scope $compiler) $scope)
-              $syntax-list)))))))
+  (compiler-apply-ingredients-action $compiler
+    (compile-ingredients-action-do $compiler $syntax-list)))
 
 (define (compiler-apply-repeat
   ($compiler : Compiler)
@@ -246,8 +240,7 @@
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-apply-ingredients-action
-    $compiler
+  (compiler-apply-ingredients-action $compiler
     (compile-ingredients-action-a $compiler $syntax-list)))
 
 (define (compiler-apply-recipe 
