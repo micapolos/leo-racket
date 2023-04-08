@@ -4,8 +4,7 @@
 
 (require
   leo/typed/base
-  leo/typed/stack
-  leo/typed/entry)
+  leo/typed/stack)
 
 (data (K V) dictionary-entry
   (key : K)
