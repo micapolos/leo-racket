@@ -39,11 +39,12 @@
               $syntax-stack)))))))
 
 (define (program-top-level-syntax-stack ($program : Program)) : (Stackof Syntax)
+  (define $entry-stack (program-entry-stack $program))
   (define $ingredients (program-resolved-ingredients $program))
   (define $binder-stack (usage-ingredients-binder-stack 'indirect $ingredients))
   (map make-syntax
     (stack
-      (binder-stack-unsafe-module-syntax $binder-stack)
+      (binder-stack-unsafe-module-syntax $entry-stack $binder-stack)
       (structure-module-syntax (ingredients-structure $ingredients))
       (binder-stack-syntax-module-syntax $binder-stack)
       `(require leo/runtime/top-level 'unsafe 'structure)
@@ -52,13 +53,22 @@
         (curry value-displayln ,(if (leo-writer?) ''leo ''racket))
         (reverse (map value $any-stack $structure))))))
 
-(define (binder-stack-unsafe-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
+(define (binder-stack-unsafe-module-syntax ($entry-stack : (Stackof Entry)) ($binder-stack : (Stackof Binder))) : Syntax
   (make-syntax
     `(module unsafe racket/base
-      (provide (all-defined-out))
+      ,(binder-stack-provide-syntax $binder-stack)
       (require leo/runtime/unsafe)
       ,@(reverse
         (binder-stack-define-syntax-stack $binder-stack)))))
+
+(define (binder-stack-provide-syntax ($binder-stack : (Stackof Binder))) : Syntax
+  (make-syntax
+    `(provide
+      ,@(reverse
+        (apply append
+          (map entry-identifier-stack
+            (filter-false
+              (map binder-entry-option $binder-stack))))))))
 
 (define (binder-stack-syntax-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
   (syntax-module-syntax
@@ -107,7 +117,7 @@
                 text-type
                 (field! `label text-type))))))))
   `((module unsafe racket/base
-     (provide (all-defined-out))
+     (provide tmp-point tmp-inc tmp-text tmp-label)
      (require leo/runtime/unsafe)
      (define-values (tmp-point) (cons 10 20))
      (define-values (tmp-inc) (lambda (n) (+ n 1)))
