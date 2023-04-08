@@ -24,8 +24,8 @@
 
 (define (leo-compile-any-list ($any-list : (Listof Any))) : (Listof Syntax)
   (reverse
-    (ingredients-top-level-syntax-stack
-      (syntax-list-ingredients
+    (program-top-level-syntax-stack
+      (syntax-list-program
         (map syntax-normalize (map any-syntax $any-list))))))
 
 (define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)

@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/program
   leo/compiler/expressions
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
@@ -37,7 +38,8 @@
                 `(syntax ,$syntax))
               $syntax-stack)))))))
 
-(define (ingredients-top-level-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
+(define (program-top-level-syntax-stack ($program : Program)) : (Stackof Syntax)
+  (define $ingredients (program-resolved-ingredients $program))
   (define $binder-stack (usage-ingredients-binder-stack 'indirect $ingredients))
   (map make-syntax
     (stack
@@ -77,31 +79,33 @@
 (check-equal?
   (reverse 
     (map syntax->datum
-      (ingredients-top-level-syntax-stack
-        (ingredients
-          (expressions
-            #`(cons 10 20)
-            (structure
-              (field! `point
-                (field! `x number-type)
-                (field! `y number-type))))
-          (expressions
-            null-syntax
-            (structure (field! `green (field! `apple))))
-          (expressions
-            #`(lambda (n) (+ n 1))
-            (structure
-              (recipe!
-                number-type
-                (field! `inc)
-                (does number-type))))
-          (expressions
-            #`(values
-              "inline-text"
-              (string-append (number->string (tmp-recipe (car tmp-point))) " apples!!!"))
-            (structure
-              text-type
-              (field! `label text-type)))))))
+      (program-top-level-syntax-stack
+        (program
+          null ; entry-stack
+          (ingredients
+            (expressions
+              #`(cons 10 20)
+              (structure
+                (field! `point
+                  (field! `x number-type)
+                  (field! `y number-type))))
+            (expressions
+              null-syntax
+              (structure (field! `green (field! `apple))))
+            (expressions
+              #`(lambda (n) (+ n 1))
+              (structure
+                (recipe!
+                  number-type
+                  (field! `inc)
+                  (does number-type))))
+            (expressions
+              #`(values
+                "inline-text"
+                (string-append (number->string (tmp-recipe (car tmp-point))) " apples!!!"))
+              (structure
+                text-type
+                (field! `label text-type))))))))
   `((module unsafe racket/base
      (provide (all-defined-out))
      (require leo/runtime/unsafe)

@@ -14,6 +14,17 @@
   leo/compiler/type
   leo/compiler/syntax-utils)
 
+(define (compile-program
+  ($tuple : Tuple)
+  ($syntax-list : (Listof Syntax)))
+  : Program
+  (parameterize ((compile-ingredients-parameter compile-ingredients))
+    (program-compiler-program
+      (fold
+        (program-compiler $tuple null-program)
+        $syntax-list
+        program-compiler-plus-syntax))))
+
 (define (compile-ingredients
   ($tuple : Tuple)
   ($syntax-list : (Listof Syntax)))

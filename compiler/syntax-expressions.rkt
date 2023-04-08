@@ -10,8 +10,12 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/ingredients
+  leo/compiler/program
   leo/compiler/compiler-plus-syntax
   leo/compiler/compile)
+
+(define (syntax-list-program ($syntax-list : (Listof Syntax))) : Program
+  (compile-program null-tuple $syntax-list))
 
 (define (syntax-list-ingredients ($syntax-list : (Listof Syntax))) : Ingredients
   (compile-ingredients null-tuple $syntax-list))
