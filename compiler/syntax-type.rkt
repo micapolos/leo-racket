@@ -28,6 +28,7 @@
           (define $type (single $structure))
           (cond
             ((equal? $symbol `recipe) (car $structure))
+            ((equal? $symbol `choice) (choice $structure))
             ((equal? $symbol `word) (word-syntax-list-type $cdr))
             ; TODO: Parse universe / generic / recursive / recurse
             (else (field $symbol $structure))))
@@ -92,6 +93,10 @@
   (syntax-type #`(recipe foo bar (doing zoo)))
   (arrow (stack (field! `foo) (field! `bar)) (stack (field! `zoo))))
 
+(check-equal?
+  (syntax-type #`(choice true false))
+  (choice! (field! `true) (field! `false)))
+
 (check-equal? 
   (syntax-type #`(foo number text))
   (field `foo (stack number-type text-type)))
@@ -101,5 +106,9 @@
   (stack (field! `foo) (field! `bar)))
 
 (check-equal? 
+  (syntax-list-structure (list #`foo #`bar #`(giving zoo)))
+  (list (arrow (stack (field! `foo) (field! `bar)) (stack (field! `zoo)))))
+
+(check-equal?
   (syntax-list-structure (list #`foo #`bar #`(giving zoo)))
   (list (arrow (stack (field! `foo) (field! `bar)) (stack (field! `zoo)))))

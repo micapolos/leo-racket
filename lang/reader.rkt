@@ -23,11 +23,11 @@
 (define (leo-read-syntax src port)
   (strip-context
     #`(module leo racket/base
-      #,@(cond
-        (new-parser? (leo-compile-port port))
-        (else
-          (parameterize ((leo-writer? #t)
-                         (read-decimal-as-inexact #f))
-            (leo-compile-any-list
-              (parameterize ((read-leo-compiler? #t))
-                (read-leo-stxs port src)))))))))
+      #,@(parameterize ((leo-writer? #t))
+        (cond
+          (new-parser? (leo-compile-port port))
+          (else
+            (parameterize ((read-decimal-as-inexact #f))
+              (leo-compile-any-list
+                (parameterize ((read-leo-compiler? #t))
+                  (read-leo-stxs port src))))))))))
