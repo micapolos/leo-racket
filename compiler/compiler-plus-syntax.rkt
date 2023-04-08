@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/compiler
   leo/compiler/switch
   leo/compiler/generate-temporary
@@ -53,26 +54,28 @@
 
 (define (compiler-resolve-first-fn 
   ($compiler : Compiler) 
-  ($fn : (-> Expression (Option Expressions)))) 
+  ($fn : (-> Expression (Option Expressions))))
   : (Option Expressions)
-  (define $tuple (compiler-tuple $compiler))
+  (define $scope (compiler-scope $compiler))
   (define $ingredients (compiler-ingredients $compiler))
   (or
     (option-app tuple-resolve-first-fn
       (option-app expressions-rhs-option 
         (ingredients-expressions $ingredients))
       $fn)
-    (tuple-resolve-first-fn $tuple $fn)))
+    (scope-resolve-first-fn $scope
+      (lambda (($binding : Binding))
+        ($fn (binding-expression $binding))))))
 
 (define (compiler-apply-syntax ($compiler : Compiler) ($syntax : Syntax)) : Compiler
   (compiler-plus-expressions
     $compiler
-    (tuple-syntax-expressions
-      (compiler-tuple $compiler)
+    (scope-syntax-expressions
+      (compiler-scope $compiler)
       $syntax)))
 
-(define (tuple-syntax-expressions
-  ($tuple : Tuple) 
+(define (scope-syntax-expressions
+  ($scope : Scope)
   ($syntax : Syntax)) 
   : Expressions
   (or 
@@ -83,19 +86,19 @@
       (cond
         ((null? $syntax-e) (error "parse error null"))
         ((symbol? $syntax-e)
-          (tuple-symbol-syntax-list-expressions $tuple $syntax-e null))
+          (scope-symbol-syntax-list-expressions $scope $syntax-e null))
         ((list? $syntax-e)
           (define $car (syntax-e (car $syntax-e)))
           (unless (symbol? $car) (error "parse-error not symbol"))
-          (tuple-symbol-syntax-list-expressions $tuple $car (cdr $syntax-e)))
+          (scope-symbol-syntax-list-expressions $scope $car (cdr $syntax-e)))
         (else (error "parse error unknown"))))))
 
-(define (tuple-symbol-syntax-list-expressions
-  ($tuple : Tuple) 
+(define (scope-symbol-syntax-list-expressions
+  ($scope : Scope)
   ($symbol : Symbol)
   ($syntax-list : (Listof Syntax)))
   : Expressions
-  (define $ingredients (compile-ingredients-recursively $tuple $syntax-list))
+  (define $ingredients (compile-ingredients-recursively $scope $syntax-list))
   (define $structure (ingredients-structure $ingredients))
   (symbol-ingredients-expressions $symbol $ingredients))
 
@@ -106,11 +109,11 @@
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
     (ingredients
-      (ingredients-apply-fn (compiler-ingredients $compiler)
-        (lambda (($tuple : Tuple))
+      (ingredients-do (compiler-ingredients $compiler)
+        (lambda (($scope : Scope))
           (ingredients-expressions
             (compile-ingredients-recursively
-              (push-stack (compiler-tuple $compiler) $tuple)
+              (push-stack (compiler-scope $compiler) $scope)
               $syntax-list)))))))
 
 (define (compiler-apply-repeat
@@ -122,7 +125,7 @@
       (or
         (expression-apply-expressions
           (compile-repeat-expression
-            (compiler-tuple $compiler)
+            (compiler-scope $compiler)
             (ingredients-structure $ingredients)
             $syntax-list)
           (ingredients-expressions $ingredients))
@@ -136,7 +139,7 @@
     (ingredients-plus
       (compiler-ingredients $compiler)
       (compile-ingredients-recursively
-        (compiler-tuple $compiler)
+        (compiler-scope $compiler)
         $syntax-list))))
 
 (define (compiler-apply-switch 
@@ -161,7 +164,7 @@
                     (match-compiler-switch
                       (fold
                         (match-compiler
-                          (compiler-tuple $compiler)
+                          (compiler-scope $compiler)
                           $identifier-option
                           null-switch-option
                           (reverse (choice-type-stack $type)))
@@ -190,7 +193,7 @@
           (ingredients-plus 
             (compiler-ingredients $compiler)
             (compile-ingredients-recursively
-              (compiler-tuple $compiler)
+              (compiler-scope $compiler)
               $syntax-list)))
         (expressions
           (make-syntax `(time ,(expressions-syntax $expressions)))
@@ -201,13 +204,13 @@
   ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
     (ingredients
-      (ingredients-apply-fn (compiler-ingredients $compiler)
-        (lambda (($tuple : Tuple))
+      (ingredients-do (compiler-ingredients $compiler)
+        (lambda (($scope : Scope))
           (ingredients-expressions
             (ingredients-plus
-              (map expression-expressions $tuple)
+              (map expression-expressions (map binding-expression $scope))
               (compile-ingredients-recursively
-                (push-stack (compiler-tuple $compiler) $tuple)
+                (push-stack (compiler-scope $compiler) $scope)
                 $syntax-list))))))))
 
 (define (compiler-apply-thing
@@ -250,8 +253,8 @@
   (compiler-with-ingredients $compiler
     (push-stack
       (compiler-ingredients $compiler)
-      (tuple-syntax-list-arrow-ingredients
-        (compiler-tuple $compiler)
+      (scope-syntax-list-arrow-ingredients
+        (compiler-scope $compiler)
         $syntax-list))))
 
 (define (compiler-apply-select 
@@ -264,7 +267,7 @@
       (expression-expressions
         (select-ingredients-expression
           (compile-select-ingredients
-            (compiler-tuple $compiler)
+            (compiler-scope $compiler)
             $syntax-list))))))
 
 ; -------------------------------------------------------------------------------------

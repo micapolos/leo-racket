@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/compiler
   leo/compiler/expression
   leo/compiler/expression-utils
@@ -27,25 +28,25 @@
   ($expressions : Expressions)) : Compiler
   (struct-copy compiler $compiler
     (ingredients 
-      (tuple-apply-ingredients 
-        (compiler-tuple $compiler)
+      (scope-apply-ingredients
+        (compiler-scope $compiler)
         (push (compiler-ingredients $compiler) $expressions)))))
 
-(define (tuple-apply-ingredients
-  ($tuple : Tuple) 
+(define (scope-apply-ingredients
+  ($scope : Scope)
   ($ingredients : Ingredients)) : Ingredients
   (or
     (option-app ingredients
       (or
         (usage-ingredients-resolve-fn 'direct $ingredients
-          (curry tuple-or-tuple-resolve-tuple $tuple))))
+          (curry scope-or-tuple-resolve-tuple $scope))))
     $ingredients))
 
-(define (tuple-or-tuple-resolve-tuple
-  ($lhs-tuple : Tuple) 
+(define (scope-or-tuple-resolve-tuple
+  ($lhs-scope : Scope)
   ($rhs-tuple : Tuple)) : (Option Expressions)
   (or
-    (tuple-resolve-tuple $lhs-tuple $rhs-tuple)
+    (scope-resolve-tuple $lhs-scope $rhs-tuple)
     (tuple-resolve $rhs-tuple)))
 
 (check-equal?
@@ -63,8 +64,8 @@
     (compiler-ingredients
       (compiler-plus-expressions
         (compiler
-          (tuple
-            (expression
+          (scope
+            (binding
               #`string-append
               (arrow
                 (structure text-type (field `plus (structure text-type)))

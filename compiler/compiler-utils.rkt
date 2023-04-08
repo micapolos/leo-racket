@@ -1,8 +1,10 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/compiler
   leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/expressions
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
@@ -29,7 +31,7 @@
       (ingredients-plus
         (compiler-ingredients $compiler)
         (compile-ingredients-recursively
-          (compiler-tuple $compiler)
+          (compiler-scope $compiler)
           $syntax-list)))))
 
 (define (compiler-apply-racket ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler 
@@ -52,7 +54,7 @@
       (ingredients-plus 
         (compiler-ingredients $compiler)
         (compile-ingredients-recursively
-          (compiler-tuple $compiler)
+          (compiler-scope $compiler)
           $syntax-list)))))
 
 (define (compiler-apply-package ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
@@ -69,12 +71,12 @@
 
 (define (compiler-apply-apply ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-with-ingredients $compiler
-    (tuple-apply-ingredients
-      (compiler-tuple $compiler)
+    (scope-apply-ingredients
+      (compiler-scope $compiler)
       (ingredients-plus 
         (compiler-ingredients $compiler)
         (compile-ingredients-recursively
-          (compiler-tuple $compiler)
+          (compiler-scope $compiler)
           $syntax-list)))))
 
 (define (compiler-apply-fn
@@ -85,7 +87,7 @@
     (ingredients
       (cond
         ((null? (ingredients-structure $ingredients))
-          ($fn (compiler-tuple $compiler)))
+          ($fn (scope-tuple (compiler-scope $compiler))))
         (else
           ($fn 
             (option-or

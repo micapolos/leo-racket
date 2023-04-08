@@ -469,12 +469,10 @@
 
 ; ---------------------------------------------------------
 
-; TODO: Remove when not needed
 (define (binding-expression ($binding : Binding)) : Expression
   (expression
     (or (binding-identifier-option $binding) null-syntax)
     (binding-type $binding)))
 
-; TODO: Remove when not needed
 (define (scope-tuple ($scope : Scope)) : Tuple
   (map binding-expression $scope))

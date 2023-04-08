@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/syntax-type
   leo/compiler/expression
   leo/compiler/type
@@ -11,16 +12,16 @@
   leo/compiler/select-ingredients)
 
 (data select-compiler
-  (tuple : Tuple)
+  (scope : Scope)
   (ingredients : Select-Ingredients))
 
 (define (compile-select-ingredients
-  ($tuple : Tuple)
+  ($scope : Scope)
   ($syntax-list : (Listof Syntax)))
   : Select-Ingredients
   (select-compiler-ingredients
     (fold
-      (select-compiler $tuple null-select-ingredients)
+      (select-compiler $scope null-select-ingredients)
       $syntax-list
       select-compiler-plus-syntax)))
 
@@ -28,14 +29,14 @@
   ($compiler : Select-Compiler)
   ($syntax : Syntax))
   : Select-Compiler
-  (define $tuple (select-compiler-tuple $compiler))
+  (define $scope (select-compiler-scope $compiler))
   (define $ingredients (select-compiler-ingredients $compiler))
   (or
     (syntax-match-symbol-args $syntax $symbol $syntax-list
       (cond
         ((equal? $symbol `not)
           (select-compiler
-            $tuple
+            $scope
             (select-ingredients-plus-not 
               $ingredients
               (option-or 
@@ -43,13 +44,13 @@
                 (error "not must have single type")))))
         ((equal? $symbol `the)
           (select-compiler
-            $tuple
+            $scope
             (select-ingredients-plus-the 
               $ingredients 
               (option-or
                 (expressions-expression-option
                   (ingredients-expressions
-                    (compile-ingredients-recursively $tuple $syntax-list)))
+                    (compile-ingredients-recursively $scope $syntax-list)))
                 (error "the must have single expression")))))
         (else 
           (error "select-compiler, expected not or the"))))

@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
   leo/compiler/expressions
@@ -16,51 +17,49 @@
   leo/compiler/compiler-plus-syntax)
 
 (data program-compiler
-  (tuple : Tuple)
+  (scope : Scope)
   (program : Program))
 
 (define (program-compiler-sexp ($program-compiler : Program-Compiler)) : Sexp
   `(program
     (compiler
-      ,(tuple-sexp (program-compiler-tuple $program-compiler))
+      ,(scope-sexp (program-compiler-scope $program-compiler))
       ,(program-sexp (program-compiler-program $program-compiler)))))
 
 (define (program-compiler-plus-syntax
   ($program-compiler : Program-Compiler)
   ($syntax : Syntax))
 : Program-Compiler
-  (define $tuple (program-compiler-tuple $program-compiler))
+  (define $scope (program-compiler-scope $program-compiler))
   (define $program (program-compiler-program $program-compiler))
   (or
     (syntax-match-symbol-args $syntax $symbol $args
       (case $symbol
         ((use with)
-          (define $ingredients (compile-ingredients-recursively $tuple $args))
+          (define $ingredients (compile-ingredients-recursively $scope $args))
           (define $scoper-stack (ingredients-scoper-stack $ingredients))
           (define $entry-stack (filter-false (map scoper-entry-option $scoper-stack)))
-          (define $binder-tuple (scope-tuple (apply append (map scoper-scope $scoper-stack))))
+          (define $scoper-scope (apply append (map scoper-scope $scoper-stack)))
           (program-compiler
-            (push-stack $tuple $binder-tuple)
+            (push-stack $scope $scoper-scope)
             (program
               (push-stack (program-entry-stack $program) $entry-stack)
               (program-ingredients $program))))
         (else #f)))
     (program-compiler
-      $tuple
+      $scope
       (program
         (program-entry-stack $program)
         (compiler-ingredients
           (compiler-plus-syntax
-            (compiler
-              $tuple
-              (program-ingredients $program))
+            (compiler $scope (program-ingredients $program))
             $syntax))))))
 
 (check-equal?
   (program-compiler-sexp
     (program-compiler-plus-syntax
       (program-compiler
-        (tuple (expression syntax-a dynamic-type-a))
+        (scope (binding identifier-a dynamic-type-a))
         (program
           (stack
             (entry (stack #`tmp-b) syntax-b))
@@ -69,7 +68,7 @@
       #`"foo"))
   (program-compiler-sexp
     (program-compiler
-      (tuple (expression syntax-a dynamic-type-a))
+      (scope (binding identifier-a dynamic-type-a))
       (program
         (stack
           (entry (stack #`tmp-b) syntax-b))
@@ -81,7 +80,7 @@
   (program-compiler-sexp
     (program-compiler-plus-syntax
       (program-compiler
-        (tuple (expression syntax-a dynamic-type-a))
+        (scope (binding identifier-a dynamic-type-a))
         (program
           (stack
             (entry (stack #`tmp-b) syntax-b))
@@ -90,9 +89,9 @@
       #`(use "foo" 128)))
   (program-compiler-sexp
     (program-compiler
-      (tuple
-        (expression syntax-a dynamic-type-a)
-        (expression #`tmp-a dynamic-type-a))
+      (scope
+        (binding identifier-a dynamic-type-a)
+        (binding #`tmp-a dynamic-type-a))
       (program
         (stack
           (entry (stack #`tmp-b) syntax-b)

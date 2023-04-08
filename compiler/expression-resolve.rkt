@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require 
+  leo/compiler/binding
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expression
@@ -13,6 +14,13 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-match)
+
+(define (scope-resolve-first-fn ($scope : Scope) ($fn : (-> Binding (Option Expressions)))) : (Option Expressions)
+  (and
+    (not (null? $scope))
+    (or
+      ($fn (car $scope))
+      (scope-resolve-first-fn (pop $scope) $fn))))
 
 (define (tuple-resolve-first-fn ($tuple : Tuple) ($fn : (-> Expression (Option Expressions)))) : (Option Expressions)
   (and
@@ -100,17 +108,17 @@
 
 ; -----------------------------------------------------------------------
 
-(define (arrow-expression-resolve-tuple
-  ($lhs-expression : Expression)
+(define (arrow-binding-resolve-tuple
+  ($lhs-binding : Binding)
   ($rhs-tuple : Tuple))
   : (Option Expressions)
-  (define $expression-type (expression-type $lhs-expression))
+  (define $binding-type (binding-type $lhs-binding))
   (define $structure (tuple-structure $rhs-tuple))
   (define $dynamic-syntax-stack (tuple-syntax-stack $rhs-tuple))
   (and 
-    (arrow? $expression-type)
+    (arrow? $binding-type)
     (let ()
-      (define $arrow $expression-type)
+      (define $arrow $binding-type)
       (define $arrow-from-structure (arrow-from-structure $arrow))
       (define $arrow-to-structure (arrow-to-structure $arrow))
       (and 
@@ -118,14 +126,14 @@
         (expressions
           (make-syntax 
             `(
-              ,(expression-syntax $lhs-expression)
+              ,(binding-syntax $lhs-binding)
               ,@(reverse $dynamic-syntax-stack)))
           $arrow-to-structure)))))
 
 (check-equal?
   (option-app expressions-sexp-structure
-    (arrow-expression-resolve-tuple
-      (expression syntax-d 
+    (arrow-binding-resolve-tuple
+      (binding identifier-d
         (arrow 
           (stack type-a type-b) 
           (stack type-c type-d)))
@@ -133,15 +141,15 @@
   (pair `(d a b) (structure type-c type-d)))
 
 (check-equal?
-  (arrow-expression-resolve-tuple
-    (expression syntax-d (arrow (stack type-a type-b) (stack type-c)))
+  (arrow-binding-resolve-tuple
+    (binding identifier-d (arrow (stack type-a type-b) (stack type-c)))
     (stack expression-b expression-a))
   #f)
 
 ; ------------------------------------------------------------------------
 
-(define (expression-resolve-tuple
-  ($lhs-expression : Expression)
+(define (binding-resolve-tuple
+  ($lhs-binding : Binding)
   ($rhs-tuple : Tuple))
   : (Option Expressions)
   (define $single-rhs-expression (single $rhs-tuple))
@@ -149,25 +157,27 @@
     (and
       $single-rhs-expression
       (option-app expression-expressions
-        (expression-resolve-get $lhs-expression $single-rhs-expression)))
-    (arrow-expression-resolve-tuple 
-      $lhs-expression 
+        (expression-resolve-get
+          (binding-expression $lhs-binding)
+          $single-rhs-expression)))
+    (arrow-binding-resolve-tuple
+      $lhs-binding
       $rhs-tuple)))
 
 ; -----------------------------------------------------------------------
 
-(define (tuple-resolve-tuple
-  ($lhs-tuple : Tuple)
+(define (scope-resolve-tuple
+  ($lhs-scope : Scope)
   ($rhs-tuple : Tuple))
   : (Option Expressions)
   (and 
-    (not (null? $lhs-tuple))
+    (not (null? $lhs-scope))
     (or
-      (expression-resolve-tuple
-        (top $lhs-tuple)
+      (binding-resolve-tuple
+        (top $lhs-scope)
         $rhs-tuple)
-      (tuple-resolve-tuple 
-        (pop $lhs-tuple) 
+      (scope-resolve-tuple
+        (pop $lhs-scope)
         $rhs-tuple))))
 
 ; -----------------------------------------------------------------------

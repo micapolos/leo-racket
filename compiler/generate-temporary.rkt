@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/type
   leo/compiler/type-utils
@@ -56,6 +57,12 @@
   (and 
     (type-dynamic? $type)
     (type-generate-temporary $type)))
+
+(define (type-generate-binding ($type : Type)) : Binding
+  (binding (type-generate-temporary-option $type) $type))
+
+(define (structure-generate-scope ($structure : Structure)) : Scope
+  (map type-generate-binding $structure))
 
 (define (type-generate-expression ($type : Type)) : Expression
   (define $tmp-option (type-generate-temporary-option $type))

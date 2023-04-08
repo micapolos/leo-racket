@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/ingredients
   leo/compiler/generate-temporary
   leo/compiler/expression
@@ -19,20 +20,20 @@
   leo/compiler/compile-recursively)
 
 (data recipe-compiler 
-  (tuple : Tuple) 
+  (scope : Scope)
   (ingredients : Ingredients)
   (recipe-part : Recipe-Part))
 
-(define (null-recipe-compiler ($tuple : Tuple))
-  (recipe-compiler $tuple null null-recipe-part))
+(define (null-recipe-compiler ($scope : Scope))
+  (recipe-compiler $scope null null-recipe-part))
 
-(define (tuple-syntax-list-arrow-ingredients
-  ($tuple : Tuple) 
+(define (scope-syntax-list-arrow-ingredients
+  ($scope : Scope)
   ($syntax-list : (Listof Syntax))) 
   : Ingredients
   (recipe-compiler-ingredients
     (fold
-      (null-recipe-compiler $tuple)
+      (null-recipe-compiler $scope)
       $syntax-list
       recipe-compiler-plus-syntax)))
 
@@ -40,7 +41,7 @@
   ($recipe-compiler : Recipe-Compiler) 
   ($syntax : Syntax))
   : Recipe-Compiler
-  (define $tuple (recipe-compiler-tuple $recipe-compiler))
+  (define $scope (recipe-compiler-scope $recipe-compiler))
   (define $recipe-part (recipe-compiler-recipe-part $recipe-compiler))
   (define $ingredients (recipe-compiler-ingredients $recipe-compiler))
   (define $lhs-structure (recipe-part-lhs-structure $recipe-part))
@@ -55,17 +56,17 @@
     (syntax-match-symbol-args $syntax $symbol $syntax-list
       (case $symbol
         ((does gives)
-          (bind $lhs-tuple (structure-generate-tuple $lhs-structure)
+          (bind $lhs-scope (structure-generate-scope $lhs-structure)
             (struct-copy recipe-compiler $recipe-compiler
               (ingredients
                 (push $ingredients
                   (let ()
                     (define $expressions
-                      (tuple-does-expressions
-                        $lhs-tuple
+                      (scope-does-expressions
+                        $lhs-scope
                         (ingredients-expressions
                           (compile-ingredients-recursively
-                            (push-stack $tuple $lhs-tuple)
+                            (push-stack $scope $lhs-scope)
                             $syntax-list))))
                     (when
                       (and
@@ -85,7 +86,7 @@
               (push $ingredients
                 (expression-expressions
                   (compile-repeat-expression
-                    $tuple
+                    $scope
                     $lhs-structure
                     $syntax-list))))
             (recipe-part null-recipe-part)))
@@ -104,8 +105,8 @@
 
 (check-equal?
   (ingredients-sexp
-    (tuple-syntax-list-arrow-ingredients
-      null-tuple
+    (scope-syntax-list-arrow-ingredients
+      null-scope
       (syntax-e #`(number (does text)))))
   (ingredients-sexp
     (ingredients

@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/compile-recursively
   leo/compiler/type
   leo/compiler/type-match
@@ -14,20 +15,20 @@
   leo/compiler/ingredients-utils)
 
 (data repeat-compiler
-  (tuple : Tuple)
+  (scope : Scope)
   (lhs-structure : Structure)
   (rhs-structure : Structure)
   (expression-option : (Option Expression)))
 
 (define
   (compile-repeat-expression
-    ($tuple : Tuple)
+    ($scope : Scope)
     ($lhs-structure : Structure)
     ($syntax-list : (Listof Syntax)))
   : Expression
   (repeat-compiler-expression
     (fold
-      (repeat-compiler $tuple $lhs-structure null-structure #f)
+      (repeat-compiler $scope $lhs-structure null-structure #f)
       $syntax-list
       repeat-compiler-plus-syntax)))
 
@@ -55,23 +56,23 @@
     ($repeat-compiler : Repeat-Compiler)
     ($syntax-list : (Listof Syntax)))
   : Repeat-Compiler
-  (define $tuple
-    (repeat-compiler-tuple $repeat-compiler))
+  (define $scope
+    (repeat-compiler-scope $repeat-compiler))
   (define $lhs-structure
     (repeat-compiler-lhs-structure $repeat-compiler))
   (define $rhs-structure
     (repeat-compiler-rhs-structure $repeat-compiler))
   (define $arrow
     (arrow $lhs-structure $rhs-structure))
-  (define $lhs-tuple
-    (structure-generate-tuple $lhs-structure))
-  (define $repeat-expression
-    (type-generate-expression $arrow))
-  (define $doing-tuple
-    (push (push-stack $tuple $lhs-tuple) $repeat-expression))
+  (define $lhs-scope
+    (structure-generate-scope $lhs-structure))
+  (define $repeat-binding
+    (type-generate-binding $arrow))
+  (define $doing-scope
+    (push (push-stack $scope $lhs-scope) $repeat-binding))
   (define $doing-expressions
     (compile-expressions-recursively
-      $doing-tuple
+      $doing-scope
       $syntax-list))
   (define $doing-syntax
     (expressions-syntax $doing-expressions))
@@ -80,15 +81,19 @@
   (unless
     (structure-matches? $doing-structure $rhs-structure)
     (error "repeat type mismatch"))
+  (define $repeat-identifier-option (binding-identifier-option $repeat-binding))
   (define $syntax
-    (make-syntax
-      `(letrec
-        ((
-          ,(expression-syntax $repeat-expression)
-          (lambda
-            ,(reverse (tuple-syntax-stack $lhs-tuple))
-            ,$doing-syntax)))
-        ,(expression-syntax $repeat-expression))))
+    (cond
+      ($repeat-identifier-option
+        (make-syntax
+          `(letrec
+            ((
+              ,$repeat-identifier-option
+              (lambda
+                ,(reverse (scope-identifier-stack $lhs-scope))
+                ,$doing-syntax)))
+            ,$repeat-identifier-option)))
+      (else null-syntax)))
   (define $expression
     (expression $syntax $arrow))
   (repeat-compiler-set-expression

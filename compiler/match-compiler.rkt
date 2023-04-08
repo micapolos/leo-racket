@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-sexp
@@ -19,7 +20,7 @@
   (type : Type))
 
 (data match-compiler
-  (tuple : Tuple)
+  (scope : Scope)
   (identifier-option : (Option Identifier))
   (switch-option : (Option Switch))
   (remaining-type-list : (Listof Type)))
@@ -34,7 +35,7 @@
 
 (define (match-compiler-sexp ($match-compiler : Match-Compiler)) : Sexp
   `(match-compiler
-    ,(tuple-sexp (match-compiler-tuple $match-compiler))
+    ,(scope-sexp (match-compiler-scope $match-compiler))
     ,(option-app switch-sexp (match-compiler-switch-option $match-compiler))
     (remaining ,(map type-sexp (match-compiler-remaining-type-list $match-compiler)))))
 
@@ -42,27 +43,27 @@
   ($match-compiler : Match-Compiler)
   ($syntax : Syntax))
   : Match-Compiler
-  (define $tuple (match-compiler-tuple $match-compiler))
+  (define $scope (match-compiler-scope $match-compiler))
   (define $identifier-option (match-compiler-identifier-option $match-compiler))
   (define $switch-option (match-compiler-switch-option $match-compiler))
   (define $remaining-type-list (match-compiler-remaining-type-list $match-compiler))
   (when (null? $remaining-type-list) (error "no more remaining choices"))
   (define $type (car $remaining-type-list))
-  (define $new-expression (expression (or $identifier-option null-syntax) $type))
-  (define $new-tuple (push $tuple $new-expression))
-  (define $ingredients (compile-ingredients-recursively $new-tuple (list $syntax)))
+  (define $new-binding (binding $identifier-option $type))
+  (define $new-scope (push $scope $new-binding))
+  (define $ingredients (compile-ingredients-recursively $new-scope (list $syntax)))
   (define $expressions (ingredients-expressions $ingredients))
   (define $expression (expressions-expression-option $expressions))
   (unless $expression (error "match expected expression"))
   (match-compiler 
-    $tuple
+    $scope
     $identifier-option
     (switch-option-plus-expression $switch-option $expression)
     (cdr $remaining-type-list)))
 
 (parameterize 
   ((compile-ingredients-parameter 
-    (lambda (($tuple : Tuple) ($syntax-list : (Listof Syntax)))
+    (lambda (($scope : Scope) ($syntax-list : (Listof Syntax)))
       (ingredients
         (expression-expressions
           (expression #`switched (field! `switched)))))))
@@ -77,7 +78,7 @@
           (list (field! `foo) (field! `bar)))
         (make-syntax `case)))
     `(match-compiler
-      (tuple)
+      (scope)
       (switch (syntax-stack null) switched)
       (remaining (bar))))
 
@@ -93,6 +94,6 @@
           (list (field! `two) (field! `three)))
         (make-syntax `switched)))
     `(match-compiler
-      (tuple)
+      (scope)
       (switch (syntax-stack zero one null) switched)
       (remaining (three)))))

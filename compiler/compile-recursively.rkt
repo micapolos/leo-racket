@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/expressions
   leo/compiler/expressions-utils
@@ -11,21 +12,21 @@
   leo/compiler/syntax-utils
   leo/compiler/type)
 
-(define compile-ingredients-parameter : (Parameterof (-> Tuple (Listof Syntax) Ingredients))
+(define compile-ingredients-parameter : (Parameterof (-> Scope (Listof Syntax) Ingredients))
   (make-parameter
-    (lambda (($tuple : Tuple) ($syntax-list : (Listof Syntax))) : Ingredients
+    (lambda (($scope : Scope) ($syntax-list : (Listof Syntax))) : Ingredients
       (ingredients
         (expressions
           (make-syntax `(compiled ,@$syntax-list))
-          (tuple-structure $tuple))))))
+          (scope-structure $scope))))))
 
 (define (compile-ingredients-recursively
-  ($tuple : Tuple) 
+  ($scope : Scope)
   ($syntax-list : (Listof Syntax))) : Ingredients
-  ((compile-ingredients-parameter) $tuple $syntax-list))
+  ((compile-ingredients-parameter) $scope $syntax-list))
 
 (define (compile-expressions-recursively
-  ($tuple : Tuple)
+  ($scope : Scope)
   ($syntax-list : (Listof Syntax))) : Expressions
   (ingredients-expressions
-    (compile-ingredients-recursively $tuple $syntax-list)))
+    (compile-ingredients-recursively $scope $syntax-list)))

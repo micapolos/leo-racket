@@ -1,6 +1,7 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/sexp-utils
   leo/compiler/expressions
   leo/compiler/expressions-sexp
@@ -157,25 +158,25 @@
 (define (expressions-sexp-option ($expressions : Expressions)) : (Option Sexp)
   (option-app syntax->datum (expressions-syntax-option $expressions)))
 
-(define (tuple-does-expressions
-  ($tuple : Tuple)
+(define (scope-does-expressions
+  ($scope : Scope)
   ($expressions : Expressions)) : Expressions
   (expressions
     (make-syntax 
       `(lambda 
-        ,(reverse (tuple-syntax-stack $tuple))
+        ,(reverse (scope-identifier-stack $scope))
         ,(expressions-syntax $expressions)))
     (structure 
       (arrow
-        (tuple-structure $tuple)
+        (scope-structure $scope)
         (expressions-structure $expressions)))))
 
 (check-equal?
   (expressions-sexp
-    (tuple-does-expressions
-      (tuple 
-        (expression #`nul number-type)
-        (expression #`txt text-type))
+    (scope-does-expressions
+      (scope
+        (binding #`nul number-type)
+        (binding #`txt text-type))
       (expressions 
         #`(string-append (number->string num) txt)
         (structure text-type))))

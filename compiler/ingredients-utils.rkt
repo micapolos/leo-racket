@@ -218,8 +218,8 @@
 (define (ingredients-sexp-list ($ingredients : Ingredients)) : (Listof Sexp)
   (reverse (filter-false (map expressions-sexp-option $ingredients))))
 
-(define (tuple-does-ingredients ($tuple : Tuple) ($ingredients : Ingredients)) : Ingredients
-  (ingredients (tuple-does-expressions $tuple (ingredients-expressions $ingredients))))
+(define (tuple-does-ingredients ($scope : Scope) ($ingredients : Ingredients)) : Ingredients
+  (ingredients (scope-does-expressions $scope (ingredients-expressions $ingredients))))
 
 (define (ingredients-apply-type ($ingredients : Ingredients)) : Ingredients
   (ingredients
