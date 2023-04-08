@@ -145,11 +145,6 @@
         ,(reverse $identifier-stack)
         ,(entry-syntax $entry)))))
 
-(define (binder-stack-syntax-stack ($binder-stack : (Stackof Binder))) : (Stackof Syntax)
-  (map expression-syntax
-    (apply append
-      (map binder-tuple $binder-stack))))
-
 (define (scoper-stack-identifier-stack ($scoper-stack : (Stackof Scoper))) : (Stackof Identifier)
   (filter-false
     (map binding-identifier-option
