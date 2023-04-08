@@ -20,6 +20,8 @@
   leo/compiler/ingredients-utils
   leo/compiler/ingredients-sexp
   leo/compiler/ingredients
+  leo/compiler/ingredients-action
+  leo/compiler/ingredients-action-compiler
   leo/compiler/match-compiler
   leo/compiler/select-compiler
   leo/compiler/select-ingredients
@@ -235,16 +237,18 @@
 
 ; ----------------------------------------------------------------------------
 
+(define (compiler-apply-ingredients-action ($compiler : Compiler) ($action : Ingredients-Action)) : Compiler
+  (compiler-with-ingredients $compiler
+    (ingredients-apply-action
+      (compiler-ingredients $compiler) $action)))
+
 (define (compiler-apply-a 
   ($compiler : Compiler) 
   ($syntax-list : (Listof Syntax))) 
   : Compiler
-  (compiler-with-ingredients $compiler
-    (push
-      (compiler-ingredients $compiler)
-      (expression-expressions
-        (reified-expression
-          (syntax-list-structure $syntax-list))))))
+  (compiler-apply-ingredients-action
+    $compiler
+    (compile-ingredients-action-a $compiler $syntax-list)))
 
 (define (compiler-apply-recipe 
   ($compiler : Compiler) 

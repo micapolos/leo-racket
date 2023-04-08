@@ -95,6 +95,21 @@
                 (ingredients-expressions $ingredients))
               (error "top: no rhs"))))))))
 
+(define (compiler-apply-fn-ingredients
+  ($compiler : Compiler)
+  ($fn : (-> Tuple Expressions))) : Ingredients
+  (define $ingredients (compiler-ingredients $compiler))
+  (ingredients
+    (cond
+      ((null? (ingredients-structure $ingredients))
+        ($fn (scope-tuple (compiler-scope $compiler))))
+      (else
+        ($fn
+          (option-or
+            (expressions-rhs-option
+              (ingredients-expressions $ingredients))
+            (error "top: no rhs")))))))
+
 (define (compiler-thing ($compiler : Compiler) ($index : Exact-Positive-Integer)) : Compiler
   (compiler-apply-fn $compiler
     (lambda (($tuple : Tuple))
