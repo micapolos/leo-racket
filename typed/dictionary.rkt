@@ -7,5 +7,9 @@
   leo/typed/stack
   leo/typed/entry)
 
+(data (K V) dictionary-entry
+  (key : K)
+  (value : V))
+
 (data (K V) dictionary
-  (entry-stack : (Stackof (Entry K V))))
+  (entry-stack : (Stackof (Dictionary-Entry K V))))

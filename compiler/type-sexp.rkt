@@ -99,7 +99,7 @@
   (define $type (value-type $value))
   (define $any (value-any $value))
   (cond
-    ((racket? $type) (any-sexp $any))
+    ((racket? $type) `(racket ,(format "~s" $any)))
     ((equal? $type int-type) `(int ,(cast $any Fixnum)))
     ((equal? $type float-type) `(float ,(cast $any Flonum)))
     ((equal? $type number-type) (cast $any Number))
@@ -235,8 +235,8 @@
   "foo")
 
 (check-equal?
-  (value-sexp (value `(quote 1 2 3) (racket)))
-  `(quote 1 2 3))
+  (value-sexp (value `(quote 1 "foo" #t) (racket)))
+  `(racket "(quote 1 \"foo\" #t)"))
 
 (check-equal?
   (value-sexp 
