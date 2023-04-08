@@ -8,6 +8,13 @@ racket
     doing boolean
 
 racket
+  "equal?"
+  of recipe
+    text
+    check equals text
+    doing boolean
+
+racket
   "string-append"
   of recipe
     text
@@ -15,7 +22,15 @@ racket
     doing text
 
 racket
+  "string-append"
+  of recipe
+    text
+    append text
+    doing text
+
+racket
   "string-length"
   of recipe
-    text.length
-    doing length number
+    text
+    get number of characters
+    doing number
