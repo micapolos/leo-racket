@@ -41,46 +41,46 @@
 (define (program-top-level-syntax-stack ($program : Program)) : (Stackof Syntax)
   (define $entry-stack (program-entry-stack $program))
   (define $ingredients (program-resolved-ingredients $program))
-  (define $binder-stack (usage-ingredients-binder-stack 'indirect $ingredients))
+  (define $scoper-stack (ingredients-scoper-stack $ingredients))
   (map make-syntax
     (stack
-      (binder-stack-unsafe-module-syntax $entry-stack $binder-stack)
+      (scoper-stack-unsafe-module-syntax $entry-stack $scoper-stack)
       (structure-module-syntax (ingredients-structure $ingredients))
-      (binder-stack-syntax-module-syntax $binder-stack)
+      (scoper-stack-syntax-module-syntax $scoper-stack)
       `(require leo/runtime/top-level 'unsafe 'structure)
-      `(define $any-stack (stack ,@(reverse (binder-stack-syntax-stack $binder-stack))))
+      `(define $any-stack (stack ,@(reverse (scoper-stack-identifier-stack $scoper-stack))))
       `(for-each
         (curry value-displayln ,(if (leo-writer?) ''leo ''racket))
         (reverse (map value $any-stack $structure))))))
 
-(define (binder-stack-unsafe-module-syntax ($entry-stack : (Stackof Entry)) ($binder-stack : (Stackof Binder))) : Syntax
+(define (scoper-stack-unsafe-module-syntax ($entry-stack : (Stackof Entry)) ($scoper-stack : (Stackof Scoper))) : Syntax
   (make-syntax
     `(module unsafe racket/base
-      ,(binder-stack-provide-syntax $binder-stack)
+      ,(scoper-stack-provide-syntax $scoper-stack)
       (require leo/runtime/unsafe)
       ,@(reverse
-        (binder-stack-define-syntax-stack $binder-stack)))))
+        (scoper-stack-define-syntax-stack $scoper-stack)))))
 
-(define (binder-stack-provide-syntax ($binder-stack : (Stackof Binder))) : Syntax
+(define (scoper-stack-provide-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
   (make-syntax
     `(provide
       ,@(reverse
         (apply append
           (map entry-identifier-stack
             (filter-false
-              (map binder-entry-option $binder-stack))))))))
+              (map scoper-entry-option $scoper-stack))))))))
 
-(define (binder-stack-syntax-module-syntax ($binder-stack : (Stackof Binder))) : Syntax
+(define (scoper-stack-syntax-module-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
   (syntax-module-syntax
-    (binder-stack-syntax-stack $binder-stack)))
+    (scoper-stack-identifier-stack $scoper-stack)))
 
-(define (binder-stack-define-syntax-stack ($binder-stack : (Stackof Binder))) : (Stackof Syntax)
-  (filter-false (map binder-define-syntax-option $binder-stack)))
+(define (scoper-stack-define-syntax-stack ($scoper-stack : (Stackof Scoper))) : (Stackof Syntax)
+  (filter-false (map scoper-define-syntax-option $scoper-stack)))
 
-(define (binder-define-syntax-option ($binder : Binder)) : (Option Syntax)
-  (option-app binder-entry-define-syntax (binder-entry-option $binder)))
+(define (scoper-define-syntax-option ($scoper : Scoper)) : (Option Syntax)
+  (option-app scoper-entry-define-syntax (scoper-entry-option $scoper)))
 
-(define (binder-entry-define-syntax ($entry : Entry)) : Syntax
+(define (scoper-entry-define-syntax ($entry : Entry)) : Syntax
   (make-syntax
     `(define-values
       ,(reverse (entry-identifier-stack $entry))
@@ -154,9 +154,9 @@
      (provide (all-defined-out))
      (require leo/runtime/syntax)
      (define $syntax-stack
-       (stack #'tmp-point #'null #'tmp-inc #'tmp-text #'tmp-label)))
+       (stack #'tmp-point #'tmp-inc #'tmp-text #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point null tmp-inc tmp-text tmp-label))
+   (define $any-stack (stack tmp-point tmp-inc tmp-text tmp-label))
    (for-each
     (curry value-displayln 'racket)
     (reverse (map value $any-stack $structure)))))

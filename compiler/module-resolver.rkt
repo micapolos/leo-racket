@@ -36,8 +36,7 @@
             `$syntax-stack
             (lambda () #f)))
         (and $structure $syntax-stack
-          (map
-            expression
+          (syntax-stack-structure-tuple
             (any-syntax-stack $syntax-stack)
             (any-structure $structure)))))))
 

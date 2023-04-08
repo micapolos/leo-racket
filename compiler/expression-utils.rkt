@@ -184,6 +184,42 @@
               ,(- $structure-dynamic-size $dynamic-index 1))))))
     $type))
 
+(define (tuple-push-syntax-stack-structure
+  ($tuple : Tuple)
+  ($syntax-stack : (Stackof Syntax))
+  ($structure : Structure))
+  : Tuple
+  (cond
+    ((null? $structure) $tuple)
+    (else
+      (define $top-type (top $structure))
+      (define $pop-structure (pop $structure))
+      (cond
+        ((type-dynamic? $top-type)
+          (tuple-push-syntax-stack-structure
+            (push $tuple (expression (top $syntax-stack) $top-type))
+            (pop $syntax-stack)
+            $pop-structure))
+        (else
+          (tuple-push-syntax-stack-structure
+            (push $tuple (expression null-syntax $top-type))
+            $syntax-stack
+            $pop-structure))))))
+
+(define (syntax-stack-structure-tuple ($syntax-stack : (Stackof Syntax)) ($structure : Structure)) : Tuple
+  (reverse (tuple-push-syntax-stack-structure null-tuple $syntax-stack $structure)))
+
+(check-equal?
+  (tuple-sexp
+    (syntax-stack-structure-tuple
+      (stack syntax-a syntax-c)
+      (structure dynamic-type-a static-type-b dynamic-type-c)))
+  (tuple-sexp
+    (tuple
+      (expression syntax-a dynamic-type-a)
+      (expression null-syntax static-type-b)
+      (expression syntax-c dynamic-type-c))))
+
 ; ------------------------------------------------------------
 
 (define (syntax-structure-tuple ($syntax : Syntax) ($structure : Structure)) : Tuple

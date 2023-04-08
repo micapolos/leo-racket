@@ -150,6 +150,12 @@
     (apply append
       (map binder-tuple $binder-stack))))
 
+(define (scoper-stack-identifier-stack ($scoper-stack : (Stackof Scoper))) : (Stackof Identifier)
+  (filter-false
+    (map binding-identifier-option
+      (apply append
+        (map scoper-scope $scoper-stack)))))
+
 ; ---------------------------------------------------------------------
 
 (define (entry-stack-do-syntax
