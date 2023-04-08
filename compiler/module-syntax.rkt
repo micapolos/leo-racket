@@ -38,13 +38,11 @@
                 `(syntax ,$syntax))
               $syntax-stack)))))))
 
-(define (program-top-level-syntax-stack ($program : Program)) : (Stackof Syntax)
-  (define $entry-stack (program-entry-stack $program))
-  (define $ingredients (program-resolved-ingredients $program))
+(define (ingredients-top-level-syntax-stack ($ingredients : Ingredients)) : (Stackof Syntax)
   (define $scoper-stack (ingredients-scoper-stack $ingredients))
   (map make-syntax
     (stack
-      (scoper-stack-unsafe-module-syntax $entry-stack $scoper-stack)
+      (scoper-stack-unsafe-module-syntax $scoper-stack)
       (structure-module-syntax (ingredients-structure $ingredients))
       (scoper-stack-syntax-module-syntax $scoper-stack)
       `(require leo/runtime/top-level 'unsafe 'structure)
@@ -53,22 +51,13 @@
         (curry value-displayln ,(if (leo-writer?) ''leo ''racket))
         (reverse (map value $any-stack $structure))))))
 
-(define (scoper-stack-unsafe-module-syntax ($entry-stack : (Stackof Entry)) ($scoper-stack : (Stackof Scoper))) : Syntax
+(define (scoper-stack-unsafe-module-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
   (make-syntax
     `(module unsafe racket/base
-      ,(scoper-stack-provide-syntax $scoper-stack)
+      (provide (all-defined-out))
       (require leo/runtime/unsafe)
       ,@(reverse
         (scoper-stack-define-syntax-stack $scoper-stack)))))
-
-(define (scoper-stack-provide-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
-  (make-syntax
-    `(provide
-      ,@(reverse
-        (apply append
-          (map entry-identifier-stack
-            (filter-false
-              (map scoper-entry-option $scoper-stack))))))))
 
 (define (scoper-stack-syntax-module-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
   (syntax-module-syntax
@@ -89,41 +78,33 @@
 (check-equal?
   (reverse 
     (map syntax->datum
-      (program-top-level-syntax-stack
-        (program
-          (stack)
-          ; (stack
-          ;   (entry null #`null)
-          ;   (entry (stack #`single) #`"single")
-          ;   (entry
-          ;     (stack #`multi-1 #`multi-2)
-          ;     #`(values "multi-1" "multi-2")))
-          (ingredients
-            (expressions
-              #`(cons 10 20)
-              (structure
-                (field! `point
-                  (field! `x number-type)
-                  (field! `y number-type))))
-            (expressions
-              null-syntax
-              (structure (field! `green (field! `apple))))
-            (expressions
-              #`(lambda (n) (+ n 1))
-              (structure
-                (recipe!
-                  number-type
-                  (field! `inc)
-                  (does number-type))))
-            (expressions
-              #`(values
-                "inline-text"
-                (string-append (number->string (tmp-recipe (car tmp-point))) " apples!!!"))
-              (structure
-                text-type
-                (field! `label text-type))))))))
+      (ingredients-top-level-syntax-stack
+        (ingredients
+          (expressions
+            #`(cons 10 20)
+            (structure
+              (field! `point
+                (field! `x number-type)
+                (field! `y number-type))))
+          (expressions
+            null-syntax
+            (structure (field! `green (field! `apple))))
+          (expressions
+            #`(lambda (n) (+ n 1))
+            (structure
+              (recipe!
+                number-type
+                (field! `inc)
+                (does number-type))))
+          (expressions
+            #`(values
+              "inline-text"
+              (string-append (number->string (tmp-recipe (car tmp-point))) " apples!!!"))
+            (structure
+              text-type
+              (field! `label text-type)))))))
   `((module unsafe racket/base
-     (provide tmp-point tmp-inc tmp-text tmp-label)
+     (provide (all-defined-out))
      (require leo/runtime/unsafe)
      (define-values (tmp-point) (cons 10 20))
      (define-values (tmp-inc) (lambda (n) (+ n 1)))

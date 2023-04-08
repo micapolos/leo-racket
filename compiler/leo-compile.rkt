@@ -6,6 +6,7 @@
   leo/compiler/type-utils
   leo/compiler/expressions
   leo/compiler/syntax-expressions
+  leo/compiler/program
   leo/compiler/syntax-utils
   leo/compiler/ingredients
   leo/compiler/module-syntax
@@ -24,9 +25,10 @@
 
 (define (leo-compile-any-list ($any-list : (Listof Any))) : (Listof Syntax)
   (reverse
-    (program-top-level-syntax-stack
-      (syntax-list-program
-        (map syntax-normalize (map any-syntax $any-list))))))
+    (ingredients-top-level-syntax-stack
+      (program-resolved-ingredients
+        (syntax-list-program
+          (map syntax-normalize (map any-syntax $any-list)))))))
 
 (define (leo-compile-port ($port : Input-Port)) : (Listof Syntax)
   (define $string (port->string $port))
