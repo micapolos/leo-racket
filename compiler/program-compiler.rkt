@@ -36,9 +36,9 @@
       (case $symbol
         ((use with)
           (define $ingredients (compile-ingredients-recursively $tuple $args))
-          (define $binder-stack (usage-ingredients-binder-stack `indirect $ingredients))
-          (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
-          (define $binder-tuple (apply append (map binder-tuple $binder-stack)))
+          (define $scoper-stack (ingredients-scoper-stack $ingredients))
+          (define $entry-stack (filter-false (map scoper-entry-option $scoper-stack)))
+          (define $binder-tuple (scope-tuple (apply append (map scoper-scope $scoper-stack))))
           (program-compiler
             (push-stack $tuple $binder-tuple)
             (program
