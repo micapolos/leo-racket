@@ -91,7 +91,13 @@
     (map syntax->datum
       (program-top-level-syntax-stack
         (program
-          null ; entry-stack
+          (stack)
+          ; (stack
+          ;   (entry null #`null)
+          ;   (entry (stack #`single) #`"single")
+          ;   (entry
+          ;     (stack #`multi-1 #`multi-2)
+          ;     #`(values "multi-1" "multi-2")))
           (ingredients
             (expressions
               #`(cons 10 20)
