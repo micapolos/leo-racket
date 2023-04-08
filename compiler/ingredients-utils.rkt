@@ -3,7 +3,6 @@
 (require 
   leo/compiler/ingredients
   leo/compiler/binding
-  leo/compiler/scope
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils
@@ -100,7 +99,7 @@
   (define $scope (apply append $scope-stack))
   (option-bind ($fn $scope) $expressions
     (define $syntax (expressions-syntax $expressions))
-    (define $entry-stack (map scoper-entry $scoper-stack))
+    (define $entry-stack (filter-false (map scoper-entry-option $scoper-stack)))
     (expressions
       (entry-stack-do-syntax $entry-stack $syntax)
       (expressions-structure $expressions))))
@@ -164,16 +163,16 @@
 ; --------------------------------------------------------------------------
 
 (define (ingredients-expressions ($ingredients : Ingredients)) : Expressions
-  (ingredients-apply-fn $ingredients
-    (lambda (($tuple : Tuple))
+  (ingredients-do $ingredients
+    (lambda (($scope : Scope))
       (expressions
         (make-syntax
-          (bind $syntax-list (reverse (tuple-syntax-stack $tuple))
-            (case (length $syntax-list)
+          (bind $identifier-list (reverse (scope-identifier-stack $scope))
+            (case (length $identifier-list)
               ((0) null-syntax)
-              ((1) (car $syntax-list))
-              (else `(values ,@$syntax-list)))))
-        (tuple-structure $tuple)))))
+              ((1) (car $identifier-list))
+              (else `(values ,@$identifier-list)))))
+        (scope-structure $scope)))))
 
 ; empty-expression
 (check-equal?
@@ -197,9 +196,12 @@
 (check-equal?
   (expressions-sexp
     (ingredients-expressions
-      (ingredients expressions-a)))
+      (ingredients
+        (expressions #`expr (structure dynamic-type-a dynamic-type-b)))))
   (expressions-sexp
-    (expressions syntax-a (structure dynamic-type-a))))
+    (expressions
+      (make-syntax `(let-values (((tmp-a tmp-b) expr)) (values tmp-a tmp-b)))
+      (structure dynamic-type-a dynamic-type-b))))
 
 ; single-expression & multi-expression
 (check-equal?

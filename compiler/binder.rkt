@@ -4,7 +4,6 @@
   leo/compiler/generate-temporary
   leo/compiler/syntax-utils
   leo/compiler/binding
-  leo/compiler/scope
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expression
@@ -25,7 +24,7 @@
   (tuple : Tuple))
 
 (data scoper
-  (entry : Entry)
+  (entry-option : (Option Entry))
   (scope : Scope))
 
 (define (entry-sexp ($entry : Entry)) : Sexp
@@ -231,6 +230,6 @@
   (define $type-option (single $structure))
   (define $tmp-option-stack (map type-generate-temporary-option $structure))
   (define $identifier-stack (filter-false $tmp-option-stack))
-  (define $entry (entry $identifier-stack $syntax))
+  (define $entry-option (and (not (null? $identifier-stack)) (entry $identifier-stack $syntax)))
   (define $scope (map binding $tmp-option-stack $structure))
-  (scoper $entry $scope))
+  (scoper $entry-option $scope))
