@@ -3,6 +3,8 @@
 (require
   leo/compiler/generate-temporary
   leo/compiler/syntax-utils
+  leo/compiler/binding
+  leo/compiler/scope
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/expression
@@ -21,6 +23,10 @@
 (data binder
   (entry-option : (Option Entry))
   (tuple : Tuple))
+
+(data scoper
+  (entry : Entry)
+  (scope : Scope))
 
 (define (entry-sexp ($entry : Entry)) : Sexp
   `(entry
@@ -131,11 +137,14 @@
         (expression (tmp-syntax-a) dynamic-type-a)
         (expression (tmp-syntax-b) dynamic-type-b)))))
 
-(define (entry-let-syntax ($entry : Entry)) : Syntax
-  (make-syntax
-    `(
-      ,(reverse (entry-identifier-stack $entry))
-      ,(entry-syntax $entry))))
+(define (entry-let-syntax-option ($entry : Entry)) : (Option Syntax)
+  (define $identifier-stack (entry-identifier-stack $entry))
+  (and
+    (not (null? $identifier-stack))
+    (make-syntax
+      `(
+        ,(reverse $identifier-stack)
+        ,(entry-syntax $entry)))))
 
 (define (binder-stack-syntax-stack ($binder-stack : (Stackof Binder))) : (Stackof Syntax)
   (map expression-syntax
@@ -156,7 +165,7 @@
       (equal? $syntax (single (entry-identifier-stack $single-entry))))
       (entry-syntax $single-entry))
     (else
-      (define $entry-let-syntax-stack (map entry-let-syntax $entry-stack))
+      (define $entry-let-syntax-stack (filter-false (map entry-let-syntax-option $entry-stack)))
         (make-syntax
           `(let-values
             ,(reverse $entry-let-syntax-stack)
@@ -207,3 +216,21 @@
       (((#,(tmp-syntax-a)) #,syntax-b)
        ((#,(tmp-syntax-c)) #,syntax-d))
       #,syntax-a)))
+
+; -----------------------------------------------------------------------------------
+
+(define (ingredients-scoper-stack
+  ($ingredients : Ingredients))
+: (Stackof Scoper)
+  (map expressions-scoper $ingredients))
+
+(define (expressions-scoper
+  ($expressions : Expressions)) : Scoper
+  (define $syntax (expressions-syntax $expressions))
+  (define $structure (expressions-structure $expressions))
+  (define $type-option (single $structure))
+  (define $tmp-option-stack (map type-generate-temporary-option $structure))
+  (define $identifier-stack (filter-false $tmp-option-stack))
+  (define $entry (entry $identifier-stack $syntax))
+  (define $scope (map binding $tmp-option-stack $structure))
+  (scoper $entry $scope))

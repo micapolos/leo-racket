@@ -2,6 +2,8 @@
 
 (require 
   leo/compiler/ingredients
+  leo/compiler/binding
+  leo/compiler/scope
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/type-utils
@@ -87,6 +89,45 @@
           dynamic-type-b
           dynamic-type-c
           dynamic-type-d)))))
+
+; --------------------------------------------------------------------------------
+
+(define (ingredients-do
+  ($ingredients : Ingredients)
+  ($fn : (-> Scope Expressions))) : Expressions
+  (define $scoper-stack (ingredients-scoper-stack $ingredients))
+  (define $scope-stack (map scoper-scope $scoper-stack))
+  (define $scope (apply append $scope-stack))
+  (option-bind ($fn $scope) $expressions
+    (define $syntax (expressions-syntax $expressions))
+    (define $entry-stack (map scoper-entry $scoper-stack))
+    (expressions
+      (entry-stack-do-syntax $entry-stack $syntax)
+      (expressions-structure $expressions))))
+
+(check-equal?
+  (expressions-sexp
+    (ingredients-do
+      (ingredients
+        (expressions #`empty (structure))
+        (expressions #`single (structure dynamic-type-a))
+        (expressions #`multi (structure dynamic-type-a dynamic-type-b))
+        (expressions #`static (structure dynamic-type-a static-type-b dynamic-type-c)))
+      (lambda (($scope : Scope))
+        (expressions
+          (make-syntax
+            `(values
+              ,@(reverse (filter-false (map binding-identifier-option $scope)))))
+          (map binding-type $scope)))))
+  (expressions-sexp
+    (expressions
+      (make-syntax
+        `(let-values
+          (((tmp-a) single)
+            ((tmp-a tmp-b) multi)
+            ((tmp-a tmp-c) static))
+          (values tmp-a tmp-a tmp-b tmp-a tmp-c)))
+      (structure dynamic-type-a dynamic-type-a dynamic-type-b dynamic-type-a static-type-b dynamic-type-c))))
 
 ; --------------------------------------------------------------------------------
 

@@ -1,11 +1,6 @@
 #lang leo/typed
 
 (require
-  leo/compiler/expression)
+  leo/compiler/binding)
 
-(data scope
-  (tuple : Tuple))
-
-(data (V) scoped
-  (scope : Scope)
-  (value : V))
+(define-type Scope (Stackof Binding))
