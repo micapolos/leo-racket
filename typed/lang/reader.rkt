@@ -24,6 +24,8 @@
         racket/string
         leo/typed/base
         leo/typed/environment
+        leo/typed/dictionary
+        leo/typed/entry
         leo/typed/failure
         leo/typed/maybe
         leo/typed/option
