@@ -102,39 +102,39 @@
             (structure
               text-type
               (field! `label text-type)))))))
-  `((module unsafe racket/base
-     (provide (all-defined-out))
-     (require leo/runtime/unsafe)
-     (define-values (tmp-point) (cons 10 20))
-     (define-values (tmp-inc) (lambda (n) (+ n 1)))
-     (define-values
-      (tmp-text tmp-label)
-      (values
-       "inline-text"
-       (string-append
-        (number->string (tmp-recipe (car tmp-point)))
-        " apples!!!"))))
-   (module structure typed/racket/base
-     (provide (all-defined-out))
-     (require leo/runtime/structure)
-     (define $structure
-       (structure
-        (field!
-         'point
-         (field! 'x (field! 'number (racket)))
-         (field! 'y (field! 'number (racket))))
-        (field! 'green (field! 'apple))
-        (recipe!
-         (field! 'number (racket))
-         (field! 'inc)
-         (does (field! 'number (racket))))
-        (field! 'text (racket))
-        (field! 'label (field! 'text (racket))))))
-   (module syntax typed/racket/base
-     (provide (all-defined-out))
-     (require leo/runtime/syntax)
-     (define $syntax-stack
-       (stack #'tmp-point #'tmp-inc #'tmp-text #'tmp-label)))
-   (require leo/runtime/top-level 'unsafe 'structure)
-   (define $any-stack (stack tmp-point tmp-inc tmp-text tmp-label))
-   (any-stack-structure-displayln 'racket $any-stack $structure)))
+  `(
+    (module unsafe racket/base
+      (provide (all-defined-out))
+      (require leo/runtime/unsafe)
+      (define-values (tmp-point) (cons 10 20))
+      (define-values (tmp-inc) (lambda (n) (+ n 1)))
+      (define-values
+        (tmp-text tmp-label)
+        (values
+          "inline-text"
+          (string-append
+            (number->string (tmp-recipe (car tmp-point)))
+            " apples!!!"))))
+    (module structure typed/racket/base
+      (provide (all-defined-out))
+      (require leo/runtime/structure)
+      (define $structure
+        (structure
+          (field! 'point
+            (field! 'x (field! 'number (racket)))
+            (field! 'y (field! 'number (racket))))
+          (field! 'green (field! 'apple))
+          (recipe!
+            (field! 'number (racket))
+            (field! 'inc)
+            (does (field! 'number (racket))))
+          (field! 'text (racket))
+          (field! 'label (field! 'text (racket))))))
+    (module syntax typed/racket/base
+      (provide (all-defined-out))
+      (require leo/runtime/syntax)
+      (define $syntax-stack
+        (stack #'tmp-point #'tmp-inc #'tmp-text #'tmp-label)))
+    (require leo/runtime/top-level 'unsafe 'structure)
+    (define $any-stack (stack tmp-point tmp-inc tmp-text tmp-label))
+    (any-stack-structure-displayln 'racket $any-stack $structure)))
