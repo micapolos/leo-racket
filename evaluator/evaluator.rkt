@@ -36,7 +36,7 @@
     (evaluator-value-scope $evaluator)
     (map value-generate-binder (evaluator-packet $evaluator))))
 
-(define (evaluate-do ($evaluator : Evaluator) ($syntax-list : (Listof Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
+(define (evaluator-do ($evaluator : Evaluator) ($syntax-list : (Listof Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
   (struct-copy evaluator $evaluator
     (packet
       ($evaluate-fn
@@ -45,7 +45,7 @@
 
 (check-equal?
   (evaluator-sexp
-    (evaluate-do
+    (evaluator-do
       (evaluator
         base-value-scope
         (packet (value "foo" (racket))))
