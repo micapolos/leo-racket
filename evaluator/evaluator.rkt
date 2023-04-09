@@ -36,6 +36,8 @@
     (evaluator-value-scope $evaluator)
     (map value-generate-binder (evaluator-packet $evaluator))))
 
+; -----------------------------------------------------------------------------------------
+
 (define (evaluator-do ($evaluator : Evaluator) ($syntax-list : (Listof Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
   (struct-copy evaluator $evaluator
     (packet
