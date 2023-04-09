@@ -2,7 +2,8 @@
 
 (require
   leo/compiler/type
-  leo/compiler/syntax-utils)
+  leo/compiler/syntax-utils
+  leo/compiler/type-sexp)
 
 (data binding
   (identifier-option : (Option Identifier))
@@ -26,8 +27,8 @@
 
 (define (binding-sexp ($binding : Binding)) : Sexp
   `(binding
-    (syntax->datum (binding-identifier-option $binding))
-    (type-sexp (binding-type $binding))))
+    ,(option-app syntax->datum (binding-identifier-option $binding))
+    ,(type-sexp (binding-type $binding))))
 
 (define (scope-sexp ($scope : Scope)) : Sexp
   `(scope ,@(reverse (map binding-sexp $scope))))

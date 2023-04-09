@@ -10,8 +10,10 @@
   leo/compiler/type-sexp
   leo/compiler/type-utils
   leo/compiler/binding
+  leo/compiler/syntax-utils
   leo/evaluator/scope
-  leo/evaluator/environment)
+  leo/evaluator/environment
+)
 
 (data evaluator
   (value-scope : Value-Scope)
@@ -34,12 +36,35 @@
     (evaluator-value-scope $evaluator)
     (map value-generate-binder (evaluator-packet $evaluator))))
 
-(define (evaluator-plus-do ($evaluator : Evaluator) ($syntax-list : (Listof Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
+(define (evaluate-do ($evaluator : Evaluator) ($syntax-list : (Listof Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
   (struct-copy evaluator $evaluator
     (packet
       ($evaluate-fn
         (evaluator-do-value-scope $evaluator)
         $syntax-list))))
+
+(check-equal?
+  (evaluator-sexp
+    (evaluate-do
+      (evaluator
+        base-value-scope
+        (packet (value "foo" (racket))))
+      (list syntax-a syntax-b)
+      (lambda (($value-scope : Value-Scope) ($syntax-list : (Listof Syntax)))
+        (packet
+          (value (value-scope-sexp $value-scope) (racket))
+          (value (map syntax->datum $syntax-list) (racket))))))
+  (evaluator-sexp
+    (evaluator
+      base-value-scope
+      (packet
+        (value
+          (value-scope-sexp
+            (value-scope-plus-binder
+              base-value-scope
+              (value-binder (binding #`tmp-racket (racket)) "foo")))
+          (racket))
+        (value (map syntax->datum (list syntax-a syntax-b)) (racket))))))
 
 ; (define (evaluator-plus-default ($evaluator : Evaluator) ($syntax : Syntax)) ($evaluate-fn : Evaluate-Fn)) : Evaluator
 ;   (define $e (syntax-e $syntax))
