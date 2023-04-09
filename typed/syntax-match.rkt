@@ -47,23 +47,6 @@
 
 (define-type Thunk (Pairof Identifier (Listof Syntax)))
 
-(define (syntax-identifier-option ($syntax : Syntax)) : (Option Identifier)
-  (cond
-    ((identifier? $syntax) $syntax)
-    (else #f)))
-
-(check-equal?
-  (option-bind
-    (syntax-identifier-option #`foo) $identifier
-      (syntax->datum $identifier))
-  `foo)
-
-(check-equal?
-  (option-bind
-    (syntax-identifier-option #`(foo)) $identifier
-      (syntax->datum $identifier))
-  #f)
-
 (define (syntax-thunk-option ($syntax : Syntax)) : (Option (Syntaxof Thunk))
   (let (($syntax-e (syntax-e $syntax)))
     (cond
