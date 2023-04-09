@@ -47,9 +47,8 @@
       (scoper-stack-syntax-module-syntax $scoper-stack)
       `(require leo/runtime/top-level 'unsafe 'structure)
       `(define $any-stack (stack ,@(reverse (scoper-stack-identifier-stack $scoper-stack))))
-      `(for-each
-        (curry value-displayln ,(if (leo-writer?) ''leo ''racket))
-        (reverse (map value $any-stack $structure))))))
+      `(any-stack-structure-displayln ,(if (leo-writer?) ''leo ''racket)
+          $any-stack $structure))))
 
 (define (scoper-stack-unsafe-module-syntax ($scoper-stack : (Stackof Scoper))) : Syntax
   (make-syntax
@@ -138,6 +137,4 @@
        (stack #'tmp-point #'tmp-inc #'tmp-text #'tmp-label)))
    (require leo/runtime/top-level 'unsafe 'structure)
    (define $any-stack (stack tmp-point tmp-inc tmp-text tmp-label))
-   (for-each
-    (curry value-displayln 'racket)
-    (reverse (map value $any-stack $structure)))))
+   (any-stack-structure-displayln 'racket $any-stack $structure)))
