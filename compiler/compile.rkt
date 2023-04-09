@@ -3,6 +3,7 @@
 (require
   leo/compiler/binding
   leo/compiler/expression
+  leo/compiler/expression-utils
   leo/compiler/expressions
   leo/compiler/ingredients
   leo/compiler/ingredients-utils
@@ -13,7 +14,8 @@
   leo/compiler/compile-recursively
   leo/compiler/repeat-compiler
   leo/compiler/type
-  leo/compiler/syntax-utils)
+  leo/compiler/syntax-utils
+  leo/compiler/line)
 
 (define (compile-program
   ($scope : Scope)
@@ -58,3 +60,13 @@
             (make-syntax `text)
             (make-syntax `(doing "foo")))))))
   `(letrec ((tmp-recipe (lambda () "foo"))) tmp-recipe))
+
+; ------------------------------------------------------------------------------
+
+(define (compile-symbol-line ($scope : Scope) ($symbol : Symbol) ($syntax-list : (Listof Syntax))) : Line
+  (case $symbol
+    (else (compile-symbol-expressions $scope $symbol $syntax-list))))
+
+(define (compile-symbol-expressions ($scope : Scope) ($symbol : Symbol) ($syntax-list : (Listof Syntax))) : Expressions
+  (symbol-ingredients-expressions $symbol
+    (compile-ingredients-recursively $scope $syntax-list)))
