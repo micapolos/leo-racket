@@ -170,3 +170,6 @@
         (number->string $integer))))
   (list "2" "4" "6"))
 
+(define-syntax (TODO $syntax)
+  (syntax-case $syntax ()
+    (_ #`(error "TODO"))))
