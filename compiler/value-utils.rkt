@@ -4,7 +4,8 @@
   typed/racket/unsafe
   leo/compiler/type
   leo/compiler/type-utils
-  leo/compiler/type-match)
+  leo/compiler/type-match
+  leo/compiler/type-sexp)
 
 (unsafe-require/typed leo/compiler/any-utils
   (any-apply (-> Any (Listof Any) (Listof Any))))
@@ -79,3 +80,42 @@
       (value `() (field! `foo))))
   (packet
     (value 128 number-type)))
+
+; -----------------------------------------------------------------------------------------
+
+(define (packet-push-any-stack-structure
+  ($packet : Packet)
+  ($any-stack : (Stackof Any))
+  ($structure : Structure))
+  : Packet
+  (cond
+    ((null? $structure) $packet)
+    (else
+      (define $top-type (top $structure))
+      (define $pop-structure (pop $structure))
+      (cond
+        ((type-dynamic? $top-type)
+          (packet-push-any-stack-structure
+            (push $packet (value (top $any-stack) $top-type))
+            (pop $any-stack)
+            $pop-structure))
+        (else
+          (packet-push-any-stack-structure
+            (push $packet (value null $top-type))
+            $any-stack
+            $pop-structure))))))
+
+(define (any-stack-structure-packet ($any-stack : (Stackof Any)) ($structure : Structure)) : Packet
+  (reverse (packet-push-any-stack-structure null-packet $any-stack $structure)))
+
+(check-equal?
+  (packet-sexp
+    (any-stack-structure-packet
+      (stack `a `c)
+      (structure dynamic-type-a static-type-b dynamic-type-c)))
+  (packet-sexp
+    (packet
+      (value `a dynamic-type-a)
+      (value null static-type-b)
+      (value `c dynamic-type-c))))
+

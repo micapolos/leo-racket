@@ -20,6 +20,11 @@
     base-environment
     null-scope))
 
+(define (value-scope-sexp ($value-scope : Value-Scope))
+  `(value-scope
+    ,(environment-sexp (value-scope-environment $value-scope))
+    ,(scope-sexp (value-scope-scope $value-scope))))
+
 (define (value-generate-binder ($value : Value)) : Value-Binder
   (define $type (value-type $value))
   (value-binder

@@ -6,6 +6,10 @@
   leo/compiler/expressions-utils
   leo/compiler/ingredients-utils
   leo/compiler/compiler-plus-expressions
+  leo/compiler/value-utils
+  leo/compiler/type-sexp
+  leo/compiler/type-utils
+  leo/compiler/binding
   leo/evaluator/scope
   leo/evaluator/environment)
 
@@ -19,6 +23,11 @@
     null-packet))
 
 (define-type Evaluate-Fn (-> Value-Scope (Listof Syntax) Packet))
+
+(define (evaluator-sexp ($evaluator : Evaluator))
+  `(evaluator
+    ,(value-scope-sexp (evaluator-value-scope $evaluator))
+    ,(packet-sexp (evaluator-packet $evaluator))))
 
 (define (evaluator-do-value-scope ($evaluator : Evaluator)) : Value-Scope
   (value-scope-plus-binder-stack
@@ -59,5 +68,31 @@
   (define $ingredients (map expression-expressions (map value-binder-expression $binder-stack)))
   (define $resolved-ingredients (scope-apply-ingredients $scope $ingredients))
   (define $resolved-expressions (ingredients-expressions $resolved-ingredients))
-  (define $any-list (environment-eval-list $new-environment (syntax->datum (expressions-syntax $resolved-expressions))))
-  TODO)
+  (define $resolved-structure (expressions-structure $resolved-expressions))
+  (define $resolved-any-list (environment-eval-list $new-environment (syntax->datum (expressions-syntax $resolved-expressions))))
+  (define $resolved-packet (any-stack-structure-packet (reverse $resolved-any-list) $resolved-structure))
+  (evaluator $value-scope $resolved-packet))
+
+(bind
+  $value-scope (value-scope
+    base-environment
+    (scope
+      (binding
+        #`string-append
+        (recipe! text-type (field! `plus text-type) (doing text-type)))))
+
+  (check-equal?
+    (evaluator-sexp
+      (evaluator-resolve
+        (evaluator
+          $value-scope
+          (packet
+            (value "foo" text-type)
+            (value "bar" (field! `plus text-type))))))
+    (evaluator-sexp
+      (evaluator-resolve
+        (evaluator
+          $value-scope
+          (packet
+            (value "foobar" text-type))))))
+)

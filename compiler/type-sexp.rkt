@@ -93,6 +93,9 @@
 (define (any-structure-sexp-list ($any : Any) ($structure : Structure)) : (Listof Sexp)
   (type-stack-any-structure-sexp-list null $any $structure))
 
+(define (packet-sexp ($packet : Packet)) : Sexp
+  `(packet ,@(reverse (map value-sexp $packet))))
+
 (define (type-stack-value-sexp 
   ($type-stack : (Stackof Type))
   ($value : Value)) : Sexp
@@ -368,3 +371,5 @@
       #f
       (reified! (field! `foo) (field! `bar))))
   `(a foo bar))
+
+; ------------------------------------------------------------------------------------

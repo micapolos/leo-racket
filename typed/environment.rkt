@@ -14,6 +14,9 @@
   (namespace : Namespace)
   (namespace-procedure : (-> Namespace)))
 
+(define (environment-sexp ($environment : Environment))
+  `(environment ...))
+
 (define (environment-with-namespace-procedure 
   ($namespace-procedure : (-> Namespace))) : Environment
   (environment ($namespace-procedure) $namespace-procedure))
