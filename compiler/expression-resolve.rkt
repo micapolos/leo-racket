@@ -49,7 +49,7 @@
   : (Option Expression)
   (and
     (type-matches? $type (expression-type $expression))
-    (expression (expression-syntax $expression) $type)))
+    (expression (expression-syntax-option $expression) $type)))
 
 (check-equal?
   (option-app expression-sexp-type
@@ -73,7 +73,7 @@
     (option-bind (single (field-structure $type)) $rhs-type
       (expression-resolve-get-a-expression
         $lhs-expression
-        (expression (expression-syntax $rhs-expression) $rhs-type)))))
+        (expression (expression-syntax-option $rhs-expression) $rhs-type)))))
 
 ; -----------------------------------------------------------------------
 
@@ -112,6 +112,7 @@
   ($lhs-binding : Binding)
   ($rhs-tuple : Tuple))
   : (Option Expressions)
+  (define $binding-syntax-option (binding-identifier-option $lhs-binding))
   (define $binding-type (binding-type $lhs-binding))
   (define $structure (tuple-structure $rhs-tuple))
   (define $dynamic-syntax-stack (tuple-syntax-stack $rhs-tuple))
@@ -124,10 +125,11 @@
       (and 
         (structure-matches? $structure $arrow-from-structure)
         (expressions
-          (make-syntax 
-            `(
-              ,(binding-syntax $lhs-binding)
-              ,@(reverse $dynamic-syntax-stack)))
+          (and $binding-syntax-option
+            (make-syntax
+              `(
+                ,$binding-syntax-option
+                ,@(reverse $dynamic-syntax-stack))))
           $arrow-to-structure)))))
 
 (check-equal?

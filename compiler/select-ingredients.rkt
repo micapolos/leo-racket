@@ -7,7 +7,7 @@
   leo/compiler/type)
 
 (data select-ingredients
-  (selection : (Option (Pairof Exact-Nonnegative-Integer Syntax)))
+  (selection : (Option (Pairof Exact-Nonnegative-Integer (Option Syntax))))
   (structure : Structure))
 
 (define null-select-ingredients 
@@ -30,7 +30,7 @@
   (select-ingredients
     (pair 
       (length (select-ingredients-structure $ingredients))
-      (expression-syntax $expression))
+      (expression-syntax-option $expression))
     (push
       (select-ingredients-structure $ingredients)
       (expression-type $expression))))

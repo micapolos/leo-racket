@@ -79,7 +79,7 @@
         (make-syntax `case)))
     `(match-compiler
       (scope)
-      (switch (syntax-stack null) switched)
+      (switch (syntax-stack #f) switched)
       (remaining (bar))))
 
   (check-equal?
@@ -95,5 +95,5 @@
         (make-syntax `switched)))
     `(match-compiler
       (scope)
-      (switch (syntax-stack zero one null) switched)
+      (switch (syntax-stack zero one #f) switched)
       (remaining (three)))))

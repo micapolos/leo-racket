@@ -10,7 +10,7 @@
 
 (define (expressions-sexp ($expressions : Expressions)) : Sexp
   `(expressions 
-    ,(syntax->datum (expressions-syntax $expressions))
+    ,(option-app syntax->datum (expressions-syntax-option $expressions))
     ,(structure-sexp (expressions-structure $expressions))))
 
 (check-equal?

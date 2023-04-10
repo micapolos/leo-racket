@@ -13,7 +13,7 @@
   leo/compiler/type-match
   leo/compiler/type-utils)
 
-(define static-expressions-a (expressions null-syntax static-structure-a))
+(define static-expressions-a (expressions #f static-structure-a))
 
 (define expressions-a (expressions #`a structure-a))
 (define expressions-b (expressions #`b structure-b))
@@ -37,11 +37,6 @@
     (expression-expressions
       (field-expression `resolved $tuple))))
 
-(define (make-expressions ($syntax : Syntax) ($structure : Structure)) : Expressions
-  (expressions
-    (or (and (structure-dynamic? $structure) $syntax) null-syntax)
-    $structure))
-
 (define (expressions-size ($expressions : Expressions)) : Exact-Nonnegative-Integer
   (length (expressions-structure $expressions)))
 
@@ -50,12 +45,12 @@
 
 (define (tuple-expressions ($tuple : Tuple)) : Expressions
   (expressions
-    (or (tuple-values-syntax-option $tuple) null-syntax)
+    (tuple-values-syntax-option $tuple)
     (tuple-structure $tuple)))
 
 (check-equal?
   (expressions-sexp-structure (tuple-expressions (tuple static-expression-a)))
-  (pair null-sexp (structure static-type-a)))
+  (pair #f (structure static-type-a)))
 
 (check-equal?
   (expressions-sexp-structure
@@ -77,7 +72,7 @@
 
 (define (expressions-expression-option ($expressions : Expressions)) : (Option Expression)
   (option-bind (single (expressions-structure $expressions)) $type
-    (expression (expressions-syntax $expressions) $type)))
+    (expression (expressions-syntax-option $expressions) $type)))
 
 (define (expressions-symbol-rhs
   ($expressions : Expressions)
@@ -87,7 +82,7 @@
     (bind $type (expression-type $expression)
       (and (field? $type) (equal? (field-symbol $type) `the)
         (expressions 
-          (expression-syntax $expression)
+          (expression-syntax-option $expression)
           (field-structure $type))))))
 
 (define (expressions-rhs-option ($expressions : Expressions)) : (Option Tuple)
@@ -124,14 +119,23 @@
   ($lhs-expression : Expression)
   ($rhs-expressions : Expressions))
   : (Option Expressions)
-  (option-app expressions
-    (make-syntax
-      `(call-with-values
-        (lambda () ,(expressions-syntax $rhs-expressions))
-        ,(expression-syntax $lhs-expression)))
-    (type-apply-structure 
+  (option-bind
+    (type-apply-structure
       (expression-type $lhs-expression)
-      (expressions-structure $rhs-expressions))))
+      (expressions-structure $rhs-expressions))
+    $rhs-type
+    (define $lhs-syntax-option (expression-syntax-option $lhs-expression))
+    (define $rhs-syntax-option (expressions-syntax-option $rhs-expressions))
+    (expressions
+      (and $lhs-syntax-option
+        (cond
+          ($rhs-syntax-option
+            (make-syntax
+              `(call-with-values
+                (lambda () ,$rhs-syntax-option)
+                ,$lhs-syntax-option)))
+          (else $lhs-syntax-option)))
+      $rhs-type)))
 
 (check-equal?
   (option-app expressions-sexp-structure
@@ -162,10 +166,11 @@
   ($scope : Scope)
   ($expressions : Expressions)) : Expressions
   (expressions
-    (make-syntax 
-      `(lambda 
-        ,(reverse (scope-identifier-stack $scope))
-        ,(expressions-syntax $expressions)))
+    (option-bind (expressions-syntax-option $expressions) $syntax
+      (make-syntax
+        `(lambda
+          ,(reverse (scope-identifier-stack $scope))
+          ,$syntax)))
     (structure 
       (arrow
         (scope-structure $scope)

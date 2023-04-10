@@ -6,18 +6,12 @@
   leo/compiler/syntax-utils)
 
 (data expressions 
-  (syntax : Syntax)
+  (syntax-option : (Option Syntax))
   (structure : Structure))
 
-(define null-expressions (expressions null-syntax null-structure))
-
-; TODO: Refactor expression-syntax
-(define (expressions-syntax-option ($expressions : Expressions)) : (Option Syntax)
-  (and 
-    (structure-dynamic? (expressions-structure $expressions)) 
-    (expressions-syntax $expressions)))
+(define null-expressions (expressions #f null-structure))
 
 (define (expressions-sexp-structure ($expressions : Expressions)) : (Pairof Sexp Structure)
   (pair
-    (syntax->datum (expressions-syntax $expressions))
+    (option-app syntax->datum (expressions-syntax-option $expressions))
     (expressions-structure $expressions)))

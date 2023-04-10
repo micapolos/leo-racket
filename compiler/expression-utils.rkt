@@ -18,10 +18,10 @@
 (define dynamic-expression-c (expression syntax-c dynamic-type-c))
 (define dynamic-expression-d (expression syntax-d dynamic-type-d))
 
-(define static-expression-a (expression null-syntax static-type-a))
-(define static-expression-b (expression null-syntax static-type-b))
-(define static-expression-c (expression null-syntax static-type-c))
-(define static-expression-d (expression null-syntax static-type-d))
+(define static-expression-a (expression #f static-type-a))
+(define static-expression-b (expression #f static-type-b))
+(define static-expression-c (expression #f static-type-c))
+(define static-expression-d (expression #f static-type-d))
 
 (define expression-a dynamic-expression-a)
 (define expression-b dynamic-expression-b)
@@ -45,14 +45,9 @@
 
 (define tuple-ab (tuple expression-a expression-b))
 
-(define (make-expression ($syntax : Syntax) ($type : Type)) : Expression
-  (expression
-    (or (and (type-dynamic? $type) $syntax) null-syntax)
-    $type))
-
 (define (expression-sexp ($expression : Expression)) : Sexp
   `(expression
-    ,(syntax->datum (expression-syntax $expression))
+    ,(option-app syntax->datum (expression-syntax-option $expression))
     ,(type-sexp (expression-type $expression))))
 
 (check-equal?
@@ -93,25 +88,20 @@
   (expression (type-syntax $type) (type-universe $type)))
 
 (define (reified-expression ($structure : Structure))
-  (expression null-syntax (reified $structure)))
+  (expression #f (reified $structure)))
 
 (define (expression-dynamic? ($expression : Expression)) : Boolean
   (type-dynamic? (expression-type $expression)))
 
 (define (expression-sexp-type ($expression : Expression)) : (Pairof Sexp Type)
   (pair
-    (syntax->datum (expression-syntax $expression))
+    (option-app syntax->datum (expression-syntax-option $expression))
     (expression-type $expression)))
 
 (define (tuple-structure 
   ($tuple : Tuple))
   : Structure
   (map expression-type $tuple))
-
-(define (expression-syntax-option ($expression : Expression)) : (Option Syntax)
-  (and
-    (type-dynamic? (expression-type $expression))
-    (expression-syntax $expression)))
 
 (define (tuple-syntax-stack
   ($tuple : Tuple))
@@ -134,7 +124,7 @@
     (field? $type)
     (equal? (field-symbol $type) $symbol)
     (expressions
-      (expression-syntax $expression) 
+      (expression-syntax-option $expression)
       (field-structure $type))))
 
 (check-equal?
@@ -160,8 +150,8 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (syntax-structure-ref
-  ($syntax : Syntax)
+(define (syntax-option-structure-ref
+  ($syntax-option : (Option Syntax))
   ($structure : Structure)
   ($index : Exact-Nonnegative-Integer))
   : Expression
@@ -169,20 +159,21 @@
   (define $dynamic-index (structure-dynamic-ref $structure $index))
   (define $type (list-ref $structure $index))
   (expression
-    (make-syntax
-      (and
-        $dynamic-index
-        (case $structure-dynamic-size
-          ((0) #f)
-          ((1) $syntax)
-          ((2)
-            `(
-              ,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr)
-              ,$syntax))
-          (else
-            `(unsafe-vector-ref 
-              ,$syntax
-              ,(- $structure-dynamic-size $dynamic-index 1))))))
+    (and $syntax-option
+      (make-syntax
+        (and
+          $dynamic-index
+          (case $structure-dynamic-size
+            ((0) #f)
+            ((1) $syntax-option)
+            ((2)
+              `(
+                ,(if (= $dynamic-index 1) `unsafe-car `unsafe-cdr)
+                ,$syntax-option))
+            (else
+              `(unsafe-vector-ref
+                ,$syntax-option
+                ,(- $structure-dynamic-size $dynamic-index 1)))))))
     $type))
 
 (define (tuple-push-syntax-stack-structure
@@ -203,7 +194,7 @@
             $pop-structure))
         (else
           (tuple-push-syntax-stack-structure
-            (push $tuple (expression null-syntax $top-type))
+            (push $tuple (expression #f $top-type))
             $syntax-stack
             $pop-structure))))))
 
@@ -218,20 +209,20 @@
   (tuple-sexp
     (tuple
       (expression syntax-a dynamic-type-a)
-      (expression null-syntax static-type-b)
+      (expression #f static-type-b)
       (expression syntax-c dynamic-type-c))))
 
 ; ------------------------------------------------------------
 
-(define (syntax-structure-tuple ($syntax : Syntax) ($structure : Structure)) : Tuple
+(define (syntax-option-structure-tuple ($syntax-option : (Option Syntax)) ($structure : Structure)) : Tuple
   (map 
-    (curry (curry syntax-structure-ref $syntax) $structure)
+    (curry (curry syntax-option-structure-ref $syntax-option) $structure)
     (range (length $structure))))
 
 (check-equal?
   (map
     expression-sexp-type
-    (syntax-structure-tuple
+    (syntax-option-structure-tuple
       syntax-a
       (structure dynamic-type-a dynamic-type-b static-type-c dynamic-type-d)))
   (stack
@@ -245,8 +236,8 @@
 (define (expression-rhs-tuple-option ($expression : Expression)) : (Option Tuple)
   (define $type (expression-type $expression))
   (and (field? $type)
-    (syntax-structure-tuple 
-      (expression-syntax $expression) 
+    (syntax-option-structure-tuple
+      (expression-syntax-option $expression)
       (field-structure $type))))
 
 (check-equal?
@@ -269,17 +260,19 @@
   ($lhs-expression : Expression)
   ($rhs-tuple : Tuple))
   : (Option Expressions)
-  (option-app expressions
-    (make-syntax
-      (cond
-        ((type-dynamic? (expression-type $lhs-expression))
-          `(,(expression-syntax $lhs-expression)
-            ,@(reverse 
-              (tuple-syntax-stack $rhs-tuple))))
-        (else null-syntax)))
+  (define $syntax-option (expression-syntax-option $lhs-expression))
+  (define $type-option
     (type-apply-structure
       (expression-type $lhs-expression)
-      (tuple-structure $rhs-tuple))))
+      (tuple-structure $rhs-tuple)))
+  (and $type-option
+    (expressions
+      (and $syntax-option
+        (make-syntax
+          `(,$syntax-option
+            ,@(reverse
+              (tuple-syntax-stack $rhs-tuple)))))
+      $type-option)))
 
 (check-equal?
   (option-app expressions-sexp-structure
@@ -307,10 +300,10 @@
 (check-equal?
   (option-app expressions-sexp-structure
     (expression-apply-tuple
-      (expression #`fn (arrow dynamic-structure-a static-structure-b))
+      (expression #f (arrow dynamic-structure-a static-structure-b))
       dynamic-tuple-a))
   (expressions-sexp-structure
-    (expressions null-syntax static-structure-b)))
+    (expressions #f static-structure-b)))
 
 (check-equal?
   (expression-apply-tuple
@@ -320,61 +313,59 @@
 
 ; ------------------------------------------------------------------------------
 
-(define (tuple-syntax
+(define (tuple-syntax-option
   ($tuple : Tuple))
-  : Syntax
-  (define $dynamic-tuple 
-    (filter expression-dynamic? $tuple))
-  (define $dynamic-syntax-stack
-    (map expression-syntax $dynamic-tuple))
-  (define $dynamic-length
-    (length $dynamic-syntax-stack))
-  (case $dynamic-length
-    ((0) (make-syntax #f))
-    ((1) (top $dynamic-syntax-stack))
+  : (Option Syntax)
+  (define $syntax-stack
+    (filter-false (map expression-syntax-option $tuple)))
+  (define $length
+    (length $syntax-stack))
+  (case $length
+    ((0) #f)
+    ((1) (top $syntax-stack))
     ((2) 
       (make-syntax
         `(cons 
-          ,(pop-top $dynamic-syntax-stack) 
-          ,(top $dynamic-syntax-stack))))
+          ,(pop-top $syntax-stack)
+          ,(top $syntax-stack))))
     (else 
       (make-syntax
         `(vector 
-          ,@(reverse $dynamic-syntax-stack))))))
+          ,@(reverse $syntax-stack))))))
 
 (check-equal?
-  (syntax->datum (tuple-syntax null))
+  (option-app syntax->datum (tuple-syntax-option null))
   #f)
 
 (check-equal?
-  (syntax->datum (tuple-syntax (stack static-expression-a)))
+  (option-app syntax->datum (tuple-syntax-option (stack static-expression-a)))
   #f)
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack dynamic-expression-a)))
   `a)
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack 
         dynamic-expression-a 
         static-expression-a)))
   `a)
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack 
         dynamic-expression-a 
         dynamic-expression-b)))
   `(cons a b))
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -382,8 +373,8 @@
   `(cons a b))
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -391,8 +382,8 @@
   `(vector a b c))
 
 (check-equal?
-  (syntax->datum
-    (tuple-syntax
+  (option-app syntax->datum
+    (tuple-syntax-option
       (stack 
         dynamic-expression-a 
         dynamic-expression-b 
@@ -403,13 +394,12 @@
 ; -----------------------------------------------------------------
 
 (define (tuple-values-syntax-option ($tuple : Tuple)) : (Option Syntax)
-  (define $dynamic-tuple (filter expression-dynamic? $tuple))
-  (define $dynamic-syntax-stack (map expression-syntax $dynamic-tuple))
+  (define $syntax-stack (filter-false (map expression-syntax-option $tuple)))
   (make-syntax
-    (case (length $dynamic-syntax-stack)
-      ((0) null-syntax)
-      ((1) (top $dynamic-syntax-stack))
-      (else `(values ,@(reverse $dynamic-syntax-stack))))))
+    (case (length $syntax-stack)
+      ((0) #f)
+      ((1) (top $syntax-stack))
+      (else `(values ,@(reverse $syntax-stack))))))
 
 (define (tuple-values-syntax ($tuple : Tuple)) : Syntax
   (or
@@ -420,7 +410,7 @@
   (option-map
     (tuple-values-syntax-option null)
     syntax->datum)
-  null-sexp)
+  #f)
 
 (check-equal?
   (option-map
@@ -443,7 +433,7 @@
 
 (define (field-expression ($symbol : Symbol) ($tuple : Tuple null-tuple)) : Expression
   (expression
-    (tuple-syntax $tuple)
+    (tuple-syntax-option $tuple)
     (field $symbol (tuple-structure $tuple))))
 
 (check-equal?
@@ -471,7 +461,7 @@
 
 (define (binding-expression ($binding : Binding)) : Expression
   (expression
-    (or (binding-identifier-option $binding) null-syntax)
+    (binding-identifier-option $binding)
     (binding-type $binding)))
 
 (define (scope-tuple ($scope : Scope)) : Tuple

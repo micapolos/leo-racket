@@ -150,11 +150,11 @@
               (and
                 (choice? $type)
                 (let ()
-                  (define $syntax (expression-syntax $expression))
+                  (define $syntax-option (expression-syntax-option $expression))
                   (define $choice-type-stack (choice-type-stack $type))
                   (define $dynamic? (structure-dynamic? $choice-type-stack))
-                  (define $selector-syntax (if $dynamic? (make-syntax `(car ,$syntax)) $syntax))
-                  (define $value-syntax (if $dynamic? (make-syntax `(cdr ,$syntax)) null-syntax))
+                  (define $selector-syntax-option (and $syntax-option (if $dynamic? (make-syntax `(car ,$syntax-option)) $syntax-option)))
+                  (define $value-syntax-option (and $syntax-option (if $dynamic? (make-syntax `(cdr ,$syntax-option)) #f)))
                   (define $identifier-option (if $dynamic? (symbol-temporary `value) #f))
                   (define $switch
                     (match-compiler-switch
@@ -167,13 +167,14 @@
                         $syntax-list
                         match-compiler-plus-syntax)))
                   (define $switch-body
-                    (syntax-switch-syntax-stack
-                          $selector-syntax
-                          (switch-syntax-stack $switch)))
+                    (and $selector-syntax-option
+                      (syntax-switch-syntax-stack
+                        $selector-syntax-option
+                        (switch-syntax-stack $switch))))
                   (define $switch-syntax
                     (or
-                      (and $identifier-option 
-                        (make-syntax `(let ((,$identifier-option ,$value-syntax)) ,$switch-body)))
+                      (and $identifier-option $value-syntax-option $switch-body
+                        (make-syntax `(let ((,$identifier-option ,$value-syntax-option)) ,$switch-body)))
                       $switch-body))
                   (expression-expressions
                     (expression
@@ -192,7 +193,7 @@
               (compiler-scope $compiler)
               $syntax-list)))
         (expressions
-          (make-syntax `(time ,(expressions-syntax $expressions)))
+          (make-syntax `(time ,(expressions-syntax-option $expressions)))
           (expressions-structure $expressions))))))
 
 (define (compiler-apply-then 
@@ -282,7 +283,7 @@
   (ingredients-sexp
     (ingredients
       (expressions #`3.14 (structure number-type))
-      (expressions null-syntax (structure static-type-b)))))
+      (expressions #f (structure static-type-b)))))
 
 ; number plus field
 (check-equal?
@@ -297,7 +298,7 @@
   (ingredients-sexp
     (ingredients
       (expressions #`3.14 (structure number-type))
-      (expressions null-syntax (structure (field! `foo))))))
+      (expressions #f (structure (field! `foo))))))
 
 ; number plus string
 (check-equal?

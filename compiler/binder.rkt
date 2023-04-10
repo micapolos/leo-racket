@@ -46,26 +46,24 @@
 (define (usage-expressions-binder
   ($usage : Usage)
   ($expressions : Expressions)) : Binder
-  (define $syntax (expressions-syntax $expressions))
+  (define $syntax-option (expressions-syntax-option $expressions))
   (define $structure (expressions-structure $expressions))
   (define $type-option (single $structure))
   (cond
-    ((not (structure-dynamic? $structure))
+    ((not $syntax-option)
       (binder #f
-        (map (curry expression null-syntax) $structure)))
+        (map (curry expression #f) $structure)))
     ((and (equal? $usage `direct) $type-option)
       (binder #f 
-        (tuple (expression $syntax $type-option))))
+        (tuple (expression $syntax-option $type-option))))
     (else
       (define $tmp-option-stack (map type-generate-temporary-option $structure))
       (define $identifier-stack (filter-false $tmp-option-stack))
-      (define $entry (entry $identifier-stack $syntax))
+      (define $entry (entry $identifier-stack $syntax-option))
       (define $tuple
         (map 
           (lambda (($tmp-option : (Option Identifier)) ($type : Type)) : Expression
-            (expression 
-              (or $tmp-option null-syntax)
-              $type))
+            (expression $tmp-option $type))
           $tmp-option-stack
           $structure))
       (binder $entry $tuple))))
@@ -73,7 +71,7 @@
 (check-equal?
   (binder-sexp
     (usage-expressions-binder `direct
-      (expressions null-syntax 
+      (expressions #f
         (structure static-type-a static-type-b))))
   (binder-sexp
     (binder #f 
@@ -84,7 +82,7 @@
 (check-equal?
   (binder-sexp
     (usage-expressions-binder `indirect
-      (expressions null-syntax
+      (expressions #f
         (structure static-type-a static-type-b))))
   (binder-sexp
     (binder #f
@@ -226,11 +224,11 @@
 
 (define (expressions-scoper
   ($expressions : Expressions)) : Scoper
-  (define $syntax (expressions-syntax $expressions))
+  (define $syntax-option (expressions-syntax-option $expressions))
   (define $structure (expressions-structure $expressions))
   (define $type-option (single $structure))
   (define $tmp-option-stack (map type-generate-temporary-option $structure))
   (define $identifier-stack (filter-false $tmp-option-stack))
-  (define $entry-option (and (not (null? $identifier-stack)) (entry $identifier-stack $syntax)))
+  (define $entry-option (and $syntax-option (not (null? $identifier-stack)) (entry $identifier-stack $syntax-option)))
   (define $scope (map binding $tmp-option-stack $structure))
   (scoper $entry-option $scope))

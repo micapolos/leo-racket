@@ -74,8 +74,8 @@
     (compile-expressions-recursively
       $doing-scope
       $syntax-list))
-  (define $doing-syntax
-    (expressions-syntax $doing-expressions))
+  (define $doing-syntax-option
+    (expressions-syntax-option $doing-expressions))
   (define $doing-structure
     (expressions-structure $doing-expressions))
   (unless
@@ -83,17 +83,15 @@
     (error "repeat type mismatch"))
   (define $repeat-identifier-option (binding-identifier-option $repeat-binding))
   (define $syntax
-    (cond
-      ($repeat-identifier-option
-        (make-syntax
-          `(letrec
-            ((
-              ,$repeat-identifier-option
-              (lambda
-                ,(reverse (scope-identifier-stack $lhs-scope))
-                ,$doing-syntax)))
-            ,$repeat-identifier-option)))
-      (else null-syntax)))
+    (and $repeat-identifier-option $doing-syntax-option
+      (make-syntax
+        `(letrec
+          ((
+            ,$repeat-identifier-option
+            (lambda
+              ,(reverse (scope-identifier-stack $lhs-scope))
+              ,$doing-syntax-option)))
+          ,$repeat-identifier-option))))
   (define $expression
     (expression $syntax $arrow))
   (repeat-compiler-set-expression

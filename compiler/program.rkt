@@ -28,5 +28,5 @@
       (define $expressions (ingredients-expressions $ingredients))
       (ingredients
         (expressions
-          (entry-stack-do-syntax $entry-stack (expressions-syntax $expressions))
+          (option-app entry-stack-do-syntax $entry-stack (expressions-syntax-option $expressions))
           (expressions-structure $expressions))))))

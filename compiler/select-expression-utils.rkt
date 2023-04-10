@@ -9,22 +9,23 @@
 
 (define (index-syntax-structure-select-expression 
   ($index : Exact-Nonnegative-Integer)
-  ($syntax : Syntax)
+  ($syntax-option : (Option Syntax))
   ($structure : Structure)) : Expression
   (define $size (length $structure))
   (expression
-    (make-syntax
-      (case $size
-        ((0) `(error))
-        ((1) $syntax)
-        (else
-          (define $selector 
-            (if (= $size 2)
-              (= $index 0)
-              $index))
-          (if (structure-dynamic? $structure) 
-            `(cons ,$selector ,$syntax) 
-            $selector))))
+    (and $syntax-option
+      (make-syntax
+        (case $size
+          ((0) `(error))
+          ((1) $syntax-option)
+          (else
+            (define $selector
+              (if (= $size 2)
+                (= $index 0)
+                $index))
+            (if (structure-dynamic? $structure)
+              `(cons ,$selector ,$syntax-option)
+              $selector)))))
     (choice $structure)))
 
 (check-equal?
@@ -34,10 +35,10 @@
 
 (check-equal?
   (expression-sexp
-    (index-syntax-structure-select-expression 0 null-syntax
+    (index-syntax-structure-select-expression 0 #f
       (structure static-type-a)))
   (expression-sexp
-    (expression null-syntax (choice! static-type-a))))
+    (expression #f (choice! static-type-a))))
 
 (check-equal?
   (expression-sexp-type
@@ -47,13 +48,13 @@
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-select-expression 0 null-syntax
+    (index-syntax-structure-select-expression 0 #f
       (structure static-type-a static-type-b)))
-  (pair #t (choice (structure static-type-a static-type-b))))
+  (pair #f (choice (structure static-type-a static-type-b))))
 
 (check-equal?
   (expression-sexp-type
-    (index-syntax-structure-select-expression 1 null-syntax
+    (index-syntax-structure-select-expression 1 #f
       (structure static-type-a static-type-b)))
   (pair #f (choice (structure static-type-a static-type-b))))
 
@@ -73,10 +74,10 @@
   (expression-sexp-type
     (index-syntax-structure-select-expression 
       0
-      null-syntax
+      #f
       (structure static-type-a static-type-b static-type-c)))
   (pair 
-    0
+    #f
     (choice (structure static-type-a static-type-b static-type-c))))
 
 (check-equal?

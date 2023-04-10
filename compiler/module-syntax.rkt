@@ -86,7 +86,7 @@
                 (field! `x number-type)
                 (field! `y number-type))))
           (expressions
-            null-syntax
+            #f
             (structure (field! `green (field! `apple))))
           (expressions
             #`(lambda (n) (+ n 1))

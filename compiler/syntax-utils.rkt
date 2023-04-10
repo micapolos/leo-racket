@@ -16,7 +16,6 @@
 (define (syntax-e-with-srcloc ($syntax : Syntax))
   (with-srcloc (syntax-srcloc $syntax) (lambda () (syntax-e $syntax))))
 
-(define null-syntax (make-syntax null-sexp))
 (define test-syntax (make-syntax `test test-srcloc))
 
 (define syntax-a (make-syntax `a srcloc-a))
@@ -102,10 +101,10 @@
 
 ; ----------------------------------------------------------------------
 
-(define (syntax-stack-values-syntax ($syntax-stack : (Stackof Syntax))) : Syntax
+(define (syntax-stack-values-syntax-option ($syntax-stack : (Stackof Syntax))) : (Option Syntax)
   (make-syntax
     (case (length $syntax-stack)
-      ((0) null-syntax)
+      ((0) #f)
       ((1) (top $syntax-stack))
       (else `(values ,@(reverse $syntax-stack))))))
 

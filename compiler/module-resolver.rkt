@@ -52,13 +52,17 @@
 
 (define (module-path-tuple-expressions ($module-path : Module-Path) ($tuple : Tuple)) : Expressions
   (expressions
-    (make-syntax
-      `(let ()
-        (local-require (submod ,(module-path-syntax $module-path) unsafe))
-        ,(syntax-stack-values-syntax
-          (filter identifier?
-            (map expression-syntax
-              (filter expression-dynamic? $tuple))))))
+    (option-bind
+      (syntax-stack-values-syntax-option
+        (filter identifier?
+          (filter-false
+            (map expression-syntax-option
+              (filter expression-dynamic? $tuple)))))
+      $syntax
+        (make-syntax
+          `(let ()
+            (local-require (submod ,(module-path-syntax $module-path) unsafe))
+            ,$syntax)))
     (tuple-structure $tuple)))
 
 (check-equal?
@@ -72,7 +76,7 @@
             (field! `x number-type)
             (field! `y number-type)))
         (expression
-          null-syntax
+          #f
           (field! `green (field! `apple)))
         (expression
           #`inc

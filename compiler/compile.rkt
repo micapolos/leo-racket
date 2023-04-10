@@ -50,8 +50,8 @@
 ; ------------------------------------------------------------------------------
 
 (check-equal?
-  (syntax->datum
-    (expression-syntax
+  (option-app syntax->datum
+    (expression-syntax-option
       (parameterize ((compile-ingredients-parameter compile-ingredients))
         (compile-repeat-expression
           null-tuple

@@ -66,7 +66,7 @@
 
 (define (type-generate-expression ($type : Type)) : Expression
   (define $tmp-option (type-generate-temporary-option $type))
-  (expression (or $tmp-option null-syntax) $type))
+  (expression $tmp-option $type))
 
 (define (structure-generate-tuple ($structure : Structure)) : Tuple
   (map type-generate-expression $structure))

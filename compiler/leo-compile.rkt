@@ -18,8 +18,8 @@
       (map make-syntax
         (map sexp-datum $sexp-list)))))
 
-(define (leo-compile-any ($any : Any)) : Syntax
-  (expressions-syntax 
+(define (leo-compile-any ($any : Any)) : (Option Syntax)
+  (expressions-syntax-option
     (syntax-list-expressions 
       (syntax-syntax-list (any-syntax $any)))))
 

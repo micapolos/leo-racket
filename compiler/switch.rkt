@@ -18,7 +18,7 @@
 
 (define (expression-switch ($expression : Expression)) : Switch
   (switch 
-    (stack (expression-syntax $expression))
+    (push-option null (expression-syntax-option $expression))
     (expression-type $expression)))
 
 (define (switch-plus-expression ($switch : Switch) ($expression : Expression)) : Switch
@@ -32,9 +32,9 @@
         (switch-type $switch)
         (expression-type $expression))))
   (switch
-    (push 
+    (push-option
       (switch-syntax-stack $switch)
-      (expression-syntax $expression))
+      (expression-syntax-option $expression))
     (switch-type $switch)))
 
 (define (switch-option-plus-expression ($switch-option : (Option Switch)) ($expression : Expression)) : Switch

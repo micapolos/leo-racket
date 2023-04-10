@@ -13,7 +13,7 @@
   ($return-type : Type)
   ($identifier-option : (Option Identifier)))
   (expression
-    (or $identifier-option null-syntax)
+    $identifier-option
     (arrow
       (structure (field! $symbol))
       (structure $return-type))))

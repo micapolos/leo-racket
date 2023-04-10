@@ -8,12 +8,12 @@
 
 (define (tuple-values-syntax 
   ($tuple : Tuple))
-  : Syntax
+  : (Option Syntax)
   (define $dynamic-syntax-stack
     (tuple-syntax-stack $tuple))
   (define $dynamic-length (length $dynamic-syntax-stack))
   (case $dynamic-length
-    ((0) null-syntax)
+    ((0) #f)
     ((1) (car $dynamic-syntax-stack))
     (else (make-syntax `(values ,@(reverse $dynamic-syntax-stack))))))
 

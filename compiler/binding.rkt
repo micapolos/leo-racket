@@ -15,10 +15,6 @@
 
 (define null-scope : Scope null)
 
-; TODO: Remove when not needed
-(define (binding-syntax ($binding : Binding)) : Syntax
-  (or (binding-identifier-option $binding) null-syntax))
-
 (define (scope-structure ($scope : Scope)) : Structure
   (map binding-type $scope))
 

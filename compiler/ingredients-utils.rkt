@@ -33,10 +33,10 @@
   (define $tuple-stack (map binder-tuple $binder-stack))
   (define $tuple (apply append $tuple-stack))
   (option-bind ($fn $tuple) $expressions
-    (define $syntax (expressions-syntax $expressions))
+    (define $syntax-option (expressions-syntax-option $expressions))
     (define $entry-stack (filter-false (map binder-entry-option $binder-stack)))
     (expressions
-      (entry-stack-do-syntax $entry-stack $syntax)
+      (and $syntax-option (entry-stack-do-syntax $entry-stack $syntax-option))
       (expressions-structure $expressions))))
 
 (define (ingredients-resolve-fn
@@ -48,8 +48,8 @@
   (option-app expressions-sexp
     (ingredients-resolve-fn
       (ingredients 
-        (expressions null-syntax (structure static-type-a static-type-b))
-        (expressions null-syntax (structure static-type-c static-type-d)))
+        (expressions #f (structure static-type-a static-type-b))
+        (expressions #f (structure static-type-c static-type-d)))
       (lambda (($tuple : Tuple)) 
         (expressions syntax-a (structure dynamic-type-a)))))
   (expressions-sexp
@@ -59,11 +59,11 @@
   (option-app expressions-sexp
     (ingredients-resolve-fn
       (ingredients 
-        (expressions null-syntax (structure static-type-a static-type-b))
-        (expressions null-syntax (structure static-type-c static-type-d)))
+        (expressions #f (structure static-type-a static-type-b))
+        (expressions #f (structure static-type-c static-type-d)))
       tuple-default-apply-fn))
   (expressions-sexp
-    (expressions null-syntax 
+    (expressions #f
       (structure
         (field! `resolved 
           static-type-a 
@@ -98,10 +98,10 @@
   (define $scope-stack (map scoper-scope $scoper-stack))
   (define $scope (apply append $scope-stack))
   (option-bind ($fn $scope) $expressions
-    (define $syntax (expressions-syntax $expressions))
+    (define $syntax-option (expressions-syntax-option $expressions))
     (define $entry-stack (filter-false (map scoper-entry-option $scoper-stack)))
     (expressions
-      (entry-stack-do-syntax $entry-stack $syntax)
+      (and $syntax-option (entry-stack-do-syntax $entry-stack $syntax-option))
       (expressions-structure $expressions))))
 
 (check-equal?
@@ -145,8 +145,8 @@
 (define (symbol-ingredients-expressions ($symbol : Symbol) ($ingredients : Ingredients)) : Expressions
   (ingredients-gather-fn $ingredients
     (lambda (($tuple : Tuple))
-      (make-expressions
-        (tuple-syntax $tuple)
+      (expressions
+        (tuple-syntax-option $tuple)
         (structure (field $symbol (tuple-structure $tuple)))))))
 
 (check-equal?
@@ -169,7 +169,7 @@
         (make-syntax
           (bind $identifier-list (reverse (scope-identifier-stack $scope))
             (case (length $identifier-list)
-              ((0) null-syntax)
+              ((0) #f)
               ((1) (car $identifier-list))
               (else `(values ,@$identifier-list)))))
         (scope-structure $scope)))))
@@ -179,18 +179,18 @@
   (expressions-sexp
     (ingredients-expressions
       (ingredients
-        (expressions null-syntax null-structure))))
+        (expressions #f null-structure))))
   (expressions-sexp
-    (expressions null-syntax null-structure)))
+    (expressions #f null-structure)))
 
 ; static
 (check-equal?
   (expressions-sexp
     (ingredients-expressions
       (ingredients
-        (expressions null-syntax (structure static-type-a)))))
+        (expressions #f (structure static-type-a)))))
   (expressions-sexp
-    (expressions null-syntax (structure static-type-a))))
+    (expressions #f (structure static-type-a))))
 
 ; single-expression
 (check-equal?
