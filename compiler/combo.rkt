@@ -6,12 +6,10 @@
   leo/compiler/syntax-utils
   leo/compiler/type-sexp
   leo/compiler/type-utils
-  leo/compiler/any-sexp)
+  leo/compiler/any-sexp
+  leo/compiler/constant)
 
 (data context)
-
-(data constant
-  (value : Any))
 
 (data value
   (syntax : Syntax)
@@ -23,11 +21,45 @@
 
 (data expressions
   (value-option : (Option Value))
-  (structure : Structure))
+  (structure : (Stackof Type)))
 
 (data compiler
   (context : Context)
   (expression-stack : (Stackof Expression)))
+
+; ----------------------------------------------------------------------------
+
+(define (value-stack-value-option ($value-stack : (Stackof Value))) : (Option Value)
+  (case (length $value-stack)
+    ((0) #f)
+    ((1)
+      (top $value-stack))
+    ((2)
+      (define $lhs-value (pop-top $value-stack))
+      (define $rhs-value (top $value-stack))
+      (value
+        (make-syntax
+          `(cons
+            ,(value-syntax $lhs-value)
+            ,(value-syntax $rhs-value)))
+                  (option-app constant
+        (option-app cons
+          (option-app constant-any (value-constant-option $lhs-value))
+          (option-app constant-any (value-constant-option $rhs-value))))))
+    (else
+      (value
+        (make-syntax
+          `(vector
+            ,@(reverse (map value-syntax $value-stack))))
+        (option-bind (lift-option-list (map value-constant-option $value-stack)) $constant-stack
+          (constant (apply vector (reverse (map constant-any $constant-stack)))))))))
+
+; ----------------------------------------------------------------------------
+
+(define (expression-stack-expressions ($expression-stack : (Stackof Expression))) : Expressions
+  (expressions
+    (value-stack-value-option (filter-false (map expression-value-option $expression-stack)))
+    (map expression-type $expression-stack)))
 
 ; ----------------------------------------------------------------------------
 
@@ -38,9 +70,6 @@
   `(value
     ,(syntax-sexp (value-syntax $value))
     ,(option-app constant-sexp (value-constant-option $value))))
-
-(define (constant-sexp ($constant : Constant)) : Sexp
-  `(constant ,(any-sexp (constant-value $constant))))
 
 (define (expression-sexp ($expression : Expression)) : Sexp
   `(expression
@@ -84,34 +113,8 @@
     (else (error "compile error"))))
 
 (define (compile-expressions ($context : Context) ($syntax-list : (Listof Syntax))) : Expressions
-  (define $expression-stack (compile-expression-stack $context $syntax-list))
-  (define $value-stack (filter-false (map expression-value-option $expression-stack)))
-  (expressions
-    (case (length $value-stack)
-      ((0)
-        #f)
-      ((1)
-        (top $value-stack))
-      ((2)
-        (define $lhs-value (pop-top $value-stack))
-        (define $rhs-value (top $value-stack))
-        (value
-          (make-syntax
-            `(cons
-              ,(value-syntax $lhs-value)
-              ,(value-syntax $rhs-value)))
-                    (option-app constant
-          (option-app cons
-            (option-app constant-value (value-constant-option $lhs-value))
-            (option-app constant-value (value-constant-option $rhs-value))))))
-      (else
-        (value
-          (make-syntax
-            `(vector
-              ,@(reverse (map value-syntax $value-stack))))
-          (option-bind (lift-option-list (map value-constant-option $value-stack)) $constant-stack
-            (constant (apply vector (reverse (map constant-value $constant-stack))))))))
-    (map expression-type $expression-stack)))
+  (expression-stack-expressions
+    (compile-expression-stack $context $syntax-list)))
 
 (check-equal?
   (expression-sexp (compile-expression (context) #`foo))
