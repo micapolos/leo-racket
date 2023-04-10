@@ -4,6 +4,7 @@
 
 (require
   leo/typed/testing
+  racket/function
   racket/vector
   racket/syntax-srcloc
   (for-syntax 
@@ -54,6 +55,23 @@
   (filter 
     (ann (lambda (x) x) ((Option A) -> (Option A) : #:+ A)) 
     $list))
+
+(define #:forall (A) (lift-option-list ($list : (Listof (Option A)))) : (Option (Listof A))
+  (and
+    (andmap (ann identity (-> (Option A) (Option A))) $list)
+    (filter-false $list)))
+
+(check-equal?
+  (lift-option-list (list))
+  (list))
+
+(check-equal?
+  (lift-option-list (list 1 2 3))
+  (list 1 2 3))
+
+(check-equal?
+  (lift-option-list (list 1 #f 3))
+  #f)
 
 ; -------------------------------------------------------------------------
 

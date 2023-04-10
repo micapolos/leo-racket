@@ -4,6 +4,7 @@
 
 (require
   leo/typed/testing
+  leo/typed/base
   (for-syntax racket/base))
 
 (define-type (Maybe A) (Option (Just A)))
@@ -62,3 +63,21 @@
 (check-equal?
   (maybe-or #f "foo")
   "foo")
+
+(define #:forall (V) (lift-maybe-list ($maybe-list : (Listof (Maybe V)))) : (Maybe (Listof V))
+  (define $just-list (filter-false $maybe-list))
+  (and
+    (= (length $just-list) (length $maybe-list))
+    (just (map (ann just-value (-> (Just V) V)) $just-list))))
+
+(check-equal?
+  (lift-maybe-list null)
+  (just null))
+
+(check-equal?
+  (lift-maybe-list (list (just 1) (just 2) (just 3)))
+  (just (list 1 2 3)))
+
+(check-equal?
+  (lift-maybe-list (list (just 1) #f (just 3)))
+  #f)
