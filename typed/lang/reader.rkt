@@ -27,6 +27,7 @@
         leo/typed/dictionary
         leo/typed/failure
         leo/typed/maybe
+        leo/typed/result
         leo/typed/option
         leo/typed/parser
         leo/typed/position

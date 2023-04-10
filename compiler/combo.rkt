@@ -67,9 +67,9 @@
   (define $e (syntax-e $syntax))
   (cond
     ((null? $e) (error "compile error"))
+    ((symbol? $e) (expression #f (field! $e)))
     ((number? $e) (expression (value $syntax (constant $e)) number-type))
     ((string? $e) (expression (value $syntax (constant $e)) text-type))
-    ((symbol? $e) (expression #f (field! $e)))
     ((list? $e)
       (define $car (car $e))
       (define $car-e (syntax-e $car))
