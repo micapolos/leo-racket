@@ -3,7 +3,8 @@
 (require
   leo/compiler/type
   leo/compiler/syntax-utils
-  leo/compiler/type-sexp)
+  leo/compiler/type-sexp
+  leo/compiler/type-utils)
 
 (data binding
   (identifier-option : (Option Identifier))
@@ -28,3 +29,39 @@
 
 (define (scope-sexp ($scope : Scope)) : Sexp
   `(scope ,@(reverse (map binding-sexp $scope))))
+
+(define (scope-push-identifier-stack-structure
+  ($scope : Scope)
+  ($identifier-stack : (Stackof Identifier))
+  ($structure : Structure))
+  : Scope
+  (cond
+    ((null? $structure) $scope)
+    (else
+      (define $top-type (top $structure))
+      (define $pop-structure (pop $structure))
+      (cond
+        ((type-dynamic? $top-type)
+          (scope-push-identifier-stack-structure
+            (push $scope (binding (top $identifier-stack) $top-type))
+            (pop $identifier-stack)
+            $pop-structure))
+        (else
+          (scope-push-identifier-stack-structure
+            (push $scope (binding #f $top-type))
+            $identifier-stack
+            $pop-structure))))))
+
+(define (identifier-stack-structure-scope ($identifier-stack : (Stackof Identifier)) ($structure : Structure)) : Scope
+  (reverse (scope-push-identifier-stack-structure null-scope $identifier-stack $structure)))
+
+(check-equal?
+  (scope-sexp
+    (identifier-stack-structure-scope
+      (stack identifier-a identifier-c)
+      (structure dynamic-type-a static-type-b dynamic-type-c)))
+  (scope-sexp
+    (scope
+      (binding identifier-a dynamic-type-a)
+      (binding #f static-type-b)
+      (binding identifier-c dynamic-type-c))))

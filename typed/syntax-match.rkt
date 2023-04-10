@@ -7,6 +7,10 @@
   leo/typed/option
   (for-syntax racket/base))
 
+(define (any-identifier ($any : Any)) : Identifier
+  (unless (identifier? $any) (error "not an identifier"))
+  $any)
+
 (define (any-syntax (any : Any)) : Syntax
   (if (syntax? any)
     (let ((e (syntax-e any)))

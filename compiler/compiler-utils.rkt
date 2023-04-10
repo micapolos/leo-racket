@@ -58,11 +58,12 @@
           $syntax-list)))))
 
 (define (compiler-apply-package ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
-  (define $expressions
+  (define $ingredients
     (option-or
       (syntax-resolve-module (make-syntax `(package ,@$syntax-list)))
       (error "can not resolve package")))
-  (compiler-plus-expressions $compiler $expressions))
+  (compiler-with-ingredients $compiler
+    (push-stack (compiler-ingredients $compiler) $ingredients)))
 
 (define (compiler-apply-quote ($compiler : Compiler) ($syntax-list : (Listof Syntax))) : Compiler
   (compiler-plus-quoted-tuple $compiler

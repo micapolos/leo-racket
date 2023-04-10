@@ -1,10 +1,14 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/expression-utils
   leo/compiler/expressions
   leo/compiler/expressions-sexp
+  leo/compiler/expressions-utils
+  leo/compiler/ingredients
+  leo/compiler/ingredients-sexp
   leo/compiler/syntax-utils
   leo/compiler/type
   leo/compiler/type-utils
@@ -17,7 +21,7 @@
   (any-syntax
     (datum->syntax #f $module-path)))
 
-(define (module-path-tuple-option ($module-path : Module-Path)) : (Option Tuple)
+(define (module-path-scope-option ($module-path : Module-Path)) : (Option Scope)
   (with-handlers ((exn:missing-module? (lambda (_) #f)))
     (and
       (module-declared? $module-path #t)
@@ -30,14 +34,14 @@
             `(submod ,$module-path structure)
             `$structure
             (lambda () #f)))
-        (define $syntax-stack
+        (define $identifier-stack
           (dynamic-require
             `(submod ,$module-path syntax)
             `$syntax-stack
             (lambda () #f)))
-        (and $structure $syntax-stack
-          (syntax-stack-structure-tuple
-            (any-syntax-stack $syntax-stack)
+        (and $structure $identifier-stack
+          (identifier-stack-structure-scope
+            (any-identifier-stack $identifier-stack)
             (any-structure $structure)))))))
 
 (define (any-syntax-stack ($any : Any)) : (Stackof Syntax)
@@ -48,65 +52,65 @@
   (unless (list? $any) (error "not a list"))
   (map (lambda (($item : Any)) (cast $item Type)) $any))
 
+(define (any-identifier-stack ($any : Any)) : (Stackof Identifier)
+  (unless (list? $any) (error "not a list"))
+  (map any-identifier $any))
+
 ; -------------------------------------------------------------------
 
-(define (module-path-tuple-expressions ($module-path : Module-Path) ($tuple : Tuple)) : Expressions
-  (expressions
-    (option-bind
-      (syntax-stack-values-syntax-option
-        (filter identifier?
-          (filter-false
-            (map expression-syntax-option
-              (filter expression-dynamic? $tuple)))))
-      $syntax
-        (make-syntax
-          `(let ()
-            (local-require (submod ,(module-path-syntax $module-path) unsafe))
-            ,$syntax)))
-    (tuple-structure $tuple)))
+(define (module-path-tuple-ingredients ($module-path : Module-Path) ($scope : Scope)) : Ingredients
+  (map
+    (lambda (($binding : Binding))
+      (expression-expressions
+        (expression
+          (option-bind (binding-identifier-option $binding) $identifier
+            (make-syntax
+              `(local (submod ,(module-path-syntax $module-path) unsafe) ,$identifier)))
+          (binding-type $binding))))
+    $scope))
 
 (check-equal?
-  (expressions-sexp
-    (module-path-tuple-expressions
+  (ingredients-sexp
+    (module-path-tuple-ingredients
       `leo/module
-      (tuple
-        (expression
+      (scope
+        (binding
           #`point
           (field! `point
             (field! `x number-type)
             (field! `y number-type)))
-        (expression
+        (binding
           #f
           (field! `green (field! `apple)))
-        (expression
+        (binding
           #`inc
           (recipe!
             number-type
             (field! `inc)
             (does number-type)))
-        (expression
-          #`"inline-text"
-          text-type)
-        (expression
+        (binding
           #`label
           (field! `label text-type)))))
-  (expressions-sexp
-    (expressions
-      #`(let ()
-        (local-require (submod leo/module unsafe))
-        (values point inc label))
-      (structure
-        (field! `point (field! `x number-type) (field! `y number-type))
-        (field! `green (field! `apple))
-        (recipe! number-type (field! `inc) (doing number-type))
-        text-type
-        (field! `label text-type)))))
+  (ingredients-sexp
+    (ingredients
+      (expressions
+        #`(local (submod leo/module unsafe) point)
+        (structure (field! `point (field! `x number-type) (field! `y number-type))))
+      (expressions
+        #f
+        (structure (field! `green (field! `apple))))
+      (expressions
+        #`(local (submod leo/module unsafe) inc)
+        (structure (recipe! number-type (field! `inc) (doing number-type))))
+      (expressions
+        #`(local (submod leo/module unsafe) label)
+        (structure (field! `label text-type))))))
 
 ; ------------------------------------------------------------------
 
-(define (module-path-resolve ($module-path : Module-Path)) : (Option Expressions)
-  (option-bind (module-path-tuple-option $module-path) $tuple
-    (module-path-tuple-expressions $module-path $tuple)))
+(define (module-path-resolve ($module-path : Module-Path)) : (Option Ingredients)
+  (option-bind (module-path-scope-option $module-path) $scope
+    (module-path-tuple-ingredients $module-path $scope)))
 
 ; --------------------------------------------------------------------------
 
@@ -193,18 +197,21 @@
 
 ; -------------------------------------------------------------------------------
 
-(define (syntax-resolve-module ($syntax : Syntax)) : (Option Expressions)
+(define (syntax-resolve-module ($syntax : Syntax)) : (Option Ingredients)
   (option-app module-path-resolve (syntax-module-path-option $syntax)))
 
 (check-equal?
-  (option-app expressions-sexp
+  (option-app ingredients-sexp
     (syntax-resolve-module
       #`(package (testing module))))
-  (expressions-sexp
-    (expressions
-      #`(let () (local-require (submod (lib "leo/package/testing/module.leo") unsafe))
-        (values tmp-text tmp-number))
-      (structure
-        text-type
-        number-type
-        (field! `color (field! `red))))))
+  (ingredients-sexp
+    (ingredients
+      (expressions
+        #`(local (submod (lib "leo/package/testing/module.leo") unsafe) tmp-text)
+        (structure text-type))
+      (expressions
+        #`(local (submod (lib "leo/package/testing/module.leo") unsafe) tmp-number)
+        (structure number-type))
+      (expressions
+        #f
+        (structure (field! `color (field! `red)))))))
