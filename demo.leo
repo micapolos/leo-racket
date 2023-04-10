@@ -3,4 +3,6 @@
 use package text
 
 "foo"
-apply plus "bar"
+plus "bar"
+do foo
+racket

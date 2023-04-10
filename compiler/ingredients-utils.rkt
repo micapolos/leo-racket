@@ -166,12 +166,11 @@
   (ingredients-do $ingredients
     (lambda (($scope : Scope))
       (expressions
-        (make-syntax
-          (bind $identifier-list (reverse (scope-identifier-stack $scope))
-            (case (length $identifier-list)
-              ((0) #f)
-              ((1) (car $identifier-list))
-              (else `(values ,@$identifier-list)))))
+        (bind $identifier-list (reverse (scope-identifier-stack $scope))
+          (case (length $identifier-list)
+            ((0) #f)
+            ((1) (make-syntax (car $identifier-list)))
+            (else (make-syntax `(values ,@$identifier-list)))))
         (scope-structure $scope)))))
 
 ; empty-expression
