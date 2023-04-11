@@ -7,9 +7,12 @@
   leo/compiler/type
   leo/compiler/type-utils)
 
-(define-type Expression-Ref-Error (U 'not-field 'invalid-index))
+(define-type Expression-Index-Get-Error (U 'not-field 'invalid-index))
 
-(define (expression-index-get ($expression : Expression) ($index : Exact-Nonnegative-Integer)) : (Result Expression Expression-Ref-Error)
+(define (expression-index-get
+  ($expression : Expression)
+  ($index : Exact-Nonnegative-Integer))
+: (Result Expression Expression-Index-Get-Error)
   (define $type (expression-type $expression))
   (cond
     ((field? $type)
