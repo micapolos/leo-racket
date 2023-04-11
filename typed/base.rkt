@@ -191,3 +191,17 @@
 (define-syntax (TODO $syntax)
   (syntax-case $syntax ()
     (_ #`(error "TODO"))))
+
+; ---------------------------------------------------------------------------
+
+(define-syntax (app-if $syntax)
+  (syntax-case $syntax ()
+    ((_ $pred-stx $fn-stx $value-stx)
+      (let (($tmp (car (generate-temporaries `(tmp)))))
+        #`(bind $tmp $value-stx
+          (if ($pred-stx $tmp)
+            (#%app $fn-stx $tmp)
+            $tmp))))))
+
+(check-equal? (app-if even? number->string (+ 2 4)) "6")
+(check-equal? (app-if even? number->string (+ 2 3)) 5)
