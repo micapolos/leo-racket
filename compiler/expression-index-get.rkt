@@ -9,7 +9,7 @@
 
 (define-type Expression-Index-Get-Error (U 'not-field 'invalid-index))
 
-(define (expression-index-get
+(define (expression-get-index
   ($expression : Expression)
   ($index : Exact-Nonnegative-Integer))
 : (Result Expression Expression-Index-Get-Error)
@@ -28,7 +28,7 @@
 
 (check-equal?
   (result-app expression-sexp
-    (expression-index-get
+    (expression-get-index
       (expression syntax-a (field! `foo text-type number-type))
       0))
   (result
@@ -41,14 +41,14 @@
 
 (check-equal?
   (result-app expression-sexp
-    (expression-index-get
+    (expression-get-index
       (expression syntax-a (field! `foo text-type number-type))
       2))
   (result (failure `invalid-index)))
 
 (check-equal?
   (result-app expression-sexp
-    (expression-index-get
+    (expression-get-index
       (expression syntax-a (racket))
       0))
   (result (failure `not-field)))
