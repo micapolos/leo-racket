@@ -4,4 +4,3 @@ use package text
 
 "foo"
 plus "bar"
-

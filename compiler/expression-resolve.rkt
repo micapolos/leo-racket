@@ -43,40 +43,6 @@
 
 ; -----------------------------------------------------------------------
 
-(define (expression-resolve-type
-  ($expression : Expression)
-  ($type : Type))
-  : (Option Expression)
-  (and
-    (type-matches? $type (expression-type $expression))
-    (expression (expression-syntax-option $expression) $type)))
-
-(check-equal?
-  (option-app expression-sexp-type
-    (expression-resolve-type (expression syntax-a type-a) type-a))
-  (pair `a type-a))
-
-(check-equal?
-  (expression-resolve-type (expression syntax-a type-a) type-b)
-  #f)
-
-; -----------------------------------------------------------------------
-
-(define (expression-resolve-get-a-expression
-  ($lhs-expression : Expression)
-  ($rhs-expression : Expression))
-  : (Option Expression)
-  (define $type (expression-type $rhs-expression))
-  (and
-    (field? $type)
-    (equal? (field-symbol $type) `get)
-    (option-bind (single (field-structure $type)) $rhs-type
-      (expression-resolve-get-a-expression
-        $lhs-expression
-        (expression (expression-syntax-option $rhs-expression) $rhs-type)))))
-
-; -----------------------------------------------------------------------
-
 (define (expression-resolve-get
   ($lhs-expression : Expression)
   ($rhs-expression : Expression))
