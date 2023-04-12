@@ -1,6 +1,9 @@
 #lang leo
 
-use package text
+use package base
 
-"foo"
-plus "bar"
+1
+equals 1
+switch
+  true 123
+  false 124

@@ -51,6 +51,14 @@
     ((symbol? (syntax-e $syntax)) (make-syntax `(,$syntax)))
     (else $syntax)))
 
+(check-equal?
+  (syntax->datum (field-syntax (make-syntax `foo)))
+  `(foo))
+
+(check-equal?
+  (syntax->datum (field-syntax (make-syntax `(foo))))
+  `(foo))
+
 ; ------------------------------------------------------------------------
 
 (define (syntax-switch-syntax-stack

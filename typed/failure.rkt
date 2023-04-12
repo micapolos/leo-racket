@@ -58,3 +58,8 @@
           (failure $value))))))
 
 (check-fail (error "dupa") "dupa")
+
+(define-syntax (fail $syntax)
+  (syntax-case $syntax ()
+    ((_ $body ...)
+      #`(error (format "~s" (failure! $body ...))))))

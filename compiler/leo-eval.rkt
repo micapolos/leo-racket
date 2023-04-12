@@ -19,7 +19,7 @@
         (call-with-values
           (lambda ()
             (eval 
-              (syntax->datum (expressions-syntax $expressions))
+              (syntax->datum (or (expressions-syntax-option $expressions) #`fixit))
               (namespace-anchor->namespace leo-namespace-anchor)))
           (ann list (-> Any * (Listof Any))))
         (or (single $list) $list))
@@ -35,14 +35,7 @@
       (else (list $sexp)))))
 
 (check-equal?
-  (leo-eval 
-    `(
-      1
-      (add 2) 
-      text
-      (append " ")
-      (append "pieces")
-      (do
-        text
-        (append "!!!"))))
-  "3 pieces!!!")
+  (parameterize ((testing? #f))
+    (leo-eval
+      `(1)))
+  1)

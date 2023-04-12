@@ -16,19 +16,19 @@ then
   recipe
     not boolean
     does not.boolean.switch
-      boolean false
-      boolean true
+      true boolean false
+      false boolean true
 
   recipe
     boolean
     and boolean
     does boolean.switch
-      the and.boolean
-      the boolean false
+      true and.boolean
+      false boolean false
 
   recipe
     boolean
     or boolean
     does boolean.switch
-      the boolean true
-      the or.boolean
+      true boolean true
+      false or.boolean

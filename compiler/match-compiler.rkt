@@ -5,6 +5,7 @@
   leo/compiler/type
   leo/compiler/type-utils
   leo/compiler/type-sexp
+  leo/compiler/type-symbol
   leo/compiler/ingredients
   leo/compiler/switch
   leo/compiler/syntax-utils
@@ -49,9 +50,17 @@
   (define $remaining-type-list (match-compiler-remaining-type-list $match-compiler))
   (when (null? $remaining-type-list) (error "no more remaining choices"))
   (define $type (car $remaining-type-list))
+  (define $case-symbol (type-symbol $type))
+  (define $body-syntax-list
+    (or
+      (syntax-match-symbol-args (field-syntax $syntax) $symbol $args
+        (unless (equal? $symbol $case-symbol)
+          (error (format "invalid case: ~s, expected: ~s" $symbol $case-symbol)))
+        $args)
+      (error (format "invalid case syntax: ~s" $syntax))))
   (define $new-binding (binding $identifier-option $type))
   (define $new-scope (push $scope $new-binding))
-  (define $ingredients (compile-ingredients-recursively $new-scope (list $syntax)))
+  (define $ingredients (compile-ingredients-recursively $new-scope $body-syntax-list))
   (define $expressions (ingredients-expressions $ingredients))
   (define $expression (expressions-expression-option $expressions))
   (unless $expression (error "match expected expression"))
@@ -62,7 +71,7 @@
     (cdr $remaining-type-list)))
 
 (parameterize 
-  ((compile-ingredients-parameter 
+  ((compile-ingredients-parameter
     (lambda (($scope : Scope) ($syntax-list : (Listof Syntax)))
       (ingredients
         (expression-expressions
@@ -76,7 +85,7 @@
           #`value
           null-switch-option
           (list (field! `foo) (field! `bar)))
-        (make-syntax `case)))
+        (make-syntax `(foo 123))))
     `(match-compiler
       (scope)
       (switch (syntax-stack) switched)
@@ -92,7 +101,7 @@
             (stack #`zero #`one)
             (field! `switched))
           (list (field! `two) (field! `three)))
-        (make-syntax `switched)))
+        (make-syntax `two)))
     `(match-compiler
       (scope)
       (switch (syntax-stack zero one) switched)
