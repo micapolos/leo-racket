@@ -44,8 +44,8 @@
 
 (define field-type
   (field! `field
-    (field! `symbol text-type)
-    (field! `type (stackof-type type-type))))
+    word-type
+    (stackof-type type-type)))
 
 (define static-structure-a (structure static-type-a))
 (define static-structure-b (structure static-type-b))

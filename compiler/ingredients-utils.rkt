@@ -144,15 +144,16 @@
 ; ----------------------------------------------------------------------------
 
 (define (symbol-ingredients-expressions ($symbol : Symbol) ($ingredients : Ingredients)) : Expressions
-  (case $symbol
-    ((type) (type-ingredients-expressions $ingredients))
-    ((word) (word-ingredients-expressions $ingredients))
-    (else
-      (ingredients-gather-fn $ingredients
-        (lambda (($tuple : Tuple))
-          (expressions
-            (tuple-syntax-option $tuple)
-            (structure (field $symbol (tuple-structure $tuple)))))))))
+  (or
+    (case $symbol
+      ((type) (resolve-type-ingredients-expressions $ingredients))
+      ((word) (resolve-word-ingredients-expressions $ingredients))
+      (else #f))
+    (ingredients-gather-fn $ingredients
+      (lambda (($tuple : Tuple))
+        (expressions
+          (tuple-syntax-option $tuple)
+          (structure (field $symbol (tuple-structure $tuple))))))))
 
 (check-equal?
   (expressions-sexp
@@ -167,23 +168,21 @@
 
 ; --------------------------------------------------------------------------
 
-(define (type-ingredients-expressions ($ingredients : Ingredients)) : Expressions
+(define (resolve-type-ingredients-expressions ($ingredients : Ingredients)) : (Option Expressions)
   (define $structure (ingredients-structure $ingredients))
   (cond
     ((structure-matches? $structure (structure field-type))
       TODO)
-    (else (error "type syntax error"))))
+    (else #f)))
 
 ; --------------------------------------------------------------------------
 
-(define (word-ingredients-expressions ($ingredients : Ingredients)) : Expressions
-  (define $type (single (ingredients-structure $ingredients)))
-  (unless $type (error "word syntax error: not single"))
-  (unless (field? $type) (error "word syntax error: not a field"))
-  (unless (null? (field-structure $type)) (error "word syntax error: field not empty"))
-  (define $symbol (field-symbol $type))
-  (expression-expressions (word-expression $symbol)))
-
+(define (resolve-word-ingredients-expressions ($ingredients : Ingredients)) : (Option Expressions)
+  (option-bind (single (ingredients-structure $ingredients)) $type
+    (and
+      (field? $type)
+      (null? (field-structure $type))
+      (expression-expressions (word-expression (field-symbol $type))))))
 ; --------------------------------------------------------------------------
 
 (define (ingredients-expressions ($ingredients : Ingredients)) : Expressions

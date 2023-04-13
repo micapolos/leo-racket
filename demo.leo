@@ -1,3 +1,3 @@
 #lang leo
 
-word jajko
+123
