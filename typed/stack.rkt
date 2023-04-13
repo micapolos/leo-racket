@@ -52,6 +52,12 @@
     ((exn:fail:contract? (lambda (exn) $default)))
     (list-ref $stack $index)))
 
+(define #:forall (V) (stack-ref-option
+  ($stack : (Stackof V))
+  ($index : Exact-Nonnegative-Integer)
+  ($default : V)) : (Option V)
+  (stack-ref-default $stack $index #f))
+
 ; --------------------------------------------------------------------
 
 (: option-stack-first (All (V) (-> (Stackof V) (Option V))))

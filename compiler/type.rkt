@@ -95,3 +95,6 @@
   (if (universe? $type) 
     (universe (add1 (universe-index $type)))
     universe-type))
+
+(define (variable-next ($variable : Variable)) : Variable
+  (variable (add1 (variable-index $variable))))
