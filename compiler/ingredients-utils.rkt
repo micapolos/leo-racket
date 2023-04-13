@@ -4,6 +4,7 @@
   leo/compiler/ingredients
   leo/compiler/binding
   leo/compiler/type
+  leo/compiler/type-match
   leo/compiler/type-sexp
   leo/compiler/type-utils
   leo/compiler/syntax-utils
@@ -143,11 +144,15 @@
 ; ----------------------------------------------------------------------------
 
 (define (symbol-ingredients-expressions ($symbol : Symbol) ($ingredients : Ingredients)) : Expressions
-  (ingredients-gather-fn $ingredients
-    (lambda (($tuple : Tuple))
-      (expressions
-        (tuple-syntax-option $tuple)
-        (structure (field $symbol (tuple-structure $tuple)))))))
+  (case $symbol
+    ((type) (type-ingredients-expressions $ingredients))
+    ((word) (word-ingredients-expressions $ingredients))
+    (else
+      (ingredients-gather-fn $ingredients
+        (lambda (($tuple : Tuple))
+          (expressions
+            (tuple-syntax-option $tuple)
+            (structure (field $symbol (tuple-structure $tuple)))))))))
 
 (check-equal?
   (expressions-sexp
@@ -159,6 +164,25 @@
       #`(let-values (((tmp-c tmp-d) cd)) (vector a tmp-c tmp-d))
       (structure
         (field! `foo dynamic-type-a dynamic-type-c dynamic-type-d)))))
+
+; --------------------------------------------------------------------------
+
+(define (type-ingredients-expressions ($ingredients : Ingredients)) : Expressions
+  (define $structure (ingredients-structure $ingredients))
+  (cond
+    ((structure-matches? $structure (structure field-type))
+      TODO)
+    (else (error "type syntax error"))))
+
+; --------------------------------------------------------------------------
+
+(define (word-ingredients-expressions ($ingredients : Ingredients)) : Expressions
+  (define $type (single (ingredients-structure $ingredients)))
+  (unless $type (error "word syntax error: not single"))
+  (unless (field? $type) (error "word syntax error: not a field"))
+  (unless (null? (field-structure $type)) (error "word syntax error: field not empty"))
+  (define $symbol (field-symbol $type))
+  (expression-expressions (word-expression $symbol)))
 
 ; --------------------------------------------------------------------------
 

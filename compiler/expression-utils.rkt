@@ -79,6 +79,9 @@
 (define (text-expression ($string : String)) 
   (expression (make-syntax $string) text-type))
 
+(define (word-expression ($symbol : Symbol))
+  (expression (make-syntax `(quote ,$symbol)) word-type))
+
 (define (literal-expression ($literal : Literal))
   (cond
     ((string? $literal) (text-expression $literal))

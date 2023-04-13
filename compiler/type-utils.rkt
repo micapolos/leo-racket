@@ -24,7 +24,28 @@
 (define int-type (racket-field `int))
 (define float-type (racket-field `float))
 (define text-type (racket-field `text))
+(define word-type (racket-field `word))
 (define check-type (field `check (structure (choice (structure (field! `yes) (field! `no))))))
+
+(define (nullof-type ($type : Type)) : Type
+  (field! `null (reified (structure $type))))
+
+(define (linkof-type ($pop : Type) ($top : Type)) : Type
+  (field! `link
+    (field! `pop $pop)
+    (field! `top $top)))
+
+(define (stackof-type ($type : Type)) : Type
+  (recursive
+    (field! `stack
+      (choice!
+        (nullof-type $type)
+        (linkof-type (variable 0) $type)))))
+
+(define field-type
+  (field! `field
+    (field! `symbol text-type)
+    (field! `type (stackof-type type-type))))
 
 (define static-structure-a (structure static-type-a))
 (define static-structure-b (structure static-type-b))

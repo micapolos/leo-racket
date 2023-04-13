@@ -108,6 +108,7 @@
     ((equal? $type number-type) (cast $any Number))
 ;    ((equal? $type boolean-type) `(boolean ,(if (cast $any Boolean) `true `false)))
     ((equal? $type text-type) (cast $any String))
+    ((equal? $type word-type) `(word ,(cast $any Symbol)))
     ((field? $type) 
       (define $symbol (field-symbol $type))
       (define $structure (field-structure $type))

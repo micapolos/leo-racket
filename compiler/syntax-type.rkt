@@ -15,6 +15,7 @@
         ((float) float-type)
         ((text) text-type)
         ((boolean) boolean-type)
+        ((type) type-type)
         (else (field! $syntax-e))))
     ((list? $syntax-e)
       (define $list $syntax-e)
@@ -88,6 +89,9 @@
 
 (check-equal? (syntax-type #`number) number-type)
 (check-equal? (syntax-type #`(word number)) (field! `number))
+
+(check-equal? (syntax-type #`type) type-type)
+(check-equal? (syntax-type #`(word type)) (field! `type))
 
 (check-equal?
   (syntax-type #`(recipe foo bar (doing zoo)))
