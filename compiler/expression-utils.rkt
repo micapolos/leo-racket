@@ -87,7 +87,7 @@
     ((string? $literal) (text-expression $literal))
     ((number? $literal) (number-expression $literal))))
 
-(define (type-expression ($type : Type)) 
+(define (type-expression ($type : Type)) : Expression
   (expression (type-syntax $type) (type-universe $type)))
 
 (define (reified-expression ($structure : Structure))

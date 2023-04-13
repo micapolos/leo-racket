@@ -1,3 +1,4 @@
 #lang leo
 
-123
+word foo
+type
