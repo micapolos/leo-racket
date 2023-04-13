@@ -183,6 +183,7 @@
       (field? $type)
       (null? (field-structure $type))
       (expression-expressions (word-expression (field-symbol $type))))))
+
 ; --------------------------------------------------------------------------
 
 (define (ingredients-expressions ($ingredients : Ingredients)) : Expressions

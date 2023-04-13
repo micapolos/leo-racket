@@ -27,20 +27,10 @@
 (define word-type (racket-field `word))
 (define check-type (field `check (structure (choice (structure (field! `yes) (field! `no))))))
 
-(define (nullof-type ($type : Type)) : Type
-  (field! `null (reified (structure $type))))
-
-(define (linkof-type ($pop : Type) ($top : Type)) : Type
-  (field! `link
-    (field! `pop $pop)
-    (field! `top $top)))
-
 (define (stackof-type ($type : Type)) : Type
-  (recursive
-    (field! `stack
-      (choice!
-        (nullof-type $type)
-        (linkof-type (variable 0) $type)))))
+  (field! `stack
+    (field! `of (reified! $type))
+    (racket)))
 
 (define field-type
   (field! `field

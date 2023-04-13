@@ -9,8 +9,6 @@
   (syntax-option : (Option Syntax))
   (structure : Structure))
 
-(define null-expressions (expressions #f null-structure))
-
 (define (expressions-sexp-structure ($expressions : Expressions)) : (Pairof Sexp Structure)
   (pair
     (option-app syntax->datum (expressions-syntax-option $expressions))

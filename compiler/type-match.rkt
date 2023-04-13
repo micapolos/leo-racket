@@ -100,8 +100,8 @@
         (reified? $actual)
         (structure-match
           $match
-          (reified-structure $expected)
-          (reified-structure $actual))))
+          (reified-structure $actual)
+          (reified-structure $expected))))
     (else #f)))
 
 (define (type-matches-symbol? ($type : Type) ($symbol : Symbol)) : Boolean
@@ -351,3 +351,8 @@
   (type-matches?
     (universe 0)
     (field! `not-universe)))
+
+(check
+  (type-matches?
+    (reified! (racket))
+    (generic (reified! (variable 0)))))

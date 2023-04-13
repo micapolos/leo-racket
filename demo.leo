@@ -1,4 +1,6 @@
 #lang leo
 
-word foo
-type
+use package number
+
+2
+plus 2
