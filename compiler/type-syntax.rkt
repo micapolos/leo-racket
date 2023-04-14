@@ -24,10 +24,6 @@
       ((generic? $type)
         `(generic
           ,(type-syntax (generic-type $type))))
-      ((specific? $type)
-        `(specific
-          ,(type-syntax (specific-type $type))
-          ,(type-syntax (specific-argument-type $type))))
       ((recursive? $type)
         `(recursive ,(type-syntax (recursive-type $type))))
       ((variable? $type)

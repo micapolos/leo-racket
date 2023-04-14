@@ -31,11 +31,7 @@
         (doing ,@(structure-sexp-list $rhs-structure))))
     ((generic? $type) 
       `(generic ,(type-sexp (generic-type $type))))
-    ((specific? $type) 
-      `(specific 
-        ,(type-sexp (specific-type $type))
-        (of ,(type-sexp (specific-argument-type $type)))))
-    ((recursive? $type) 
+    ((recursive? $type)
       `(recursive ,(type-sexp (recursive-type $type))))
     ((variable? $type) 
       `(variable ,(variable-index $type)))
@@ -65,7 +61,6 @@
 (check-equal? (type-sexp (recursive (field! `foo))) `(recursive foo))
 
 (check-equal? (type-sexp (generic (field! `foo))) `(generic foo))
-(check-equal? (type-sexp (specific (field! `foo) (field! `bar))) `(specific foo (of bar)))
 
 (check-equal? (type-sexp (variable 0)) `(variable 0))
 

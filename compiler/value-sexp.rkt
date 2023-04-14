@@ -45,10 +45,6 @@
       (type-stack-value-sexp
         $type-stack
         (value $any (generic-type $type))))
-    ((specific? $type)
-      (type-stack-value-sexp
-        (push $type-stack (specific-argument-type $type))
-        (value $any (specific-type $type))))
     ((recursive? $type)
       (type-stack-value-sexp
         (push $type-stack (recursive-type $type))

@@ -62,7 +62,6 @@
     ((field? $type) (structure-dynamic? (field-structure $type)))
     ((choice? $type) (choice-dynamic? $type))
     ((generic? $type) (type-dynamic? (generic-type $type)))
-    ((specific? $type) (type-dynamic? (specific-type $type))) ; TODO: $type-stack
     ((recursive? $type) #t)
     ((variable? $type) (error "impossible"))
     ((universe? $type) #t)
@@ -97,11 +96,6 @@
 
 (check-equal? (type-dynamic? (generic static-type-a)) #f)
 (check-equal? (type-dynamic? (generic dynamic-type-a)) #t)
-
-(check-equal? (type-dynamic? (specific static-type-a static-type-b)) #f)
-(check-equal? (type-dynamic? (specific dynamic-type-a static-type-b)) #t)
-(check-equal? (type-dynamic? (specific static-type-a dynamic-type-b)) #f)
-(check-equal? (type-dynamic? (specific dynamic-type-a dynamic-type-b)) #t)
 
 (check-equal? (type-dynamic? (recursive (field! `foo))) #t)
 (check-equal? (type-dynamic? (recursive (variable 0))) #t)

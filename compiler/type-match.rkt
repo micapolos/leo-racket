@@ -56,16 +56,6 @@
           (push $match #f)
           $actual
           (generic-type $expected))))
-    ((specific? $expected)
-      (and
-        (specific? $actual)
-        (option-app type-match
-          (type-match
-            $match
-            (specific-type $actual)
-            (specific-type $expected))
-          (specific-argument-type $actual)
-          (specific-argument-type $expected))))
     ((recursive? $expected)
       (or
         (and
@@ -251,27 +241,6 @@
   (type-matches?
     (field! `foo (field! `a) (field! `b))
     (generic (generic (field! `foo (variable 0) (variable 1))))))
-
-; specific
-(check
-  (type-matches?
-    (specific (field! `stack) (field! `string))
-    (specific (field! `stack) (field! `string))))
-
-(check-not
-  (type-matches?
-    (specific (field! `stack) (field! `string))
-    (specific (field! `list) (field! `string))))
-
-(check-not
-  (type-matches?
-    (specific (field! `stack) (field! `string))
-    (specific (field! `stack) (field! `number))))
-
-(check-not
-  (type-matches?
-    (field! `stack)
-    (specific (field! `stack) (field! `string))))
 
 ; recursive
 (check

@@ -16,13 +16,6 @@
       (stack-ref-default $symbol-stack (variable-index $type) `variable))
     ((generic? $type) 
       (symbol-stack-type-symbol $symbol-stack (generic-type $type)))
-    ((specific? $type)
-      (symbol-stack-type-symbol 
-        (push $symbol-stack 
-          (symbol-stack-type-symbol 
-            $symbol-stack 
-            (specific-argument-type $type)))
-        (specific-type $type)))
     ((recursive? $type) 
       (symbol-stack-type-symbol 
         (push $symbol-stack `variable)
@@ -36,8 +29,6 @@
 (check-equal? (type-symbol (arrow null null)) `recipe)
 (check-equal? (type-symbol (variable 0)) `variable)
 (check-equal? (type-symbol (generic (field! `foo))) `foo)
-(check-equal? (type-symbol (specific (field! `foo) (field! `bar))) `foo)
-(check-equal? (type-symbol (specific (variable 0) (field! `bar))) `bar)
 (check-equal? (type-symbol (recursive (field! `foo))) `foo)
 (check-equal? (type-symbol (recursive (variable 0))) `variable)
 (check-equal? (type-symbol (universe 0)) `universe)
