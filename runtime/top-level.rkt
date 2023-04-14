@@ -10,6 +10,8 @@
 (require
   racket/function
   leo/typed/stack
+  leo/compiler/value
+  leo/compiler/value-sexp
   leo/compiler/type
   leo/compiler/type-sexp
   leo/compiler/sexp-string

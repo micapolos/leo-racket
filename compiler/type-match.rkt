@@ -17,12 +17,6 @@
       (and
         (racket? $actual)
         $match))
-    ((value? $expected)
-      (and
-        (value? $actual)
-        (type-matches? (value-type $actual) (value-type $expected))
-        (equal? (value-any $actual) (value-any $expected))
-        $match))
     ((field? $expected)
       (and
         (field? $actual) 
@@ -177,22 +171,6 @@
   (type-matches?
     (field! `foo (field! `a))
     (field! `foo (field! `a) (field! `b))))
-
-; value
-(check 
-  (type-matches? 
-    (value 1 (field! `a)) 
-    (value 1 (field! `a))))
-
-(check-not 
-  (type-matches? 
-    (value 1 (field! `a)) 
-    (value 1 (field! `b))))
-
-(check-not 
-  (type-matches? 
-    (value 1 (field! `a)) 
-    (value 2 (field! `a))))
 
 ; choice
 (check

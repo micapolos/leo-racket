@@ -3,7 +3,6 @@
 (define-type Type 
   (U 
     Racket
-    Value
     Field 
     Choice 
     Arrow 
@@ -15,13 +14,6 @@
     Reified))
 
 (define-type Structure (Stackof Type))
-
-(data value (any : Any) (type : Type))
-
-(define-type Packet (Stackof Value))
-
-(define packet : (-> Value * Packet) stack)
-(define null-packet (packet))
 
 (data racket)
 

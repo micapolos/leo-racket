@@ -34,10 +34,6 @@
         `(variable ,(variable-index $type)))
       ((universe? $type)
         `(universe ,(universe-index $type)))
-      ((value? $type)
-        `(value
-          ,(sexp-datum (any-sexp (value-any $type)))
-          ,(type-syntax (value-type $type))))
       ((reified? $type)
         `(reified
           ,(structure-syntax (reified-structure $type)))))))

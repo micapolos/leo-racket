@@ -9,7 +9,6 @@
 (define (scope-type-resolve ($scope : (Stackof Type)) ($type : Type)) : Type
   (cond
     ((racket? $type) $type)
-    ((value? $type) $type)
     ((variable? $type) (stack-ref $scope (variable-index $type)))
     ((field? $type)
       (field

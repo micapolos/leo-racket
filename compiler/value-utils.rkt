@@ -3,9 +3,11 @@
 (require
   typed/racket/unsafe
   leo/compiler/type
+  leo/compiler/value
   leo/compiler/type-utils
   leo/compiler/type-match
-  leo/compiler/type-sexp)
+  leo/compiler/type-sexp
+  leo/compiler/value-sexp)
 
 (unsafe-require/typed leo/compiler/any-utils
   (any-apply (-> Any (Listof Any) (Listof Any))))

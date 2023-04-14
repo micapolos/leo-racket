@@ -7,7 +7,6 @@
 (define (type-set ($type : Type) ($variable : Variable) ($set-type : Type)) : Type
   (cond
     ((racket? $type) $type)
-    ((value? $type) $type)
     ((field? $type)
       (field
         (field-symbol $type)
