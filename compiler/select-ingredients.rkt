@@ -39,7 +39,9 @@
   ($ingredients : Select-Ingredients)) : Expression
   (define $selection (select-ingredients-selection $ingredients))
   (unless $selection (error "not selected"))
-  (index-syntax-structure-select-expression 
-    (car $selection)
-    (cdr $selection)
-    (select-ingredients-structure $ingredients)))
+  (or
+    (index-syntax-structure-select-expression-option
+      (car $selection)
+      (cdr $selection)
+      (select-ingredients-structure $ingredients))
+    (error "empty select")))

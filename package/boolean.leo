@@ -14,8 +14,8 @@ recipe
 
 then
   recipe
-    not boolean
-    does not.boolean.switch
+    boolean.negate
+    does boolean.switch
       true boolean false
       false boolean true
 
