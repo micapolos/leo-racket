@@ -4,6 +4,7 @@
   leo/compiler/select-expression-utils
   leo/compiler/expression
   leo/compiler/expression-utils
+  leo/compiler/select-expression
   leo/compiler/type
   leo/compiler/type-utils)
 
@@ -36,17 +37,17 @@
 (define (expression-choice-cast ($expression : Expression) ($choice : Choice)) : (Option Expression)
   (define $structure (choice-type-stack $choice))
   (option-bind (structure-index-matching-type $structure (expression-type $expression)) $index
-  (index-syntax-structure-select-expression-option
-    $index
-    (expression-syntax-option $expression)
-    $structure)))
+    (index-syntax-structure-select-expression-option
+      (cast (- (length $structure) $index 1) Exact-Nonnegative-Integer)
+      (expression-syntax-option $expression)
+      $structure)))
 
 (bind $choice (choice! (field! `foo) (field! `bar) (field! `goo))
   (check-equal?
     (option-app expression-sexp
       (expression-choice-cast (field-expression! foo) $choice))
     (expression-sexp
-      (expression #`2 $choice)))
+      (expression #`0 $choice)))
 
   (check-equal?
     (option-app expression-sexp
@@ -62,6 +63,25 @@
     (equal? (field-symbol $expression-type) (field-symbol $field))
     (option-bind (single (field-structure $expression-type)) $expression-rhs-type
       (option-bind (single (field-structure $field)) $field-rhs-type
-        (expression-cast
-          (expression (expression-syntax-option $expression) $expression-rhs-type)
-          $field-rhs-type)))))
+        (option-bind
+          (expression-cast
+            (expression (expression-syntax-option $expression) $expression-rhs-type)
+            $field-rhs-type)
+          $cast-expression
+          (field-expression
+            (field-symbol $field)
+            (tuple $cast-expression)))))))
+
+(check-equal?
+  (option-app expression-sexp
+    (expression-cast
+      (field-expression! foo
+        (text-expression "foo"))
+      (field! `foo
+        (choice! text-type number-type))))
+  (expression-sexp
+    (field-expression! foo
+      (select-expression!
+        (the (text-expression "foo"))
+        (not number-type)))))
+
