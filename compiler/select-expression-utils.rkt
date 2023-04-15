@@ -117,4 +117,9 @@
     (option-app expression-sexp
       (expression-choice-cast (field-expression! foo) $choice))
     (expression-sexp
-      (expression #`2 $choice))))
+      (expression #`2 $choice)))
+
+  (check-equal?
+    (option-app expression-sexp
+      (expression-choice-cast (field-expression! zoo) $choice))
+  #f))
