@@ -251,3 +251,10 @@
   (or
     (expression-cast $expression boolean-type)
     $expression))
+
+(check-equal?
+  (expression-sexp
+    (expression-resolve-types
+      (field-expression! boolean (field-expression! true))))
+  (expression-sexp
+    (boolean-expression #t)))
