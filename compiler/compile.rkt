@@ -68,5 +68,4 @@
     (else (compile-symbol-expressions $scope $symbol $syntax-list))))
 
 (define (compile-symbol-expressions ($scope : Scope) ($symbol : Symbol) ($syntax-list : (Listof Syntax))) : Expressions
-  (symbol-ingredients-expressions $symbol
-    (compile-ingredients-recursively $scope $syntax-list)))
+  (scope-symbol-syntax-list-expressions $scope $symbol $syntax-list))

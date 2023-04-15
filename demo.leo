@@ -1,12 +1,6 @@
 #lang leo
 
-use package boolean
+use package number
 
-boolean choice
-  not true
-  the false
-negate
-negate
-and boolean choice
-  not true
-  the false
+2
+plus 3

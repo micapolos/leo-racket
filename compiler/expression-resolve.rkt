@@ -5,6 +5,7 @@
   leo/compiler/expressions
   leo/compiler/expressions-utils
   leo/compiler/expression
+  leo/compiler/expression-cast
   leo/compiler/expression-utils
   leo/compiler/expressions-sexp
   leo/compiler/ingredients
@@ -242,3 +243,11 @@
   `(expressions
     (let-values (((tmp-a tmp-b) a)) (cons tmp-a tmp-b))
     (structure (foo (a racket) (b racket)))))
+
+; ------------------------------------------------------------------------
+
+; TODO: Move to type-scope.
+(define (expression-resolve-types ($expression : Expression)) : Expression
+  (or
+    (expression-cast $expression boolean-type)
+    $expression))
