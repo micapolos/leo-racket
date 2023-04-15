@@ -100,25 +100,3 @@
     (expression
       #`(cons 0 stx)
       (choice! dynamic-type-a static-type-b dynamic-type-c))))
-
-; ---------------------------------------------------------
-
-(define (expression-choice-cast ($expression : Expression) ($choice : Choice)) : (Option Expression)
-  (define $structure (choice-type-stack $choice))
-  (option-bind (structure-index-matching-type $structure (expression-type $expression)) $index
-  (index-syntax-structure-select-expression-option
-    $index
-    (expression-syntax-option $expression)
-    $structure)))
-
-(bind $choice (choice! (field! `foo) (field! `bar) (field! `goo))
-  (check-equal?
-    (option-app expression-sexp
-      (expression-choice-cast (field-expression! foo) $choice))
-    (expression-sexp
-      (expression #`2 $choice)))
-
-  (check-equal?
-    (option-app expression-sexp
-      (expression-choice-cast (field-expression! zoo) $choice))
-  #f))
