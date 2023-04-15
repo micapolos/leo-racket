@@ -177,3 +177,18 @@
     (arrow (structure type-a) (structure type-b))
     (structure type-b))
   #f)
+
+; -------------------------------------------------------------------------
+
+(define (structure-index-matching-type
+  ($structure : Structure)
+  ($type : Type))
+: (Option Exact-Nonnegative-Integer)
+  (index-where $structure
+    (lambda (($structure-type : Type))
+      (type-matches? $type $structure-type))))
+
+(bind $structure (structure (field! `foo) (field! `bar))
+  (check-equal? (structure-index-matching-type $structure (field! `bar)) 0)
+  (check-equal? (structure-index-matching-type $structure (field! `foo)) 1)
+  (check-equal? (structure-index-matching-type $structure (field! `gar)) #f))
