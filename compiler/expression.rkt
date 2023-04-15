@@ -15,3 +15,7 @@
 (define tuple : (-> Expression * Tuple) stack)
 
 (define null-tuple null)
+
+(define-type Select-Expression-Line (U Expression-The Type-Not))
+
+(data expression-the (expression : Expression))

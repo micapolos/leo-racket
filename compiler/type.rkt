@@ -86,3 +86,7 @@
 
 (define (variable-next ($variable : Variable)) : Variable
   (variable (add1 (variable-index $variable))))
+
+; ---------------------------------------------------------------------------
+
+(data type-not (type : Type))
