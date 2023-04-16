@@ -232,3 +232,20 @@
   (define $entry-option (and $syntax-option (not (null? $identifier-stack)) (entry $identifier-stack $syntax-option)))
   (define $scope (map binding $tmp-option-stack $structure))
   (scoper $entry-option $scope))
+
+; ----------------------------------------------------------------------
+
+(define (syntax-do ($syntax : Syntax) ($fn : (-> Identifier Syntax))) : Syntax
+  (define $tmp (symbol-temporary `tmp))
+  (entry-stack-do-syntax
+    (stack (entry (stack $tmp) $syntax))
+    ($fn $tmp)))
+
+(check-equal?
+  (syntax-sexp
+    (syntax-do #`foo
+      (lambda (($identifier : Identifier))
+        (make-syntax `(done ,$identifier)))))
+  (syntax-sexp
+    (make-syntax
+      `(let-values (((tmp-tmp) foo)) (done tmp-tmp)))))

@@ -63,9 +63,6 @@
 
 ; ----------------------------------------------------------------------------
 
-(define (syntax-sexp ($syntax : Syntax)) : Sexp
-  `(syntax ,(syntax->datum $syntax)))
-
 (define (value-sexp ($value : Value)) : Sexp
   `(value
     ,(syntax-sexp (value-syntax $value))

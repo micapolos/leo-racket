@@ -3,6 +3,9 @@
 (require 
   leo/compiler/sexp-utils)
 
+(define (syntax-sexp ($syntax : Syntax)) : Sexp
+  `(syntax ,(syntax->datum $syntax)))
+
 (define (make-syntax ($datum : (Sexpof Syntax)) ($srcloc : (Option srcloc) #f)) : Syntax
   (datum->syntax #f $datum 
     (and $srcloc
@@ -115,4 +118,3 @@
       ((0) #f)
       ((1) (top $syntax-stack))
       (else `(values ,@(reverse $syntax-stack))))))
-
