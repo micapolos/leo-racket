@@ -1,4 +1,6 @@
 #lang leo
 
-2
-plus 3
+use package text
+
+"Hello, "
+plus "world!"
