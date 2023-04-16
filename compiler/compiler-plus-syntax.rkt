@@ -102,7 +102,12 @@
   : Expressions
   (define $ingredients (compile-ingredients-recursively $scope $syntax-list))
   (define $structure (ingredients-structure $ingredients))
-  (symbol-ingredients-expressions $symbol $ingredients))
+  (define $expressions (symbol-ingredients-expressions $symbol $ingredients))
+  (or
+    (option-app expression-expressions
+      (option-app expression-resolve-types
+        (expressions-expression-option $expressions)))
+    $expressions))
 
 ; ------------------------------------------------------------------------------------
 
