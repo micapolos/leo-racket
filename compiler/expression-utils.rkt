@@ -398,11 +398,10 @@
 
 (define (tuple-values-syntax-option ($tuple : Tuple)) : (Option Syntax)
   (define $syntax-stack (filter-false (map expression-syntax-option $tuple)))
-  (make-syntax
-    (case (length $syntax-stack)
-      ((0) #f)
-      ((1) (top $syntax-stack))
-      (else `(values ,@(reverse $syntax-stack))))))
+  (case (length $syntax-stack)
+    ((0) #f)
+    ((1) (top $syntax-stack))
+    (else (make-syntax `(values ,@(reverse $syntax-stack))))))
 
 (define (tuple-values-syntax ($tuple : Tuple)) : Syntax
   (or

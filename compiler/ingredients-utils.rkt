@@ -151,9 +151,8 @@
       (else #f))
     (ingredients-gather-fn $ingredients
       (lambda (($tuple : Tuple))
-        (expressions
-          (tuple-syntax-option $tuple)
-          (structure (field $symbol (tuple-structure $tuple))))))))
+        (expression-expressions
+          (field-expression $symbol $tuple))))))
 
 (check-equal?
   (expressions-sexp
