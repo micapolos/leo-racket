@@ -1,6 +1,7 @@
 #lang leo
 
-use package text
-
-"Hello, "
-plus "world!"
+point
+  x 10
+  y 20
+x
+number
