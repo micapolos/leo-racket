@@ -1,19 +1,15 @@
 #lang leo/typed
 
 (require
+  leo/compiler/binding
   leo/compiler/expression
   leo/compiler/type
   leo/compiler/type-match
+  leo/compiler/types
   leo/compiler/syntax-type-content-tuple)
 
 (data context
-  (scope : Scope))
+  (scope : Scope)
+  (types : Types))
 
-(define (context-expression-rhs-tuple-option ($context : Context) ($expression : Expression)) : (Option Tuple)
-  (define $type (expression-type $expression))
-    (cond
-      ((type-matches? $type (field! `type (racket)))
-        (option-bind (expression-syntax-option $expression) $syntax
-          (syntax-type-content-tuple $syntax)))
-      (else
-        (expression-rhs-tuple-option $expression))))
+(define null-context (context null-scope null-types))

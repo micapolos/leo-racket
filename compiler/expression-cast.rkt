@@ -84,4 +84,3 @@
       (select-expression!
         (the (text-expression "foo"))
         (not number-type)))))
-
