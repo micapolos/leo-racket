@@ -9,7 +9,7 @@
 
 (data program
   (entry-stack : (Stackof Entry))
-  (ingredients : Ingredients))
+  (body-ingredients : Ingredients))
 
 (define null-program
   (program null null-ingredients))
@@ -17,11 +17,11 @@
 (define (program-sexp ($program : Program)) : Sexp
   `(program
     (stack ,@(reverse (map entry-sexp (program-entry-stack $program))))
-    ,(ingredients-sexp (program-ingredients $program))))
+    ,(ingredients-sexp (program-body-ingredients $program))))
 
-(define (program-resolved-ingredients ($program : Program)) : Ingredients
+(define (program-ingredients ($program : Program)) : Ingredients
   (define $entry-stack (program-entry-stack $program))
-  (define $ingredients (program-ingredients $program))
+  (define $ingredients (program-body-ingredients $program))
   (cond
     ((null? $entry-stack) $ingredients)
     (else

@@ -26,7 +26,7 @@
 (define (leo-compile-any-list ($any-list : (Listof Any))) : (Listof Syntax)
   (reverse
     (ingredients-top-level-syntax-stack
-      (program-resolved-ingredients
+      (program-ingredients
         (syntax-list-program
           (map syntax-normalize (map any-syntax $any-list)))))))
 

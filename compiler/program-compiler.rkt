@@ -44,7 +44,7 @@
             (push-stack $scope $scoper-scope)
             (program
               (push-stack (program-entry-stack $program) $entry-stack)
-              (program-ingredients $program))))
+              (program-body-ingredients $program))))
         (else #f)))
     (program-compiler
       $scope
@@ -52,7 +52,7 @@
         (program-entry-stack $program)
         (compiler-ingredients
           (compiler-plus-syntax
-            (compiler $scope (program-ingredients $program))
+            (compiler $scope (program-body-ingredients $program))
             $syntax))))))
 
 (check-equal?
@@ -100,4 +100,4 @@
           (expressions syntax-c (structure dynamic-type-c)))))))
 
 (define (program-compiler-ingredients ($program-compiler : Program-Compiler)) : Ingredients
-  (program-resolved-ingredients (program-compiler-program $program-compiler)))
+  (program-ingredients (program-compiler-program $program-compiler)))
