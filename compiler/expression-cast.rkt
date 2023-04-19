@@ -20,7 +20,7 @@
           (expression-syntax-option $cast-expression)
           (generic (expression-type $cast-expression)))))
     ((recursive? $type)
-      (option-bind (expression (expression-syntax-option $expression) (recursive-type $type)) $cast-expression
+      (option-bind (expression-cast $expression (recursive-type $type)) $cast-expression
         (expression
           (expression-syntax-option $cast-expression)
           (recursive (expression-type $cast-expression)))))
